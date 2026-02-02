@@ -33,6 +33,11 @@ dependencies:
   sqflite: ^2.3.0
   path: ^1.8.3
   path_provider: ^2.1.0
+  http: ^1.1.0
+  pdf: ^3.10.7
+  printing: ^5.11.1
+  share_plus: ^7.2.1
+  geolocator: ^10.1.0
   jyotish:
     git:
       url: https://github.com/rajsanjib/jyotish-flutter-library.git

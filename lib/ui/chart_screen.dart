@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/chart_widget.dart';
+import 'widgets/chart_widget.dart';
 import '../../data/models.dart';
 import '../../logic/kp_chart_service.dart';
 import 'package:jyotish/jyotish.dart'; // For VedicChart type

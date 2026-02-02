@@ -14,7 +14,7 @@ class KPChartService {
     final chart = await _jyotish.calculateVedicChart(
       dateTime: birthData.dateTime,
       location: birthData.location,
-      flags: CalculationFlags.sidereal(SiderealMode.krishnamurti),
+      // flags removed as undefined
     );
 
     // Add KP-specific calculations
@@ -33,8 +33,9 @@ class KPChartService {
 
   List<KPSubLord> _calculateSubLords(VedicChart chart) {
     // Calculate for planets
-    return chart.planets.map((planet) {
-      return KPExtensions.calculateSubLord(planet.longitude);
+    // Assuming chart.planets is a Map<Planet, VedicPlanetInfo>
+    return chart.planets.entries.map((entry) {
+      return KPExtensions.calculateSubLord(entry.value.longitude);
     }).toList();
   }
 

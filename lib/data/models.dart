@@ -1,4 +1,10 @@
 import 'package:jyotish/jyotish.dart';
+ 
+ class Location {
+   final double latitude;
+   final double longitude;
+   Location(this.latitude, this.longitude);
+ }
 
 class BirthData {
   final DateTime dateTime;

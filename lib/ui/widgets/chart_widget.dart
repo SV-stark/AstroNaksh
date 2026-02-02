@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+import '../painters/north_indian_chart_painter.dart';
+import '../painters/south_indian_chart_painter.dart';
+import '../styles.dart';
+
+enum ChartStyle { northIndian, southIndian }
+
+class ChartWidget extends StatelessWidget {
+  final List<String> planetPositions;
+  final ChartStyle style;
+  final double size;
+
+  const ChartWidget({
+    Key? key,
+    required this.planetPositions,
+    required this.style,
+    this.size = 300,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppStyles.surfaceColor,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: CustomPaint(
+        painter: style == ChartStyle.northIndian
+            ? NorthIndianChartPainter(
+                planetPositions: planetPositions,
+                lineColor: AppStyles.accentColor,
+              )
+            : SouthIndianChartPainter(
+                planetPositions: planetPositions,
+                lineColor: AppStyles.accentColor,
+              ),
+      ),
+    );
+  }
+}

@@ -5,7 +5,7 @@ import '../../logic/kp_chart_service.dart';
 import 'package:jyotish/jyotish.dart'; // For VedicChart type
 
 class ChartScreen extends StatefulWidget {
-  const ChartScreen({Key? key}) : super(key: key);
+  const ChartScreen({super.key});
 
   @override
   State<ChartScreen> createState() => _ChartScreenState();
@@ -27,65 +27,92 @@ class _ChartScreenState extends State<ChartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Vedic Chart"),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _style == ChartStyle.northIndian
-                  ? Icons.grid_view
-                  : Icons.diamond,
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Vedic Chart"),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: "D-1"),
+              Tab(text: "D-9"),
+              Tab(text: "KP"),
+              Tab(text: "Dasha"),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(
+                _style == ChartStyle.northIndian
+                    ? Icons.grid_view
+                    : Icons.diamond,
+              ),
+              onPressed: () {
+                setState(() {
+                  _style = _style == ChartStyle.northIndian
+                      ? ChartStyle.southIndian
+                      : ChartStyle.northIndian;
+                });
+              },
+              tooltip: "Toggle Chart Style",
             ),
-            onPressed: () {
-              setState(() {
-                _style = _style == ChartStyle.northIndian
-                    ? ChartStyle.southIndian
-                    : ChartStyle.northIndian;
-              });
-            },
-            tooltip: "Toggle Chart Style",
+          ],
+        ),
+        body: FutureBuilder<ChartData>(
+          future: _chartDataFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            } else if (!snapshot.hasData) {
+              return const Center(child: Text("No Data"));
+            }
+
+            final data = snapshot.data!;
+            // For now D-1 and D-9 use dummy data transformation logic
+            // In a real app, data.baseChart would contain D-9 info or we'd calculate it.
+
+            return TabBarView(
+              children: [
+                _buildChartTab(data.baseChart, "Rashi (D-1)"),
+                _buildChartTab(
+                  data.baseChart,
+                  "Navamsa (D-9)",
+                ), // Should be different data
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: _buildKPInfo(data.kpData),
+                ),
+                const Center(child: Text("Dasha System (Coming Soon)")),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChartTab(VedicChart chart, String title) {
+    List<String> displayPlanets = [];
+    if (_style == ChartStyle.northIndian) {
+      displayPlanets = _getPlanetsByHouse(chart);
+    } else {
+      displayPlanets = _getPlanetsBySign(chart);
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Text(title, style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 16),
+          ChartWidget(
+            planetPositions: displayPlanets,
+            style: _style,
+            size: 350,
           ),
         ],
-      ),
-      body: FutureBuilder<ChartData>(
-        future: _chartDataFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (!snapshot.hasData) {
-            return const Center(child: Text("No Data"));
-          }
-
-          final data = snapshot.data!;
-          // Transform planets to list of strings relative to houses (1-12)
-          // For North Indian: List needs to be planets in House 1, House 2...
-          // For South Indian: List needs to be planets in Aries, Taurus...
-
-          List<String> displayPlanets = [];
-          if (_style == ChartStyle.northIndian) {
-            displayPlanets = _getPlanetsByHouse(data.baseChart);
-          } else {
-            displayPlanets = _getPlanetsBySign(data.baseChart);
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                ChartWidget(
-                  planetPositions: displayPlanets,
-                  style: _style,
-                  size: 350,
-                ),
-                const SizedBox(height: 24),
-                _buildKPInfo(data.kpData),
-              ],
-            ),
-          );
-        },
       ),
     );
   }
@@ -119,22 +146,18 @@ class _ChartScreenState extends State<ChartScreen> {
             ),
             const SizedBox(height: 10),
             // List sub lords (placeholder UI)
-            ...kpData.subLords
-                .asMap()
-                .entries
-                .map(
-                  (e) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Planet ${e.key + 1}"), // Placeholder name
-                        Text("${e.value.starLord} / ${e.value.subLord}"),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
+            ...kpData.subLords.asMap().entries.map(
+              (e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Planet ${e.key + 1}"), // Placeholder name
+                    Text("${e.value.starLord} / ${e.value.subLord}"),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

@@ -18,7 +18,7 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final path = await getDatabasesPath();
     return await openDatabase(
-      join(path, 'astrofast.db'),
+      join(path, 'astronaksh.db'),
       version: 1,
       onCreate: _onCreate,
     );
@@ -42,5 +42,20 @@ class DatabaseHelper {
         value TEXT
       )
     ''');
+  }
+
+  Future<int> insertChart(Map<String, dynamic> row) async {
+    final db = await database;
+    return await db.insert('charts', row);
+  }
+
+  Future<List<Map<String, dynamic>>> getCharts() async {
+    final db = await database;
+    return await db.query('charts', orderBy: 'id DESC');
+  }
+
+  Future<int> deleteChart(int id) async {
+    final db = await database;
+    return await db.delete('charts', where: 'id = ?', whereArgs: [id]);
   }
 }

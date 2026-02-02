@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'styles.dart';
 import '../../data/models.dart';
-import '../../logic/kp_chart_service.dart';
-import 'package:jyotish/jyotish.dart'; // For Location class
+import '../../core/database_helper.dart';
+
+// import 'package:jyotish/jyotish.dart'; // Removed to avoid potential conflict
 
 class InputScreen extends StatefulWidget {
-  const InputScreen({Key? key}) : super(key: key);
+  const InputScreen({super.key});
 
   @override
   State<InputScreen> createState() => _InputScreenState();
@@ -70,12 +71,20 @@ class _InputScreenState extends State<InputScreen> {
       final lat = double.tryParse(_latController.text) ?? 0.0;
       final long = double.tryParse(_longController.text) ?? 0.0;
 
+      // Save to Database
+      final name = _nameController.text;
+      final dbHelper = DatabaseHelper();
+
+      dbHelper.insertChart({
+        'name': name,
+        'dateTime': dt.toIso8601String(),
+        'latitude': lat,
+        'longitude': long,
+      });
+
       final birthData = BirthData(
         dateTime: dt,
-        location: Location(
-          latitude: lat,
-          longitude: long,
-        ), // Assuming Jyotish Location takes these
+        location: Location(latitude: lat, longitude: long),
       );
 
       // Navigate to Chart Screen

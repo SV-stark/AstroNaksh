@@ -13,7 +13,11 @@ class KPChartService {
     // Use jyotish for base calculations
     final chart = await _jyotish.calculateVedicChart(
       dateTime: birthData.dateTime,
-      location: birthData.location,
+      location: GeographicLocation(
+        latitude: birthData.location.latitude,
+        longitude: birthData.location.longitude,
+        altitude: 0, // Assuming 0 or need to add to model
+      ),
       // flags removed as undefined
     );
 

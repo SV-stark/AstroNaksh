@@ -11,11 +11,11 @@ class ChartWidget extends StatelessWidget {
   final double size;
 
   const ChartWidget({
-    Key? key,
+    super.key,
     required this.planetPositions,
     required this.style,
     this.size = 300,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class ChartWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),

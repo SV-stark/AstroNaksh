@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.astrofast"
+    namespace = "com.stark.astronaksh"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

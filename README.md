@@ -1,4 +1,4 @@
-# ✨ AstroFast
+# ✨ AstroNaksh
 
 **A Comprehensive Vedic Astrology & KP System Mobile Application**
 
@@ -16,7 +16,7 @@ Built with Flutter, powered by precision astronomical calculations, and designed
 ## 📚 Table of Contents
 
 - [About Vedic Astrology](#about-vedic-astrology)
-- [What is AstroFast?](#what-is-astrofast)
+- [What is AstroNaksh?](#what-is-astronaksh)
 - [Features](#features)
 - [Benefits Over Other Apps](#benefits-over-other-apps)
 - [Installation](#installation)
@@ -73,9 +73,9 @@ This scientific approach has made predictions more accurate and verifiable than 
 
 ---
 
-## 🎯 What is AstroFast?
+## 🎯 What is AstroNaksh?
 
-**AstroFast** is a modern, open-source mobile application that brings the profound wisdom of Vedic astrology and the precision of the KP System to your fingertips.
+**AstroNaksh** is a modern, open-source mobile application that brings the profound wisdom of Vedic astrology and the precision of the KP System to your fingertips.
 
 ### Mission
 
@@ -140,9 +140,9 @@ To become the world's most trusted, accurate, and comprehensive Vedic astrology 
 
 ## 🚀 Benefits Over Other Apps
 
-### Why Choose AstroFast?
+### Why Choose AstroNaksh?
 
-| Feature | AstroFast | Other Apps |
+| Feature | AstroNaksh | Other Apps |
 |---------|-----------|------------|
 | **Price** | ✅ Completely Free & Open Source | ❌ Often paid or subscription-based |
 | **Data Privacy** | ✅ All calculations on-device | ❌ Cloud processing, data sharing |
@@ -157,9 +157,9 @@ To become the world's most trusted, accurate, and comprehensive Vedic astrology 
 
 ### Unique Advantages
 
-1. **Authentic Vedic Focus**: Unlike Western astrology apps, AstroFast is built specifically for Vedic (Indian) astrology with proper ayanamsa calculations.
+1. **Authentic Vedic Focus**: Unlike Western astrology apps, AstroNaksh is built specifically for Vedic (Indian) astrology with proper ayanamsa calculations.
 
-2. **Complete KP System**: Most apps lack the KP System entirely. AstroFast provides comprehensive KP calculations including the complex sub-lord and significator logic.
+2. **Complete KP System**: Most apps lack the KP System entirely. AstroNaksh provides comprehensive KP calculations including the complex sub-lord and significator logic.
 
 3. **Privacy First**: Your birth data never leaves your device. All calculations happen locally using the SQLite database.
 
@@ -359,7 +359,7 @@ This project would not be possible without the incredible work of the open-sourc
 
 **A heartfelt thank you to the creator of the `jyotish` library!**
 
-This Flutter package provides the foundational astronomical calculations that power AstroFast's chart generation. Without this library's precise ephemeris computations and Vedic astrological algorithms, building accurate charts would be exponentially more complex.
+This Flutter package provides the foundational astronomical calculations that power AstroNaksh's chart generation. Without this library's precise ephemeris computations and Vedic astrological algorithms, building accurate charts would be exponentially more complex.
 
 **Repository:** https://github.com/rajsanjib/jyotish-flutter-library
 
@@ -370,7 +370,7 @@ The `jyotish` library handles:
 - Nakshatra and pada calculations
 - House system implementations
 
-If you find AstroFast useful, please show appreciation to the `jyotish` library maintainers by starring their repository!
+If you find AstroNaksh useful, please show appreciation to the `jyotish` library maintainers by starring their repository!
 
 ### Other Acknowledgments
 
@@ -388,14 +388,14 @@ If you find AstroFast useful, please show appreciation to the `jyotish` library 
 
 Have questions, suggestions, or want to collaborate?
 
-- **Issues**: [GitHub Issues](https://github.com/SV-Stark/AstroFast/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/SV-Stark/AstroFast/discussions)
+- **Issues**: [GitHub Issues](https://github.com/SV-Stark/AstroNaksh/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/SV-Stark/AstroNaksh/discussions)
 
 ---
 
 ## 🕉️ A Note on Astrology
 
-AstroFast is a tool for exploration and self-reflection. While Vedic astrology has guided millions for thousands of years, we encourage users to:
+AstroNaksh is a tool for exploration and self-reflection. While Vedic astrology has guided millions for thousands of years, we encourage users to:
 
 - Use astrology as guidance, not absolute determinism
 - Combine insights with practical action and free will

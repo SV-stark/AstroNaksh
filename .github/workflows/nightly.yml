@@ -27,7 +27,7 @@ jobs:
         run: flutter build windows --release
 
       - name: Setup Inno Setup
-        uses: MinionsVS/install-innosetup-action@v1
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
 
       - name: Compile Inno Setup Script
         run: iscc windows\installer.iss

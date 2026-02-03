@@ -512,18 +512,57 @@ class KPExtensions {
     ];
   }
 
-  // ABCD significator method
-  static List<String> calculateSignificators(VedicChart chart, int house) {
-    final aPlanets = _getPlanetsInHouse(chart, house);
-    final bPlanets = _getStarOwners(chart, house);
-    final cPlanets = _getSubOwners(chart, house);
-    final dPlanets = _getConjoinedSignificators(chart, [
-      ...aPlanets,
-      ...bPlanets,
-      ...cPlanets,
-    ]);
+  // ABCD significator method (Standard KP 4-Fold)
+  static Map<String, List<String>> calculateSignificators(
+    VedicChart chart,
+    int house,
+  ) {
+    // 1. Find Occupants of the house
+    final occupants = _getPlanetsInHouse(chart, house);
 
-    return {...aPlanets, ...bPlanets, ...cPlanets, ...dPlanets}.toList();
+    // 2. Find Lord of the house (Sign Lord of Cusp)
+    final houseIndex = house - 1;
+    final cuspLong = _getHouseCuspLongitude(chart, houseIndex);
+    final signIndex = (cuspLong / 30).floor();
+    final houseLord = _getSignLord(signIndex);
+
+    // Level A: Planets in the Star of an Occupant
+    final levelA = <String>[];
+    for (var occupant in occupants) {
+      levelA.addAll(_getPlanetsByStarLord(chart, occupant));
+    }
+
+    // Level B: Occupants themselves
+    final levelB = occupants;
+
+    // Level C: Planets in the Star of the House Lord
+    // Note: If House Lord is in the star of an occupant, it is already strong,
+    // but here we look for OTHER planets whose star lord is this House Lord.
+    final levelC = _getPlanetsByStarLord(chart, houseLord);
+
+    // Level D: House Lord itself
+    final levelD = [houseLord];
+
+    return {
+      'A': levelA.toSet().toList(),
+      'B': levelB.toSet().toList(),
+      'C': levelC.toSet().toList(),
+      'D': levelD.toSet().toList(),
+    };
+  }
+
+  /// Get planets whose star lord is the given planet
+  static List<String> _getPlanetsByStarLord(VedicChart chart, String lordName) {
+    List<String> planets = [];
+    for (final entry in chart.planets.entries) {
+      final pName = _getPlanetName(entry.key);
+      final subLord = calculateSubLord(entry.value.longitude);
+
+      if (subLord.starLord == lordName) {
+        planets.add(pName);
+      }
+    }
+    return planets;
   }
 
   /// Get all planets physically located in a house
@@ -539,59 +578,6 @@ class KPExtensions {
     });
 
     return planets;
-  }
-
-  /// Get planets that are star lords of the house cusp
-  static List<String> _getStarOwners(VedicChart chart, int house) {
-    final List<String> planets = [];
-    final houseIndex = house - 1;
-
-    // Get house cusp longitude
-    final cuspLongitude = _getHouseCuspLongitude(chart, houseIndex);
-
-    // Find which nakshatra this falls in
-    final nakshatraIndex = (cuspLongitude / _nakshatraSpan).floor();
-    final starLord = kpStarLords[nakshatraIndex % 27];
-
-    planets.add(starLord);
-    return planets;
-  }
-
-  /// Get planets that are sub lords of the house cusp
-  static List<String> _getSubOwners(VedicChart chart, int house) {
-    final houseIndex = house - 1;
-    final cuspLongitude = _getHouseCuspLongitude(chart, houseIndex);
-    final subLord = calculateSubLord(cuspLongitude);
-
-    return [subLord.subLord];
-  }
-
-  /// Get planets conjoined with significators
-  static List<String> _getConjoinedSignificators(
-    VedicChart chart,
-    List<String> planets,
-  ) {
-    final Set<String> conjoined = {};
-
-    for (final planetName in planets) {
-      final planet = _getPlanetFromName(planetName);
-      if (planet == null) continue;
-
-      final planetInfo = chart.planets[planet];
-      if (planetInfo == null) continue;
-
-      // Check for conjunctions (within 3 degrees)
-      chart.planets.forEach((otherPlanet, otherInfo) {
-        if (otherPlanet != planet) {
-          final diff = (planetInfo.longitude - otherInfo.longitude).abs();
-          if (diff <= 3.0 || diff >= 357.0) {
-            conjoined.add(_getPlanetName(otherPlanet));
-          }
-        }
-      });
-    }
-
-    return conjoined.toList();
   }
 
   /// Get house number for a given longitude
@@ -760,22 +746,40 @@ class KPExtensions {
     return dayLords[index];
   }
 
-  /// Get significations for a planet
+  /// Get significations (houses) for a planet using ABCD logic
   static List<int> getPlanetSignifications(String planet, VedicChart chart) {
-    final List<int> significations = [];
-
-    // Check which houses this planet signifies through its position
+    final significations = <int>[];
     final planetEnum = _getPlanetFromName(planet);
-    if (planetEnum != null) {
-      final info = chart.planets[planetEnum];
-      if (info != null) {
-        final house = _getHouseForLongitude(chart, info.longitude) + 1;
-        significations.add(house);
+    if (planetEnum == null) return [];
 
-        // Add houses owned by this planet
-        significations.addAll(_getOwnedHouses(planet, chart));
-      }
+    final planetInfo = chart.planets[planetEnum];
+    if (planetInfo == null) return [];
+
+    // 0. Get star lord of the planet
+    final planetSub = calculateSubLord(planetInfo.longitude);
+    final starLord = planetSub.starLord;
+
+    final starLordEnum = _getPlanetFromName(starLord);
+    VedicPlanetInfo? starLordInfo;
+    if (starLordEnum != null) {
+      starLordInfo = chart.planets[starLordEnum];
     }
+
+    // Level A: Houses occupied by the star lord
+    if (starLordInfo != null) {
+      significations.add(
+        _getHouseForLongitude(chart, starLordInfo.longitude) + 1,
+      );
+    }
+
+    // Level B: Houses occupied by the planet itself
+    significations.add(_getHouseForLongitude(chart, planetInfo.longitude) + 1);
+
+    // Level C: Houses owned by the star lord
+    significations.addAll(_getOwnedHouses(starLord, chart));
+
+    // Level D: Houses owned by the planet itself
+    significations.addAll(_getOwnedHouses(planet, chart));
 
     return significations.toSet().toList();
   }

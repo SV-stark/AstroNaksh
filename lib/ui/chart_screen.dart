@@ -7,6 +7,16 @@ import 'package:jyotish/jyotish.dart';
 import '../../core/ayanamsa_calculator.dart';
 import '../../core/chart_customization.dart' hide ChartStyle;
 import 'tools/birth_time_rectifier_screen.dart';
+// New analysis screens
+import 'strength/ashtakavarga_screen.dart';
+import 'strength/shadbala_screen.dart';
+import 'strength/bhava_bala_screen.dart';
+import 'analysis/yoga_dosha_screen.dart';
+import 'predictions/transit_screen.dart';
+import 'predictions/varshaphal_screen.dart';
+import 'analysis/retrograde_screen.dart';
+import 'comparison/chart_comparison_screen.dart';
+import 'reports/pdf_report_screen.dart';
 
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
@@ -114,6 +124,172 @@ class _ChartScreenState extends State<ChartScreen> {
             ],
           ),
           actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.analytics),
+              tooltip: "Advanced Analysis",
+              onSelected: (value) async {
+                if (_chartDataFuture == null) return;
+                final chartData = await _chartDataFuture;
+                if (chartData == null || !mounted) return;
+
+                Widget screen;
+                switch (value) {
+                  case 'ashtakavarga':
+                    screen = AshtakavargaScreen(chartData: chartData);
+                    break;
+                  case 'shadbala':
+                    screen = ShadbalaScreen(chartData: chartData);
+                    break;
+                  case 'bhava_bala':
+                    screen = BhavaBalaScreen(chartData: chartData);
+                    break;
+                  case 'yoga_dosha':
+                    screen = YogaDoshaScreen(chartData: chartData);
+                    break;
+                  case 'transit':
+                    screen = TransitScreen(natalChart: chartData);
+                    break;
+                  case 'varshaphal':
+                    screen = VarshaphalScreen(birthData: _birthData!);
+                    break;
+                  case 'retrograde':
+                    screen = RetrogradeScreen(chartData: chartData);
+                    break;
+                  case 'comparison':
+                    screen = ChartComparisonScreen(chart1: chartData);
+                    break;
+                  case 'pdf_report':
+                    screen = PDFReportScreen(chartData: chartData);
+                    break;
+                  default:
+                    return;
+                }
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => screen),
+                );
+              },
+              itemBuilder: (context) => [
+                const PopupMenuDivider(),
+                const PopupMenuItem(
+                  value: '',
+                  enabled: false,
+                  child: Text(
+                    'Strength Analysis',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'ashtakavarga',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.grid_3x3, size: 20),
+                    title: Text('Ashtakavarga'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'shadbala',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.star_rate, size: 20),
+                    title: Text('Shadbala'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'bhava_bala',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.home, size: 20),
+                    title: Text('Bhava Bala'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuDivider(),
+                const PopupMenuItem(
+                  value: '',
+                  enabled: false,
+                  child: Text(
+                    'Analysis Tools',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'yoga_dosha',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.balance, size: 20),
+                    title: Text('Yoga & Dosha'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'retrograde',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.replay, size: 20),
+                    title: Text('Retrograde'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuDivider(),
+                const PopupMenuItem(
+                  value: '',
+                  enabled: false,
+                  child: Text(
+                    'Predictions',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'transit',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.trending_up, size: 20),
+                    title: Text('Transit Analysis'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'varshaphal',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.calendar_today, size: 20),
+                    title: Text('Varshaphal'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuDivider(),
+                const PopupMenuItem(
+                  value: '',
+                  enabled: false,
+                  child: Text(
+                    'Tools',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'comparison',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.compare_arrows, size: 20),
+                    title: Text('Chart Comparison'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'pdf_report',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.picture_as_pdf, size: 20),
+                    title: Text('PDF Report'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: _openAyanamsaSelection,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import '../painters/north_indian_chart_painter.dart';
 import '../painters/south_indian_chart_painter.dart';
 import '../styles.dart';
@@ -40,7 +40,7 @@ class ChartWidget extends StatelessWidget {
             ? NorthIndianChartPainter(
                 planetsBySign: planetsBySign,
                 ascendantSign: ascendantSign,
-                lineColor: AppStyles.accentColor,
+                borderColor: AppStyles.accentColor,
               )
             : SouthIndianChartPainter(
                 planetsBySign: planetsBySign,

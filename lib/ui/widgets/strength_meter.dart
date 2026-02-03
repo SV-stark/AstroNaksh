@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 /// Reusable widget to display strength as a visual meter
 class StrengthMeter extends StatelessWidget {
@@ -18,9 +18,9 @@ class StrengthMeter extends StatelessWidget {
   Color _getStrengthColor() {
     if (color != null) return color!;
     if (value >= 80) return Colors.green;
-    if (value >= 60) return Colors.lightGreen;
+    if (value >= 60) return Colors.teal;
     if (value >= 40) return Colors.orange;
-    if (value >= 20) return Colors.deepOrange;
+    if (value >= 20) return Colors.orange;
     return Colors.red;
   }
 
@@ -36,12 +36,15 @@ class StrengthMeter extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+              child: Text(
+                label,
+                style: FluentTheme.of(context).typography.body,
+              ),
             ),
             if (showPercentage)
               Text(
-                '${value.toStringAsFixed(1)}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                value.toStringAsFixed(1),
+                style: FluentTheme.of(context).typography.caption?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: strengthColor,
                 ),
@@ -49,13 +52,33 @@ class StrengthMeter extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: value / 100.0,
-            backgroundColor: strengthColor.withOpacity(0.2),
-            valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
-            minHeight: 8,
+        // Custom Linear Progress Bar for explicit color control
+        SizedBox(
+          height: 6,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final progressWidth = (value / 100).clamp(0.0, 1.0) * width;
+
+              return Stack(
+                children: [
+                  Container(
+                    width: width,
+                    decoration: BoxDecoration(
+                      color: strengthColor.withOpacity(0.2), // Background
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  Container(
+                    width: progressWidth,
+                    decoration: BoxDecoration(
+                      color: strengthColor, // Foreground
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ],
@@ -75,11 +98,11 @@ class GradeBadge extends StatelessWidget {
       case 'A':
         return Colors.green;
       case 'B':
-        return Colors.lightGreen;
+        return Colors.teal;
       case 'C':
         return Colors.orange;
       case 'D':
-        return Colors.deepOrange;
+        return Colors.orange;
       case 'F':
         return Colors.red;
       default:
@@ -110,8 +133,8 @@ class GradeBadge extends StatelessWidget {
   }
 }
 
-/// Expandable info card
-class ExpandableInfoCard extends StatefulWidget {
+/// Expandable info card using Expander
+class ExpandableInfoCard extends StatelessWidget {
   final String title;
   final String summary;
   final Widget details;
@@ -128,37 +151,36 @@ class ExpandableInfoCard extends StatefulWidget {
   });
 
   @override
-  State<ExpandableInfoCard> createState() => _ExpandableInfoCardState();
-}
-
-class _ExpandableInfoCardState extends State<ExpandableInfoCard> {
-  bool _isExpanded = false;
-
-  @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: [
-          ListTile(
-            leading: widget.icon != null
-                ? Icon(widget.icon, color: widget.color)
-                : null,
-            title: Text(
-              widget.title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Expander(
+        header: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon!, color: color),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    summary,
+                    style: FluentTheme.of(context).typography.caption,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-            subtitle: Text(widget.summary),
-            trailing: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
-            onTap: () {
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
-            },
-          ),
-          if (_isExpanded)
-            Padding(padding: const EdgeInsets.all(16.0), child: widget.details),
-        ],
+          ],
+        ),
+        content: details,
       ),
     );
   }
@@ -179,9 +201,9 @@ class CircularScoreIndicator extends StatelessWidget {
 
   Color _getScoreColor() {
     if (score >= 80) return Colors.green;
-    if (score >= 60) return Colors.lightGreen;
+    if (score >= 60) return Colors.teal;
     if (score >= 40) return Colors.orange;
-    if (score >= 20) return Colors.deepOrange;
+    if (score >= 20) return Colors.orange;
     return Colors.red;
   }
 
@@ -196,15 +218,11 @@ class CircularScoreIndicator extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              SizedBox(
-                width: size,
-                height: size,
-                child: CircularProgressIndicator(
-                  value: score / 100.0,
-                  strokeWidth: size * 0.1,
-                  backgroundColor: _getScoreColor().withOpacity(0.2),
-                  valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor()),
-                ),
+              ProgressRing(
+                value: score,
+                strokeWidth: size * 0.1,
+                activeColor: _getScoreColor(),
+                backgroundColor: _getScoreColor().withOpacity(0.2),
               ),
               Text(
                 score.toStringAsFixed(0),
@@ -220,7 +238,7 @@ class CircularScoreIndicator extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall,
+          style: FluentTheme.of(context).typography.caption,
           textAlign: TextAlign.center,
         ),
       ],

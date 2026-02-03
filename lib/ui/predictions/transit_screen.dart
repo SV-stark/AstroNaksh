@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/transit_analysis.dart';
-import 'package:intl/intl.dart';
 
 class TransitScreen extends StatefulWidget {
   final CompleteChartData natalChart;
@@ -12,17 +11,15 @@ class TransitScreen extends StatefulWidget {
   State<TransitScreen> createState() => _TransitScreenState();
 }
 
-class _TransitScreenState extends State<TransitScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _TransitScreenState extends State<TransitScreen> {
   late DateTime _selectedDate;
   late TransitAnalysis _transitAnalysis;
   TransitChart? _transitChart;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
     _selectedDate = DateTime.now();
     _transitAnalysis = TransitAnalysis();
     _loadTransits();
@@ -33,99 +30,91 @@ class _TransitScreenState extends State<TransitScreen>
       widget.natalChart,
       _selectedDate,
     );
-    setState(() {
-      _transitChart = chart;
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    if (mounted) {
+      setState(() {
+        _transitChart = chart;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return NavigationView(
+      appBar: NavigationAppBar(
         title: const Text('Transit Analysis'),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: const [
-            Tab(text: 'Current', icon: Icon(Icons.schedule, size: 20)),
-            Tab(text: 'Aspects', icon: Icon(Icons.aspect_ratio, size: 20)),
-            Tab(text: 'Special', icon: Icon(Icons.star, size: 20)),
-            Tab(text: 'Daily', icon: Icon(Icons.calendar_today, size: 20)),
-          ],
-        ),
+        leading:
+            const SizedBox.shrink(), // Back button handled by Navigator if using wrapping/context
+        // Note: NavigationView inside a pushed route might need manual leading if it overwrites the scaffold's appBar area completely
+        // without inheriting FluentPageRoute traits directly.
+        // Usually NavigationView is root. If used as page, standard is ScaffoldPage.
+        // If we want tabs, we use NavigationView with top pane.
       ),
-      body: _transitChart == null
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                _buildDateSelector(),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildCurrentTransitsTab(),
-                      _buildAspectsTab(),
-                      _buildSpecialTransitsTab(),
-                      _buildPredictionsTab(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      pane: NavigationPane(
+        selected: _currentIndex,
+        onChanged: (index) => setState(() => _currentIndex = index),
+        displayMode: PaneDisplayMode.top,
+        items: [
+          PaneItem(
+            icon: const Icon(FluentIcons.clock),
+            title: const Text('Current'),
+            body: _buildBody(_buildCurrentTransitsTab),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.switch_widget),
+            title: const Text('Aspects'),
+            body: _buildBody(_buildAspectsTab),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.favorite_star),
+            title: const Text('Special'),
+            body: _buildBody(_buildSpecialTransitsTab),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.calendar),
+            title: const Text('Daily'),
+            body: _buildBody(_buildPredictionsTab),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(Widget Function() builder) {
+    if (_transitChart == null) {
+      return const Center(child: ProgressRing());
+    }
+    return ScaffoldPage(
+      header: PageHeader(title: _buildDateSelector()),
+      content: Padding(
+        // Add padding around the content
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: builder(),
+      ),
     );
   }
 
   Widget _buildDateSelector() {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_month, color: Colors.blue),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                DateFormat('EEEE, MMM d, yyyy').format(_selectedDate),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit_calendar),
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(2100),
-                );
-                if (picked != null && picked != _selectedDate) {
-                  setState(() {
-                    _selectedDate = picked;
-                  });
-                  _loadTransits();
-                }
-              },
-            ),
-          ],
+    // Fluent UI DatePicker is inline. We can wrap it nicely.
+    // Or just return it.
+    return Row(
+      children: [
+        const Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(width: 8),
+        DatePicker(
+          selected: _selectedDate,
+          onChanged: (date) {
+            setState(() => _selectedDate = date);
+            _loadTransits();
+          },
         ),
-      ),
+      ],
     );
   }
 
   Widget _buildCurrentTransitsTab() {
     final transit = _transitChart!;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: 20),
       children: [
         Card(
           child: Padding(
@@ -133,9 +122,9 @@ class _TransitScreenState extends State<TransitScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Gochara Positions',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: FluentTheme.of(context).typography.subtitle,
                 ),
                 const SizedBox(height: 12),
                 const Text(
@@ -153,7 +142,9 @@ class _TransitScreenState extends State<TransitScreen>
                     child: Row(
                       children: [
                         Icon(
-                          isFavorable ? Icons.check_circle : Icons.warning,
+                          isFavorable
+                              ? FluentIcons.completed
+                              : FluentIcons.warning,
                           color: isFavorable ? Colors.green : Colors.orange,
                           size: 20,
                         ),
@@ -191,25 +182,26 @@ class _TransitScreenState extends State<TransitScreen>
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: 20),
       children: aspects.map((aspect) {
         final tPlanet = aspect.transitPlanet.toString().split('.').last;
         final nPlanet = aspect.natalPlanet.toString().split('.').last;
         final aspectName = aspect.aspectType.toString().split('.').last;
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Icon(
-              _getAspectIcon(aspect.aspectType),
-              color: _getAspectColor(aspect.aspectType),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Card(
+            child: ListTile(
+              leading: Icon(
+                _getAspectIcon(aspect.aspectType),
+                color: _getAspectColor(aspect.aspectType),
+              ),
+              title: Text('$tPlanet $aspectName $nPlanet'),
+              subtitle: Text(
+                'Orb: ${aspect.orb.toStringAsFixed(1)}° • ${aspect.isApplying ? "Applying" : "Separating"}\n'
+                '${aspect.effect.nature.join(", ")}',
+              ),
             ),
-            title: Text('$tPlanet $aspectName $nPlanet'),
-            subtitle: Text(
-              'Orb: ${aspect.orb.toStringAsFixed(1)}° • ${aspect.isApplying ? "Applying" : "Separating"}\n'
-              '${aspect.effect.nature.join(", ")}',
-            ),
-            isThreeLine: true,
           ),
         );
       }).toList(),
@@ -220,12 +212,12 @@ class _TransitScreenState extends State<TransitScreen>
     final transit = _transitChart!;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: 20),
       children: [
         // Moon Transit
         _buildSpecialTransitCard(
           'Moon Transit',
-          Icons.nightlight,
+          FluentIcons.clear_night,
           Colors.blue,
           [
             'Nakshatra: ${transit.moonTransit.nakshatra}',
@@ -239,8 +231,8 @@ class _TransitScreenState extends State<TransitScreen>
         // Saturn Transit
         _buildSpecialTransitCard(
           'Saturn Transit',
-          Icons.ring_volume,
-          Colors.indigo,
+          FluentIcons.circle_ring,
+          Colors.purple,
           [
             'House: ${transit.saturnTransit.houseFromMoon} from natal Moon',
             if (transit.saturnTransit.isSadeSati)
@@ -255,8 +247,8 @@ class _TransitScreenState extends State<TransitScreen>
         // Jupiter Transit
         _buildSpecialTransitCard(
           'Jupiter Transit',
-          Icons.auto_awesome,
-          Colors.yellow.shade700,
+          FluentIcons.asterisk,
+          Colors.yellow,
           [
             'House: ${transit.jupiterTransit.houseFromMoon} from natal Moon',
             'Status: ${transit.jupiterTransit.isBenefic ? "Benefic" : "Challenging"}',
@@ -268,7 +260,7 @@ class _TransitScreenState extends State<TransitScreen>
         // Rahu-Ketu Transit
         _buildSpecialTransitCard(
           'Rahu-Ketu Transit',
-          Icons.change_circle,
+          FluentIcons.sync_occurence,
           Colors.purple,
           [
             'Rahu in sign ${transit.rahuKetuTransit.rahuSign + 1}',
@@ -290,60 +282,60 @@ class _TransitScreenState extends State<TransitScreen>
     List<String> details,
     List<String> recommendations,
   ) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: ExpansionTile(
-        leading: Icon(icon, color: color),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (details.isNotEmpty) ...[
-                  const Text(
-                    'Details:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Expander(
+        header: Row(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(width: 12),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (details.isNotEmpty) ...[
+              const Text(
+                'Details:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              ...details.map(
+                (detail) => Padding(
+                  padding: const EdgeInsets.only(left: 8, bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('• '),
+                      Expanded(child: Text(detail)),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  ...details.map(
-                    (detail) => Padding(
-                      padding: const EdgeInsets.only(left: 8, bottom: 4),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('• '),
-                          Expanded(child: Text(detail)),
-                        ],
-                      ),
-                    ),
+                ),
+              ),
+            ],
+            if (recommendations.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              const Text(
+                'Recommendations:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              ...recommendations.map(
+                (rec) => Padding(
+                  padding: const EdgeInsets.only(left: 8, bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(FluentIcons.chevron_right_small, size: 16),
+                      Expanded(child: Text(rec)),
+                    ],
                   ),
-                ],
-                if (recommendations.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Recommendations:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  ...recommendations.map(
-                    (rec) => Padding(
-                      padding: const EdgeInsets.only(left: 8, bottom: 4),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.arrow_right, size: 16),
-                          Expanded(child: Text(rec)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -355,20 +347,20 @@ class _TransitScreenState extends State<TransitScreen>
     );
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: 20),
       children: [
         Card(
-          color: Colors.blue.shade50,
+          backgroundColor: Colors.blue.withOpacity(0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.star, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text(
+                    Icon(FluentIcons.favorite_star, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    const Text(
                       'Daily Guidance',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -390,9 +382,9 @@ class _TransitScreenState extends State<TransitScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'General Timing Advice',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: FluentTheme.of(context).typography.subtitle,
                 ),
                 const SizedBox(height: 12),
                 _buildTimingAdvice(),
@@ -408,7 +400,6 @@ class _TransitScreenState extends State<TransitScreen>
     final transit = _transitChart!;
     final advice = <String>[];
 
-    // Check favorable aspects
     final favorableAspects = transit.aspects
         .where(
           (a) =>
@@ -421,7 +412,6 @@ class _TransitScreenState extends State<TransitScreen>
       advice.add('✓ Good time for new ventures and collaborations');
     }
 
-    // Check challenging aspects
     final challengingAspects = transit.aspects
         .where(
           (a) =>
@@ -434,12 +424,10 @@ class _TransitScreenState extends State<TransitScreen>
       advice.add('⚠ Exercise caution with major decisions');
     }
 
-    // Jupiter advice
     if (transit.jupiterTransit.isBenefic) {
       advice.add('✓ Favorable for learning and spiritual growth');
     }
 
-    // Saturn advice
     if (transit.saturnTransit.isSadeSati) {
       advice.add('⚠ Focus on discipline and long-term planning');
     }
@@ -464,15 +452,15 @@ class _TransitScreenState extends State<TransitScreen>
   IconData _getAspectIcon(AspectType type) {
     switch (type) {
       case AspectType.conjunction:
-        return Icons.radio_button_checked;
+        return FluentIcons.radio_bullet;
       case AspectType.opposition:
-        return Icons.sync_alt;
+        return FluentIcons.sync_occurence;
       case AspectType.square:
-        return Icons.crop_square;
+        return FluentIcons.checkbox;
       case AspectType.trine:
-        return Icons.change_history;
+        return FluentIcons.triangle_solid;
       case AspectType.sextile:
-        return Icons.hexagon_outlined;
+        return FluentIcons.hexagon;
     }
   }
 

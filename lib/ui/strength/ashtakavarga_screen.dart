@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/ashtakavarga.dart';
-import '../widgets/strength_meter.dart';
 
 class AshtakavargaScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -12,9 +11,8 @@ class AshtakavargaScreen extends StatefulWidget {
   State<AshtakavargaScreen> createState() => _AshtakavargaScreenState();
 }
 
-class _AshtakavargaScreenState extends State<AshtakavargaScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
+  int _currentIndex = 0;
   String _selectedPlanet = 'Sun';
   bool _showSodhana = false;
 
@@ -44,33 +42,39 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen>
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ashtakavarga Analysis'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Sarvashtakavarga'),
-            Tab(text: 'Bhinnashtakavarga'),
-          ],
-        ),
+    return NavigationView(
+      appBar: const NavigationAppBar(
+        title: Text('Ashtakavarga Analysis'),
+        leading: SizedBox.shrink(),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [_buildSarvashtakavargaTab(), _buildBhinnashtakavargaTab()],
+      pane: NavigationPane(
+        selected: _currentIndex,
+        onChanged: (index) => setState(() => _currentIndex = index),
+        displayMode: PaneDisplayMode.top,
+        items: [
+          PaneItem(
+            icon: const Icon(FluentIcons.table),
+            title: const Text('Sarvashtakavarga'),
+            body: _buildBody(_buildSarvashtakavargaTab()),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.pie_single),
+            title: const Text('Bhinnashtakavarga'),
+            body: _buildBody(_buildBhinnashtakavargaTab()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(Widget content) {
+    return ScaffoldPage(
+      content: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+          child: content,
+        ),
       ),
     );
   }
@@ -82,308 +86,72 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen>
           )
         : AshtakavargaSystem.calculateSarvashtakavarga(widget.chartData);
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Educational info
-          Card(
-            margin: const EdgeInsets.all(16),
-            color: Colors.blue.shade50,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.info_outline, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text(
-                        'About Sarvashtakavarga',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Sarvashtakavarga shows the total benefic points (0-8) for each sign from all seven planets. '
-                    'Higher points indicate more favorable results. Signs with 4+ points are generally favorable.',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Sodhana toggle
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Educational info
+        Card(
+          backgroundColor: Colors.blue.withOpacity(0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Apply Sodhana (Reduction)',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Switch(
-                  value: _showSodhana,
-                  onChanged: (value) {
-                    setState(() {
-                      _showSodhana = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Points table
-          _buildPointsTable(sarva),
-
-          const SizedBox(height: 16),
-
-          // Visual heat map
-          _buildHeatMap(sarva),
-
-          const SizedBox(height: 16),
-
-          // Summary
-          _buildSummary(sarva),
-
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPointsTable(Map<int, int> sarva) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Points Distribution',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            Table(
-              border: TableBorder.all(color: Colors.grey.shade300),
-              children: [
-                // Header
-                TableRow(
-                  decoration: BoxDecoration(color: Colors.grey.shade100),
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        'Sign',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        'Points',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        'Status',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
+                Row(
+                  children: [
+                    Icon(FluentIcons.info, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'About Sarvashtakavarga',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
                   ],
                 ),
-                // Data rows
-                ...List.generate(12, (index) {
-                  final points = sarva[index] ?? 0;
-                  final status = points >= 5
-                      ? 'Very Good'
-                      : points >= 4
-                      ? 'Good'
-                      : points >= 3
-                      ? 'Moderate'
-                      : 'Weak';
-                  final statusColor = points >= 5
-                      ? Colors.green
-                      : points >= 4
-                      ? Colors.lightGreen
-                      : points >= 3
-                      ? Colors.orange
-                      : Colors.red;
-
-                  return TableRow(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(_signNames[index]),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          points.toString(),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: statusColor,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          status,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 12, color: statusColor),
-                        ),
-                      ),
-                    ],
-                  );
-                }),
+                const SizedBox(height: 8),
+                const Text(
+                  'Sarvashtakavarga shows the total benefic points for each sign from all seven planets. '
+                  'Higher points indicate more favorable results. Average is 28 points per sign.',
+                  style: TextStyle(fontSize: 14),
+                ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
 
-  Widget _buildHeatMap(Map<int, int> sarva) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: 16),
+
+        // Sodhana toggle
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'Visual Heat Map',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              'Apply Sodhana (Reduction)',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                childAspectRatio: 2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: 12,
-              itemBuilder: (context, index) {
-                final points = sarva[index] ?? 0;
-                final intensity = points / 8.0;
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Color.lerp(
-                      Colors.red.shade100,
-                      Colors.green.shade400,
-                      intensity,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _signNames[index],
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        points.toString(),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+            ToggleSwitch(
+              checked: _showSodhana,
+              onChanged: (value) {
+                setState(() {
+                  _showSodhana = value;
+                });
               },
             ),
           ],
         ),
-      ),
-    );
-  }
 
-  Widget _buildSummary(Map<int, int> sarva) {
-    final totalPoints = sarva.values.reduce((a, b) => a + b);
-    final avgPoints = totalPoints / 12;
-    final strongSigns = sarva.entries
-        .where((e) => e.value >= 5)
-        .map((e) => e.key)
-        .toList();
-    final weakSigns = sarva.entries
-        .where((e) => e.value < 3)
-        .map((e) => e.key)
-        .toList();
+        const SizedBox(height: 16),
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Summary',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            _buildSummaryRow('Total Points', totalPoints.toString()),
-            _buildSummaryRow('Average Points', avgPoints.toStringAsFixed(2)),
-            _buildSummaryRow(
-              'Strong Signs (5+)',
-              strongSigns.map((i) => _signNames[i]).join(', '),
-            ),
-            _buildSummaryRow(
-              'Weak Signs (<3)',
-              weakSigns.map((i) => _signNames[i]).join(', '),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+        // Points table
+        _buildPointsTable(sarva),
 
-  Widget _buildSummaryRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 140,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.black87)),
-          ),
-        ],
-      ),
+        const SizedBox(height: 16),
+
+        // Sign strengths heat map
+        _buildHeatMap(sarva),
+      ],
     );
   }
 
@@ -393,174 +161,243 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen>
       _selectedPlanet,
     );
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Educational info
-          Card(
-            margin: const EdgeInsets.all(16),
-            color: Colors.purple.shade50,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.info_outline, color: Colors.purple),
-                      SizedBox(width: 8),
-                      Text(
-                        'About Bhinnashtakavarga',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Educational info
+        Card(
+          backgroundColor: Colors.purple.withOpacity(0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(FluentIcons.info, color: Colors.purple),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'About Bhinnashtakavarga',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Bhinnashtakavarga shows benefic points for a specific planet across all 12 signs. '
-                    'These points help determine when and where a planet will give good results.',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Bhinnashtakavarga shows benefic points contributed by a single planet. '
+                  'Range is 0-8. 4 points is average strength for a house.',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ],
             ),
           ),
+        ),
 
-          // Planet selector
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: DropdownButtonFormField<String>(
-              value: _selectedPlanet,
-              decoration: const InputDecoration(
-                labelText: 'Select Planet',
-                border: OutlineInputBorder(),
+        const SizedBox(height: 16),
+
+        // Planet selector
+        const Text(
+          'Select Planet:',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _planets.map((planet) {
+            final isSelected = _selectedPlanet == planet;
+            return Button(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                  isSelected ? Colors.purple.withValues(alpha: 0.1) : null,
+                ),
               ),
-              items: _planets.map((planet) {
-                return DropdownMenuItem(value: planet, child: Text(planet));
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedPlanet = value;
-                  });
-                }
+              onPressed: () {
+                setState(() {
+                  _selectedPlanet = planet;
+                });
               },
-            ),
+              child: Text(planet),
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Points list for planet
+        _buildPointsTable(bhinna, isBhinna: true),
+
+        const SizedBox(height: 16),
+
+        // Heat map
+        _buildHeatMap(bhinna, isBhinna: true),
+      ],
+    );
+  }
+
+  Widget _buildPointsTable(Map<int, int> pointsMap, {bool isBhinna = false}) {
+    return Card(
+      child: Table(
+        border: TableBorder.symmetric(
+          inside: BorderSide(color: Colors.white.withOpacity(0.2), width: 0.5),
+        ),
+        children: [
+          // Header
+          const TableRow(
+            decoration: BoxDecoration(color: Color(0x0A000000)),
+            children: [
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Sign Name',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Points',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Status',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
+          // Data rows
+          ...List.generate(12, (index) {
+            final points = pointsMap[index] ?? 0;
 
-          const SizedBox(height: 16),
+            Color statusColor;
+            String statusText;
 
-          // Planet-specific points table
-          _buildBhinnaPointsTable(bhinna),
+            if (isBhinna) {
+              if (points >= 6) {
+                statusText = 'Very Strong';
+                statusColor = Colors.green;
+              } else if (points >= 4) {
+                statusText = 'Strong';
+                statusColor = Colors.teal;
+              } else if (points >= 3) {
+                statusText = 'Average';
+                statusColor = Colors.orange;
+              } else {
+                statusText = 'Weak';
+                statusColor = Colors.red;
+              }
+            } else {
+              // Sarva logic
+              if (points >= 32) {
+                statusText = 'Very Strong';
+                statusColor = Colors.green;
+              } else if (points >= 28) {
+                statusText = 'Strong';
+                statusColor = Colors.teal;
+              } else if (points >= 25) {
+                statusText = 'Average';
+                statusColor = Colors.orange;
+              } else {
+                statusText = 'Weak';
+                statusColor = Colors.red;
+              }
+            }
 
-          const SizedBox(height: 16),
-
-          // Favorable/Unfavorable signs
-          _buildFavorableUnfavorable(bhinna),
-
-          const SizedBox(height: 32),
+            return TableRow(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(_signNames[index]),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    points.toString(),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    statusText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: statusColor),
+                  ),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildBhinnaPointsTable(Map<int, int> bhinna) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$_selectedPlanet Bhinnashtakavarga',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(12, (index) {
-              final points = bhinna[index] ?? 0;
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    SizedBox(width: 100, child: Text(_signNames[index])),
-                    Expanded(
-                      child: StrengthMeter(
-                        value: (points / 8.0) * 100,
-                        label: '$points points',
-                        showPercentage: false,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFavorableUnfavorable(Map<int, int> bhinna) {
-    final favorable = bhinna.entries
-        .where((e) => e.value >= 4)
-        .map((e) => e.key)
-        .toList();
-    final unfavorable = bhinna.entries
-        .where((e) => e.value < 3)
-        .map((e) => e.key)
-        .toList();
+  Widget _buildHeatMap(Map<int, int> points, {bool isBhinna = false}) {
+    // Determine max for normalization
+    final maxValue = isBhinna ? 8.0 : 40.0;
+    final color = isBhinna ? Colors.purple : Colors.blue;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Analysis',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              'Distribution Visualization',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                const SizedBox(width: 8),
-                const Text(
-                  'Favorable Signs:',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              favorable.isEmpty
-                  ? 'None'
-                  : favorable.map((i) => _signNames[i]).join(', '),
-              style: const TextStyle(color: Colors.green),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.cancel, color: Colors.red, size: 20),
-                const SizedBox(width: 8),
-                const Text(
-                  'Unfavorable Signs:',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              unfavorable.isEmpty
-                  ? 'None'
-                  : unfavorable.map((i) => _signNames[i]).join(', '),
-              style: const TextStyle(color: Colors.red),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: List.generate(12, (index) {
+                final pt = points[index] ?? 0;
+                final intensity = (pt / maxValue).clamp(0.0, 1.0);
+                return Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(intensity),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _signNames[index].substring(0, 3),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: intensity > 0.5 ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      Text(
+                        pt.toString(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: intensity > 0.5 ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ),
           ],
         ),

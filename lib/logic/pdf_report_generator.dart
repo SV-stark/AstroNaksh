@@ -105,7 +105,7 @@ class PdfReportGenerator {
           children: [
             pw.Header(level: 0, child: pw.Text('Planetary Positions')),
             pw.SizedBox(height: 20),
-            pw.Table.fromTextArray(
+            pw.TableHelper.fromTextArray(
               headers: rows.first,
               data: rows.skip(1).toList(),
               border: pw.TableBorder.all(),
@@ -147,7 +147,7 @@ class PdfReportGenerator {
           children: [
             pw.Header(level: 0, child: pw.Text('House Cusps')),
             pw.SizedBox(height: 20),
-            pw.Table.fromTextArray(
+            pw.TableHelper.fromTextArray(
               headers: rows.first,
               data: rows.skip(1).toList(),
               border: pw.TableBorder.all(),

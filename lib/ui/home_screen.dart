@@ -179,10 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
                             ),
                             trailing: IconButton(
-                              icon: const Icon(
-                                FluentIcons.delete,
-                                color: Colors.red, // Colors.red from Fluent
-                              ),
+                              icon: Icon(FluentIcons.delete, color: Colors.red),
                               onPressed: () async {
                                 await _dbHelper.deleteChart(chart['id']);
                                 _loadCharts();

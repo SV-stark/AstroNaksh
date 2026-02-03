@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../data/models.dart';
 import '../../logic/pdf_report_generator.dart';
@@ -32,13 +32,13 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Generate PDF Report')),
-      body: ListView(
+    return ScaffoldPage(
+      header: const PageHeader(title: Text('Generate PDF Report')),
+      content: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            color: Colors.teal.shade50,
+            backgroundColor: Colors.teal.withOpacity(0.1),
             child: const Padding(
               padding: EdgeInsets.all(16),
               child: Column(
@@ -73,39 +73,37 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: _reportType,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ComboBox<String>(
+                      value: _reportType,
+                      items: const [
+                        ComboBoxItem(
+                          value: 'basic',
+                          child: Text('Basic Report'),
+                        ),
+                        ComboBoxItem(
+                          value: 'standard',
+                          child: Text('Standard Report'),
+                        ),
+                        ComboBoxItem(
+                          value: 'comprehensive',
+                          child: Text('Comprehensive Report'),
+                        ),
+                        ComboBoxItem(
+                          value: 'custom',
+                          child: Text('Custom Report'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _reportType = value;
+                            _updateSectionsByType(value);
+                          });
+                        }
+                      },
                     ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'basic',
-                        child: Text('Basic Report'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'standard',
-                        child: Text('Standard Report'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'comprehensive',
-                        child: Text('Comprehensive Report'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'custom',
-                        child: Text('Custom Report'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _reportType = value!;
-                        _updateSectionsByType(value);
-                      });
-                    },
                   ),
                 ],
               ),
@@ -131,16 +129,17 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                     ),
                     const SizedBox(height: 12),
                     ..._sections.entries.map((entry) {
-                      return CheckboxListTile(
-                        title: Text(entry.key),
-                        value: entry.value,
-                        onChanged: (value) {
-                          setState(() {
-                            _sections[entry.key] = value ?? false;
-                          });
-                        },
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Checkbox(
+                          content: Text(entry.key),
+                          checked: entry.value,
+                          onChanged: (value) {
+                            setState(() {
+                              _sections[entry.key] = value ?? false;
+                            });
+                          },
+                        ),
                       );
                     }),
                   ],
@@ -151,22 +150,30 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
           const SizedBox(height: 24),
 
           // Generate button
-          ElevatedButton.icon(
+          FilledButton(
             onPressed: _isGenerating ? null : _generateReport,
-            icon: _isGenerating
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.picture_as_pdf),
-            label: Text(
-              _isGenerating ? 'Generating...' : 'Generate PDF Report',
-            ),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(16),
-              backgroundColor: Colors.teal,
-              foregroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_isGenerating) ...[
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: ProgressRing(strokeWidth: 2),
+                    ),
+                    const SizedBox(width: 12),
+                  ] else ...[
+                    const Icon(FluentIcons.pdf),
+                    const SizedBox(width: 12),
+                  ],
+                  Text(
+                    _isGenerating ? 'Generating...' : 'Generate PDF Report',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -231,6 +238,11 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
         '_',
       ); // Sanitize filename
 
+      // Ensure directory exists
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
       final path = '${dir.path}${Platform.pathSeparator}$filename';
 
       await PdfReportGenerator.generateBirthChartReport(
@@ -241,28 +253,37 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Report saved to: $path'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 5),
-          action: SnackBarAction(
-            label: 'Open',
-            textColor: Colors.white,
-            onPressed: () {
-              // TODO: Open file
-            },
-          ),
-        ),
+      displayInfoBar(
+        context,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Report Generated'),
+            content: Text('Saved to: $path'),
+            severity: InfoBarSeverity.success,
+            action: Button(
+              onPressed: () {
+                // TODO: Open file
+                // On Windows strictly, we can use Process.run('explorer', [path])
+              },
+              child: const Text('Open'),
+            ),
+            onClose: close,
+          );
+        },
       );
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error generating report: $e'),
-          backgroundColor: Colors.red,
-        ),
+      displayInfoBar(
+        context,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Error'),
+            content: Text('Error generating report: $e'),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        },
       );
     } finally {
       if (mounted) {

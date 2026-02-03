@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../data/models.dart';
 import '../../logic/shadbala.dart';
@@ -13,24 +13,24 @@ class ShadbalaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final shadbalaData = ShadbalaCalculator.calculateShadbala(chartData);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Shadbala Analysis')),
-      body: ListView(
+    return ScaffoldPage(
+      header: const PageHeader(title: Text('Shadbala Analysis')),
+      content: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: [
           // Educational info
           Card(
-            margin: const EdgeInsets.all(16),
-            color: Colors.orange.shade50,
+            backgroundColor: Colors.orange.withOpacity(0.1),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    children: const [
-                      Icon(Icons.info_outline, color: Colors.orange),
-                      SizedBox(width: 8),
-                      Text(
+                    children: [
+                      Icon(FluentIcons.info, color: Colors.orange),
+                      const SizedBox(width: 8),
+                      const Text(
                         'About Shadbala',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -51,11 +51,17 @@ class ShadbalaScreen extends StatelessWidget {
             ),
           ),
 
+          const SizedBox(height: 16),
+
           // Overall strength ranking
           _buildStrengthRanking(context, shadbalaData),
 
+          const SizedBox(height: 16),
+
           // Comparative radar chart
           _buildRadarChart(context, shadbalaData),
+
+          const SizedBox(height: 16),
 
           // Individual planet cards
           ..._buildPlanetCards(context, shadbalaData),
@@ -75,7 +81,6 @@ class ShadbalaScreen extends StatelessWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return Card(
-      margin: const EdgeInsets.all(16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -97,9 +102,14 @@ class ShadbalaScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: _getPlanetColor(planetName),
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _getPlanetColor(planetName),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
                       child: Text(
                         '$rank',
                         style: const TextStyle(
@@ -142,7 +152,6 @@ class ShadbalaScreen extends StatelessWidget {
     Map<String, double> shadbalaData,
   ) {
     return Card(
-      margin: const EdgeInsets.all(16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -205,41 +214,44 @@ class ShadbalaScreen extends StatelessWidget {
       final planetName = entry.key;
       final totalStrength = entry.value;
 
-      return ExpandableInfoCard(
-        title: planetName,
-        summary:
-            'Total Strength: ${totalStrength.toStringAsFixed(2)} units - ${_getStrengthInterpretation(totalStrength)}',
-        icon: Icons.stars,
-        color: _getPlanetColor(planetName),
-        details: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Overall Strength:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  totalStrength.toStringAsFixed(1),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12.0),
+        child: ExpandableInfoCard(
+          title: planetName,
+          summary:
+              'Total Strength: ${totalStrength.toStringAsFixed(2)} units - ${_getStrengthInterpretation(totalStrength)}',
+          icon: FluentIcons.favorite_star,
+          color: _getPlanetColor(planetName),
+          details: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Overall Strength:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            StrengthMeter(
-              value: (totalStrength / 600) * 100,
-              label: _getStrengthInterpretation(totalStrength),
-              showPercentage: true,
-              color: _getPlanetColor(planetName),
-            ),
-            const SizedBox(height: 16),
-            _buildInterpretationText(planetName, totalStrength),
-          ],
+                  Text(
+                    totalStrength.toStringAsFixed(1),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              StrengthMeter(
+                value: (totalStrength / 600) * 100,
+                label: _getStrengthInterpretation(totalStrength),
+                showPercentage: true,
+                color: _getPlanetColor(planetName),
+              ),
+              const SizedBox(height: 16),
+              _buildInterpretationText(planetName, totalStrength),
+            ],
+          ),
         ),
       );
     }).toList();
@@ -267,7 +279,7 @@ class ShadbalaScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -290,17 +302,17 @@ class ShadbalaScreen extends StatelessWidget {
       case 'Sun':
         return Colors.orange;
       case 'Moon':
-        return Colors.blue.shade200;
+        return const Color(0xFFADD8E6); // Light Blue
       case 'Mars':
         return Colors.red;
       case 'Mercury':
         return Colors.green;
       case 'Jupiter':
-        return Colors.yellow.shade700;
+        return Colors.yellow;
       case 'Venus':
-        return Colors.pink;
+        return Colors.magenta; // Pinkish
       case 'Saturn':
-        return Colors.indigo;
+        return Colors.purple; // Indigo replacement
       default:
         return Colors.grey;
     }

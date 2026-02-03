@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/bhava_bala.dart';
-import '../widgets/strength_meter.dart';
 
 class BhavaBalaScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -26,39 +25,47 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
       houses.sort(
         (a, b) => b.value.totalStrength.compareTo(a.value.totalStrength),
       );
+    } else {
+      houses.sort((a, b) => a.key.compareTo(b.key));
     }
 
-    return Scaffold(
-      appBar: AppBar(
+    return ScaffoldPage(
+      header: PageHeader(
         title: const Text('Bhava Bala (House Strength)'),
-        actions: [
-          IconButton(
-            icon: Icon(_sortByStrength ? Icons.sort : Icons.sort_by_alpha),
-            tooltip: _sortByStrength ? 'Sort by Number' : 'Sort by Strength',
-            onPressed: () {
-              setState(() {
-                _sortByStrength = !_sortByStrength;
-              });
-            },
-          ),
-        ],
+        commandBar: CommandBar(
+          primaryItems: [
+            CommandBarButton(
+              icon: Icon(
+                _sortByStrength ? FluentIcons.sort : FluentIcons.sort_lines,
+              ),
+              label: Text(
+                _sortByStrength ? 'Sort by Number' : 'Sort by Strength',
+              ),
+              onPressed: () {
+                setState(() {
+                  _sortByStrength = !_sortByStrength;
+                });
+              },
+            ),
+          ],
+        ),
       ),
-      body: ListView(
+      content: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: [
           // Educational info
           Card(
-            margin: const EdgeInsets.all(16),
-            color: Colors.teal.shade50,
+            backgroundColor: Colors.teal.withOpacity(0.1),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    children: const [
-                      Icon(Icons.info_outline, color: Colors.teal),
-                      SizedBox(width: 8),
-                      Text(
+                    children: [
+                      Icon(FluentIcons.info, color: Colors.teal),
+                      const SizedBox(width: 8),
+                      const Text(
                         'About Bhava Bala',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -79,8 +86,12 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
             ),
           ),
 
+          const SizedBox(height: 16),
+
           // House strength grid
           _buildHouseGrid(houses),
+
+          const SizedBox(height: 16),
 
           // Detailed house cards
           ...houses.map((entry) => _buildHouseCard(entry.key, entry.value)),
@@ -93,195 +104,158 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
 
   Widget _buildHouseGrid(List<MapEntry<int, BhavaStrength>> houses) {
     return Card(
-      margin: const EdgeInsets.all(16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'House Strength Overview',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              'Strength Distribution',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 1.2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: 12,
-              itemBuilder: (context, index) {
-                final house = houses[index].key;
-                final strength = houses[index].value;
-                return _buildHouseGridItem(house, strength);
-              },
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: houses.map((entry) {
+                final strength = entry.value.totalStrength;
+                return Container(
+                  width: 80,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _getStrengthColor(strength).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: _getStrengthColor(strength).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'H${entry.key}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        strength.toStringAsFixed(0),
+                        style: TextStyle(
+                          color: _getStrengthColor(strength),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHouseGridItem(int house, BhavaStrength strength) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            _getStrengthColor(strength.totalStrength),
-            _getStrengthColor(strength.totalStrength).withOpacity(0.7),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            _getHouseNumber(house),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          GradeBadge(grade: strength.grade, size: 28),
-          const SizedBox(height: 4),
-          Text(
-            strength.totalStrength.toStringAsFixed(0),
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildHouseCard(int house, BhavaStrength strength) {
-    return ExpandableInfoCard(
-      title: _getHouseName(house),
-      summary: strength.interpretation,
-      icon: _getHouseIcon(house),
-      color: _getStrengthColor(strength.totalStrength),
-      details: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Total strength
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Overall Strength:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Expander(
+        header: Row(
+          children: [
+            Icon(_getHouseIcon(house), size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GradeBadge(grade: strength.grade),
-                  const SizedBox(width: 8),
                   Text(
-                    strength.totalStrength.toStringAsFixed(1),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    'House $house - ${_getHouseName(house)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Total Strength: ${strength.totalStrength.toStringAsFixed(2)} units',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _getStrengthColor(strength.totalStrength),
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Strength components
-          const Text(
-            'Strength Components:',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 12),
-          ...strength.components.entries.map((comp) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: StrengthMeter(
-                value: (comp.value / 60) * 100,
-                label: comp.key,
-                showPercentage: false,
-              ),
-            );
-          }),
-          const SizedBox(height: 16),
-
-          // House significations
-          _buildSignifications(house),
-        ],
+            ),
+          ],
+        ),
+        content: Column(
+          children: [
+            _buildBalaRow(
+              'Adhipati Bala (Lord Strength)',
+              strength.components['Lord Strength'] ?? 0.0,
+            ),
+            _buildBalaRow(
+              'Dig Bala (Directional)',
+              strength.components['Directional'] ?? 0.0,
+            ),
+            _buildBalaRow(
+              'Drishti Bala (Aspect)',
+              strength.components['Aspects'] ?? 0.0,
+            ),
+            _buildBalaRow(
+              'Occupant Strength',
+              strength.components['Occupants'] ?? 0.0,
+            ),
+            const Divider(),
+            _buildBalaRow(
+              'Total Strength',
+              strength.totalStrength,
+              isTotal: true,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _getHouseSignifications(house),
+              style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSignifications(int house) {
-    final significations = _getHouseSignifications(house);
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildBalaRow(String label, double value, {bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'House Significations:',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
-          const SizedBox(height: 6),
-          Text(significations, style: const TextStyle(fontSize: 12)),
+          Text(
+            value.toStringAsFixed(2),
+            style: TextStyle(
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isTotal ? _getStrengthColor(value) : null,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  String _getHouseNumber(int house) {
-    const ordinals = [
-      '1st',
-      '2nd',
-      '3rd',
-      '4th',
-      '5th',
-      '6th',
-      '7th',
-      '8th',
-      '9th',
-      '10th',
-      '11th',
-      '12th',
-    ];
-    return ordinals[house - 1];
+  Color _getStrengthColor(double value) {
+    if (value >= 500) return Colors.green;
+    if (value >= 400) return Colors.teal;
+    if (value >= 300) return Colors.orange;
+    return Colors.red;
   }
 
   String _getHouseName(int house) {
     const names = [
-      '1st House - Self & Personality',
+      'Ascendant - Self & Body',
       '2nd House - Wealth & Family',
-      '3rd House - Siblings & Courage',
-      '4th House - Home & Mother',
-      '5th House - Children & Intelligence',
-      '6th House - Health & Enemies',
-      '7th House - Spouse & Partnerships',
+      '3rd House - Courage & Skills',
+      '4th House - Happiness & Home',
+      '5th House - Intelligence & Children',
+      '6th House - Debts & Diseases',
+      '7th House - Partners & Marriage',
       '8th House - Longevity & Transformation',
       '9th House - Fortune & Dharma',
       '10th House - Career & Status',
@@ -292,21 +266,34 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
   }
 
   IconData _getHouseIcon(int house) {
-    const icons = [
-      Icons.person,
-      Icons.account_balance_wallet,
-      Icons.groups,
-      Icons.home,
-      Icons.child_care,
-      Icons.healing,
-      Icons.favorite,
-      Icons.transform,
-      Icons.star,
-      Icons.work,
-      Icons.attach_money,
-      Icons.spa,
-    ];
-    return icons[house - 1];
+    // Better mapping:
+    switch (house) {
+      case 1:
+        return FluentIcons.contact;
+      case 2:
+        return FluentIcons.money;
+      case 3:
+        return FluentIcons.group;
+      case 4:
+        return FluentIcons.home;
+      case 5:
+        return FluentIcons.education; // Intelligence
+      case 6:
+        return FluentIcons.health;
+      case 7:
+        return FluentIcons.people; // Partnerships
+      case 8:
+        return FluentIcons.lightning_bolt; // Sudden events
+      case 9:
+        return FluentIcons.compass_n_w; // Long journeys/Dharma
+      case 10:
+        return FluentIcons.calendar; // Placeholder for Career
+      case 11:
+        return FluentIcons.savings;
+      case 12:
+        return FluentIcons.sign_out; // Exit/Losses
+    }
+    return FluentIcons.circle_ring;
   }
 
   String _getHouseSignifications(int house) {
@@ -315,23 +302,15 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
       'Accumulated wealth, family, speech, food, early education, values',
       'Younger siblings, courage, short journeys, communication, skills, efforts',
       'Mother, home, property, vehicles, comfort, emotional foundation, education',
-      'Children, creativity, romance, intelligence, speculation, past life merits',
-      'Enemies, diseases, debts, obstacles, competition, daily work, service',
-      'Spouse, marriage, partnerships, business relationships, public image',
-      'Longevity, sudden events, occult, inheritance, transformation, research',
-      'Father, guru, fortune, higher learning, religion, long journeys, dharma',
-      'Career, profession, status, authority, reputation, achievements, karma',
-      'Income, gains, fulfillment of desires, elder siblings, friends, social circle',
-      'Losses, expenses, foreign lands, spirituality, liberation, isolation, sleep',
+      'Children, creativity, romance, speculation, higher intelligence, purva punya',
+      'Health, debts, enemies, daily routine, service, pets, competition',
+      'Marriage, business partnerships, legal contracts, public image, open enemies',
+      'Longevity, secrets, obstacles, sudden changes, research, unearned wealth',
+      'Virtue, father, long journeys, higher education, philosophy, guru, merit',
+      'Profession, social status, reputation, authority, government, public life',
+      'Gains, wishes, elder siblings, social circle, networking, income',
+      'Spirituality, liberation, expenditures, losses, hospitals, foreign lands',
     ];
     return significations[house - 1];
-  }
-
-  Color _getStrengthColor(double strength) {
-    if (strength >= 80) return Colors.green;
-    if (strength >= 60) return Colors.lightGreen;
-    if (strength >= 40) return Colors.orange;
-    if (strength >= 20) return Colors.deepOrange;
-    return Colors.red;
   }
 }

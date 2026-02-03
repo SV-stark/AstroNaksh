@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/retrograde_analysis.dart';
 
@@ -11,30 +11,30 @@ class RetrogradeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final analysis = RetrogradeAnalysis.analyzeRetrogrades(chartData);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Retrograde Analysis')),
-      body: ListView(
+    return ScaffoldPage(
+      header: const PageHeader(title: Text('Retrograde Analysis')),
+      content: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            color: Colors.purple.shade50,
-            child: const Padding(
-              padding: EdgeInsets.all(16),
+            backgroundColor: Colors.purple.withOpacity(0.1),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.purple),
-                      SizedBox(width: 12),
-                      Text(
+                      Icon(FluentIcons.info, color: Colors.purple),
+                      const SizedBox(width: 12),
+                      const Text(
                         'About Retrograde Motion',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
-                  Text(
+                  const SizedBox(height: 8),
+                  const Text(
                     'When a planet appears to move backward in the sky, it is retrograde. '
                     'Retrograde planets internalize their energy and bring karmic lessons.',
                     style: TextStyle(fontSize: 13),
@@ -50,42 +50,44 @@ class RetrogradeScreen extends StatelessWidget {
             final planet = entry.key;
             final info = entry.value;
 
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: Icon(
-                  info.isRetrograde ? Icons.replay : Icons.arrow_forward,
-                  color: info.isRetrograde ? Colors.orange : Colors.green,
-                  size: 32,
-                ),
-                title: Text(
-                  planet,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Text(
-                      info.isRetrograde ? 'Retrograde ®' : 'Direct',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: info.isRetrograde ? Colors.orange : Colors.green,
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Card(
+                child: ListTile(
+                  leading: Icon(
+                    info.isRetrograde
+                        ? FluentIcons.history
+                        : FluentIcons.chevron_right,
+                    color: info.isRetrograde ? Colors.orange : Colors.green,
+                    size: 24,
+                  ),
+                  title: Text(
+                    planet,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Text(
+                        info.isRetrograde ? 'Retrograde ®' : 'Direct',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: info.isRetrograde
+                              ? Colors.orange
+                              : Colors.green,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(info.interpretation),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Frequency: ${RetrogradeAnalysis.getRetrogradeFrequency(planet)}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
+                      const SizedBox(height: 8),
+                      Text(info.interpretation),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Frequency: ${RetrogradeAnalysis.getRetrogradeFrequency(planet)}',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                isThreeLine: true,
               ),
             );
           }),

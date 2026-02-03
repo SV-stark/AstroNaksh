@@ -1,52 +1,48 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 class NorthIndianChartPainter extends CustomPainter {
-  final Map<int, List<String>> planetsBySign; // Key: Sign Index (0-11)
-  final int ascendantSign; // 1-12
-  final Color lineColor;
+  final Map<int, List<String>> planetsBySign;
+  final int ascendantSign;
   final Color textColor;
+  final Color borderColor;
 
   NorthIndianChartPainter({
     required this.planetsBySign,
     required this.ascendantSign,
-    this.lineColor = Colors.white,
-    this.textColor = Colors.white,
+    this.textColor = Colors.black,
+    this.borderColor = Colors.black,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = lineColor
-      ..strokeWidth = 1.5
+      ..color = borderColor
+      ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
     final width = size.width;
     final height = size.height;
 
-    // Draw the outer square
+    // 1. Draw Outer Square
     canvas.drawRect(Rect.fromLTWH(0, 0, width, height), paint);
 
-    // Draw diagonals
+    // 2. Draw Diagonals
     canvas.drawLine(Offset(0, 0), Offset(width, height), paint);
     canvas.drawLine(Offset(width, 0), Offset(0, height), paint);
 
-    // Draw diamonds (midpoints)
-    final path = Path()
-      ..moveTo(width / 2, 0)
-      ..lineTo(width, height / 2)
-      ..lineTo(width / 2, height)
-      ..lineTo(0, height / 2)
-      ..close();
-    canvas.drawPath(path, paint);
+    // 3. Draw Inner Diamond
+    canvas.drawLine(Offset(width / 2, 0), Offset(0, height / 2), paint);
+    canvas.drawLine(Offset(0, height / 2), Offset(width / 2, height), paint);
+    canvas.drawLine(
+      Offset(width / 2, height),
+      Offset(width, height / 2),
+      paint,
+    );
+    canvas.drawLine(Offset(width, height / 2), Offset(width / 2, 0), paint);
 
-    // Helper to draw text
+    // 4. Content Drawing logic
     void drawContent(int houseIndex, Offset center) {
       // Calculate Sign for this house
-      // House 1 (index 0) = Ascendant Sign
-      // Sign indices are 0-11
-      // AscendantSign is 1-based (1..12).
-      // So if Ascendant is 1 (Aries), House 1 (index 0) should be Sign 0 (Aries).
-      // Index = (Ascendant - 1 + HouseIndex) % 12
       final signIndex = ((ascendantSign - 1) + houseIndex) % 12;
       final signNumber = signIndex + 1; // 1-12
 
@@ -58,7 +54,6 @@ class NorthIndianChartPainter extends CustomPainter {
 
       // 2. Draw Planets
       final planets = planetsBySign[signIndex] ?? [];
-      // Combine planets with space
       final planetText = planets.join(' ');
 
       final planetSpan = TextSpan(
@@ -72,7 +67,7 @@ class NorthIndianChartPainter extends CustomPainter {
 
       final textSpan = TextSpan(
         children: [signSpan, planetSpan],
-        style: TextStyle(height: 1.2),
+        style: const TextStyle(height: 1.2),
       );
 
       final textPainter = TextPainter(
@@ -89,31 +84,25 @@ class NorthIndianChartPainter extends CustomPainter {
       textPainter.paint(canvas, offset);
     }
 
-    // Positions for 12 houses (Fixed Layout)
-    // House 1 (Top Diamond)
-    drawContent(0, Offset(width * 0.5, height * 0.25));
-    // House 2 (Top Left Triangle)
-    drawContent(1, Offset(width * 0.25, height * 0.08));
-    // House 3 (Left Top Triangle)
-    drawContent(2, Offset(width * 0.08, height * 0.25));
-    // House 4 (Left Diamond)
-    drawContent(3, Offset(width * 0.25, height * 0.5));
-    // House 5 (Left Bottom Triangle)
-    drawContent(4, Offset(width * 0.08, height * 0.75));
-    // House 6 (Bottom Left Triangle)
-    drawContent(5, Offset(width * 0.25, height * 0.92));
-    // House 7 (Bottom Diamond)
-    drawContent(6, Offset(width * 0.5, height * 0.75));
-    // House 8 (Bottom Right Triangle)
-    drawContent(7, Offset(width * 0.75, height * 0.92));
-    // House 9 (Right Bottom Triangle)
-    drawContent(8, Offset(width * 0.92, height * 0.75));
-    // House 10 (Right Diamond)
-    drawContent(9, Offset(width * 0.75, height * 0.5));
-    // House 11 (Right Top Triangle)
-    drawContent(10, Offset(width * 0.92, height * 0.25));
-    // House 12 (Top Right Triangle)
-    drawContent(11, Offset(width * 0.75, height * 0.08));
+    // House Centers (Approximate)
+    final centers = [
+      Offset(width / 2, height / 4), // 1st
+      Offset(width / 4, height / 8), // 2nd
+      Offset(width / 8, height / 4), // 3rd
+      Offset(width / 4, height / 2), // 4th
+      Offset(width / 8, height * 0.75), // 5th
+      Offset(width / 4, height * 0.875), // 6th
+      Offset(width / 2, height * 0.75), // 7th
+      Offset(width * 0.75, height * 0.875), // 8th
+      Offset(width * 0.875, height * 0.75), // 9th
+      Offset(width * 0.75, height / 2), // 10th
+      Offset(width * 0.875, height / 4), // 11th
+      Offset(width * 0.75, height / 8), // 12th
+    ];
+
+    for (int i = 0; i < 12; i++) {
+      drawContent(i, centers[i]);
+    }
   }
 
   @override

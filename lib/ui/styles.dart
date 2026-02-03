@@ -19,26 +19,13 @@ class AppStyles {
       accentColor: _createAccentColor(primaryColor),
       scaffoldBackgroundColor: backgroundColor,
       cardColor: surfaceColor,
-      typography: Typography.fromBrightness(brightness: Brightness.dark).apply(
-        display: TextStyle(
-          color: white,
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-        title: TextStyle(
-          color: white,
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-        ),
-        body: const TextStyle(color: Colors.white, fontSize: 16),
-      ),
+      typography: Typography.fromBrightness(brightness: Brightness.dark),
       iconTheme: const IconThemeData(color: white),
-      navigationPaneTheme: const NavigationPaneThemeData(
+      navigationPaneTheme: NavigationPaneThemeData(
         backgroundColor: surfaceColor,
         highlightColor: primaryColor,
-        selectedIconColor: ButtonState.all(accentColor),
-        unselectedIconColor: ButtonState.all(grey),
+        selectedIconColor: WidgetStateProperty.all(accentColor),
+        unselectedIconColor: WidgetStateProperty.all(grey),
       ),
     );
   }

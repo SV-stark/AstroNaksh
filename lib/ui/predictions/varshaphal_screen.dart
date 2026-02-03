@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 import '../../data/models.dart';
 import '../../logic/varshaphal_system.dart';
@@ -17,16 +17,16 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Varshaphal (Annual Chart)')),
-      body: FutureBuilder<VarshaphalChart>(
+    return ScaffoldPage(
+      header: const PageHeader(title: Text('Varshaphal (Annual Chart)')),
+      content: FutureBuilder<VarshaphalChart>(
         future: VarshaphalSystem.calculateVarshaphal(
           widget.birthData,
           _selectedYear,
         ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: ProgressRing());
           }
 
           if (snapshot.hasError) {
@@ -52,22 +52,25 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.remove),
+                            icon: const Icon(FluentIcons.remove),
                             onPressed: () {
                               setState(() {
                                 _selectedYear--;
                               });
                             },
                           ),
-                          Text(
-                            '$_selectedYear',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              '$_selectedYear',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.add),
+                            icon: const Icon(FluentIcons.add),
                             onPressed: () {
                               setState(() {
                                 _selectedYear++;
@@ -80,6 +83,8 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 16),
 
               // Solar return info
               Card(
@@ -105,6 +110,8 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 16),
 
               // Varshik Dasha
               Card(
@@ -143,6 +150,8 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                 ),
               ),
 
+              const SizedBox(height: 16),
+
               // Sahams
               Card(
                 child: Padding(
@@ -179,6 +188,8 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 16),
 
               // Yearly predictions
               Card(

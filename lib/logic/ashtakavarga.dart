@@ -6,7 +6,9 @@ class AshtakavargaSystem {
   /// Calculate Sarvashtakavarga (Total Points per Sign)
   static Map<int, int> calculateSarvashtakavarga(CompleteChartData chart) {
     Map<int, int> sarva = {};
-    for (int i = 0; i < 12; i++) sarva[i] = 0;
+    for (int i = 0; i < 12; i++) {
+      sarva[i] = 0;
+    }
 
     // Calculate Bhinnashtakavarga for each planet and sum up
     for (var planet in [
@@ -106,7 +108,9 @@ class AshtakavargaSystem {
     String planet,
   ) {
     Map<int, int> points = {};
-    for (int i = 0; i < 12; i++) points[i] = 0;
+    for (int i = 0; i < 12; i++) {
+      points[i] = 0;
+    }
 
     // Get positions (Sign indices 0-11) of all 7 planets + Ascendant
     Map<String, int> positions = _getPlanetSignPositions(chart);

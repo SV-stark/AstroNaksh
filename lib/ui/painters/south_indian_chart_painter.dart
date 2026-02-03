@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 class SouthIndianChartPainter extends CustomPainter {
   final Map<int, List<String>> planetsBySign; // Key: Sign Index (0-11)
@@ -26,12 +26,10 @@ class SouthIndianChartPainter extends CustomPainter {
     final cellWidth = width / 4;
     final cellHeight = height / 4;
 
-    // Draw grid
     // Outer border
     canvas.drawRect(Rect.fromLTWH(0, 0, width, height), paint);
 
     // Inner lines
-    // Rows
     canvas.drawLine(Offset(0, cellHeight), Offset(width, cellHeight), paint);
     canvas.drawLine(
       Offset(0, cellHeight * 2),
@@ -49,7 +47,6 @@ class SouthIndianChartPainter extends CustomPainter {
       paint,
     );
 
-    // Cols
     canvas.drawLine(Offset(cellWidth, 0), Offset(cellWidth, height), paint);
     canvas.drawLine(
       Offset(cellWidth * 2, 0),
@@ -66,20 +63,6 @@ class SouthIndianChartPainter extends CustomPainter {
       Offset(cellWidth * 3, height),
       paint,
     );
-
-    // Fixed South Indian Layout (Sign positions are fixed)
-    // 0: Aries (Top row, 2nd)
-    // 1: Taurus (Top row, 3rd)
-    // 2: Gemini (Top row, 4th)
-    // 3: Cancer (Right col, 2nd)
-    // 4: Leo (Right col, 3rd)
-    // 5: Virgo (Bottom row, 4th)
-    // 6: Libra (Bottom row, 3rd)
-    // 7: Scorpio (Bottom row, 2nd)
-    // 8: Sagittarius (Bottom row, 1st)
-    // 9: Capricorn (Left col, 3rd)
-    // 10: Aquarius (Left col, 2nd)
-    // 11: Pisces (Top row, 1st)
 
     final cellOffsets = [
       Offset(cellWidth * 1.5, cellHeight * 0.5), // Aries
@@ -100,10 +83,8 @@ class SouthIndianChartPainter extends CustomPainter {
       final planets = planetsBySign[i] ?? [];
       final displayList = List<String>.from(planets);
 
-      // Mark Ascendant
-      // ascendantSign is 1-12. Index is ascendantSign - 1.
       if (i == (ascendantSign - 1)) {
-        displayList.insert(0, "Asc"); // Or Lagna
+        displayList.insert(0, "Asc");
       }
 
       if (displayList.isEmpty) continue;

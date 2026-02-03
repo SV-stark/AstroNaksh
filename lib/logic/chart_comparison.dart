@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
 import 'kp_extensions.dart';

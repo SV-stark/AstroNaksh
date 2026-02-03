@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 /// Chart Customization Settings
 /// Manages user preferences for chart display
@@ -10,23 +10,23 @@ class ChartCustomization {
   bool showSigns = true;
   bool showDegrees = true;
   bool showNakshatras = false;
-  
+
   // Planet Display Settings
   bool showRetrograde = true;
   bool showCombust = true;
   bool showExaltedDebilitated = true;
   PlanetSize planetSize = PlanetSize.medium;
-  
+
   // House System Settings
   HouseSystem houseSystem = HouseSystem.placidus;
   bool showHouseCusps = true;
   bool showHouseNumbers = true;
-  
+
   // Chart Information Settings
   bool showBirthDetails = true;
   bool showAyanamsa = true;
   bool showCurrentDasha = true;
-  
+
   // PDF Report Settings
   bool pdfIncludeD1 = true;
   bool pdfIncludeD9 = true;
@@ -34,39 +34,41 @@ class ChartCustomization {
   bool pdfIncludeKP = true;
   bool pdfIncludeVargas = false;
   bool pdfIncludeInterpretations = false;
-  
+
   // Dasha Settings
   int dashaYearsToShow = 20;
   bool showAntardasha = true;
   bool showPratyantardasha = false;
-  
+
   // Transit Settings
   bool showTransits = true;
   int transitDaysToShow = 30;
-  
+
   // Ayanamsa Settings
   String ayanamsaSystem = 'lahiri';
-  
+
   // Notification Settings
   bool dailyTransitNotifications = true;
-  TimeOfDay notificationTime = const TimeOfDay(hour: 8, minute: 0);
-  
+  // Using hours and minutes instead of TimeOfDay to remove Material dependency
+  int notificationHour = 8;
+  int notificationMinute = 0;
+
   ChartCustomization();
-  
+
   /// Create from JSON
   factory ChartCustomization.fromJson(Map<String, dynamic> json) {
     final settings = ChartCustomization();
-    
+
     settings.chartStyle = ChartStyle.values.firstWhere(
       (e) => e.toString() == json['chartStyle'],
       orElse: () => ChartStyle.northIndian,
     );
-    
+
     settings.colorScheme = ColorScheme.values.firstWhere(
       (e) => e.toString() == json['colorScheme'],
       orElse: () => ColorScheme.classic,
     );
-    
+
     settings.showHouses = json['showHouses'] ?? true;
     settings.showSigns = json['showSigns'] ?? true;
     settings.showDegrees = json['showDegrees'] ?? true;
@@ -74,51 +76,51 @@ class ChartCustomization {
     settings.showRetrograde = json['showRetrograde'] ?? true;
     settings.showCombust = json['showCombust'] ?? true;
     settings.showExaltedDebilitated = json['showExaltedDebilitated'] ?? true;
-    
+
     settings.planetSize = PlanetSize.values.firstWhere(
       (e) => e.toString() == json['planetSize'],
       orElse: () => PlanetSize.medium,
     );
-    
+
     settings.houseSystem = HouseSystem.values.firstWhere(
       (e) => e.toString() == json['houseSystem'],
       orElse: () => HouseSystem.placidus,
     );
-    
+
     settings.showHouseCusps = json['showHouseCusps'] ?? true;
     settings.showHouseNumbers = json['showHouseNumbers'] ?? true;
     settings.showBirthDetails = json['showBirthDetails'] ?? true;
     settings.showAyanamsa = json['showAyanamsa'] ?? true;
     settings.showCurrentDasha = json['showCurrentDasha'] ?? true;
-    
+
     settings.pdfIncludeD1 = json['pdfIncludeD1'] ?? true;
     settings.pdfIncludeD9 = json['pdfIncludeD9'] ?? true;
     settings.pdfIncludeDasha = json['pdfIncludeDasha'] ?? true;
     settings.pdfIncludeKP = json['pdfIncludeKP'] ?? true;
     settings.pdfIncludeVargas = json['pdfIncludeVargas'] ?? false;
-    settings.pdfIncludeInterpretations = json['pdfIncludeInterpretations'] ?? false;
-    
+    settings.pdfIncludeInterpretations =
+        json['pdfIncludeInterpretations'] ?? false;
+
     settings.dashaYearsToShow = json['dashaYearsToShow'] ?? 20;
     settings.showAntardasha = json['showAntardasha'] ?? true;
     settings.showPratyantardasha = json['showPratyantardasha'] ?? false;
-    
+
     settings.showTransits = json['showTransits'] ?? true;
     settings.transitDaysToShow = json['transitDaysToShow'] ?? 30;
-    
+
     settings.ayanamsaSystem = json['ayanamsaSystem'] ?? 'lahiri';
-    
-    settings.dailyTransitNotifications = json['dailyTransitNotifications'] ?? true;
+
+    settings.dailyTransitNotifications =
+        json['dailyTransitNotifications'] ?? true;
     if (json['notificationTime'] != null) {
       final parts = json['notificationTime'].split(':');
-      settings.notificationTime = TimeOfDay(
-        hour: int.parse(parts[0]),
-        minute: int.parse(parts[1]),
-      );
+      settings.notificationHour = int.parse(parts[0]);
+      settings.notificationMinute = int.parse(parts[1]);
     }
-    
+
     return settings;
   }
-  
+
   /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {
@@ -151,10 +153,10 @@ class ChartCustomization {
       'transitDaysToShow': transitDaysToShow,
       'ayanamsaSystem': ayanamsaSystem,
       'dailyTransitNotifications': dailyTransitNotifications,
-      'notificationTime': '${notificationTime.hour}:${notificationTime.minute}',
+      'notificationTime': '$notificationHour:$notificationMinute',
     };
   }
-  
+
   /// Reset to defaults
   void resetToDefaults() {
     chartStyle = ChartStyle.northIndian;
@@ -186,108 +188,86 @@ class ChartCustomization {
     transitDaysToShow = 30;
     ayanamsaSystem = 'lahiri';
     dailyTransitNotifications = true;
-    notificationTime = const TimeOfDay(hour: 8, minute: 0);
+    notificationHour = 8;
+    notificationMinute = 0;
   }
 }
 
 /// Chart Style Options
-enum ChartStyle {
-  northIndian,
-  southIndian,
-  eastIndian,
-  western,
-}
+enum ChartStyle { northIndian, southIndian, eastIndian, western }
 
 /// Color Scheme Options
-enum ColorScheme {
-  classic,
-  modern,
-  vedic,
-  print,
-  night,
-}
+enum ColorScheme { classic, modern, vedic, print, night }
 
 /// Planet Size Options
-enum PlanetSize {
-  small,
-  medium,
-  large,
-}
+enum PlanetSize { small, medium, large }
 
 /// House System Options
-enum HouseSystem {
-  placidus,
-  equal,
-  wholeSign,
-  sripathi,
-  kp,
-  campanus,
-  koch,
-}
+enum HouseSystem { placidus, equal, wholeSign, sripathi, kp, campanus, koch }
 
 /// Extension to get color scheme colors
 extension ColorSchemeColors on ColorScheme {
   ChartColors get colors {
     switch (this) {
       case ColorScheme.classic:
-        return ChartColors(
-          background: const Color(0xFFFAFAFA),
-          houseBorder: const Color(0xFF333333),
-          houseFill: const Color(0xFFFFFFFF),
-          planetText: const Color(0xFF000000),
-          retrogradeIndicator: const Color(0xFFFF0000),
-          ascendantMarker: const Color(0xFFFFD700),
-          beneficPlanet: const Color(0xFF006400),
-          maleficPlanet: const Color(0xFF8B0000),
-          neutralPlanet: const Color(0xFF000080),
+        return const ChartColors(
+          background: Color(0xFFFAFAFA),
+          houseBorder: Color(0xFF333333),
+          houseFill: Color(0xFFFFFFFF),
+          planetText: Color(0xFF000000),
+          retrogradeIndicator: Color(0xFFFF0000),
+          ascendantMarker: Color(0xFFFFD700),
+          beneficPlanet: Color(0xFF006400),
+          maleficPlanet: Color(0xFF8B0000),
+          neutralPlanet: Color(0xFF000080),
         );
       case ColorScheme.modern:
-        return ChartColors(
-          background: const Color(0xFFF5F5F5),
-          houseBorder: const Color(0xFF6200EE),
-          houseFill: const Color(0xFFFFFFFF),
-          planetText: const Color(0xFF333333),
-          retrogradeIndicator: const Color(0xFFB00020),
-          ascendantMarker: const Color(0xFF03DAC6),
-          beneficPlanet: const Color(0xFF4CAF50),
-          maleficPlanet: const Color(0xFFE53935),
-          neutralPlanet: const Color(0xFF2196F3),
+        return const ChartColors(
+          background: Color(0xFFF5F5F5),
+          houseBorder: Color(0xFF6200EE),
+          houseFill: Color(0xFFFFFFFF),
+          planetText: Color(0xFF333333),
+          retrogradeIndicator: Color(0xFFB00020),
+          ascendantMarker: Color(0xFF03DAC6),
+          beneficPlanet: Color(0xFF4CAF50),
+          maleficPlanet: Color(0xFFE53935),
+          neutralPlanet: Color(0xFF2196F3),
         );
       case ColorScheme.vedic:
-        return ChartColors(
-          background: const Color(0xFFFFF8E1),
-          houseBorder: const Color(0xFF8D6E63),
-          houseFill: const Color(0xFFFFFDE7),
-          planetText: const Color(0xFF3E2723),
-          retrogradeIndicator: const Color(0xFFD32F2F),
-          ascendantMarker: const Color(0xFFFFB300),
-          beneficPlanet: const Color(0xFF2E7D32),
-          maleficPlanet: const Color(0xFFC62828),
-          neutralPlanet: const Color(0xFF1565C0),
+        return const ChartColors(
+          background: Color(0xFFFFF8E1),
+          houseBorder: Color(0xFF8D6E63),
+          houseFill: Color(0xFFFFFDE7),
+          planetText: Color(0xFF3E2723),
+          retrogradeIndicator: Color(0xFFD32F2F),
+          ascendantMarker: Color(0xFFFFB300),
+          beneficPlanet: Color(0xFF2E7D32),
+          maleficPlanet: Color(0xFFC62828),
+          neutralPlanet: Color(0xFF1565C0),
         );
       case ColorScheme.print:
-        return ChartColors(
-          background: const Color(0xFFFFFFFF),
-          houseBorder: const Color(0xFF000000),
-          houseFill: const Color(0xFFFFFFFF),
-          planetText: const Color(0xFF000000),
-          retrogradeIndicator: const Color(0xFF000000),
-          ascendantMarker: const Color(0xFF000000),
-          beneficPlanet: const Color(0xFF000000),
-          maleficPlanet: const Color(0xFF000000),
-          neutralPlanet: const Color(0xFF000000),
+        return const ChartColors(
+          background: Color(0xFFFFFFFF),
+          houseBorder: Color(0xFF000000),
+          houseFill: Color(0xFFFFFFFF),
+          planetText: Color(0xFF000000),
+          retrogradeIndicator: Color(0xFF000000),
+          ascendantMarker: Color(0xFF000000),
+          beneficPlanet: Color(0xFF000000),
+          maleficPlanet: Color(0xFF000000),
+          neutralPlanet: Color(0xFF000000),
         );
       case ColorScheme.night:
-        return ChartColors(
-          background: const Color(0xFF121212),
-          houseBorder: const Color(0xFFBB86FC),
-          houseFill: const Color(0xFF1E1E1E),
-          planetText: const Color(0xFFE0E0E0),
-          retrogradeIndicator: const Color(0xFFCF6679),
-          ascendantMarker: const Color(0xFF03DAC6),
-          beneficPlanet: const Color(0xFF81C784),
-          maleficPlanet: const Color(0xFFE57373),
-          neutralPlanet: const Color(0xFF64B5F6),
+        return const ChartColors(
+          background: Color(0xFF121212),
+          houseBorder: Color(0xFFBB86FC),
+          houseFill: Color(0xFF1E1E1E),
+          planetText: Color(0xFFE0E0E0),
+          retrogradeIndicator: Color(0xFFCF6679),
+          ascendantMarker: Color(0xFF03DAC6),
+          beneficPlanet: Color(0xFF81C784),
+          maleficPlanet: Color(0xFFE57373),
+          neutralPlanet: Color(0xFF64B5F6),
         );
     }
   }
@@ -408,13 +388,13 @@ class ChartPresets {
 /// Settings Manager
 class SettingsManager {
   static ChartCustomization _currentSettings = ChartCustomization();
-  
+
   static ChartCustomization get current => _currentSettings;
-  
+
   static void updateSettings(ChartCustomization settings) {
     _currentSettings = settings;
   }
-  
+
   static void applyPreset(String presetName) {
     switch (presetName.toLowerCase()) {
       case 'beginner':

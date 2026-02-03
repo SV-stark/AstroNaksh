@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../core/birth_time_rectifier.dart';
 import 'package:intl/intl.dart';
@@ -43,9 +43,17 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
       );
       setState(() => _currentData = data);
     } catch (e) {
-      ScaffoldMessenger.of(
+      displayInfoBar(
         context,
-      ).showSnackBar(SnackBar(content: Text("Calculation failed: $e")));
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Calculation Error'),
+            content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        },
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -61,79 +69,83 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_initialized) {
-      return const Scaffold(
-        body: Center(child: Text("No birth data provided")),
+      return const ScaffoldPage(
+        content: Center(child: Text("No birth data provided")),
       );
     }
 
     final adjustedTime = _originalData.dateTime.add(_adjustment);
     final formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
-    return Scaffold(
-      appBar: AppBar(
+    return ScaffoldPage(
+      header: PageHeader(
         title: const Text("Birth Time Rectification"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: () {
-              // Return new BirthData to previous screen
-              final newData = BirthData(
-                name: _originalData.name,
-                dateTime: adjustedTime,
-                location: _originalData.location,
-                place: _originalData.place,
-              );
-              Navigator.pop(context, newData);
-            },
-            tooltip: "Apply New Time",
-          ),
-        ],
+        commandBar: CommandBar(
+          mainAxisAlignment: MainAxisAlignment.end,
+          primaryItems: [
+            CommandBarButton(
+              icon: const Icon(FluentIcons.check_mark),
+              onPressed: () {
+                // Return new BirthData to previous screen
+                final newData = BirthData(
+                  name: _originalData.name,
+                  dateTime: adjustedTime,
+                  location: _originalData.location,
+                  place: _originalData.place,
+                );
+                Navigator.pop(context, newData);
+              },
+              label: const Text("Apply"),
+            ),
+          ],
+        ),
       ),
-      body: Column(
+      content: Column(
         children: [
           // Time Controls
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: Column(
-              children: [
-                Text(
-                  "Original: ${formatter.format(_originalData.dateTime)}",
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  formatter.format(adjustedTime),
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+          Card(
+            backgroundColor: FluentTheme.of(context).cardColor,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(
+                    "Original: ${formatter.format(_originalData.dateTime)}",
+                    style: FluentTheme.of(context).typography.caption,
                   ),
-                ),
-                Text(
-                  "Shift: ${_adjustment.inMinutes}m ${_adjustment.inSeconds % 60}s",
-                  style: TextStyle(
-                    color: _adjustment.isNegative ? Colors.red : Colors.green,
+                  const SizedBox(height: 8),
+                  Text(
+                    formatter.format(adjustedTime),
+                    style: FluentTheme.of(context).typography.subtitle
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildControlButton("-1m", const Duration(minutes: -1)),
-                    _buildControlButton("-10s", const Duration(seconds: -10)),
-                    _buildControlButton("-1s", const Duration(seconds: -1)),
-                    const SizedBox(width: 16),
-                    _buildControlButton("+1s", const Duration(seconds: 1)),
-                    _buildControlButton("+10s", const Duration(seconds: 10)),
-                    _buildControlButton("+1m", const Duration(minutes: 1)),
-                  ],
-                ),
-              ],
+                  Text(
+                    "Shift: ${_adjustment.inMinutes}m ${_adjustment.inSeconds % 60}s",
+                    style: TextStyle(
+                      color: _adjustment.isNegative ? Colors.red : Colors.green,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildControlButton("-1m", const Duration(minutes: -1)),
+                      _buildControlButton("-10s", const Duration(seconds: -10)),
+                      _buildControlButton("-1s", const Duration(seconds: -1)),
+                      const SizedBox(width: 16),
+                      _buildControlButton("+1s", const Duration(seconds: 1)),
+                      _buildControlButton("+10s", const Duration(seconds: 10)),
+                      _buildControlButton("+1m", const Duration(minutes: 1)),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
 
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: ProgressRing())
                 : _currentData == null
                 ? const Center(child: Text("Error calculating"))
                 : _buildAnalysis(_currentData!),
@@ -146,14 +158,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
   Widget _buildControlButton(String label, Duration delta) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: OutlinedButton(
-        onPressed: () => _adjustTime(delta),
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          minimumSize: const Size(0, 0),
-        ),
-        child: Text(label),
-      ),
+      child: Button(onPressed: () => _adjustTime(delta), child: Text(label)),
     );
   }
 
@@ -193,7 +198,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            Text(title, style: FluentTheme.of(context).typography.bodyStrong),
             const Divider(),
             ...children,
           ],
@@ -213,7 +218,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
             value,
             style: TextStyle(
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              color: isBold ? Theme.of(context).colorScheme.primary : null,
+              color: isBold ? FluentTheme.of(context).accentColor : null,
             ),
           ),
         ],

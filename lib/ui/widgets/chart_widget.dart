@@ -6,13 +6,15 @@ import '../styles.dart';
 enum ChartStyle { northIndian, southIndian }
 
 class ChartWidget extends StatelessWidget {
-  final List<String> planetPositions;
+  final Map<int, List<String>> planetsBySign; // Key: 0-11
+  final int ascendantSign; // 1-12
   final ChartStyle style;
   final double size;
 
   const ChartWidget({
     super.key,
-    required this.planetPositions,
+    required this.planetsBySign,
+    required this.ascendantSign,
     required this.style,
     this.size = 300,
   });
@@ -36,11 +38,13 @@ class ChartWidget extends StatelessWidget {
       child: CustomPaint(
         painter: style == ChartStyle.northIndian
             ? NorthIndianChartPainter(
-                planetPositions: planetPositions,
+                planetsBySign: planetsBySign,
+                ascendantSign: ascendantSign,
                 lineColor: AppStyles.accentColor,
               )
             : SouthIndianChartPainter(
-                planetPositions: planetPositions,
+                planetsBySign: planetsBySign,
+                ascendantSign: ascendantSign,
                 lineColor: AppStyles.accentColor,
               ),
       ),

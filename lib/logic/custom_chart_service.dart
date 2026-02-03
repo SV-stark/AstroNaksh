@@ -1,9 +1,30 @@
 import 'package:jyotish/jyotish.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Service for calculating Vedic astrology charts with custom Ayanamsa.
 /// Replicates logic from [VedicChartService] but allows configurable SiderealMode.
 class CustomChartService {
-  final EphemerisService _ephemerisService = EphemerisService();
+  static EphemerisService? _sharedService;
+  static bool _isInitialized = false;
+
+  /// Gets the shared, initialized EphemerisService
+  Future<EphemerisService> _getEphemerisService() async {
+    if (_sharedService != null && _isInitialized) {
+      return _sharedService!;
+    }
+
+    _sharedService = EphemerisService();
+
+    // Get ephemeris path
+    final directory = await getApplicationSupportDirectory();
+    final ephemerisPath = '${directory.path}/ephe';
+
+    // Initialize with the ephemeris path
+    await _sharedService!.initialize(ephemerisPath: ephemerisPath);
+    _isInitialized = true;
+
+    return _sharedService!;
+  }
 
   /// Calculates a complete Vedic astrology chart with specific Ayanamsa.
   ///
@@ -20,11 +41,15 @@ class CustomChartService {
     bool includeOuterPlanets = false,
   }) async {
     try {
+      // Get initialized ephemeris service
+      final ephemerisService = await _getEphemerisService();
+
       // Use selected ayanamsa
       final flags = CalculationFlags.sidereal(ayanamsaMode);
 
       // Calculate Ascendant and house cusps with the specific Ayanamsa
       final houses = await _calculateHouses(
+        ephemerisService: ephemerisService,
         dateTime: dateTime,
         location: location,
         houseSystem: houseSystem,
@@ -39,7 +64,7 @@ class CustomChartService {
       // Calculate all planetary positions
       final planetPositions = <Planet, PlanetPosition>{};
       for (final planet in planetsToCalculate) {
-        final position = await _ephemerisService.calculatePlanetPosition(
+        final position = await ephemerisService.calculatePlanetPosition(
           planet: planet,
           dateTime: dateTime,
           location: location,
@@ -49,7 +74,7 @@ class CustomChartService {
       }
 
       // Calculate Rahu (Mean Node)
-      final rahuPosition = await _ephemerisService.calculatePlanetPosition(
+      final rahuPosition = await ephemerisService.calculatePlanetPosition(
         planet: Planet.meanNode,
         dateTime: dateTime,
         location: location,
@@ -120,20 +145,21 @@ class CustomChartService {
 
   /// Calculates house cusps using Swiss Ephemeris.
   Future<HouseSystem> _calculateHouses({
+    required EphemerisService ephemerisService,
     required DateTime dateTime,
     required GeographicLocation location,
     required String houseSystem,
     required SiderealMode ayanamsaMode,
   }) async {
     // Calculate houses (returns tropical positions)
-    final houseData = await _ephemerisService.calculateHouses(
+    final houseData = await ephemerisService.calculateHouses(
       dateTime: dateTime,
       location: location,
       houseSystem: 'P', // Placidus system
     );
 
     // Get ayanamsa for sidereal correction
-    final ayanamsa = await _ephemerisService.getAyanamsa(
+    final ayanamsa = await ephemerisService.getAyanamsa(
       dateTime: dateTime,
       mode: ayanamsaMode, // Use selected ayanamsa
     );

@@ -50,6 +50,16 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  String _formatDateTime(String? dateTimeStr) {
+    if (dateTimeStr == null) return '';
+    try {
+      final dt = DateTime.parse(dateTimeStr);
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateTimeStr;
+    }
+  }
+
   void _openChart(Map<String, dynamic> chart) {
     // Convert DB row to BirthData
     // Note: DB structure needs to match BirthData conversion
@@ -129,7 +139,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Icon(Icons.person, color: Colors.white),
                           ),
                           title: Text(chart['name'] ?? 'Unknown'),
-                          subtitle: Text(chart['dateTime'] ?? ''),
+                          subtitle: Text(
+                            '${_formatDateTime(chart['dateTime'])}'
+                            '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
+                          ),
                           onTap: () => _openChart(chart),
                           trailing: IconButton(
                             icon: const Icon(

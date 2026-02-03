@@ -3,8 +3,14 @@ import 'ui/styles.dart';
 import 'ui/home_screen.dart';
 import 'ui/input_screen.dart';
 import 'ui/chart_screen.dart';
+import 'core/ephemeris_manager.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize ephemeris data before running the app
+  await EphemerisManager.ensureEphemerisData();
+
   runApp(const AstroNakshApp());
 }
 

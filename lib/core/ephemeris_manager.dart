@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:jyotish/jyotish.dart';
 
 /// Manages Swiss Ephemeris data files for planetary calculations
-/// Downloads and maintains ephemeris files from official sources
+/// Uses bundled assets first, downloads only if missing
 class EphemerisManager {
   static final Jyotish _jyotish = Jyotish();
   static bool _initialized = false;
@@ -13,9 +14,9 @@ class EphemerisManager {
   static Jyotish get jyotish => _jyotish;
   static bool get isInitialized => _initialized;
 
-  // Swiss Ephemeris file URLs
-  static const String _baseUrl = 'https://www.astro.com/swisseph/ephe';
-  // unused: static const String _ftpBaseUrl = 'ftp://ssd.jpl.nasa.gov/pub/eph/planets/bsp';
+  // Swiss Ephemeris file URLs (fallback download from GitHub)
+  static const String _baseUrl =
+      'https://raw.githubusercontent.com/aloistr/swisseph/master/ephe';
 
   // Required ephemeris files for different date ranges
   static const Map<String, List<String>> _requiredFiles = {
@@ -54,7 +55,10 @@ class EphemerisManager {
       await dir.create(recursive: true);
     }
 
-    // Check if required files exist, download if missing
+    // First try to copy from bundled assets
+    await _copyBundledAssets(ephemerisPath);
+
+    // Check if required files exist, download if still missing
     final missingFiles = await _getMissingFiles(ephemerisPath);
     if (missingFiles.isNotEmpty) {
       await _downloadEphemerisFiles(ephemerisPath, missingFiles);
@@ -70,6 +74,40 @@ class EphemerisManager {
       }
       // Try with fallback equal-house calculations
       _initialized = true;
+    }
+  }
+
+  /// Copy bundled ephemeris files from assets to app directory
+  static Future<void> _copyBundledAssets(String targetPath) async {
+    final files = _requiredFiles['standard']!;
+
+    for (final file in files) {
+      final targetFile = File('$targetPath/$file');
+
+      // Skip if file already exists and has correct size
+      if (await targetFile.exists()) {
+        final size = await targetFile.length();
+        final expectedSize = _fileSizes[file] ?? 0;
+        if (size >= expectedSize * 0.9) {
+          continue;
+        }
+      }
+
+      // Try to copy from bundled assets
+      try {
+        final assetPath = 'assets/ephe/$file';
+        final data = await rootBundle.load(assetPath);
+        await targetFile.writeAsBytes(
+          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+        );
+        if (kDebugMode) {
+          print('Copied bundled asset: $file');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Asset $file not bundled, will try download: $e');
+        }
+      }
     }
   }
 
@@ -235,13 +273,18 @@ class EphemerisManager {
     }
     await dir.create(recursive: true);
 
-    // Re-download all files
-    final allFiles = _requiredFiles['standard']!;
-    await _downloadEphemerisFiles(
-      ephemerisPath,
-      allFiles,
-      onProgress: onProgress,
-    );
+    // First try bundled assets
+    await _copyBundledAssets(ephemerisPath);
+
+    // Download any still missing files
+    final missingFiles = await _getMissingFiles(ephemerisPath);
+    if (missingFiles.isNotEmpty) {
+      await _downloadEphemerisFiles(
+        ephemerisPath,
+        missingFiles,
+        onProgress: onProgress,
+      );
+    }
 
     // Re-initialize
     _initialized = false;

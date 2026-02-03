@@ -186,7 +186,8 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   Widget _buildD1Tab(CompleteChartData data) {
-    final planetsBySign = _getPlanetsBySign(data.baseChart);
+    final planetsMap = _getPlanetsMap(data.baseChart);
+    final ascSign = _getAscendantSignInt(data.baseChart);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -202,7 +203,12 @@ class _ChartScreenState extends State<ChartScreen> {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
-          ChartWidget(planetPositions: planetsBySign, style: _style, size: 350),
+          ChartWidget(
+            planetsBySign: planetsMap,
+            ascendantSign: ascSign,
+            style: _style,
+            size: 350,
+          ),
           const SizedBox(height: 16),
           _buildPlanetPositionsTable(data),
         ],
@@ -285,7 +291,6 @@ class _ChartScreenState extends State<ChartScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               "${chart.name} (${chart.code})",
@@ -298,44 +303,20 @@ class _ChartScreenState extends State<ChartScreen> {
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
             ),
             const Divider(),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
-            // Planet positions in this division
-            ...chart.positions.entries.map((entry) {
-              final sign = (entry.value / 30).floor();
-              final degree = entry.value % 30;
-              final signName = DivisionalCharts.getSignName(sign);
+            // Render the visual chart
+            ChartWidget(
+              planetsBySign: _getDivisionalPlanetsMap(chart),
+              ascendantSign: (chart.ascendantSign ?? 0) + 1,
+              style: _style,
+              size: 350,
+            ),
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 80,
-                      child: Text(
-                        entry.key,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Text("${degree.toStringAsFixed(1)}° $signName"),
-                    const Spacer(),
-                    Text(
-                      DivisionalCharts.getSignLord(sign),
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
-                  ],
-                ),
-              );
-            }),
+            const SizedBox(height: 16),
 
-            if (chart.ascendantSign != null) ...[
-              const Divider(),
-              Text(
-                "Ascendant: ${DivisionalCharts.getSignName(chart.ascendantSign!)} "
-                "(${DivisionalCharts.getSignLord(chart.ascendantSign!)})",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
+            // Optional: Keep list view or expander if details needed?
+            // User requested visual chart "instead of lists", so this is fine.
           ],
         ),
       ),
@@ -556,36 +537,33 @@ class _ChartScreenState extends State<ChartScreen> {
             const Divider(),
             const SizedBox(height: 8),
 
-            // Show first 5 mahadashas
-            ...dasha.mahadashas
-                .take(5)
-                .map(
-                  (maha) => ExpansionTile(
-                    title: Text("${maha.lord} - ${maha.formattedPeriod}"),
-                    subtitle: Text(
-                      "${_formatDate(maha.startDate)} to ${_formatDate(maha.endDate)}",
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                    children: maha.antardashas
-                        .take(3)
-                        .map(
-                          (antar) => ListTile(
-                            dense: true,
-                            title: Text(
-                              "  ${antar.lord} - ${antar.periodYears.toStringAsFixed(2)} years",
-                            ),
-                            subtitle: Text(
-                              "  ${_formatDate(antar.startDate)} to ${_formatDate(antar.endDate)}",
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
+            // Show all mahadashas
+            ...dasha.mahadashas.map(
+              (maha) => ExpansionTile(
+                title: Text("${maha.lord} - ${maha.formattedPeriod}"),
+                subtitle: Text(
+                  "${_formatDate(maha.startDate)} to ${_formatDate(maha.endDate)}",
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
+                children: maha.antardashas
+                    .map(
+                      (antar) => ListTile(
+                        dense: true,
+                        title: Text(
+                          "  ${antar.lord} - ${antar.periodYears.toStringAsFixed(2)} years",
+                        ),
+                        subtitle: Text(
+                          "  ${_formatDate(antar.startDate)} to ${_formatDate(antar.endDate)}",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
           ],
         ),
       ),
@@ -647,19 +625,17 @@ class _ChartScreenState extends State<ChartScreen> {
             const Divider(),
             const SizedBox(height: 8),
 
-            ...dasha.periods
-                .take(8)
-                .map(
-                  (p) => ListTile(
-                    dense: true,
-                    title: Text("${p.signName} (${p.lord})"),
-                    subtitle: Text(
-                      "${_formatDate(p.startDate)} to ${_formatDate(p.endDate)}",
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                    trailing: Text("${p.periodYears.toInt()} years"),
-                  ),
+            ...dasha.periods.map(
+              (p) => ListTile(
+                dense: true,
+                title: Text("${p.signName} (${p.lord})"),
+                subtitle: Text(
+                  "${_formatDate(p.startDate)} to ${_formatDate(p.endDate)}",
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
+                trailing: Text("${p.periodYears.toInt()} years"),
+              ),
+            ),
           ],
         ),
       ),
@@ -829,17 +805,82 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-  List<String> _getPlanetsBySign(VedicChart chart) {
-    final positions = <String>[];
+  Map<int, List<String>> _getDivisionalPlanetsMap(DivisionalChartData chart) {
+    final map = <int, List<String>>{};
+    for (int i = 0; i < 12; i++) {
+      map[i] = [];
+    }
 
-    chart.planets.forEach((planet, info) {
-      final sign = (info.longitude / 30).floor();
-      final degree = info.longitude % 30;
-      final planetName = planet.toString().split('.').last;
-      positions.add("$planetName:$sign:${degree.toStringAsFixed(1)}");
+    chart.positions.forEach((planetName, longitude) {
+      final sign = (longitude / 30).floor();
+
+      // Abbreviate
+      String abbr = planetName.length > 2
+          ? planetName.substring(0, 2)
+          : planetName;
+      // Standardize common names if they match standard set
+      if (planetName == 'Mars') abbr = 'Ma';
+      if (planetName == 'Mercury') abbr = 'Me';
+      if (planetName == 'Jupiter') abbr = 'Ju';
+      if (planetName == 'Venus') abbr = 'Ve';
+      if (planetName == 'Saturn') abbr = 'Sa';
+      if (planetName == 'Rahu') abbr = 'Ra';
+      if (planetName == 'Ketu') abbr = 'Ke';
+      if (planetName == 'Sun') abbr = 'Su';
+      if (planetName == 'Moon') abbr = 'Mo';
+
+      if (map.containsKey(sign)) {
+        map[sign]!.add(abbr);
+      }
     });
 
-    return positions;
+    return map;
+  }
+
+  Map<int, List<String>> _getPlanetsMap(VedicChart chart) {
+    final map = <int, List<String>>{};
+
+    // Initialize empty lists
+    for (int i = 0; i < 12; i++) {
+      map[i] = [];
+    }
+
+    chart.planets.forEach((planet, info) {
+      final sign = (info.longitude / 30).floor(); // 0-11
+      final planetName = planet.toString().split('.').last;
+
+      // Get abbreviation
+      String abbr = planetName.substring(0, 2);
+      if (planetName == 'Mars') abbr = 'Ma';
+      if (planetName == 'Mercury') abbr = 'Me';
+      if (planetName == 'Jupiter') abbr = 'Ju';
+      if (planetName == 'Venus') abbr = 'Ve';
+      if (planetName == 'Saturn') abbr = 'Sa';
+      if (planetName == 'Rahu') abbr = 'Ra';
+      if (planetName == 'Ketu') abbr = 'Ke';
+      if (planetName == 'Sun') abbr = 'Su';
+      if (planetName == 'Moon') abbr = 'Mo';
+
+      if (map.containsKey(sign)) {
+        map[sign]!.add(abbr);
+      }
+    });
+
+    return map;
+  }
+
+  int _getAscendantSignInt(VedicChart chart) {
+    try {
+      final houses = chart.houses;
+      if (houses.cusps.isNotEmpty) {
+        final long = houses.cusps[0];
+        final sign = (long / 30).floor(); // 0-11
+        return sign + 1; // 1-12
+      }
+      return 1; // Default Aries
+    } catch (e) {
+      return 1;
+    }
   }
 
   String _getAscendantSign(VedicChart chart) {
@@ -857,6 +898,6 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   String _formatDate(DateTime date) {
-    return "${date.day}/${date.month}/${date.year}";
+    return "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
   }
 }

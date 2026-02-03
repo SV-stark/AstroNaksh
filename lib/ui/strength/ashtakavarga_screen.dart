@@ -91,7 +91,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
       children: [
         // Educational info
         Card(
-          backgroundColor: Colors.blue.withOpacity(0.1),
+          backgroundColor: Colors.blue.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -166,7 +166,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
       children: [
         // Educational info
         Card(
-          backgroundColor: Colors.purple.withOpacity(0.1),
+          backgroundColor: Colors.purple.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -242,7 +242,10 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
     return Card(
       child: Table(
         border: TableBorder.symmetric(
-          inside: BorderSide(color: Colors.white.withOpacity(0.2), width: 0.5),
+          inside: BorderSide(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 0.5,
+          ),
         ),
         children: [
           // Header
@@ -371,9 +374,9 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(intensity),
+                    color: color.withValues(alpha: intensity),
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: color.withOpacity(0.3)),
+                    border: Border.all(color: color.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

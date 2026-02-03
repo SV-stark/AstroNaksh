@@ -38,7 +38,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            backgroundColor: Colors.teal.withOpacity(0.1),
+            backgroundColor: Colors.teal.withValues(alpha: 0.1),
             child: const Padding(
               padding: EdgeInsets.all(16),
               child: Column(
@@ -262,8 +262,9 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
             severity: InfoBarSeverity.success,
             action: Button(
               onPressed: () {
-                // TODO: Open file
-                // On Windows strictly, we can use Process.run('explorer', [path])
+                if (Platform.isWindows) {
+                  Process.run('explorer', [path]);
+                }
               },
               child: const Text('Open'),
             ),

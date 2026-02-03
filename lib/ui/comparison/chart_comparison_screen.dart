@@ -109,7 +109,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         Card(
-          backgroundColor: Colors.blue.withOpacity(0.1),
+          backgroundColor: Colors.blue.withValues(alpha: 0.1),
           child: const Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -298,7 +298,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                       child: ProgressRing(
                         value: compatibility.overallScore,
                         strokeWidth: 8,
-                        backgroundColor: Colors.grey.withOpacity(0.2),
+                        backgroundColor: Colors.grey.withValues(alpha: 0.2),
                         activeColor: _getScoreColor(compatibility.overallScore),
                       ),
                     ),
@@ -430,7 +430,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         Card(
-          backgroundColor: Colors.purple.withOpacity(0.1),
+          backgroundColor: Colors.purple.withValues(alpha: 0.1),
           child: const Padding(
             padding: EdgeInsets.all(16),
             child: Text(
@@ -474,7 +474,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         Card(
-          backgroundColor: Colors.blue.withOpacity(0.1),
+          backgroundColor: Colors.blue.withValues(alpha: 0.1),
           child: const Padding(
             padding: EdgeInsets.all(16),
             child: Text(

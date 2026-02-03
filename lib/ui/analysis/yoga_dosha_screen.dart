@@ -232,7 +232,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
       padding: const EdgeInsets.only(bottom: 20),
       children: [
         Card(
-          backgroundColor: Colors.green.withOpacity(0.1),
+          backgroundColor: Colors.green.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(

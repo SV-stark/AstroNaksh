@@ -384,34 +384,3 @@ class ChartPresets {
     ..pdfIncludeVargas = false
     ..pdfIncludeInterpretations = true;
 }
-
-/// Settings Manager
-class SettingsManager {
-  static ChartCustomization _currentSettings = ChartCustomization();
-
-  static ChartCustomization get current => _currentSettings;
-
-  static void updateSettings(ChartCustomization settings) {
-    _currentSettings = settings;
-  }
-
-  static void applyPreset(String presetName) {
-    switch (presetName.toLowerCase()) {
-      case 'beginner':
-        _currentSettings = ChartPresets.beginner;
-        break;
-      case 'professional':
-        _currentSettings = ChartPresets.professional;
-        break;
-      case 'minimal':
-        _currentSettings = ChartPresets.minimal;
-        break;
-      case 'printfriendly':
-      case 'print':
-        _currentSettings = ChartPresets.printFriendly;
-        break;
-      default:
-        _currentSettings = ChartCustomization();
-    }
-  }
-}

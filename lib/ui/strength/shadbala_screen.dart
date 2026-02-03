@@ -20,7 +20,7 @@ class ShadbalaScreen extends StatelessWidget {
         children: [
           // Educational info
           Card(
-            backgroundColor: Colors.orange.withOpacity(0.1),
+            backgroundColor: Colors.orange.withValues(alpha: 0.1),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -190,7 +190,7 @@ class ShadbalaScreen extends StatelessWidget {
                   },
                   dataSets: [
                     RadarDataSet(
-                      fillColor: Colors.blue.withOpacity(0.2),
+                      fillColor: Colors.blue.withValues(alpha: 0.2),
                       borderColor: Colors.blue,
                       dataEntries: shadbalaData.entries.map((entry) {
                         return RadarEntry(value: entry.value / 6); // Normalize
@@ -279,7 +279,7 @@ class ShadbalaScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
+        color: Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

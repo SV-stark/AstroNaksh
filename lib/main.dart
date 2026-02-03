@@ -6,6 +6,7 @@ import 'ui/input_screen.dart';
 import 'ui/chart_screen.dart';
 import 'ui/settings_screen.dart';
 import 'core/ephemeris_manager.dart';
+import 'core/settings_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,13 @@ void main() async {
     );
   } catch (e) {
     debugPrint("Failed to initialize window effect: $e");
+  }
+
+  // Initialize settings
+  try {
+    await SettingsManager().loadSettings();
+  } catch (e) {
+    debugPrint("Failed to load settings: $e");
   }
 
   // Initialize ephemeris data before running the app
@@ -36,17 +44,24 @@ class AstroNakshApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FluentApp(
-      title: 'AstroNaksh',
-      theme: AppStyles.darkTheme,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const HomeScreen(),
-        '/input': (context) => const InputScreen(),
-        '/chart': (context) => const ChartScreen(),
-        '/settings': (context) => const SettingsScreen(),
+    return AnimatedBuilder(
+      animation: SettingsManager(),
+      builder: (context, child) {
+        return FluentApp(
+          title: 'AstroNaksh',
+          themeMode: SettingsManager().themeMode,
+          theme: AppStyles.lightTheme,
+          darkTheme: AppStyles.darkTheme,
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const HomeScreen(),
+            '/input': (context) => const InputScreen(),
+            '/chart': (context) => const ChartScreen(),
+            '/settings': (context) => const SettingsScreen(),
+          },
+          debugShowCheckedModeBanner: false,
+        );
       },
-      debugShowCheckedModeBanner: false,
     );
   }
 }

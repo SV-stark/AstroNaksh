@@ -26,11 +26,10 @@ jobs:
       - name: Build Windows Application
         run: flutter build windows --release
 
-      - name: Setup Inno Setup
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
-
       - name: Compile Inno Setup Script
-        run: iscc windows\installer.iss
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: windows/installer.iss
 
       - name: Upload Nightly Release
         uses: ncipollo/release-action@v1

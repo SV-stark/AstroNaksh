@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(FluentIcons.settings),
               label: const Text('Settings'),
               onPressed: () {
-                // TODO: Settings
+                Navigator.pushNamed(context, '/settings');
               },
             ),
           ],

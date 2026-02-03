@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 class AppStyles {
   // Colors
@@ -12,66 +12,46 @@ class AppStyles {
   static const Color white = Colors.white;
   static const Color grey = Colors.grey;
 
-  // Theme
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
+  // Fluent Theme
+  static FluentThemeData get darkTheme {
+    return FluentThemeData(
       brightness: Brightness.dark,
-      primaryColor: primaryColor,
+      accentColor: _createAccentColor(primaryColor),
       scaffoldBackgroundColor: backgroundColor,
       cardColor: surfaceColor,
-      colorScheme: const ColorScheme.dark(
-        primary: primaryColor,
-        secondary: accentColor,
-        surface: surfaceColor,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
+      typography: Typography.fromBrightness(brightness: Brightness.dark).apply(
+        display: TextStyle(
           color: white,
           fontSize: 32,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
-        headlineMedium: TextStyle(
+        title: TextStyle(
           color: white,
           fontSize: 24,
           fontWeight: FontWeight.w600,
         ),
-        bodyLarge: TextStyle(color: Colors.white70, fontSize: 16),
+        body: const TextStyle(color: Colors.white, fontSize: 16),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surfaceColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        labelStyle: const TextStyle(color: Colors.white54),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: white,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          elevation: 5,
-        ),
+      iconTheme: const IconThemeData(color: white),
+      navigationPaneTheme: const NavigationPaneThemeData(
+        backgroundColor: surfaceColor,
+        highlightColor: primaryColor,
+        selectedIconColor: ButtonState.all(accentColor),
+        unselectedIconColor: ButtonState.all(grey),
       ),
     );
+  }
+
+  static AccentColor _createAccentColor(Color color) {
+    return AccentColor.swatch({
+      'normal': color,
+      'dark': color,
+      'light': color,
+      'darker': color,
+      'lighter': color,
+      'darkest': color,
+      'lightest': color,
+    });
   }
 }

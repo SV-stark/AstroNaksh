@@ -12,8 +12,14 @@ class BirthData {
   final DateTime dateTime;
   final Location location;
   final String name;
+  final String place;
 
-  BirthData({required this.dateTime, required this.location, this.name = ''});
+  BirthData({
+    required this.dateTime,
+    required this.location,
+    this.name = '',
+    this.place = '',
+  });
 }
 
 // --- KP System Models ---

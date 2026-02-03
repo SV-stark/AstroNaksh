@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'styles.dart';
 import '../core/database_helper.dart';
 import '../data/models.dart';
@@ -61,8 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openChart(Map<String, dynamic> chart) {
-    // Convert DB row to BirthData
-    // Note: DB structure needs to match BirthData conversion
     try {
       final birthData = BirthData(
         dateTime: DateTime.parse(chart['dateTime']),
@@ -70,89 +68,126 @@ class _HomeScreenState extends State<HomeScreen> {
           latitude: chart['latitude'],
           longitude: chart['longitude'],
         ),
+        name: chart['name'] ?? '',
+        place: chart['locationName'] ?? '',
       );
       Navigator.pushNamed(context, '/chart', arguments: birthData);
     } catch (e) {
-      ScaffoldMessenger.of(
+      displayInfoBar(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error opening chart: $e')));
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Error opening chart'),
+            content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        },
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return ScaffoldPage(
+      header: PageHeader(
         title: const Text("AstroFast"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.import_export),
-            onPressed: () {
-              // TODO: Import/Export Dialog
-            },
-            tooltip: "Import/Export",
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // TODO: Settings
-            },
-          ),
-        ],
+        commandBar: CommandBar(
+          primaryItems: [
+            CommandBarButton(
+              icon: const Icon(FluentIcons.add),
+              label: const Text('New Chart'),
+              onPressed: () async {
+                await Navigator.pushNamed(context, '/input');
+                _loadCharts();
+              },
+            ),
+          ],
+          secondaryItems: [
+            CommandBarButton(
+              icon: const Icon(FluentIcons.share),
+              label: const Text('Import/Export'),
+              onPressed: () {
+                // TODO: Import/Export Dialog
+              },
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.settings),
+              label: const Text('Settings'),
+              onPressed: () {
+                // TODO: Settings
+              },
+            ),
+          ],
+        ),
       ),
-      body: Column(
+      content: Column(
         children: [
           // Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
+            child: TextBox(
               controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: "Search charts...",
-                prefixIcon: Icon(Icons.search),
+              placeholder: "Search charts...",
+              prefix: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(FluentIcons.search),
               ),
             ),
           ),
 
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: ProgressRing())
                 : _filteredCharts.isEmpty
                 ? const Center(
                     child: Text(
                       "No charts found.",
-                      style: TextStyle(color: Colors.white54),
+                      style: TextStyle(
+                        color: Colors.white,
+                      ), // Colors.white works if imported from material? No, usually not. Fluent has Colors.white?
+                      // Fluent Colors.white exists.
                     ),
                   )
                 : ListView.builder(
                     itemCount: _filteredCharts.length,
                     itemBuilder: (context, index) {
                       final chart = _filteredCharts[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 8,
+                          vertical: 4,
                         ),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: AppStyles.primaryColor,
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
-                          title: Text(chart['name'] ?? 'Unknown'),
-                          subtitle: Text(
-                            '${_formatDateTime(chart['dateTime'])}'
-                            '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
-                          ),
-                          onTap: () => _openChart(chart),
-                          trailing: IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.redAccent,
+                        child: Card(
+                          child: ListTile.selectable(
+                            onPressed: () => _openChart(chart),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                color: AppStyles.primaryColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                FluentIcons.contact,
+                                color: Colors.white,
+                              ),
                             ),
-                            onPressed: () async {
-                              await _dbHelper.deleteChart(chart['id']);
-                              _loadCharts();
-                            },
+                            title: Text(chart['name'] ?? 'Unknown'),
+                            subtitle: Text(
+                              '${_formatDateTime(chart['dateTime'])}'
+                              '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(
+                                FluentIcons.delete,
+                                color: Colors.red, // Colors.red from Fluent
+                              ),
+                              onPressed: () async {
+                                await _dbHelper.deleteChart(chart['id']);
+                                _loadCharts();
+                              },
+                            ),
                           ),
                         ),
                       );
@@ -160,17 +195,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Navigator.pushNamed(context, '/input');
-          // Reload charts when returning from input screen
-          _loadCharts();
-        },
-        icon: const Icon(Icons.add),
-        label: const Text("New Chart"),
-        backgroundColor: AppStyles.primaryColor,
-        foregroundColor: AppStyles.white,
       ),
     );
   }

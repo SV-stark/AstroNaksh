@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'styles.dart';
 import '../../data/models.dart';
 import '../../data/city_database.dart';
@@ -14,67 +14,33 @@ class InputScreen extends StatefulWidget {
 class _InputScreenState extends State<InputScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
   final TextEditingController _citySearchController = TextEditingController();
 
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
+  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedTime = DateTime.now();
   City? _selectedCity;
-  List<City> _searchResults = [];
-  bool _isSearching = false;
+  List<AutoSuggestBoxItem<City>> _cityItems = [];
   bool _isLoadingLocation = false;
 
-  Future<void> _pickDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text =
-            "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
-      });
-    }
-  }
-
-  Future<void> _pickTime() async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedTime = picked;
-        _timeController.text = picked.format(context);
-      });
-    }
-  }
-
-  void _onCitySearch(String query) {
-    if (query.length < 2) {
-      setState(() {
-        _searchResults = [];
-        _isSearching = false;
-      });
+  void _onCitySearch(String text) {
+    if (text.length < 2) {
+      if (_cityItems.isNotEmpty) setState(() => _cityItems = []);
       return;
     }
 
+    final results = CityDatabase.searchCities(text).take(10);
     setState(() {
-      _isSearching = true;
-      _searchResults = CityDatabase.searchCities(query).take(10).toList();
-    });
-  }
-
-  void _selectCity(City city) {
-    setState(() {
-      _selectedCity = city;
-      _citySearchController.text = city.displayName;
-      _searchResults = [];
-      _isSearching = false;
+      _cityItems = results.map((city) {
+        return AutoSuggestBoxItem<City>(
+          value: city,
+          label: '${city.name}, ${city.country}',
+          onSelected: () {
+            setState(() {
+              _selectedCity = city;
+            });
+          },
+        );
+      }).toList();
     });
   }
 
@@ -86,28 +52,49 @@ class _InputScreenState extends State<InputScreen> {
     try {
       final city = await CityDatabase.getCurrentLocation();
       if (city != null && mounted) {
-        _selectCity(city);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Found: ${city.displayName}'),
-            backgroundColor: Colors.green,
-          ),
+        setState(() {
+          _selectedCity = city;
+          _citySearchController.text = city.displayName;
+        });
+
+        displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Location Found'),
+              content: Text(city.displayName),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            );
+          },
         );
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not detect location. Please search manually.'),
-            backgroundColor: Colors.orange,
-          ),
+        displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Location Error'),
+              content: const Text(
+                'Could not detect location. Please search manually.',
+              ),
+              severity: InfoBarSeverity.warning,
+              onClose: close,
+            );
+          },
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location permission denied or unavailable'),
-            backgroundColor: Colors.red,
-          ),
+        displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Permission Error'),
+              content: const Text('Location permission denied or unavailable'),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
         );
       }
     } finally {
@@ -121,26 +108,27 @@ class _InputScreenState extends State<InputScreen> {
 
   void _generateChart() {
     if (_formKey.currentState!.validate()) {
-      if (_selectedDate == null || _selectedTime == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select Date and Time')),
-        );
-        return;
-      }
-
       if (_selectedCity == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a birth place')),
+        displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Missing Information'),
+              content: const Text('Please select a birth place'),
+              severity: InfoBarSeverity.warning,
+              onClose: close,
+            );
+          },
         );
         return;
       }
 
       final dt = DateTime(
-        _selectedDate!.year,
-        _selectedDate!.month,
-        _selectedDate!.day,
-        _selectedTime!.hour,
-        _selectedTime!.minute,
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        _selectedTime.hour,
+        _selectedTime.minute,
       );
 
       final lat = _selectedCity!.latitude;
@@ -162,6 +150,7 @@ class _InputScreenState extends State<InputScreen> {
         dateTime: dt,
         location: Location(latitude: lat, longitude: long),
         name: name,
+        place: _selectedCity!.displayName,
       );
 
       // Navigate to Chart Screen
@@ -172,17 +161,15 @@ class _InputScreenState extends State<InputScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _dateController.dispose();
-    _timeController.dispose();
     _citySearchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("New Chart")),
-      body: SingleChildScrollView(
+    return ScaffoldPage(
+      header: const PageHeader(title: Text("New Chart")),
+      content: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
@@ -191,173 +178,115 @@ class _InputScreenState extends State<InputScreen> {
             children: [
               Text(
                 "Enter Birth Details",
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: FluentTheme.of(context).typography.subtitle,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: "Name",
-                  prefixIcon: Icon(Icons.person, color: AppStyles.accentColor),
-                ),
-                validator: (value) => value!.isEmpty ? "Required" : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _dateController,
-                decoration: const InputDecoration(
-                  labelText: "Date of Birth",
-                  prefixIcon: Icon(
-                    Icons.calendar_today,
-                    color: AppStyles.accentColor,
+
+              InfoLabel(
+                label: "Name",
+                child: TextFormBox(
+                  controller: _nameController,
+                  placeholder: "Enter Name",
+                  prefix: const Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: Icon(FluentIcons.contact),
                   ),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? "Required" : null,
                 ),
-                readOnly: true,
-                onTap: _pickDate,
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _timeController,
-                decoration: const InputDecoration(
-                  labelText: "Time of Birth",
-                  prefixIcon: Icon(
-                    Icons.access_time,
-                    color: AppStyles.accentColor,
-                  ),
-                ),
-                readOnly: true,
-                onTap: _pickTime,
-              ),
+
               const SizedBox(height: 16),
 
-              // City Search Section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _citySearchController,
-                          decoration: InputDecoration(
-                            labelText: "Birth Place",
-                            hintText: "Search city...",
-                            prefixIcon: const Icon(
-                              Icons.location_city,
-                              color: AppStyles.accentColor,
-                            ),
-                            suffixIcon: _selectedCity != null
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear),
-                                    onPressed: () {
-                                      setState(() {
-                                        _selectedCity = null;
-                                        _citySearchController.clear();
-                                        _searchResults = [];
-                                      });
-                                    },
-                                  )
-                                : null,
-                          ),
-                          onChanged: _onCitySearch,
-                        ),
+                  Expanded(
+                    child: InfoLabel(
+                      label: "Date of Birth",
+                      child: DatePicker(
+                        selected: _selectedDate,
+                        onChanged: (v) => setState(() => _selectedDate = v),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton.filled(
-                        onPressed: _isLoadingLocation
-                            ? null
-                            : _useCurrentLocation,
-                        icon: _isLoadingLocation
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.my_location),
-                        tooltip: "Use current location",
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppStyles.accentColor,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-
-                  // Search Results Dropdown
-                  if (_isSearching && _searchResults.isNotEmpty)
-                    Container(
-                      constraints: const BoxConstraints(maxHeight: 200),
-                      margin: const EdgeInsets.only(top: 4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: _searchResults.length,
-                        itemBuilder: (context, index) {
-                          final city = _searchResults[index];
-                          return ListTile(
-                            leading: const Icon(Icons.location_on),
-                            title: Text(city.name),
-                            subtitle: Text(city.country),
-                            dense: true,
-                            onTap: () => _selectCity(city),
-                          );
-                        },
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: InfoLabel(
+                      label: "Time of Birth",
+                      child: TimePicker(
+                        selected: _selectedTime,
+                        onChanged: (v) => setState(() => _selectedTime = v),
                       ),
                     ),
-
-                  // Selected City Info
-                  if (_selectedCity != null)
-                    Container(
-                      margin: const EdgeInsets.only(top: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppStyles.accentColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppStyles.accentColor.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.check_circle,
-                            color: AppStyles.accentColor,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              '${_selectedCity!.latitude.toStringAsFixed(4)}°N, '
-                              '${_selectedCity!.longitude.toStringAsFixed(4)}°E',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  ),
                 ],
               ),
 
+              const SizedBox(height: 16),
+
+              // City Search Section
+              InfoLabel(
+                label: "Birth Place",
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AutoSuggestBox<City>(
+                        controller: _citySearchController,
+                        items: _cityItems,
+                        onChanged: (text, reason) {
+                          _onCitySearch(text);
+                        },
+                        onSelected: (item) {
+                          setState(() {
+                            _selectedCity = item.value;
+                          });
+                        },
+                        placeholder: "Search city...",
+                        leadingIcon: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(FluentIcons.city_next),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: _isLoadingLocation
+                          ? null
+                          : _useCurrentLocation,
+                      child: _isLoadingLocation
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: ProgressRing(strokeWidth: 2),
+                            )
+                          : const Icon(FluentIcons.location),
+                    ),
+                  ],
+                ),
+              ),
+
+              if (_selectedCity != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: InfoBar(
+                    title: Text(_selectedCity!.displayName),
+                    content: Text(
+                      '${_selectedCity!.latitude.toStringAsFixed(4)}°N, ${_selectedCity!.longitude.toStringAsFixed(4)}°E',
+                    ),
+                    severity: InfoBarSeverity.info,
+                    isLong: true,
+                  ),
+                ),
+
               const SizedBox(height: 32),
-              ElevatedButton(
+
+              FilledButton(
                 onPressed: _generateChart,
-                child: const Text("Generate Chart"),
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text("Generate Chart", style: TextStyle(fontSize: 16)),
+                ),
               ),
             ],
           ),

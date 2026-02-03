@@ -81,6 +81,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                 name: _originalData.name,
                 dateTime: adjustedTime,
                 location: _originalData.location,
+                place: _originalData.place,
               );
               Navigator.pop(context, newData);
             },

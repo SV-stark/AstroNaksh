@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../data/models.dart';
+import '../../logic/pdf_report_generator.dart';
 
 class PDFReportScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -204,14 +207,52 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
     });
 
     try {
-      await Future.delayed(const Duration(seconds: 2)); // Simulate generation
+      Directory? dir;
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        dir = await getDownloadsDirectory();
+      } else {
+        dir = await getApplicationDocumentsDirectory();
+      }
+
+      if (dir == null) {
+        throw Exception('Could not determine downloads directory');
+      }
+
+      final name = widget.chartData.birthData.name.isNotEmpty
+          ? widget.chartData.birthData.name
+          : 'Unknown';
+
+      final place = widget.chartData.birthData.place.isNotEmpty
+          ? widget.chartData.birthData.place
+          : 'Place';
+
+      final filename = '$name - $place.pdf'.replaceAll(
+        RegExp(r'[<>:"/\\|?*]'),
+        '_',
+      ); // Sanitize filename
+
+      final path = '${dir.path}${Platform.pathSeparator}$filename';
+
+      await PdfReportGenerator.generateBirthChartReport(
+        widget.chartData,
+        widget.chartData.birthData,
+        outputPath: path,
+      );
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PDF Report generated successfully!'),
+        SnackBar(
+          content: Text('Report saved to: $path'),
           backgroundColor: Colors.green,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Open',
+            textColor: Colors.white,
+            onPressed: () {
+              // TODO: Open file
+            },
+          ),
         ),
       );
     } catch (e) {
@@ -224,9 +265,11 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
         ),
       );
     } finally {
-      setState(() {
-        _isGenerating = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isGenerating = false;
+        });
+      }
     }
   }
 }

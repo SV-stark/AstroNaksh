@@ -20,6 +20,7 @@ class BirthTimeRectifier {
       dateTime: newTime,
       location: originalData.location,
       name: originalData.name,
+      place: originalData.place,
     );
 
     // Generate simplified chart data (D-1, D-9, D-60 basics)

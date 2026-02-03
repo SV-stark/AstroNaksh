@@ -6,10 +6,11 @@ import '../data/models.dart';
 class DataManager {
   Future<String> exportChartToJson(BirthData data) async {
     final map = {
-      'name': 'Unknown', // Need to add name to BirthData? Ideally yes.
+      'name': data.name,
       'dateTime': data.dateTime.toIso8601String(),
       'latitude': data.location.latitude,
       'longitude': data.location.longitude,
+      'place': data.place,
     };
     return jsonEncode(map);
   }
@@ -23,6 +24,8 @@ class DataManager {
           latitude: map['latitude'],
           longitude: map['longitude'],
         ),
+        name: map['name'] ?? '',
+        place: map['place'] ?? '',
       );
     } catch (e) {
       return null;

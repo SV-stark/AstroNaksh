@@ -25,7 +25,7 @@ class ChartWidget extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppStyles.surfaceColor,
+        color: FluentTheme.of(context).cardColor,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(

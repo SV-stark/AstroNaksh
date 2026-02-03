@@ -49,7 +49,7 @@ class NorthIndianChartPainter extends CustomPainter {
       // 1. Draw Sign Number (Small, secondary color)
       final signSpan = TextSpan(
         text: "$signNumber\n",
-        style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 10),
+        style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 10),
       );
 
       // 2. Draw Planets

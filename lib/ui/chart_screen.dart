@@ -5,7 +5,8 @@ import '../../logic/kp_chart_service.dart';
 
 import 'package:jyotish/jyotish.dart';
 import '../../core/ayanamsa_calculator.dart';
-import '../../core/chart_customization.dart' hide ChartStyle;
+
+import '../../core/settings_manager.dart';
 import 'tools/birth_time_rectifier_screen.dart';
 // New analysis screens
 import 'strength/ashtakavarga_screen.dart';
@@ -66,7 +67,8 @@ class _ChartScreenState extends State<ChartScreen> {
               itemBuilder: (context, index) {
                 final system = AyanamsaCalculator.systems[index];
                 final isSelected =
-                    SettingsManager.current.ayanamsaSystem.toLowerCase() ==
+                    SettingsManager().chartSettings.ayanamsaSystem
+                        .toLowerCase() ==
                     system.name.toLowerCase();
 
                 return ListTile.selectable(
@@ -74,7 +76,8 @@ class _ChartScreenState extends State<ChartScreen> {
                   title: Text(system.name),
                   subtitle: Text(system.description),
                   onPressed: () {
-                    SettingsManager.current.ayanamsaSystem = system.name;
+                    SettingsManager().chartSettings.ayanamsaSystem =
+                        system.name;
                     Navigator.pop(context);
                     _loadChartData();
                   },

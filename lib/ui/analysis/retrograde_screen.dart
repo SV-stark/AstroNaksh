@@ -17,7 +17,7 @@ class RetrogradeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            backgroundColor: Colors.purple.withOpacity(0.1),
+            backgroundColor: Colors.purple.withValues(alpha: 0.1),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(

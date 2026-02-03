@@ -1,0 +1,45 @@
+name: Nightly Windows Release
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows Application
+        run: flutter build windows --release
+
+      - name: Setup Inno Setup
+        uses: MinionsVS/install-innosetup-action@v1
+
+      - name: Compile Inno Setup Script
+        run: iscc windows\installer.iss
+
+      - name: Upload Nightly Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "windows/Output/astronaksh_setup.exe"
+          tag: nightly
+          name: Nightly Windows Release
+          body: "This is an automated nightly release from the latest push. Build: ${{ github.run_number }}"
+          allowUpdates: true
+          removeArtifacts: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}

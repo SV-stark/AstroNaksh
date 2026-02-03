@@ -43,17 +43,19 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
       );
       setState(() => _currentData = data);
     } catch (e) {
-      displayInfoBar(
-        context,
-        builder: (context, close) {
-          return InfoBar(
-            title: const Text('Calculation Error'),
-            content: Text(e.toString()),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          );
-        },
-      );
+      if (mounted) {
+        displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Calculation Error'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            );
+          },
+        );
+      }
     } finally {
       setState(() => _isLoading = false);
     }

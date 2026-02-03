@@ -5,7 +5,8 @@ import 'kp_extensions.dart';
 import 'dasha_system.dart';
 import 'divisional_charts.dart';
 import 'custom_chart_service.dart'; // New service
-import '../core/chart_customization.dart'; // For settings
+
+import '../core/settings_manager.dart';
 import '../core/ayanamsa_calculator.dart'; // For converting string to mode
 
 class KPChartService {
@@ -16,7 +17,7 @@ class KPChartService {
     await EphemerisManager.ensureEphemerisData();
 
     // Get current Ayanamsa setting
-    final ayanamsaName = SettingsManager.current.ayanamsaSystem;
+    final ayanamsaName = SettingsManager().chartSettings.ayanamsaSystem;
     final ayanamsaSystem = AyanamsaCalculator.getSystem(ayanamsaName);
 
     // Default to Lahiri if not found

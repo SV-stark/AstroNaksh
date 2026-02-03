@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../core/chart_customization.dart';
 import '../core/ayanamsa_calculator.dart';
+import '../core/settings_manager.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,11 +17,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _settings = ChartCustomization.fromJson(SettingsManager.current.toJson());
+    _settings = ChartCustomization.fromJson(
+      SettingsManager().chartSettings.toJson(),
+    );
   }
 
   void _saveSettings() {
-    SettingsManager.updateSettings(_settings);
+    SettingsManager().updateChartSettings(_settings);
     displayInfoBar(
       context,
       builder: (context, close) => InfoBar(
@@ -53,6 +56,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onChanged: (i) => setState(() => _currentIndex = i),
         displayMode: PaneDisplayMode.compact,
         items: [
+          PaneItem(
+            icon: const Icon(FluentIcons.brush),
+            title: const Text('Appearance'),
+            body: _buildAppearanceSettings(),
+          ),
           PaneItem(
             icon: const Icon(FluentIcons.design),
             title: const Text('Chart Display'),
@@ -92,6 +100,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAppearanceSettings() {
+    final currentTheme = SettingsManager().themeMode;
+    return ScaffoldPage.scrollable(
+      header: const PageHeader(title: Text('Appearance')),
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'App Theme',
+                  style: FluentTheme.of(context).typography.subtitle,
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 16,
+                  children: [
+                    RadioButton(
+                      checked: currentTheme == ThemeMode.system,
+                      content: const Text('System'),
+                      onChanged: (v) {
+                        if (v) {
+                          SettingsManager().updateThemeMode(ThemeMode.system);
+                        }
+                      },
+                    ),
+                    RadioButton(
+                      checked: currentTheme == ThemeMode.light,
+                      content: const Text('Light'),
+                      onChanged: (v) {
+                        if (v) {
+                          SettingsManager().updateThemeMode(ThemeMode.light);
+                        }
+                      },
+                    ),
+                    RadioButton(
+                      checked: currentTheme == ThemeMode.dark,
+                      content: const Text('Dark'),
+                      onChanged: (v) {
+                        if (v) {
+                          SettingsManager().updateThemeMode(ThemeMode.dark);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

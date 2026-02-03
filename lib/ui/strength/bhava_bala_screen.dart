@@ -55,7 +55,7 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
         children: [
           // Educational info
           Card(
-            backgroundColor: Colors.teal.withOpacity(0.1),
+            backgroundColor: Colors.teal.withValues(alpha: 0.1),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -123,10 +123,10 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
                   width: 80,
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _getStrengthColor(strength).withOpacity(0.1),
+                    color: _getStrengthColor(strength).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color: _getStrengthColor(strength).withOpacity(0.3),
+                      color: _getStrengthColor(strength).withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(

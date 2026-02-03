@@ -65,7 +65,7 @@ class StrengthMeter extends StatelessWidget {
                   Container(
                     width: width,
                     decoration: BoxDecoration(
-                      color: strengthColor.withOpacity(0.2), // Background
+                      color: strengthColor.withValues(alpha: 0.2), // Background
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -222,7 +222,7 @@ class CircularScoreIndicator extends StatelessWidget {
                 value: score,
                 strokeWidth: size * 0.1,
                 activeColor: _getScoreColor(),
-                backgroundColor: _getScoreColor().withOpacity(0.2),
+                backgroundColor: _getScoreColor().withValues(alpha: 0.2),
               ),
               Text(
                 score.toStringAsFixed(0),

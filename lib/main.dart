@@ -4,20 +4,29 @@ import 'ui/styles.dart';
 import 'ui/home_screen.dart';
 import 'ui/input_screen.dart';
 import 'ui/chart_screen.dart';
+import 'ui/settings_screen.dart';
 import 'core/ephemeris_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Window for Acrylic effect
-  await Window.initialize();
-  await Window.setEffect(
-    effect: WindowEffect.acrylic,
-    color: const Color(0xCC222222),
-  );
+  try {
+    await Window.initialize();
+    await Window.setEffect(
+      effect: WindowEffect.acrylic,
+      color: const Color(0xCC222222),
+    );
+  } catch (e) {
+    debugPrint("Failed to initialize window effect: $e");
+  }
 
   // Initialize ephemeris data before running the app
-  await EphemerisManager.ensureEphemerisData();
+  try {
+    await EphemerisManager.ensureEphemerisData();
+  } catch (e) {
+    debugPrint("Failed to initialize EphemerisManager: $e");
+  }
 
   runApp(const AstroNakshApp());
 }
@@ -35,6 +44,7 @@ class AstroNakshApp extends StatelessWidget {
         '/': (context) => const HomeScreen(),
         '/input': (context) => const InputScreen(),
         '/chart': (context) => const ChartScreen(),
+        '/settings': (context) => const SettingsScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

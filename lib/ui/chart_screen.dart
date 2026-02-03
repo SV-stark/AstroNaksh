@@ -102,6 +102,13 @@ class _ChartScreenState extends State<ChartScreen> {
           primaryItems: [
             CommandBarButton(
               icon: const Icon(FluentIcons.settings),
+              label: const Text('Settings'),
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.globe),
               label: const Text('Ayanamsa'),
               onPressed: _openAyanamsaSelection,
             ),
@@ -113,6 +120,7 @@ class _ChartScreenState extends State<ChartScreen> {
               ),
               label: const Text('Style'),
               onPressed: () {
+                debugPrint("Style button pressed");
                 setState(() {
                   _style = _style == ChartStyle.northIndian
                       ? ChartStyle.southIndian
@@ -125,8 +133,6 @@ class _ChartScreenState extends State<ChartScreen> {
               label: const Text('Rectify'),
               onPressed: () async {
                 if (_birthData == null) return;
-                // Currently screens are Material. Use Navigator to push.
-                // Assuming BirthTimeRectifierScreen uses Material structure, it might look odd but work.
                 final newData = await Navigator.push(
                   context,
                   FluentPageRoute(
@@ -143,64 +149,89 @@ class _ChartScreenState extends State<ChartScreen> {
                 }
               },
             ),
+            // Analysis DropDown
+            CommandBarBuilderItem(
+              builder: (context, mode, w) {
+                debugPrint("Building Analysis DropDown");
+                return DropDownButton(
+                  title: const Text('Analysis'),
+                  leading: const Icon(FluentIcons.analytics_view),
+                  items: [
+                    MenuFlyoutSubItem(
+                      text: const Text('Strength'),
+                      leading: const Icon(FluentIcons.favorite_star),
+                      items: (context) => [
+                        MenuFlyoutItem(
+                          text: const Text('Shadbala'),
+                          leading: const Icon(FluentIcons.favorite_star),
+                          onPressed: () => _navigateTo('shadbala'),
+                        ),
+                        MenuFlyoutItem(
+                          text: const Text('Ashtakavarga'),
+                          leading: const Icon(FluentIcons.grid_view_small),
+                          onPressed: () => _navigateTo('ashtakavarga'),
+                        ),
+                        MenuFlyoutItem(
+                          text: const Text('Bhava Bala'),
+                          leading: const Icon(FluentIcons.home),
+                          onPressed: () => _navigateTo('bhava_bala'),
+                        ),
+                      ],
+                    ),
+                    MenuFlyoutSubItem(
+                      text: const Text('Predictions'),
+                      leading: const Icon(FluentIcons.calendar),
+                      items: (context) => [
+                        MenuFlyoutItem(
+                          text: const Text('Transit'),
+                          leading: const Icon(FluentIcons.history),
+                          onPressed: () => _navigateTo('transit'),
+                        ),
+                        MenuFlyoutItem(
+                          text: const Text('Varshaphal'),
+                          leading: const Icon(FluentIcons.calendar),
+                          onPressed: () => _navigateTo('varshaphal'),
+                        ),
+                      ],
+                    ),
+                    MenuFlyoutSubItem(
+                      text: const Text('Special'),
+                      leading: const Icon(FluentIcons.lightbulb),
+                      items: (context) => [
+                        MenuFlyoutItem(
+                          text: const Text('Yoga & Dosha'),
+                          leading: const Icon(FluentIcons.scale_volume),
+                          onPressed: () => _navigateTo('yoga_dosha'),
+                        ),
+                        MenuFlyoutItem(
+                          text: const Text('Retrograde'),
+                          leading: const Icon(FluentIcons.repeat_one),
+                          onPressed: () => _navigateTo('retrograde'),
+                        ),
+                        MenuFlyoutItem(
+                          text: const Text('Comparison'),
+                          leading: const Icon(FluentIcons.compare),
+                          onPressed: () => _navigateTo('comparison'),
+                        ),
+                      ],
+                    ),
+                    const MenuFlyoutSeparator(),
+                    MenuFlyoutItem(
+                      text: const Text('PDF Report'),
+                      leading: const Icon(FluentIcons.pdf),
+                      onPressed: () => _navigateTo('pdf_report'),
+                    ),
+                  ],
+                );
+              },
+              wrappedItem: CommandBarButton(
+                icon: const Icon(FluentIcons.analytics_view),
+                label: const Text('Analysis'),
+                onPressed: () {},
+              ),
+            ),
           ],
-          secondaryItems: [
-            CommandBarButton(
-              icon: const Icon(FluentIcons.analytics_view),
-              label: const Text('Tools & Analysis'),
-              onPressed: () {}, // Handled by flyout below?
-              // Better to use a DropDownButton in primary or just list them.
-              // Let's make this a flyout menu.
-            ),
-            // Actually, implementing a Flyout attached to a CommandBarButton requires logic.
-            // Simpler: Just put analysis tools in a "More" menu or separate buttons if space permits.
-            // Let's list major tools in secondary?
-            CommandBarButton(
-              icon: const Icon(FluentIcons.grid_view_small),
-              label: const Text('Ashtakavarga'),
-              onPressed: () => _navigateTo('ashtakavarga'),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.favorite_star),
-              label: const Text('Shadbala'),
-              onPressed: () => _navigateTo('shadbala'),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.home),
-              label: const Text('Bhava Bala'),
-              onPressed: () => _navigateTo('bhava_bala'),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.scale_volume), // Yoga/Dosha
-              label: const Text('Yoga & Dosha'),
-              onPressed: () => _navigateTo('yoga_dosha'),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.history),
-              label: const Text('Transit'),
-              onPressed: () => _navigateTo('transit'),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.calendar),
-              label: const Text('Varshaphal'),
-              onPressed: () => _navigateTo('varshaphal'),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.repeat_one),
-              label: const Text('Retrograde'),
-              onPressed: () => _navigateTo('retrograde'),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.compare),
-              label: const Text('Comparison'),
-              onPressed: () => _navigateTo('comparison'),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.pdf),
-              label: const Text('PDF Report'),
-              onPressed: () => _navigateTo('pdf_report'),
-            ),
-          ],
+          secondaryItems: const [],
         ),
       ),
       pane: NavigationPane(
@@ -817,7 +848,178 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   Widget _buildPlanetPositionsTable(CompleteChartData data) {
-    return const SizedBox.shrink();
+    final planets = data.baseChart.planets;
+    final nakshatras = [
+      'Ashwini',
+      'Bharani',
+      'Krittika',
+      'Rohini',
+      'Mrigashira',
+      'Ardra',
+      'Punarvasu',
+      'Pushya',
+      'Ashlesha',
+      'Magha',
+      'Purva Phalguni',
+      'Uttara Phalguni',
+      'Hasta',
+      'Chitra',
+      'Swati',
+      'Vishakha',
+      'Anuradha',
+      'Jyeshtha',
+      'Mula',
+      'Purva Ashadha',
+      'Uttara Ashadha',
+      'Shravana',
+      'Dhanishta',
+      'Shatabhisha',
+      'Purva Bhadrapada',
+      'Uttara Bhadrapada',
+      'Revati',
+    ];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Planet Positions',
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 16),
+            Table(
+              columnWidths: const {
+                0: FlexColumnWidth(1.2),
+                1: FlexColumnWidth(1),
+                2: FlexColumnWidth(1.2),
+                3: FlexColumnWidth(1.5),
+                4: FlexColumnWidth(0.6),
+                5: FlexColumnWidth(0.6),
+                6: FlexColumnWidth(0.8),
+              },
+              children: [
+                const TableRow(
+                  children: [
+                    Text(
+                      'Planet',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text('Sign', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Degrees',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Nakshatra',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text('Pada', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      'House',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Status',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const TableRow(
+                  children: [
+                    SizedBox(height: 8),
+                    SizedBox(),
+                    SizedBox(),
+                    SizedBox(),
+                    SizedBox(),
+                    SizedBox(),
+                    SizedBox(),
+                  ],
+                ),
+                ...planets.entries.map((entry) {
+                  final planetName = entry.key.toString().split('.').last;
+                  final info = entry.value;
+                  final longitude = info.longitude;
+
+                  // Sign (1-12)
+                  final signIndex = (longitude / 30).floor();
+                  final signName = _getSignName(signIndex + 1);
+
+                  // Degrees within sign
+                  final degInSign = longitude % 30;
+                  final degrees = degInSign.floor();
+                  final minutes = ((degInSign - degrees) * 60).floor();
+                  final seconds = (((degInSign - degrees) * 60 - minutes) * 60)
+                      .round();
+                  final degStr =
+                      '${degrees.toString().padLeft(2, '0')}°${minutes.toString().padLeft(2, '0')}\'${seconds.toString().padLeft(2, '0')}"';
+
+                  // Nakshatra (each is 13°20' = 13.333...)
+                  final nakshatraIndex = (longitude / 13.333333).floor() % 27;
+                  final nakshatraName = nakshatras[nakshatraIndex];
+
+                  // Pada (4 padas per nakshatra, each 3°20' = 3.333...)
+                  final padaInNakshatra =
+                      ((longitude % 13.333333) / 3.333333).floor() + 1;
+
+                  // House (approximate based on sign difference from ascendant)
+                  final ascSign = _getAscendantSignInt(data.baseChart);
+                  final house = ((signIndex + 1) - ascSign + 12) % 12 + 1;
+
+                  // Status
+                  List<String> status = [];
+                  if (info.isRetrograde) status.add('R');
+                  // Add more status if available in the data
+
+                  return TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(planetName),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(signName),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(degStr),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(nakshatraName),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text('$padaInNakshatra'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text('$house'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(
+                          status.join(' '),
+                          style: TextStyle(
+                            color: status.contains('R') ? Colors.orange : null,
+                            fontWeight: status.isNotEmpty
+                                ? FontWeight.bold
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Map<int, List<String>> _getPlanetsMap(VedicChart chart) {

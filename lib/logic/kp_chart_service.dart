@@ -4,22 +4,33 @@ import '../data/models.dart';
 import 'kp_extensions.dart';
 import 'dasha_system.dart';
 import 'divisional_charts.dart';
+import 'custom_chart_service.dart'; // New service
+import '../core/chart_customization.dart'; // For settings
+import '../core/ayanamsa_calculator.dart'; // For converting string to mode
 
 class KPChartService {
-  final Jyotish _jyotish = EphemerisManager.jyotish;
+  final CustomChartService _chartService = CustomChartService();
 
   Future<CompleteChartData> generateCompleteChart(BirthData birthData) async {
     // Ensure ephemeris is ready
     await EphemerisManager.ensureEphemerisData();
 
-    // Use jyotish for base calculations
-    final chart = await _jyotish.calculateVedicChart(
+    // Get current Ayanamsa setting
+    final ayanamsaName = SettingsManager.current.ayanamsaSystem;
+    final ayanamsaSystem = AyanamsaCalculator.getSystem(ayanamsaName);
+
+    // Default to Lahiri if not found
+    final mode = ayanamsaSystem?.mode ?? SiderealMode.lahiri;
+
+    // Use custom service for base calculations with selected Ayanamsa
+    final chart = await _chartService.calculateChart(
       dateTime: birthData.dateTime,
       location: GeographicLocation(
         latitude: birthData.location.latitude,
         longitude: birthData.location.longitude,
         altitude: 0,
       ),
+      ayanamsaMode: mode,
     );
 
     // Calculate all systems
@@ -63,7 +74,11 @@ class KPChartService {
   List<String> _calculateSignificators(VedicChart chart) {
     final Set<String> allSignificators = {};
     for (int i = 1; i <= 12; i++) {
-      allSignificators.addAll(KPExtensions.calculateSignificators(chart, i));
+      // Flatten ABCD structure to get all acting significators
+      final abcdMap = KPExtensions.calculateSignificators(chart, i);
+      for (final list in abcdMap.values) {
+        allSignificators.addAll(list);
+      }
     }
     return allSignificators.toList();
   }

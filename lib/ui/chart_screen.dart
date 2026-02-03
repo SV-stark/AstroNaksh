@@ -4,6 +4,9 @@ import '../../data/models.dart';
 import '../../logic/kp_chart_service.dart';
 import '../../logic/divisional_charts.dart';
 import 'package:jyotish/jyotish.dart';
+import '../../core/ayanamsa_calculator.dart';
+import '../../core/chart_customization.dart' hide ChartStyle;
+import 'tools/birth_time_rectifier_screen.dart';
 
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
@@ -17,14 +20,80 @@ class _ChartScreenState extends State<ChartScreen> {
   Future<CompleteChartData>? _chartDataFuture;
   ChartStyle _style = ChartStyle.northIndian;
   String _selectedDivisionalChart = 'D-9';
+  BirthData? _birthData;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as BirthData?;
-    if (args != null && _chartDataFuture == null) {
-      _chartDataFuture = _kpChartService.generateCompleteChart(args);
+    if (_birthData == null) {
+      final args = ModalRoute.of(context)?.settings.arguments as BirthData?;
+      if (args != null) {
+        _birthData = args;
+        _loadChartData();
+      }
     }
+  }
+
+  void _loadChartData() {
+    if (_birthData != null) {
+      setState(() {
+        _chartDataFuture = _kpChartService.generateCompleteChart(_birthData!);
+      });
+    }
+  }
+
+  void _openAyanamsaSelection() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Select Ayanamsa',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: AyanamsaCalculator.systems.length,
+                    itemBuilder: (context, index) {
+                      final system = AyanamsaCalculator.systems[index];
+                      final isSelected =
+                          SettingsManager.current.ayanamsaSystem
+                              .toLowerCase() ==
+                          system.name.toLowerCase();
+
+                      return ListTile(
+                        title: Text(system.name),
+                        subtitle: Text(system.description),
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.deepPurple)
+                            : null,
+                        onTap: () {
+                          SettingsManager.current.ayanamsaSystem = system.name;
+                          Navigator.pop(context);
+                          _loadChartData();
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -45,6 +114,32 @@ class _ChartScreenState extends State<ChartScreen> {
             ],
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: _openAyanamsaSelection,
+              tooltip: "Chart Settings",
+            ),
+            IconButton(
+              icon: const Icon(Icons.build),
+              onPressed: () async {
+                if (_birthData == null) return;
+                final newData = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const BirthTimeRectifierScreen(),
+                    settings: RouteSettings(arguments: _birthData),
+                  ),
+                );
+
+                if (newData != null && newData is BirthData) {
+                  setState(() {
+                    _birthData = newData;
+                    _loadChartData();
+                  });
+                }
+              },
+              tooltip: "Birth Time Rectification",
+            ),
             IconButton(
               icon: Icon(
                 _style == ChartStyle.northIndian
@@ -490,8 +585,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         )
                         .toList(),
                   ),
-                )
-                .toList(),
+                ),
           ],
         ),
       ),
@@ -517,19 +611,17 @@ class _ChartScreenState extends State<ChartScreen> {
             const Divider(),
             const SizedBox(height: 8),
 
-            ...dasha.mahadashas
-                .map(
-                  (d) => ListTile(
-                    dense: true,
-                    title: Text("${d.name} (${d.lord})"),
-                    subtitle: Text(
-                      "${_formatDate(d.startDate)} to ${_formatDate(d.endDate)}",
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                    trailing: Text("${d.periodYears.toInt()} years"),
-                  ),
-                )
-                .toList(),
+            ...dasha.mahadashas.map(
+              (d) => ListTile(
+                dense: true,
+                title: Text("${d.name} (${d.lord})"),
+                subtitle: Text(
+                  "${_formatDate(d.startDate)} to ${_formatDate(d.endDate)}",
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+                trailing: Text("${d.periodYears.toInt()} years"),
+              ),
+            ),
           ],
         ),
       ),
@@ -567,8 +659,7 @@ class _ChartScreenState extends State<ChartScreen> {
                     ),
                     trailing: Text("${p.periodYears.toInt()} years"),
                   ),
-                )
-                .toList(),
+                ),
           ],
         ),
       ),

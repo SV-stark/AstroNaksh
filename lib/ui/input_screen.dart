@@ -85,6 +85,7 @@ class _InputScreenState extends State<InputScreen> {
       final birthData = BirthData(
         dateTime: dt,
         location: Location(latitude: lat, longitude: long),
+        name: name,
       );
 
       // Navigate to Chart Screen

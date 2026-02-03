@@ -24,8 +24,14 @@ class PDFReportService {
     final pdf = pw.Document();
     final title = reportTitle ?? 'Vedic Astrology Chart Report';
 
+    // Calculate ayanamsa value
+    final ayanamsaValue = await AyanamsaCalculator.calculate(
+      AyanamsaCalculator.defaultAyanamsa,
+      chartData.birthData.dateTime,
+    );
+
     // Add all sections
-    _addTitlePage(pdf, chartData, title);
+    _addTitlePage(pdf, chartData, title, ayanamsaValue);
 
     if (includeD1) {
       _addD1Section(pdf, chartData);
@@ -64,6 +70,7 @@ class PDFReportService {
     pw.Document pdf,
     CompleteChartData chartData,
     String title,
+    double ayanamsaValue,
   ) {
     pdf.addPage(
       pw.Page(
@@ -90,7 +97,7 @@ class PDFReportService {
                   ),
                 ),
                 pw.SizedBox(height: 40),
-                _buildInfoBox(chartData),
+                _buildInfoBox(chartData, ayanamsaValue),
                 pw.SizedBox(height: 60),
                 pw.Text(
                   'Generated on ${_formatDateTime(DateTime.now())}',
@@ -105,7 +112,10 @@ class PDFReportService {
   }
 
   /// Build birth info box
-  static pw.Widget _buildInfoBox(CompleteChartData chartData) {
+  static pw.Widget _buildInfoBox(
+    CompleteChartData chartData,
+    double ayanamsaValue,
+  ) {
     final birthData = chartData.birthData;
 
     return pw.Container(
@@ -127,10 +137,7 @@ class PDFReportService {
             'Longitude:',
             '${birthData.location.longitude.toStringAsFixed(4)}°',
           ),
-          _buildInfoRow(
-            'Ayanamsa:',
-            '${AyanamsaCalculator.calculate(AyanamsaCalculator.defaultAyanamsa, birthData.dateTime).toStringAsFixed(2)}°',
-          ),
+          _buildInfoRow('Ayanamsa:', '${ayanamsaValue.toStringAsFixed(2)}°'),
         ],
       ),
     );

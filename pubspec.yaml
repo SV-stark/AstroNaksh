@@ -54,6 +54,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.4
   timezone: ^0.11.0
+  sqflite_common_ffi: ^2.4.0+2
+  sqlite3_flutter_libs: ^0.5.41
 
 
 dev_dependencies:

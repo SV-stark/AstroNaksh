@@ -8,11 +8,19 @@ import 'ui/settings_screen.dart';
 import 'ui/loading_screen.dart';
 import 'ui/panchang_screen.dart';
 import 'core/settings_manager.dart';
+import 'dart:io';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
   tz.initializeTimeZones();
 
   // Initialize Window for Acrylic effect

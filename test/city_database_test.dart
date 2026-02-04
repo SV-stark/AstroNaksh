@@ -8,7 +8,7 @@ void main() {
     setUp(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMessageHandler('flutter/assets', (message) async {
-            // Identify if it's requesting the cities.json
+            // Identify if it's requesting the cities2.json
             // The message is encoded, but we can assume for this test we return our mock data
 
             // Actually, rootBundle uses 'flutter/assets' channel.

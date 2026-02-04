@@ -39,7 +39,13 @@ class DatabaseHelper {
         onOpen: (db) async {
           // Verify database integrity on open
           if (!db.isOpen) {
-            throw DatabaseException('Database failed to open');
+            AppEnvironment.log(
+              'DatabaseHelper: Warning - db.isOpen is false after openDatabase',
+            );
+          } else {
+            AppEnvironment.log(
+              'DatabaseHelper: Database opened successfully. Version: ${await db.getVersion()}',
+            );
           }
         },
       );

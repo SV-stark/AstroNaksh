@@ -740,9 +740,97 @@ class _ChartScreenState extends State<ChartScreen> {
         children: [
           _buildVimshottariDashaCard(data.dashaData.vimshottari),
           const SizedBox(height: 16),
-          // Not displaying Yogini/Chara to save space for now, or add back if needed.
-          // keeping implementation concise.
+          _buildYoginiDashaCard(data.dashaData.yogini),
+          const SizedBox(height: 16),
+          _buildCharaDashaCard(data.dashaData.chara),
         ],
+      ),
+    );
+  }
+
+  Widget _buildYoginiDashaCard(YoginiDasha dasha) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Yogini Dasha",
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 8),
+            Text("Start Yogini: ${dasha.startYogini}"),
+            const SizedBox(height: 8),
+            const Divider(),
+            const SizedBox(height: 8),
+            // Yogini periods are often short enough to list, or we use a table
+            SizedBox(
+              height: 250, // Constrain height if list is long
+              child: ListView.builder(
+                itemCount: dasha.mahadashas.length,
+                itemBuilder: (context, index) {
+                  final maha = dasha.mahadashas[index];
+                  return ListTile(
+                    title: Text("${maha.name} (${maha.lord})"),
+                    subtitle: Text(
+                      "${_formatDate(maha.startDate)} - ${_formatDate(maha.endDate)}",
+                    ),
+                    trailing: Text("${maha.periodYears}y"),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCharaDashaCard(CharaDasha dasha) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Chara Dasha (Jaimini)",
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Sign (Rashi)",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text("Period", style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            const Divider(),
+            SizedBox(
+              height: 250,
+              child: ListView.builder(
+                itemCount: dasha.periods.length,
+                itemBuilder: (context, index) {
+                  final period = dasha.periods[index];
+                  return ListTile(
+                    title: Text("${period.signName} (${period.lord})"),
+                    subtitle: Text(
+                      "${_formatDate(period.startDate)} - ${_formatDate(period.endDate)}",
+                    ),
+                    trailing: Text("${period.periodYears.toInt()}y"),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

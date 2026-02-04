@@ -1,12 +1,12 @@
 # ✨ AstroNaksh
 
-**A Comprehensive Vedic Astrology & KP System Mobile Application**
+**A Comprehensive Vedic Astrology & KP System Desktop & Web Application**
 
 Built with Flutter, powered by precision astronomical calculations, and designed for both beginners and professional astrologers.
 
 <p align="center">
   <img src="https://img.shields.io/badge/Flutter-3.10+-blue.svg" alt="Flutter Version">
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  <img src="https://img.shields.io/badge/License-GPLv3-green.svg" alt="License">
   <img src="https://img.shields.io/badge/Vedic-Astrology-orange.svg" alt="Vedic Astrology">
   <img src="https://img.shields.io/badge/KP-System-purple.svg" alt="KP System">
 </p>
@@ -75,7 +75,7 @@ This scientific approach has made predictions more accurate and verifiable than 
 
 ## 🎯 What is AstroNaksh?
 
-**AstroNaksh** is a modern, open-source mobile application that brings the profound wisdom of Vedic astrology and the precision of the KP System to your fingertips.
+**AstroNaksh** is a modern, open-source application that brings the profound wisdom of Vedic astrology and the precision of the KP System to your desktop and browser.
 
 ### Mission
 
@@ -119,7 +119,7 @@ To become the world's most trusted, accurate, and comprehensive Vedic astrology 
 
 ### Technical Features
 
-- 📱 **Cross-Platform**: iOS and Android support via Flutter
+- 💻 **Cross-Platform**: Windows, Linux, and Web support via Flutter
 - 💾 **Offline Mode**: Charts calculated locally without internet
 - 🗄️ **SQLite Database**: Store unlimited birth charts locally
 - 🌐 **Accurate Ephemeris**: Swiss Ephemeris for sub-arcsecond precision
@@ -179,7 +179,8 @@ To become the world's most trusted, accurate, and comprehensive Vedic astrology 
 
 - Flutter SDK (^3.10.7)
 - Dart SDK
-- Android Studio / Xcode (for mobile builds)
+- Windows / Linux OS (for desktop builds)
+- Web Browser (for web builds)
 
 ### Steps
 
@@ -199,17 +200,14 @@ To become the world's most trusted, accurate, and comprehensive Vedic astrology 
    flutter run
    ```
 
-### Building for Release
-
-**Android:**
+**Windows:**
 ```bash
-flutter build apk --release
-flutter build appbundle --release
+flutter build windows --release
 ```
 
-**iOS:**
+**Web:**
 ```bash
-flutter build ios --release
+flutter build web --release
 ```
 
 ---
@@ -256,31 +254,31 @@ flutter build ios --release
 
 ### Phase 1: Core Completeness (In Progress)
 
-- [ ] Complete ABCD significator calculations
-- [ ] Implement all 249 KP subdivisions
-- [ ] Add Dasha (Vimshottari) calculations
-- [ ] Transit analysis (Gochara)
-- [ ] House division options (Placidus, Koch, etc.)
-- [ ] Divisional charts (Varga) - Navamsa, Dasamsa, etc.
+- [x] Complete ABCD significator calculations
+- [x] Implement all 249 KP subdivisions
+- [x] Add Dasha (Vimshottari) calculations
+- [x] Transit analysis (Gochara)
+- [x] House division options (Placidus, Koch, etc.)
+- [x] Divisional charts (Varga) - Navamsa, Dasamsa, etc.
 
 ### Phase 2: Predictions & Analysis
 
 - [ ] Daily prediction engine
-- [ ] Transit predictions
-- [ ] Yearly forecast (Varshaphal)
-- [ ] Marriage compatibility (Kuta matching)
+- [x] Transit predictions
+- [x] Yearly forecast (Varshaphal)
+- [x] Marriage compatibility (Kuta matching)
 - [ ] Horary (Prashna) module
 - [ ] Muhurta (Electional) timing
 
 ### Phase 3: Advanced Features
 
-- [ ] PDF report generation
-- [ ] Chart comparison (Synastry)
-- [ ] Ashtakavarga system
-- [ ] Shadbala (Planetary strength)
+- [x] PDF report generation
+- [x] Chart comparison (Synastry)
+- [x] Ashtakavarga system
+- [x] Shadbala (Planetary strength)
 - [ ] Panchang (Daily almanac)
 - [ ] Eclipse calculations
-- [ ] Retrograde analysis
+- [x] Retrograde analysis
 
 ### Phase 4: Community & Polish
 

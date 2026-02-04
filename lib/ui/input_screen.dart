@@ -170,125 +170,182 @@ class _InputScreenState extends State<InputScreen> {
     return ScaffoldPage(
       header: const PageHeader(title: Text("New Chart")),
       content: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                "Enter Birth Details",
-                style: FluentTheme.of(context).typography.subtitle,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 30),
-
-              InfoLabel(
-                label: "Name",
-                child: TextFormBox(
-                  controller: _nameController,
-                  placeholder: "Enter Name",
-                  prefix: const Padding(
-                    padding: EdgeInsets.only(left: 8.0),
-                    child: Icon(FluentIcons.contact),
-                  ),
-                  validator: (value) =>
-                      value == null || value.isEmpty ? "Required" : null,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: InfoLabel(
-                      label: "Date of Birth",
-                      child: DatePicker(
-                        selected: _selectedDate,
-                        onChanged: (v) => setState(() => _selectedDate = v),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Step 1: Personal Details
+                Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(FluentIcons.personalize, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Personal Details",
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: InfoLabel(
-                      label: "Time of Birth",
-                      child: TimePicker(
-                        selected: _selectedTime,
-                        onChanged: (v) => setState(() => _selectedTime = v),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // City Search Section
-              InfoLabel(
-                label: "Birth Place",
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: AutoSuggestBox<City>(
-                        controller: _citySearchController,
-                        items: _cityItems,
-                        onChanged: (text, reason) {
-                          _onCitySearch(text);
-                        },
-                        onSelected: (item) {
-                          setState(() {
-                            _selectedCity = item.value;
-                          });
-                        },
-                        placeholder: "Search city...",
-                        leadingIcon: const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Icon(FluentIcons.city_next),
+                      const SizedBox(height: 24),
+                      InfoLabel(
+                        label: "Full Name",
+                        child: TextFormBox(
+                          controller: _nameController,
+                          placeholder: "Enter Name",
+                          prefix: const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Icon(FluentIcons.contact),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? "Required"
+                              : null,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton(
-                      onPressed: _isLoadingLocation
-                          ? null
-                          : _useCurrentLocation,
-                      child: _isLoadingLocation
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: ProgressRing(strokeWidth: 2),
-                            )
-                          : const Icon(FluentIcons.location),
-                    ),
-                  ],
-                ),
-              ),
-
-              if (_selectedCity != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: InfoBar(
-                    title: Text(_selectedCity!.displayName),
-                    content: Text(
-                      '${_selectedCity!.latitude.toStringAsFixed(4)}°N, ${_selectedCity!.longitude.toStringAsFixed(4)}°E',
-                    ),
-                    severity: InfoBarSeverity.info,
-                    isLong: true,
+                    ],
                   ),
                 ),
 
-              const SizedBox(height: 32),
+                const SizedBox(height: 16),
 
-              FilledButton(
-                onPressed: _generateChart,
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text("Generate Chart", style: TextStyle(fontSize: 16)),
+                // Step 2: Birth Time & Date
+                Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(FluentIcons.calendar, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Birth Date & Time",
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InfoLabel(
+                              label: "Date",
+                              child: DatePicker(
+                                selected: _selectedDate,
+                                onChanged: (v) =>
+                                    setState(() => _selectedDate = v),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: InfoLabel(
+                              label: "Time",
+                              child: TimePicker(
+                                selected: _selectedTime,
+                                onChanged: (v) =>
+                                    setState(() => _selectedTime = v),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 16),
+
+                // Step 3: Location
+                Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(FluentIcons.location, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Birth Place",
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AutoSuggestBox<City>(
+                              controller: _citySearchController,
+                              items: _cityItems,
+                              onChanged: (text, reason) {
+                                _onCitySearch(text);
+                              },
+                              onSelected: (item) {
+                                setState(() {
+                                  _selectedCity = item.value;
+                                });
+                              },
+                              placeholder: "Search city...",
+                              leadingIcon: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(FluentIcons.city_next),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: _isLoadingLocation
+                                ? null
+                                : _useCurrentLocation,
+                            child: _isLoadingLocation
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: ProgressRing(strokeWidth: 2),
+                                  )
+                                : const Icon(FluentIcons.location),
+                          ),
+                        ],
+                      ),
+                      if (_selectedCity != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: InfoBar(
+                            title: Text(_selectedCity!.displayName),
+                            content: Text(
+                              '${_selectedCity!.latitude.toStringAsFixed(4)}°N, ${_selectedCity!.longitude.toStringAsFixed(4)}°E',
+                            ),
+                            severity: InfoBarSeverity.info,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Action
+                SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: _generateChart,
+                    child: const Text(
+                      "Generate Chart",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),

@@ -19,7 +19,7 @@ import 'predictions/transit_screen.dart';
 import 'predictions/varshaphal_screen.dart';
 import 'analysis/retrograde_screen.dart';
 import 'comparison/chart_comparison_screen.dart';
-import 'comparison/chart_comparison_screen.dart';
+import 'predictions/rashiphal_dashboard.dart';
 import 'reports/pdf_report_screen.dart';
 import '../../core/chart_share_service.dart';
 
@@ -63,39 +63,102 @@ class _ChartScreenState extends State<ChartScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return ContentDialog(
-          title: const Text('Select Ayanamsa'),
-          content: SizedBox(
-            height: 300, // Limit height
-            child: ListView.builder(
-              itemCount: AyanamsaCalculator.systems.length,
-              itemBuilder: (context, index) {
-                final system = AyanamsaCalculator.systems[index];
-                final isSelected =
-                    SettingsManager().chartSettings.ayanamsaSystem
-                        .toLowerCase() ==
-                    system.name.toLowerCase();
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final allSystems = AyanamsaCalculator.systems;
+            final filteredSystems = searchQuery.isEmpty
+                ? allSystems
+                : allSystems
+                      .where(
+                        (s) =>
+                            s.name.toLowerCase().contains(
+                              searchQuery.toLowerCase(),
+                            ) ||
+                            s.description.toLowerCase().contains(
+                              searchQuery.toLowerCase(),
+                            ),
+                      )
+                      .toList();
 
-                return ListTile.selectable(
-                  selected: isSelected,
-                  title: Text(system.name),
-                  subtitle: Text(system.description),
-                  onPressed: () {
-                    SettingsManager().chartSettings.ayanamsaSystem =
-                        system.name;
-                    Navigator.pop(context);
-                    _loadChartData();
-                  },
-                );
-              },
-            ),
-          ),
-          actions: [
-            Button(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
+            return ContentDialog(
+              title: const Text('Select Ayanamsa'),
+              content: SizedBox(
+                height: 400,
+                child: Column(
+                  children: [
+                    TextBox(
+                      placeholder: "Search Ayanamsa...",
+                      prefix: const Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: Icon(FluentIcons.search),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          searchQuery = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredSystems.length,
+                        itemBuilder: (context, index) {
+                          final system = filteredSystems[index];
+                          final isSelected =
+                              SettingsManager().chartSettings.ayanamsaSystem
+                                  .toLowerCase() ==
+                              system.name.toLowerCase();
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: RadioButton(
+                              checked: isSelected,
+                              content: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    system.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (system.description != system.name)
+                                    Text(
+                                      system.description,
+                                      style: FluentTheme.of(
+                                        context,
+                                      ).typography.caption,
+                                    ),
+                                ],
+                              ),
+                              onChanged: (v) {
+                                if (v == true) {
+                                  SettingsManager()
+                                          .chartSettings
+                                          .ayanamsaSystem =
+                                      system.name;
+                                  Navigator.pop(context);
+                                  _loadChartData();
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                Button(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -422,6 +485,13 @@ class _ChartScreenState extends State<ChartScreen> {
             title: const Text("Details"),
             body: _buildBody(_buildDetailsTab),
           ),
+          PaneItem(
+            icon: const Icon(FluentIcons.lightbulb),
+            title: const Text("Rashiphal"),
+            body: _buildBody(
+              (data) => RashiphalDashboardScreen(chartData: data),
+            ),
+          ),
         ],
       ),
     );
@@ -524,7 +594,7 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Widget _buildVargasTab(CompleteChartData data) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -533,42 +603,48 @@ class _ChartScreenState extends State<ChartScreen> {
             style: FluentTheme.of(context).typography.subtitle,
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children:
-                [
-                      'D-1',
-                      'D-2',
-                      'D-3',
-                      'D-4',
-                      'D-7',
-                      'D-9',
-                      'D-10',
-                      'D-12',
-                      'D-16',
-                      'D-20',
-                      'D-24',
-                      'D-27',
-                      'D-30',
-                      'D-40',
-                      'D-45',
-                      'D-60',
-                    ]
-                    .map(
-                      (code) => ToggleButton(
-                        checked: _selectedDivisionalChart == code,
-                        onChanged: (selected) {
-                          if (selected) {
-                            setState(() => _selectedDivisionalChart = code);
-                          }
-                        },
-                        child: Text(code),
-                      ),
-                    )
-                    .toList(),
+          // Horizontal scrolling list for Charts
+          SizedBox(
+            height: 40,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children:
+                  [
+                        'D-1',
+                        'D-2',
+                        'D-3',
+                        'D-4',
+                        'D-7',
+                        'D-9',
+                        'D-10',
+                        'D-12',
+                        'D-16',
+                        'D-20',
+                        'D-24',
+                        'D-27',
+                        'D-30',
+                        'D-40',
+                        'D-45',
+                        'D-60',
+                      ]
+                      .map(
+                        (code) => Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: ToggleButton(
+                            checked: _selectedDivisionalChart == code,
+                            onChanged: (selected) {
+                              if (selected) {
+                                setState(() => _selectedDivisionalChart = code);
+                              }
+                            },
+                            child: Text(code),
+                          ),
+                        ),
+                      )
+                      .toList(),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           _buildDivisionalChartDisplay(data, _selectedDivisionalChart),
         ],
       ),
@@ -616,10 +692,12 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Widget _buildKPTab(CompleteChartData data) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text("KP System", style: FluentTheme.of(context).typography.subtitle),
+          const SizedBox(height: 16),
           _buildKPSubLordsCard(data),
           const SizedBox(height: 16),
           _buildKPSignificatorsCard(data),
@@ -647,26 +725,54 @@ class _ChartScreenState extends State<ChartScreen> {
               columnWidths: const {0: FlexColumnWidth(1)},
               children: [
                 TableRow(
-                  children: const [
-                    Text(
-                      "Planet",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  decoration: BoxDecoration(
+                    color: FluentTheme.of(context).cardColor,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: FluentTheme.of(
+                          context,
+                        ).resources.dividerStrokeColorDefault,
+                      ),
                     ),
-                    Text(
-                      "Nakshatra",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        "Planet",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: FluentTheme.of(context).accentColor,
+                        ),
+                      ),
                     ),
-                    Text(
-                      "Star Lord",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        "Nakshatra",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    Text(
-                      "Sub Lord",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        "Star Lord",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    Text(
-                      "Sub-Sub",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        "Sub Lord",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        "Sub-Sub",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -678,30 +784,33 @@ class _ChartScreenState extends State<ChartScreen> {
                     SizedBox(),
                     SizedBox(),
                   ],
-                ), // Spacing
+                ),
                 ...data.significatorTable.entries.map((entry) {
                   final planet = entry.key;
                   final info = entry.value;
                   return TableRow(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Text(planet),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          planet,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(info['nakshatra'] ?? ''),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(info['starLord'] ?? ''),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(info['subLord'] ?? ''),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(info['subSubLord'] ?? ''),
                       ),
                     ],
@@ -726,30 +835,67 @@ class _ChartScreenState extends State<ChartScreen> {
               "Significations",
               style: FluentTheme.of(context).typography.subtitle,
             ),
-            const SizedBox(height: 10),
-            ...data.significatorTable.entries.map((entry) {
-              final planet = entry.key;
-              final info = entry.value;
-              final significations =
-                  info['significations'] as List<dynamic>? ?? [];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 80,
-                      child: Text(
-                        planet,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+            const SizedBox(height: 16),
+            Table(
+              columnWidths: const {
+                0: FlexColumnWidth(1),
+                1: FlexColumnWidth(4),
+              },
+              children: [
+                TableRow(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: FluentTheme.of(
+                          context,
+                        ).resources.dividerStrokeColorDefault,
                       ),
                     ),
-                    Expanded(
-                      child: Text("Houses: ${significations.join(', ')}"),
+                  ),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        "Planet",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: FluentTheme.of(context).accentColor,
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        "Houses (Significations)",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
-              );
-            }),
+                const TableRow(children: [SizedBox(height: 8), SizedBox()]),
+                ...data.significatorTable.entries.map((entry) {
+                  final planet = entry.key;
+                  final info = entry.value;
+                  final significations =
+                      info['significations'] as List<dynamic>? ?? [];
+                  return TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(
+                          planet,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(significations.join(', ')),
+                      ),
+                    ],
+                  );
+                }),
+              ],
+            ),
           ],
         ),
       ),
@@ -801,6 +947,12 @@ class _ChartScreenState extends State<ChartScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            "Vimshottari Dasha",
+            style: FluentTheme.of(context).typography.subtitle,
+          ),
+          const SizedBox(height: 16),
+          // Timeline-like visual for Dasha
           _buildVimshottariDashaCard(data.dashaData.vimshottari),
           const SizedBox(height: 16),
           _buildYoginiDashaCard(data.dashaData.yogini),
@@ -916,21 +1068,36 @@ class _ChartScreenState extends State<ChartScreen> {
             const Divider(),
             const SizedBox(height: 8),
             ...dasha.mahadashas.map(
-              (maha) => Expander(
-                header: Text("${maha.lord} - ${maha.formattedPeriod}"),
-                content: Column(
-                  children: maha.antardashas
-                      .map(
-                        (antar) => ListTile(
-                          title: Text(
-                            "${antar.lord} (${antar.periodYears.toStringAsFixed(2)}y)",
+              (maha) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Expander(
+                  leading: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: FluentTheme.of(context).accentColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  header: Text(
+                    "${maha.lord} - ${maha.formattedPeriod}",
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: maha.antardashas
+                        .map(
+                          (antar) => ListTile(
+                            title: Text(
+                              "${antar.lord} (${antar.periodYears.toStringAsFixed(2)}y)",
+                            ),
+                            subtitle: Text(
+                              "${_formatDate(antar.startDate)} - ${_formatDate(antar.endDate)}",
+                            ),
                           ),
-                          subtitle: Text(
-                            "${_formatDate(antar.startDate)} - ${_formatDate(antar.endDate)}",
-                          ),
-                        ),
-                      )
-                      .toList(),
+                        )
+                        .toList(),
+                  ),
                 ),
               ),
             ),
@@ -945,7 +1112,7 @@ class _ChartScreenState extends State<ChartScreen> {
     final navamsa = data.divisionalCharts['D-9'];
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(24.0),
       child: Column(
         children: [
           Card(
@@ -964,26 +1131,50 @@ class _ChartScreenState extends State<ChartScreen> {
                       0: FlexColumnWidth(1),
                       1: FlexColumnWidth(1),
                       2: FlexColumnWidth(1),
-                      3: FlexColumnWidth(1),
+                      3: FlexColumnWidth(0.5),
                     },
                     children: [
-                      const TableRow(
+                      TableRow(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: FluentTheme.of(
+                                context,
+                              ).resources.dividerStrokeColorDefault,
+                            ),
+                          ),
+                        ),
                         children: [
-                          Text(
-                            "Planet",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "Planet",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: FluentTheme.of(context).accentColor,
+                              ),
+                            ),
                           ),
-                          Text(
-                            "Sign",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "Sign",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-                          Text(
-                            "Long",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "Long",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-                          Text(
-                            "R",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "R",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ],
                       ),
@@ -1006,20 +1197,31 @@ class _ChartScreenState extends State<ChartScreen> {
                         return TableRow(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Text(planetName),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                planetName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(signName),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(normLongitude.toStringAsFixed(2)),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Text(info.isRetrograde ? "R" : ""),
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                info.isRetrograde ? "R" : "",
+                                style: TextStyle(
+                                  color: Colors.orange,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ],
                         );
@@ -1046,15 +1248,33 @@ class _ChartScreenState extends State<ChartScreen> {
                     // Display Navamsa positions
                     Table(
                       children: [
-                        const TableRow(
-                          children: [
-                            Text(
-                              "Planet",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                        TableRow(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: FluentTheme.of(
+                                  context,
+                                ).resources.dividerStrokeColorDefault,
+                              ),
                             ),
-                            Text(
-                              "Sign",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                "Planet",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: FluentTheme.of(context).accentColor,
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                "Sign",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ],
                         ),
@@ -1071,13 +1291,18 @@ class _ChartScreenState extends State<ChartScreen> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
+                                  vertical: 6,
                                 ),
-                                child: Text(planetName),
+                                child: Text(
+                                  planetName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
+                                  vertical: 6,
                                 ),
                                 child: Text(signName),
                               ),
@@ -1147,6 +1372,30 @@ class _ChartScreenState extends State<ChartScreen> {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
+                ),
+                const TableRow(
+                  children: [
+                    SizedBox(height: 8),
+                    SizedBox(),
+                    SizedBox(),
+                    SizedBox(),
+                    SizedBox(),
+                    SizedBox(),
+                    SizedBox(),
+                  ],
+                ),
+                // Divider Row
+                TableRow(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: FluentTheme.of(
+                          context,
+                        ).resources.dividerStrokeColorDefault,
+                      ),
+                    ),
+                  ),
+                  children: List.filled(7, const SizedBox(height: 4)),
                 ),
                 const TableRow(
                   children: [

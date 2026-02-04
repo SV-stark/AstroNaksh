@@ -54,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: PaneDisplayMode.compact,
+        displayMode: PaneDisplayMode.auto,
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.brush),
@@ -108,51 +108,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Appearance')),
       children: [
+        const Text('App Theme'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'App Theme',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 16,
-                  children: [
-                    RadioButton(
-                      checked: currentTheme == ThemeMode.system,
-                      content: const Text('System'),
-                      onChanged: (v) {
-                        if (v) {
-                          SettingsManager().updateThemeMode(ThemeMode.system);
-                        }
-                      },
-                    ),
-                    RadioButton(
-                      checked: currentTheme == ThemeMode.light,
-                      content: const Text('Light'),
-                      onChanged: (v) {
-                        if (v) {
-                          SettingsManager().updateThemeMode(ThemeMode.light);
-                        }
-                      },
-                    ),
-                    RadioButton(
-                      checked: currentTheme == ThemeMode.dark,
-                      content: const Text('Dark'),
-                      onChanged: (v) {
-                        if (v) {
-                          SettingsManager().updateThemeMode(ThemeMode.dark);
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              ListTile.selectable(
+                title: const Text('System Default'),
+                leading: const Icon(FluentIcons.system),
+                selected: currentTheme == ThemeMode.system,
+                onPressed: () =>
+                    SettingsManager().updateThemeMode(ThemeMode.system),
+              ),
+              const Divider(),
+              ListTile.selectable(
+                title: const Text('Light Mode'),
+                leading: const Icon(FluentIcons.sunny),
+                selected: currentTheme == ThemeMode.light,
+                onPressed: () =>
+                    SettingsManager().updateThemeMode(ThemeMode.light),
+              ),
+              const Divider(),
+              ListTile.selectable(
+                title: const Text('Dark Mode'),
+                leading: const Icon(FluentIcons.clear_night),
+                selected: currentTheme == ThemeMode.dark,
+                onPressed: () =>
+                    SettingsManager().updateThemeMode(ThemeMode.dark),
+              ),
+            ],
           ),
         ),
       ],
@@ -163,87 +148,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Chart Display')),
       children: [
+        const Text('Chart Style'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Chart Style',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  children: ChartStyle.values.map((style) {
-                    return ToggleButton(
-                      checked: _settings.chartStyle == style,
-                      onChanged: (v) {
-                        if (v) setState(() => _settings.chartStyle = style);
-                      },
-                      child: Text(_formatEnumName(style.name)),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: ChartStyle.values.asMap().entries.map((entry) {
+              final index = entry.key;
+              final style = entry.value;
+              return Column(
+                children: [
+                  ListTile.selectable(
+                    title: Text(_formatEnumName(style.name)),
+                    selected: _settings.chartStyle == style,
+                    onPressed: () =>
+                        setState(() => _settings.chartStyle = style),
+                    leading: const Icon(FluentIcons.chart),
+                  ),
+                  if (index != ChartStyle.values.length - 1) const Divider(),
+                ],
+              );
+            }).toList(),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
+        const Text('Color Scheme'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Color Scheme',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  children: ColorScheme.values.map((scheme) {
-                    return ToggleButton(
-                      checked: _settings.colorScheme == scheme,
-                      onChanged: (v) {
-                        if (v) setState(() => _settings.colorScheme = scheme);
-                      },
-                      child: Text(_formatEnumName(scheme.name)),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: ColorScheme.values.asMap().entries.map((entry) {
+              final index = entry.key;
+              final scheme = entry.value;
+              return Column(
+                children: [
+                  ListTile.selectable(
+                    title: Text(_formatEnumName(scheme.name)),
+                    selected: _settings.colorScheme == scheme,
+                    onPressed: () =>
+                        setState(() => _settings.colorScheme = scheme),
+                    leading: const Icon(FluentIcons.color),
+                  ),
+                  if (index != ColorScheme.values.length - 1) const Divider(),
+                ],
+              );
+            }).toList(),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
+        const Text('Planet Size'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Planet Size',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  children: PlanetSize.values.map((size) {
-                    return ToggleButton(
-                      checked: _settings.planetSize == size,
-                      onChanged: (v) {
-                        if (v) setState(() => _settings.planetSize = size);
-                      },
-                      child: Text(_formatEnumName(size.name)),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: PlanetSize.values.asMap().entries.map((entry) {
+              final index = entry.key;
+              final size = entry.value;
+              return Column(
+                children: [
+                  ListTile.selectable(
+                    title: Text(_formatEnumName(size.name)),
+                    selected: _settings.planetSize == size,
+                    onPressed: () =>
+                        setState(() => _settings.planetSize = size),
+                    leading: const Icon(FluentIcons.size_legacy),
+                  ),
+                  if (index != PlanetSize.values.length - 1) const Divider(),
+                ],
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -254,32 +227,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Planet Display')),
       children: [
+        const Text('Visibility Options'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildToggle('Show Degrees', _settings.showDegrees, (v) {
-                  setState(() => _settings.showDegrees = v);
-                }),
-                _buildToggle('Show Nakshatras', _settings.showNakshatras, (v) {
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              _buildListTileToggle('Show Degrees', _settings.showDegrees, (v) {
+                setState(() => _settings.showDegrees = v);
+              }),
+              _buildListTileToggle(
+                'Show Nakshatras',
+                _settings.showNakshatras,
+                (v) {
                   setState(() => _settings.showNakshatras = v);
-                }),
-                _buildToggle('Show Retrograde', _settings.showRetrograde, (v) {
+                },
+              ),
+              _buildListTileToggle(
+                'Show Retrograde',
+                _settings.showRetrograde,
+                (v) {
                   setState(() => _settings.showRetrograde = v);
-                }),
-                _buildToggle('Show Combust', _settings.showCombust, (v) {
-                  setState(() => _settings.showCombust = v);
-                }),
-                _buildToggle(
-                  'Show Exalted/Debilitated',
-                  _settings.showExaltedDebilitated,
-                  (v) {
-                    setState(() => _settings.showExaltedDebilitated = v);
-                  },
-                ),
-              ],
-            ),
+                },
+              ),
+              _buildListTileToggle('Show Combust', _settings.showCombust, (v) {
+                setState(() => _settings.showCombust = v);
+              }),
+              _buildListTileToggle(
+                'Show Exalted/Debilitated',
+                _settings.showExaltedDebilitated,
+                (v) {
+                  setState(() => _settings.showExaltedDebilitated = v);
+                },
+              ),
+            ],
           ),
         ),
       ],
@@ -290,56 +271,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('House Settings')),
       children: [
+        const Text('House System'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'House System',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: HouseSystem.values.map((system) {
-                    return ToggleButton(
-                      checked: _settings.houseSystem == system,
-                      onChanged: (v) {
-                        if (v) setState(() => _settings.houseSystem = system);
-                      },
-                      child: Text(_formatEnumName(system.name)),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: HouseSystem.values.asMap().entries.map((entry) {
+              final index = entry.key;
+              final system = entry.value;
+              return Column(
+                children: [
+                  ListTile.selectable(
+                    title: Text(_formatEnumName(system.name)),
+                    selected: _settings.houseSystem == system,
+                    onPressed: () =>
+                        setState(() => _settings.houseSystem = system),
+                  ),
+                  if (index != HouseSystem.values.length - 1) const Divider(),
+                ],
+              );
+            }).toList(),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
+        const Text('Display Options'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildToggle('Show Houses', _settings.showHouses, (v) {
-                  setState(() => _settings.showHouses = v);
-                }),
-                _buildToggle('Show Signs', _settings.showSigns, (v) {
-                  setState(() => _settings.showSigns = v);
-                }),
-                _buildToggle('Show House Cusps', _settings.showHouseCusps, (v) {
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              _buildListTileToggle('Show Houses', _settings.showHouses, (v) {
+                setState(() => _settings.showHouses = v);
+              }),
+              _buildListTileToggle('Show Signs', _settings.showSigns, (v) {
+                setState(() => _settings.showSigns = v);
+              }),
+              _buildListTileToggle(
+                'Show House Cusps',
+                _settings.showHouseCusps,
+                (v) {
                   setState(() => _settings.showHouseCusps = v);
-                }),
-                _buildToggle('Show House Numbers', _settings.showHouseNumbers, (
-                  v,
-                ) {
+                },
+              ),
+              _buildListTileToggle(
+                'Show House Numbers',
+                _settings.showHouseNumbers,
+                (v) {
                   setState(() => _settings.showHouseNumbers = v);
-                }),
-              ],
-            ),
+                },
+              ),
+            ],
           ),
         ),
       ],
@@ -350,43 +331,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Ayanamsa System')),
       children: [
+        const Text('Select Ayanamsa'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Select Ayanamsa',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                ...AyanamsaCalculator.systems.map((system) {
-                  final isSelected =
-                      _settings.ayanamsaSystem.toLowerCase() ==
-                      system.name.toLowerCase();
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: ListTile.selectable(
-                      selected: isSelected,
-                      onPressed: () {
-                        setState(() => _settings.ayanamsaSystem = system.name);
-                      },
-                      leading: Icon(
-                        isSelected
-                            ? FluentIcons.radio_bullet
-                            : FluentIcons.circle_ring,
-                        color: isSelected
-                            ? FluentTheme.of(context).accentColor
-                            : null,
-                      ),
-                      title: Text(system.name),
-                      subtitle: Text(system.description),
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: AyanamsaCalculator.systems.asMap().entries.map((entry) {
+              final index = entry.key;
+              final system = entry.value;
+              final isSelected =
+                  _settings.ayanamsaSystem.toLowerCase() ==
+                  system.name.toLowerCase();
+
+              return Column(
+                children: [
+                  ListTile.selectable(
+                    title: Text(
+                      system.name,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                  );
-                }),
-              ],
-            ),
+                    subtitle: system.description != system.name
+                        ? Text(system.description)
+                        : null,
+                    selected: isSelected,
+                    onPressed: () {
+                      setState(() => _settings.ayanamsaSystem = system.name);
+                    },
+                    leading: Icon(
+                      isSelected
+                          ? FluentIcons.radio_bullet
+                          : FluentIcons.circle_ring,
+                      color: isSelected
+                          ? FluentTheme.of(context).accentColor
+                          : null,
+                    ),
+                  ),
+                  if (index != AyanamsaCalculator.systems.length - 1)
+                    const Divider(),
+                ],
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -397,43 +381,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('PDF Report Options')),
       children: [
+        const Text('Content Selection'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildToggle('Include D-1 Chart', _settings.pdfIncludeD1, (v) {
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              _buildListTileToggle(
+                'Include D-1 Chart',
+                _settings.pdfIncludeD1,
+                (v) {
                   setState(() => _settings.pdfIncludeD1 = v);
-                }),
-                _buildToggle('Include D-9 Navamsa', _settings.pdfIncludeD9, (
-                  v,
-                ) {
+                },
+              ),
+              _buildListTileToggle(
+                'Include D-9 Navamsa',
+                _settings.pdfIncludeD9,
+                (v) {
                   setState(() => _settings.pdfIncludeD9 = v);
-                }),
-                _buildToggle('Include Dasha', _settings.pdfIncludeDasha, (v) {
-                  setState(() => _settings.pdfIncludeDasha = v);
-                }),
-                _buildToggle('Include KP Analysis', _settings.pdfIncludeKP, (
-                  v,
-                ) {
+                },
+              ),
+              _buildListTileToggle('Include Dasha', _settings.pdfIncludeDasha, (
+                v,
+              ) {
+                setState(() => _settings.pdfIncludeDasha = v);
+              }),
+              _buildListTileToggle(
+                'Include KP Analysis',
+                _settings.pdfIncludeKP,
+                (v) {
                   setState(() => _settings.pdfIncludeKP = v);
-                }),
-                _buildToggle(
-                  'Include Other Vargas',
-                  _settings.pdfIncludeVargas,
-                  (v) {
-                    setState(() => _settings.pdfIncludeVargas = v);
-                  },
-                ),
-                _buildToggle(
-                  'Include Interpretations',
-                  _settings.pdfIncludeInterpretations,
-                  (v) {
-                    setState(() => _settings.pdfIncludeInterpretations = v);
-                  },
-                ),
-              ],
-            ),
+                },
+              ),
+              _buildListTileToggle(
+                'Include Other Vargas',
+                _settings.pdfIncludeVargas,
+                (v) {
+                  setState(() => _settings.pdfIncludeVargas = v);
+                },
+              ),
+              _buildListTileToggle(
+                'Include Interpretations',
+                _settings.pdfIncludeInterpretations,
+                (v) {
+                  setState(() => _settings.pdfIncludeInterpretations = v);
+                },
+              ),
+            ],
           ),
         ),
       ],
@@ -444,94 +438,78 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Dasha & Transit')),
       children: [
+        const Text('Dasha Settings'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Dasha Years to Show: ${_settings.dashaYearsToShow}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Slider(
+                value: _settings.dashaYearsToShow.toDouble(),
+                min: 5,
+                max: 50,
+                divisions: 9,
+                onChanged: (v) {
+                  setState(() => _settings.dashaYearsToShow = v.toInt());
+                },
+                label: '${_settings.dashaYearsToShow} years',
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 16),
+              _buildSimpleToggle('Show Antardasha', _settings.showAntardasha, (
+                v,
+              ) {
+                setState(() => _settings.showAntardasha = v);
+              }),
+              const SizedBox(height: 12),
+              _buildSimpleToggle(
+                'Show Pratyantardasha',
+                _settings.showPratyantardasha,
+                (v) {
+                  setState(() => _settings.showPratyantardasha = v);
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text('Transit Settings'),
+        const SizedBox(height: 8),
+        Card(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSimpleToggle('Show Transits', _settings.showTransits, (v) {
+                setState(() => _settings.showTransits = v);
+              }),
+              if (_settings.showTransits) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
                 Text(
-                  'Dasha Years to Show',
-                  style: FluentTheme.of(context).typography.subtitle,
+                  'Days to show: ${_settings.transitDaysToShow}',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Slider(
-                        value: _settings.dashaYearsToShow.toDouble(),
-                        min: 5,
-                        max: 50,
-                        divisions: 9,
-                        onChanged: (v) {
-                          setState(
-                            () => _settings.dashaYearsToShow = v.toInt(),
-                          );
-                        },
-                        label: '${_settings.dashaYearsToShow} years',
-                      ),
-                    ),
-                    SizedBox(
-                      width: 60,
-                      child: Text('${_settings.dashaYearsToShow} yrs'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildToggle('Show Antardasha', _settings.showAntardasha, (v) {
-                  setState(() => _settings.showAntardasha = v);
-                }),
-                _buildToggle(
-                  'Show Pratyantardasha',
-                  _settings.showPratyantardasha,
-                  (v) {
-                    setState(() => _settings.showPratyantardasha = v);
+                Slider(
+                  value: _settings.transitDaysToShow.toDouble(),
+                  min: 7,
+                  max: 90,
+                  divisions: 11,
+                  onChanged: (v) {
+                    setState(() => _settings.transitDaysToShow = v.toInt());
                   },
                 ),
               ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Transit Settings',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                _buildToggle('Show Transits', _settings.showTransits, (v) {
-                  setState(() => _settings.showTransits = v);
-                }),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Text('Days to show: '),
-                    Expanded(
-                      child: Slider(
-                        value: _settings.transitDaysToShow.toDouble(),
-                        min: 7,
-                        max: 90,
-                        divisions: 11,
-                        onChanged: (v) {
-                          setState(
-                            () => _settings.transitDaysToShow = v.toInt(),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: 50,
-                      child: Text('${_settings.transitDaysToShow}'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ],
@@ -542,65 +520,107 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Presets & Reset')),
       children: [
+        const Text('Quick Presets'),
+        const SizedBox(height: 8),
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Quick Presets',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    FilledButton(
-                      onPressed: () => _applyPreset('beginner'),
-                      child: const Text('Beginner'),
-                    ),
-                    FilledButton(
-                      onPressed: () => _applyPreset('professional'),
-                      child: const Text('Professional'),
-                    ),
-                    Button(
-                      onPressed: () => _applyPreset('minimal'),
-                      child: const Text('Minimal'),
-                    ),
-                    Button(
-                      onPressed: () => _applyPreset('print'),
-                      child: const Text('Print-Friendly'),
-                    ),
-                  ],
-                ),
-              ],
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _buildPresetCard(
+                'Beginner',
+                'Simplified view',
+                () => _applyPreset('beginner'),
+              ),
+              _buildPresetCard(
+                'Professional',
+                'Full details',
+                () => _applyPreset('professional'),
+              ),
+              _buildPresetCard(
+                'Minimal',
+                'Clean Layout',
+                () => _applyPreset('minimal'),
+              ),
+              _buildPresetCard(
+                'Print-Friendly',
+                'PDF Ready',
+                () => _applyPreset('print'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 32),
+        const Text('Danger Zone'),
+        const SizedBox(height: 8),
+        Card(
+          child: ListTile(
+            leading: const Icon(FluentIcons.delete),
+            title: const Text('Reset All Settings'),
+            subtitle: const Text('Restore default configuration'),
+            trailing: Button(
+              onPressed: () {
+                setState(() => _settings.resetToDefaults());
+              },
+              child: const Text('Reset'),
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Reset',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 12),
-                Button(
-                  onPressed: () {
-                    setState(() => _settings.resetToDefaults());
-                  },
-                  child: const Text('Reset to Defaults'),
-                ),
-              ],
-            ),
+      ],
+    );
+  }
+
+  Widget _buildPresetCard(
+    String title,
+    String subtitle,
+    VoidCallback onPressed,
+  ) {
+    return SizedBox(
+      width: 150,
+      child: Button(
+        onPressed: onPressed,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(subtitle, style: FluentTheme.of(context).typography.caption),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildListTileToggle(
+    String label,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
+    return Column(
+      children: [
+        ListTile(
+          title: Text(label),
+          trailing: ToggleSwitch(checked: value, onChanged: onChanged),
+        ),
+        const Divider(),
+      ],
+    );
+  }
+
+  // Simple toggle for inside cards without dividers
+  Widget _buildSimpleToggle(
+    String label,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label),
+        ToggleSwitch(checked: value, onChanged: onChanged),
       ],
     );
   }
@@ -622,19 +642,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           break;
       }
     });
-  }
-
-  Widget _buildToggle(String label, bool value, ValueChanged<bool> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label),
-          ToggleSwitch(checked: value, onChanged: onChanged),
-        ],
-      ),
-    );
   }
 
   String _formatEnumName(String name) {

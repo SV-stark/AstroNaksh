@@ -274,32 +274,12 @@ class _HomeScreenState extends State<HomeScreen> {
       header: PageHeader(
         title: const Text("AstroNaksh"),
         commandBar: CommandBar(
-          primaryItems: [
-            CommandBarButton(
-              key: _newChartKey,
-              icon: const Icon(FluentIcons.add),
-              label: const Text('New Chart'),
-              onPressed: () async {
-                await Navigator.pushNamed(context, '/input');
-                _loadCharts();
-              },
-            ),
-            CommandBarButton(
-              key: _panchangKey,
-              icon: const Icon(FluentIcons.calendar),
-              label: const Text('Panchang'),
-              onPressed: () {
-                Navigator.pushNamed(context, '/panchang');
-              },
-            ),
-          ],
+          primaryItems: [],
           secondaryItems: [
             CommandBarButton(
               icon: const Icon(FluentIcons.share),
               label: const Text('Import/Export'),
-              onPressed: () {
-                // TODO: Import/Export Dialog
-              },
+              onPressed: () {},
             ),
             CommandBarButton(
               key: _settingsKey,
@@ -312,60 +292,149 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      content: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextBox(
-              key: _searchKey,
-              controller: _searchController,
-              placeholder: "Search charts...",
-              prefix: const Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Icon(FluentIcons.search),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Dashboard Quick Actions
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Quick Actions",
+                    style: FluentTheme.of(context).typography.subtitle,
+                  ),
+                  const SizedBox(height: 16),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 2.5,
+                    children: [
+                      _buildQuickAction(
+                        key: _newChartKey,
+                        icon: FluentIcons.add,
+                        title: "New Chart",
+                        subtitle: "Calculate birth data",
+                        color: AppStyles.primaryColor,
+                        onTap: () async {
+                          await Navigator.pushNamed(context, '/input');
+                          _loadCharts();
+                        },
+                      ),
+                      _buildQuickAction(
+                        key: _panchangKey,
+                        icon: FluentIcons.calendar,
+                        title: "Panchang",
+                        subtitle: "Daily almanac",
+                        color: Colors.orange,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/panchang');
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
 
-          Expanded(
-            child: _isLoading
-                ? const Center(child: ProgressRing())
+            const SizedBox(height: 8),
+
+            // Search & History Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Row(
+                children: [
+                  Text(
+                    "Recent Charts",
+                    style: FluentTheme.of(context).typography.subtitle,
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    width: 250,
+                    child: TextBox(
+                      key: _searchKey,
+                      controller: _searchController,
+                      placeholder: "Search charts...",
+                      prefix: const Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: Icon(FluentIcons.search),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            _isLoading
+                ? const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(child: ProgressRing()),
+                  )
                 : _filteredCharts.isEmpty
-                ? const Center(
-                    child: Text(
-                      "No charts found.",
-                      style: TextStyle(
-                        color: Colors.white,
-                      ), // Colors.white works if imported from material? No, usually not. Fluent has Colors.white?
-                      // Fluent Colors.white exists.
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(40.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            FluentIcons.contact_list,
+                            size: 48,
+                            color: Colors.grey.withAlpha(128),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            "No charts found.",
+                            style: TextStyle(color: Colors.grey[100]),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: _filteredCharts.length,
                     itemBuilder: (context, index) {
                       final chart = _filteredCharts[index];
                       return Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
+                          horizontal: 24.0,
                           vertical: 4,
                         ),
                         child: Card(
+                          padding: EdgeInsets.zero,
                           child: ListTile.selectable(
                             onPressed: () => _openChart(chart),
                             leading: Container(
                               width: 40,
                               height: 40,
-                              decoration: const BoxDecoration(
-                                color: AppStyles.primaryColor,
+                              margin: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppStyles.primaryColor.withAlpha(25),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 FluentIcons.contact,
-                                color: Colors.white,
+                                color: AppStyles.primaryColor,
+                                size: 20,
                               ),
                             ),
-                            title: Text(chart['name'] ?? 'Unknown'),
+                            title: Text(
+                              chart['name'] ?? 'Unknown',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             subtitle: Text(
                               '${_formatDateTime(chart['dateTime'])}'
                               '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
@@ -382,9 +451,63 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-          ),
-        ],
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildQuickAction({
+    required Key key,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return HoverButton(
+      onPressed: onTap,
+      builder: (context, states) {
+        return Card(
+          key: key,
+          padding: const EdgeInsets.all(12),
+          backgroundColor: states.isHovered ? color.withAlpha(25) : null,
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[100]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

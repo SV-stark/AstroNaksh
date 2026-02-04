@@ -219,7 +219,7 @@ flutter build web --release
 1. Open the app and tap "New Chart"
 2. Enter birth details:
    - Date (DD/MM/YYYY)
-   - Time (24-hour format)
+   - Time (12-hour format)
    - Location (Latitude/Longitude)
    - Name (optional)
 3. Select ayanamsa (Lahiri recommended for KP)

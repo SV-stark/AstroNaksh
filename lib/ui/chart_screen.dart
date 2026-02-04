@@ -19,7 +19,9 @@ import 'predictions/transit_screen.dart';
 import 'predictions/varshaphal_screen.dart';
 import 'analysis/retrograde_screen.dart';
 import 'comparison/chart_comparison_screen.dart';
+import 'comparison/chart_comparison_screen.dart';
 import 'reports/pdf_report_screen.dart';
+import '../../core/chart_share_service.dart';
 
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
@@ -35,6 +37,7 @@ class _ChartScreenState extends State<ChartScreen> {
   String _selectedDivisionalChart = 'D-9';
   BirthData? _birthData;
   int _currentIndex = 0;
+  final GlobalKey _d1ChartKey = GlobalKey();
 
   @override
   void didChangeDependencies() {
@@ -178,18 +181,75 @@ class _ChartScreenState extends State<ChartScreen> {
               icon: const Icon(FluentIcons.share),
               label: const Text('Share'),
               onPressed: () {
-                // TODO: Implement export functionality
-                displayInfoBar(
-                  context,
-                  builder: (context, close) {
-                    return InfoBar(
-                      title: const Text('Export'),
-                      content: const Text('Chart export feature coming soon!'),
-                      action: IconButton(
-                        icon: const Icon(FluentIcons.clear),
-                        onPressed: close,
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return ContentDialog(
+                      title: const Text('Share Chart'),
+                      content: const Text(
+                        'How would you like to share this chart?',
                       ),
-                      severity: InfoBarSeverity.info,
+                      actions: [
+                        Button(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            if (_d1ChartKey.currentContext == null) return;
+                            try {
+                              await ChartShareService.shareChartImage(
+                                _d1ChartKey,
+                                filename:
+                                    '${_birthData?.name ?? 'chart'}_D1.png',
+                              );
+                            } catch (e) {
+                              if (context.mounted) {
+                                displayInfoBar(
+                                  context,
+                                  builder: (context, close) => InfoBar(
+                                    title: const Text('Share Failed'),
+                                    content: Text(e.toString()),
+                                    severity: InfoBarSeverity.error,
+                                    onClose: close,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('Image (D-1)'),
+                        ),
+                        Button(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            final data = await _chartDataFuture;
+                            if (data != null && _birthData != null) {
+                              try {
+                                await ChartShareService.shareChartPdf(
+                                  data,
+                                  _birthData!,
+                                  filename:
+                                      '${_birthData?.name ?? 'report'}.pdf',
+                                );
+                              } catch (e) {
+                                if (context.mounted) {
+                                  displayInfoBar(
+                                    context,
+                                    builder: (context, close) => InfoBar(
+                                      title: const Text('Share Failed'),
+                                      content: Text(e.toString()),
+                                      severity: InfoBarSeverity.error,
+                                      onClose: close,
+                                    ),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                          child: const Text('PDF Report'),
+                        ),
+                        Button(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                      ],
                     );
                   },
                 );
@@ -446,11 +506,14 @@ class _ChartScreenState extends State<ChartScreen> {
             style: FluentTheme.of(context).typography.body,
           ),
           const SizedBox(height: 16),
-          ChartWidget(
-            planetsBySign: planetsMap,
-            ascendantSign: ascSign,
-            style: _style,
-            size: 350,
+          RepaintBoundary(
+            key: _d1ChartKey,
+            child: ChartWidget(
+              planetsBySign: planetsMap,
+              ascendantSign: ascSign,
+              style: _style,
+              size: 350,
+            ),
           ),
           const SizedBox(height: 16),
           _buildPlanetPositionsTable(data),

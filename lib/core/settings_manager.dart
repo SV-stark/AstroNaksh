@@ -20,6 +20,10 @@ class SettingsManager extends ChangeNotifier {
 
   static const String _chartSettingsKey = 'chart_settings';
   static const String _themeModeKey = 'theme_mode';
+  static const String _hasSeenTutorialKey = 'has_seen_tutorial';
+
+  bool _hasSeenTutorial = false;
+  bool get hasSeenTutorial => _hasSeenTutorial;
 
   /// Load settings from SharedPreferences
   Future<void> loadSettings() async {
@@ -44,7 +48,18 @@ class SettingsManager extends ChangeNotifier {
         debugPrint("Error loading chart settings: $e");
       }
     }
+
+    // Load Tutorial Status
+    _hasSeenTutorial = prefs.getBool(_hasSeenTutorialKey) ?? false;
+
     notifyListeners();
+  }
+
+  Future<void> setHasSeenTutorial(bool value) async {
+    _hasSeenTutorial = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hasSeenTutorialKey, value);
   }
 
   Future<void> updateChartSettings(ChartCustomization settings) async {

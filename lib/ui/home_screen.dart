@@ -1,7 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'styles.dart';
 import '../core/database_helper.dart';
 import '../data/models.dart';
+import '../core/settings_manager.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,11 +19,190 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
 
+  // Tutorial Keys
+  final GlobalKey _newChartKey = GlobalKey();
+  final GlobalKey _panchangKey = GlobalKey();
+  final GlobalKey _searchKey = GlobalKey();
+  final GlobalKey _settingsKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     _loadCharts();
     _searchController.addListener(_onSearchChanged);
+
+    // Check for tutorial
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!SettingsManager().hasSeenTutorial) {
+        _showTutorial();
+      }
+    });
+  }
+
+  void _showTutorial() {
+    List<TargetFocus> targets = [];
+
+    targets.add(
+      TargetFocus(
+        identify: "newChart",
+        keyTarget: _newChartKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Create New Chart",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: Text(
+                      "Click here to calculate a new birth chart by entering birth details.",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "panchang",
+        keyTarget: _panchangKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Daily Panchang",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: Text(
+                      "Check daily Tithi, Nakshatra, and other almanac details here.",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "search",
+        keyTarget: _searchKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Search Charts",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: Text(
+                      "Quickly find your saved charts by name.",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Add Settings Target
+    targets.add(
+      TargetFocus(
+        identify: "settings",
+        keyTarget: _settingsKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Settings",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: Text(
+                      "Configure app theme, language, and chart calculation preferences.",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    TutorialCoachMark(
+      targets: targets,
+      colorShadow: Colors.black,
+      textSkip: "SKIP",
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+      onFinish: () {
+        SettingsManager().setHasSeenTutorial(true);
+      },
+      onClickTarget: (target) {
+        // Continue to next
+      },
+      onClickOverlay: (target) {
+        // Continue to next
+      },
+      onSkip: () {
+        SettingsManager().setHasSeenTutorial(true);
+        return true;
+      },
+    ).show(context: context);
   }
 
   @override
@@ -95,11 +276,20 @@ class _HomeScreenState extends State<HomeScreen> {
         commandBar: CommandBar(
           primaryItems: [
             CommandBarButton(
+              key: _newChartKey,
               icon: const Icon(FluentIcons.add),
               label: const Text('New Chart'),
               onPressed: () async {
                 await Navigator.pushNamed(context, '/input');
                 _loadCharts();
+              },
+            ),
+            CommandBarButton(
+              key: _panchangKey,
+              icon: const Icon(FluentIcons.calendar),
+              label: const Text('Panchang'),
+              onPressed: () {
+                Navigator.pushNamed(context, '/panchang');
               },
             ),
           ],
@@ -112,6 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             CommandBarButton(
+              key: _settingsKey,
               icon: const Icon(FluentIcons.settings),
               label: const Text('Settings'),
               onPressed: () {
@@ -127,6 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextBox(
+              key: _searchKey,
               controller: _searchController,
               placeholder: "Search charts...",
               prefix: const Padding(

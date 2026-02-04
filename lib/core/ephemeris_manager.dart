@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:jyotish/jyotish.dart';
+import 'app_environment.dart';
 
 /// Manages Swiss Ephemeris data files for planetary calculations
 /// Uses bundled assets first, downloads only if missing
@@ -48,12 +49,15 @@ class EphemerisManager {
   static Future<void> ensureEphemerisData() async {
     if (_initialized) return;
 
-    final directory = await getApplicationSupportDirectory();
-    final ephemerisPath = '${directory.path}/ephe';
+    final directory = await AppEnvironment.getEphemerisDirectory();
+    final ephemerisPath = directory.path;
     final dir = Directory(ephemerisPath);
+
+    AppEnvironment.log('EphemerisManager: Path resolved to $ephemerisPath');
 
     // Create directory if it doesn't exist
     if (!await dir.exists()) {
+      AppEnvironment.log('EphemerisManager: Creating directory $ephemerisPath');
       await dir.create(recursive: true);
     }
 
@@ -63,16 +67,23 @@ class EphemerisManager {
     // Check if required files exist, download if still missing
     final missingFiles = await _getMissingFiles(ephemerisPath);
     if (missingFiles.isNotEmpty) {
+      AppEnvironment.log(
+        'EphemerisManager: Missing files detected: $missingFiles',
+      );
       await _downloadEphemerisFiles(ephemerisPath, missingFiles);
+    } else {
+      AppEnvironment.log('EphemerisManager: All required files present');
     }
 
     // Initialize the jyotish library
     try {
+      AppEnvironment.log('EphemerisManager: Initializing library...');
       await _initializeLibrary(ephemerisPath);
       _initialized = true;
+      AppEnvironment.log('EphemerisManager: Initialization successful');
     } catch (e) {
       _initialized = false;
-      if (kDebugMode) {
+      if (kDebugMode || AppEnvironment.isVerbose) {
         print("Error initializing Jyotish: $e");
       }
       // propagate error so UI can handle it

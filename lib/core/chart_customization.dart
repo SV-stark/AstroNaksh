@@ -45,7 +45,7 @@ class ChartCustomization {
   int transitDaysToShow = 30;
 
   // Ayanamsa Settings
-  String ayanamsaSystem = 'lahiri';
+  String ayanamsaSystem = 'newKP';
 
   // Notification Settings
   bool dailyTransitNotifications = true;
@@ -108,7 +108,7 @@ class ChartCustomization {
     settings.showTransits = json['showTransits'] ?? true;
     settings.transitDaysToShow = json['transitDaysToShow'] ?? 30;
 
-    settings.ayanamsaSystem = json['ayanamsaSystem'] ?? 'lahiri';
+    settings.ayanamsaSystem = json['ayanamsaSystem'] ?? 'newKP';
 
     settings.dailyTransitNotifications =
         json['dailyTransitNotifications'] ?? true;
@@ -186,7 +186,7 @@ class ChartCustomization {
     showPratyantardasha = false;
     showTransits = true;
     transitDaysToShow = 30;
-    ayanamsaSystem = 'lahiri';
+    ayanamsaSystem = 'newKP';
     dailyTransitNotifications = true;
     notificationHour = 8;
     notificationMinute = 0;

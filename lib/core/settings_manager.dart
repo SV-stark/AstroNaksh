@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
+import 'app_environment.dart';
+import 'database_helper.dart';
 import 'chart_customization.dart';
 
 class SettingsManager extends ChangeNotifier {
@@ -25,8 +28,13 @@ class SettingsManager extends ChangeNotifier {
   bool _hasSeenTutorial = false;
   bool get hasSeenTutorial => _hasSeenTutorial;
 
-  /// Load settings from SharedPreferences
+  /// Load settings from SharedPreferences or Database (Portable)
   Future<void> loadSettings() async {
+    if (AppEnvironment.isPortable) {
+      await _loadSettingsFromDb();
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
 
     // Load Theme Mode
@@ -55,24 +63,58 @@ class SettingsManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _loadSettingsFromDb() async {
+    try {
+      final db = await DatabaseHelper().database;
+      final List<Map<String, dynamic>> maps = await db.query('settings');
+      final settingsMap = {for (var m in maps) m['key'] as String: m['value']};
+
+      // Theme
+      if (settingsMap.containsKey(_themeModeKey)) {
+        final modeStr = settingsMap[_themeModeKey];
+        _themeMode = ThemeMode.values.firstWhere(
+          (e) => e.toString() == modeStr,
+          orElse: () => ThemeMode.system,
+        );
+      }
+
+      // Chart Settings
+      if (settingsMap.containsKey(_chartSettingsKey)) {
+        try {
+          final json = jsonDecode(settingsMap[_chartSettingsKey]);
+          _chartSettings = ChartCustomization.fromJson(json);
+        } catch (e) {
+          debugPrint("Error loading chart settings from DB: $e");
+        }
+      }
+
+      // Tutorial
+      if (settingsMap.containsKey(_hasSeenTutorialKey)) {
+        _hasSeenTutorial = settingsMap[_hasSeenTutorialKey] == 'true';
+      }
+
+      notifyListeners();
+    } catch (e) {
+      AppEnvironment.log("SettingsManager: Error loading from DB: $e");
+    }
+  }
+
   Future<void> setHasSeenTutorial(bool value) async {
     _hasSeenTutorial = value;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_hasSeenTutorialKey, value);
+    await _saveSetting(_hasSeenTutorialKey, value.toString());
   }
 
   Future<void> updateChartSettings(ChartCustomization settings) async {
     _chartSettings = settings;
     notifyListeners();
-    _saveChartSettings();
+    await _saveSetting(_chartSettingsKey, jsonEncode(_chartSettings.toJson()));
   }
 
   Future<void> updateThemeMode(ThemeMode mode) async {
     _themeMode = mode;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeModeKey, mode.toString());
+    await _saveSetting(_themeModeKey, mode.toString());
   }
 
   Future<void> applyPreset(String presetName) async {
@@ -95,20 +137,33 @@ class SettingsManager extends ChangeNotifier {
         break;
     }
     notifyListeners();
-    _saveChartSettings();
+    await _saveSetting(_chartSettingsKey, jsonEncode(_chartSettings.toJson()));
   }
 
   Future<void> resetToDefaults() async {
     _chartSettings.resetToDefaults();
     notifyListeners();
-    _saveChartSettings();
+    await _saveSetting(_chartSettingsKey, jsonEncode(_chartSettings.toJson()));
   }
 
-  Future<void> _saveChartSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _chartSettingsKey,
-      jsonEncode(_chartSettings.toJson()),
-    );
+  Future<void> _saveSetting(String key, String value) async {
+    if (AppEnvironment.isPortable) {
+      try {
+        final db = await DatabaseHelper().database;
+        await db.insert('settings', {
+          'key': key,
+          'value': value,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      } catch (e) {
+        AppEnvironment.log("SettingsManager: Error saving to DB: $e");
+      }
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      if (value == 'true' || value == 'false') {
+        await prefs.setBool(key, value == 'true');
+      } else {
+        await prefs.setString(key, value);
+      }
+    }
   }
 }

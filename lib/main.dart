@@ -12,9 +12,19 @@ import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
+import 'core/app_environment.dart';
 
-void main() async {
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize App Environment (Portable Mode / Verbose Checks)
+  await AppEnvironment.initialize(args);
+
+  if (AppEnvironment.isVerbose) {
+    debugPrint(
+      'Main: AppEnvironment initialized. Portable: ${AppEnvironment.isPortable}',
+    );
+  }
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     sqfliteFfiInit();

@@ -217,7 +217,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
       padding: const EdgeInsets.only(bottom: 20),
       children: [
         Card(
-          backgroundColor: Colors.green.withOpacity(0.1),
+          backgroundColor: Colors.green.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -292,7 +292,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
       padding: const EdgeInsets.only(bottom: 20),
       children: [
         Card(
-          backgroundColor: Colors.orange.withOpacity(0.1),
+          backgroundColor: Colors.orange.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -336,7 +336,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Colors.grey.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -371,7 +371,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -413,7 +413,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -531,10 +531,10 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.1),
+                            color: statusColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                             border: Border.all(
-                              color: statusColor.withOpacity(0.5),
+                              color: statusColor.withValues(alpha: 0.5),
                             ),
                           ),
                           child: Text(
@@ -584,7 +584,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               const SizedBox(height: 4),
               ProgressBar(
                 value: dosha.strength,
-                backgroundColor: Colors.grey.withOpacity(0.1),
+                backgroundColor: Colors.grey.withValues(alpha: 0.1),
               ), // Color should be dynamic?
               const SizedBox(height: 12),
             ],

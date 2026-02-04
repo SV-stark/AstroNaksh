@@ -1985,10 +1985,11 @@ class YogaDoshaAnalyzer {
     }
 
     String status = 'Active';
-    if (strength == 0.0)
+    if (strength == 0.0) {
       status = 'Fully Cancelled';
-    else if (strength < 100.0)
+    } else if (strength < 100.0) {
       status = 'Partially Cancelled';
+    }
 
     return BhangaResult(
       name: 'Manglik Dosha',
@@ -2056,8 +2057,9 @@ class YogaDoshaAnalyzer {
     if (_isStrong(chart, l9)) cancellations.add('9th House Lord is strong');
 
     double strength = 100.0;
-    if (cancellations.isNotEmpty)
+    if (cancellations.isNotEmpty) {
       strength -= (cancellations.length * 40).clamp(0, 100);
+    }
 
     return BhangaResult(
       name: 'Pitra Dosha',
@@ -2081,8 +2083,9 @@ class YogaDoshaAnalyzer {
       if (p == 'Moon' || p == 'Sun') continue;
       final pSign = _getPlanetSign(chart, p);
       final dist = (pSign - moonSign + 12) % 12;
-      if ([0, 3, 6, 9].contains(dist))
+      if ([0, 3, 6, 9].contains(dist)) {
         planetInKendraFromMoon = true; // 1,4,7,10
+      }
     }
     if (planetInKendraFromMoon) cancellations.add('Planet in Kendra from Moon');
 
@@ -2092,8 +2095,9 @@ class YogaDoshaAnalyzer {
       if (p == 'Moon' || p == 'Sun') continue;
       if (_isPlanetInKendra(chart, p)) planetInKendraFromLagna = true;
     }
-    if (planetInKendraFromLagna)
+    if (planetInKendraFromLagna) {
       cancellations.add('Planet in Kendra from Lagna');
+    }
 
     // 3. Moon aspected by all planets (unlikely but rule)
     // 4. Moon in own/exalted sign
@@ -2180,8 +2184,9 @@ class YogaDoshaAnalyzer {
     List<String> keyPlanets = [];
     if (yogaName.contains('Gajakesari')) keyPlanets.addAll(['Jupiter', 'Moon']);
     if (yogaName.contains('Budhaditya')) keyPlanets.addAll(['Sun', 'Mercury']);
-    if (yogaName.contains('Chandra Mangala'))
+    if (yogaName.contains('Chandra Mangala')) {
       keyPlanets.addAll(['Moon', 'Mars']);
+    }
     if (yogaName.contains('Ruchaka')) keyPlanets.add('Mars');
     if (yogaName.contains('Bhadra')) keyPlanets.add('Mercury');
     if (yogaName.contains('Hamsa')) keyPlanets.add('Jupiter');
@@ -2212,12 +2217,13 @@ class YogaDoshaAnalyzer {
 
     strength = strength.clamp(0.0, 100.0);
     String status = 'Active';
-    if (strength < 40)
+    if (strength < 40) {
       status = 'Weak';
-    else if (strength < 80)
+    } else if (strength < 80) {
       status = 'Moderate';
-    else
+    } else {
       status = 'Strong';
+    }
 
     if (weaknesses.isNotEmpty) {
       // Append weakness info to status for display if needed, or just keep in cancellations list

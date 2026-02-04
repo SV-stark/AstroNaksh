@@ -668,9 +668,9 @@ class KPExtensions {
           housesDynamic is List &&
           housesDynamic.isNotEmpty) {
         final first = housesDynamic[0];
-        if (first is num)
+        if (first is num) {
           ascendant = first.toDouble();
-        else if (first is Map) {
+        } else if (first is Map) {
           final val = first['longitude'];
           if (val is num) ascendant = val.toDouble();
         }

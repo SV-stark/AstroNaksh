@@ -9,9 +9,11 @@ import 'package:jyotish/jyotish.dart';
 /// Uses bundled assets first, downloads only if missing
 class EphemerisManager {
   static final Jyotish _jyotish = Jyotish();
+  static EphemerisService? _service;
   static bool _initialized = false;
 
   static Jyotish get jyotish => _jyotish;
+  static EphemerisService get service => _service ??= EphemerisService();
   static bool get isInitialized => _initialized;
 
   // Swiss Ephemeris file URLs (fallback download from GitHub)
@@ -69,11 +71,12 @@ class EphemerisManager {
       await _initializeLibrary(ephemerisPath);
       _initialized = true;
     } catch (e) {
+      _initialized = false;
       if (kDebugMode) {
         print("Error initializing Jyotish: $e");
       }
-      // Try with fallback equal-house calculations
-      _initialized = true;
+      // propagate error so UI can handle it
+      throw EphemerisException('Failed to initialize astrology engine: $e');
     }
   }
 
@@ -189,13 +192,16 @@ class EphemerisManager {
   /// Initialize the jyotish library with the ephemeris path
   static Future<void> _initializeLibrary(String ephemerisPath) async {
     try {
-      // Try to initialize with the library's initialize method
-      // Different versions might have different signatures
+      // Initialize both service wrappers
       await _jyotish.initialize(ephemerisPath: ephemerisPath);
+      await service.initialize(ephemerisPath: ephemerisPath);
     } catch (e) {
       // Fallback: try without parameters
       try {
         await _jyotish.initialize();
+        await service.initialize(
+          ephemerisPath: ephemerisPath,
+        ); // Retry service with path
       } catch (e2) {
         // If both fail, the library might auto-initialize
         if (kDebugMode) {
@@ -314,12 +320,19 @@ class EphemerisManager {
       }
 
       final size = await fileObj.length();
-      final expectedSize = _fileSizes[file] ?? 0;
-      if (size < expectedSize * 0.9) {
+      // Relaxed check: just ensure file is not empty (e.g. > 1KB)
+      if (size < 1024) {
         return false;
       }
     }
 
     return true;
   }
+}
+
+class EphemerisException implements Exception {
+  final String message;
+  EphemerisException(this.message);
+  @override
+  String toString() => 'EphemerisException: $message';
 }

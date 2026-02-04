@@ -51,3 +51,5 @@ app.*.map.json
 .env*
 *.secret
 
+a-detailed-version.json
+create_cities.dart

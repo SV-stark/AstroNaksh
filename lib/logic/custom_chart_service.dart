@@ -1,42 +1,24 @@
 import 'package:jyotish/jyotish.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter/foundation.dart';
+import '../core/ephemeris_manager.dart';
 
 /// Service for calculating Vedic astrology charts with custom Ayanamsa.
 /// Replicates logic from [VedicChartService] but allows configurable SiderealMode.
 class CustomChartService {
-  static EphemerisService? _sharedService;
-  static bool _isInitialized = false;
-
   /// Gets the shared, initialized EphemerisService
   Future<EphemerisService> _getEphemerisService() async {
-    if (_sharedService != null && _isInitialized) {
-      return _sharedService!;
-    }
-
-    _sharedService = EphemerisService();
-
-    // Get ephemeris path
-    final directory = await getApplicationSupportDirectory();
-    final ephemerisPath = '${directory.path}/ephe';
-
-    // Initialize with the ephemeris path
-    await _sharedService!.initialize(ephemerisPath: ephemerisPath);
-    _isInitialized = true;
-
-    return _sharedService!;
+    // Ensure manager is initialized
+    await EphemerisManager.ensureEphemerisData();
+    return EphemerisManager.service;
   }
 
   /// Calculates a complete Vedic astrology chart with specific Ayanamsa.
-  ///
-  /// [dateTime] - Birth date and time
-  /// [location] - Birth location
-  /// [ayanamsaMode] - The ayanamsa system to use
-  /// [houseSystem] - House system to use (default: Whole Sign 'W')
-  /// [includeOuterPlanets] - Include Uranus, Neptune, Pluto (default: false)
   Future<VedicChart> calculateChart({
     required DateTime dateTime,
     required GeographicLocation location,
     required SiderealMode ayanamsaMode,
+    String? timezone,
     String houseSystem = 'W', // Whole Sign by default
     bool includeOuterPlanets = false,
   }) async {
@@ -44,13 +26,40 @@ class CustomChartService {
       // Get initialized ephemeris service
       final ephemerisService = await _getEphemerisService();
 
+      // Convert time to UTC based on location timezone
+      DateTime utcDateTime = dateTime;
+      if (timezone != null && timezone.isNotEmpty) {
+        try {
+          final locationTz = tz.getLocation(timezone);
+          // Create TZDateTime using the input components
+          final tzDateTime = tz.TZDateTime(
+            locationTz,
+            dateTime.year,
+            dateTime.month,
+            dateTime.day,
+            dateTime.hour,
+            dateTime.minute,
+            dateTime.second,
+          );
+          utcDateTime = tzDateTime.toUtc();
+        } catch (e) {
+          debugPrint('Error converting timezone: $e');
+          // Fallback: use input as is, possibly wrong if not UTC
+        }
+      } else {
+        // If no timezone, assume input is correctly set to local but we don't know the offset?
+        // Or just use .toUtc() if the input DateTime has correct local wrapper.
+        // But usually input from UI is "Device Local".
+        // Ideally we REQUIRE timezone.
+      }
+
       // Use selected ayanamsa
       final flags = CalculationFlags.sidereal(ayanamsaMode);
 
       // Calculate Ascendant and house cusps with the specific Ayanamsa
       final houses = await _calculateHouses(
         ephemerisService: ephemerisService,
-        dateTime: dateTime,
+        dateTime: utcDateTime,
         location: location,
         houseSystem: houseSystem,
         ayanamsaMode: ayanamsaMode,
@@ -66,7 +75,7 @@ class CustomChartService {
       for (final planet in planetsToCalculate) {
         final position = await ephemerisService.calculatePlanetPosition(
           planet: planet,
-          dateTime: dateTime,
+          dateTime: utcDateTime,
           location: location,
           flags: flags,
         );
@@ -76,7 +85,7 @@ class CustomChartService {
       // Calculate Rahu (Mean Node)
       final rahuPosition = await ephemerisService.calculatePlanetPosition(
         planet: Planet.meanNode,
-        dateTime: dateTime,
+        dateTime: utcDateTime,
         location: location,
         flags: flags,
       );

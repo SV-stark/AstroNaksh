@@ -66,8 +66,8 @@ class AyanamsaCalculator {
       final service = await _getEphemerisService();
       return await service.getAyanamsa(dateTime: date, mode: system.mode);
     } catch (e) {
-      // Ignore print warning - needed for debugging
-      return 0.0;
+      // Propagate error to let caller handle it, instead of returning incorrect value
+      throw Exception('Failed to calculate ayanamsa: $e');
     }
   }
 

@@ -11,51 +11,89 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
+    try {
+      _database = await _initDatabase();
+      return _database!;
+    } catch (e) {
+      throw DatabaseException('Failed to initialize database: $e');
+    }
   }
 
   Future<Database> _initDatabase() async {
-    final path = await getDatabasesPath();
-    return await openDatabase(
-      join(path, 'astronaksh.db'),
-      version: 1,
-      onCreate: _onCreate,
-    );
+    try {
+      final path = await getDatabasesPath();
+      return await openDatabase(
+        join(path, 'astronaksh.db'),
+        version: 1,
+        onCreate: _onCreate,
+        onOpen: (db) async {
+          // Verify database integrity on open
+          if (!db.isOpen) {
+            throw DatabaseException('Database failed to open');
+          }
+        },
+      );
+    } catch (e) {
+      throw DatabaseException('Error opening database: $e');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE charts(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        dateTime TEXT,
-        latitude REAL,
-        longitude REAL,
-        locationName TEXT
-      )
-    ''');
+    try {
+      await db.execute('''
+        CREATE TABLE charts(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          dateTime TEXT,
+          latitude REAL,
+          longitude REAL,
+          locationName TEXT,
+          timezone TEXT
+        )
+      ''');
 
-    await db.execute('''
-      CREATE TABLE settings(
-        key TEXT PRIMARY KEY,
-        value TEXT
-      )
-    ''');
+      await db.execute('''
+        CREATE TABLE settings(
+          key TEXT PRIMARY KEY,
+          value TEXT
+        )
+      ''');
+    } catch (e) {
+      throw DatabaseException('Error creating database tables: $e');
+    }
   }
 
   Future<int> insertChart(Map<String, dynamic> row) async {
-    final db = await database;
-    return await db.insert('charts', row);
+    try {
+      final db = await database;
+      return await db.insert('charts', row);
+    } catch (e) {
+      throw DatabaseException('Error inserting chart: $e');
+    }
   }
 
   Future<List<Map<String, dynamic>>> getCharts() async {
-    final db = await database;
-    return await db.query('charts', orderBy: 'id DESC');
+    try {
+      final db = await database;
+      return await db.query('charts', orderBy: 'id DESC');
+    } catch (e) {
+      throw DatabaseException('Error fetching charts: $e');
+    }
   }
 
   Future<int> deleteChart(int id) async {
-    final db = await database;
-    return await db.delete('charts', where: 'id = ?', whereArgs: [id]);
+    try {
+      final db = await database;
+      return await db.delete('charts', where: 'id = ?', whereArgs: [id]);
+    } catch (e) {
+      throw DatabaseException('Error deleting chart: $e');
+    }
   }
+}
+
+class DatabaseException implements Exception {
+  final String message;
+  DatabaseException(this.message);
+  @override
+  String toString() => 'DatabaseException: $message';
 }

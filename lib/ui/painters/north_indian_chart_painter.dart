@@ -46,27 +46,49 @@ class NorthIndianChartPainter extends CustomPainter {
       final signIndex = ((ascendantSign - 1) + houseIndex) % 12;
       final signNumber = signIndex + 1; // 1-12
 
+      // Dynamic Font Size
+      final fontSize = width / 25; // Responsive size
+
       // 1. Draw Sign Number (Small, secondary color)
       final signSpan = TextSpan(
         text: "$signNumber\n",
-        style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 10),
+        style: TextStyle(
+          color: textColor.withValues(alpha: 0.7),
+          fontSize: fontSize * 0.8,
+        ),
       );
 
       // 2. Draw Planets
       final planets = planetsBySign[signIndex] ?? [];
-      final planetText = planets.join(' ');
 
-      final planetSpan = TextSpan(
-        text: planetText,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      );
+      // Group planets into lines if there are many to prevent overflow
+      final List<String> lines = [];
+      if (planets.length > 3) {
+        for (var i = 0; i < planets.length; i += 3) {
+          lines.add(
+            planets
+                .sublist(i, i + 3 > planets.length ? planets.length : i + 3)
+                .join(' '),
+          );
+        }
+      } else {
+        lines.add(planets.join(' '));
+      }
 
       final textSpan = TextSpan(
-        children: [signSpan, planetSpan],
+        children: [
+          signSpan,
+          ...lines.map(
+            (line) => TextSpan(
+              text: "$line\n",
+              style: TextStyle(
+                color: textColor,
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
         style: const TextStyle(height: 1.2),
       );
 

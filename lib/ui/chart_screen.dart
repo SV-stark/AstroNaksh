@@ -5,6 +5,7 @@ import '../../logic/kp_chart_service.dart';
 
 import 'package:jyotish/jyotish.dart';
 import '../../core/ayanamsa_calculator.dart';
+import '../../core/constants.dart';
 
 import '../../core/settings_manager.dart';
 import 'tools/birth_time_rectifier_screen.dart';
@@ -96,13 +97,79 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
+  void _showBirthDetails() {
+    if (_birthData == null) return;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ContentDialog(
+          title: const Text('Birth Details'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Name: ${_birthData!.name}"),
+              Text(
+                "Date: ${_birthData!.dateTime.day}/${_birthData!.dateTime.month}/${_birthData!.dateTime.year}",
+              ),
+              Text(
+                "Time: ${_birthData!.dateTime.hour.toString().padLeft(2, '0')}:${_birthData!.dateTime.minute.toString().padLeft(2, '0')}",
+              ),
+              Text("Place: ${_birthData!.place}"),
+              Text(
+                "Lat: ${_birthData!.location.latitude.toStringAsFixed(4)}, Lon: ${_birthData!.location.longitude.toStringAsFixed(4)}",
+              ),
+            ],
+          ),
+          actions: [
+            Button(
+              child: const Text('Close'),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return NavigationView(
       appBar: NavigationAppBar(
         title: const Text("Vedic Chart"),
         actions: CommandBar(
+          overflowBehavior: CommandBarOverflowBehavior.noWrap,
           primaryItems: [
+            // 1. Info Button (New)
+            CommandBarButton(
+              icon: const Icon(FluentIcons.info),
+              label: const Text('Info'),
+              onPressed: _showBirthDetails,
+            ),
+            // 2. Share/Export Button (New)
+            CommandBarButton(
+              icon: const Icon(FluentIcons.share),
+              label: const Text('Share'),
+              onPressed: () {
+                // TODO: Implement export functionality
+                displayInfoBar(
+                  context,
+                  builder: (context, close) {
+                    return InfoBar(
+                      title: const Text('Export'),
+                      content: const Text('Chart export feature coming soon!'),
+                      action: IconButton(
+                        icon: const Icon(FluentIcons.clear),
+                        onPressed: close,
+                      ),
+                      severity: InfoBarSeverity.info,
+                    );
+                  },
+                );
+              },
+            ),
+            const CommandBarSeparator(),
+            // 3. Settings
             CommandBarButton(
               icon: const Icon(FluentIcons.settings),
               label: const Text('Settings'),
@@ -110,52 +177,9 @@ class _ChartScreenState extends State<ChartScreen> {
                 Navigator.pushNamed(context, '/settings');
               },
             ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.globe),
-              label: const Text('Ayanamsa'),
-              onPressed: _openAyanamsaSelection,
-            ),
-            CommandBarButton(
-              icon: Icon(
-                _style == ChartStyle.northIndian
-                    ? FluentIcons.grid_view_small
-                    : FluentIcons.diamond,
-              ),
-              label: const Text('Style'),
-              onPressed: () {
-                debugPrint("Style button pressed");
-                setState(() {
-                  _style = _style == ChartStyle.northIndian
-                      ? ChartStyle.southIndian
-                      : ChartStyle.northIndian;
-                });
-              },
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.build),
-              label: const Text('Rectify'),
-              onPressed: () async {
-                if (_birthData == null) return;
-                final newData = await Navigator.push(
-                  context,
-                  FluentPageRoute(
-                    builder: (context) => const BirthTimeRectifierScreen(),
-                    settings: RouteSettings(arguments: _birthData),
-                  ),
-                );
-
-                if (newData != null && newData is BirthData) {
-                  setState(() {
-                    _birthData = newData;
-                    _loadChartData();
-                  });
-                }
-              },
-            ),
-            // Analysis DropDown
+            // 4. Analysis DropDown (Existing, made prominent)
             CommandBarBuilderItem(
               builder: (context, mode, w) {
-                debugPrint("Building Analysis DropDown");
                 return DropDownButton(
                   title: const Text('Analysis'),
                   leading: const Icon(FluentIcons.analytics_view),
@@ -233,8 +257,52 @@ class _ChartScreenState extends State<ChartScreen> {
                 onPressed: () {},
               ),
             ),
+            const CommandBarSeparator(),
+            // 5. Ayanamsa
+            CommandBarButton(
+              icon: const Icon(FluentIcons.globe),
+              label: const Text('Ayanamsa'),
+              onPressed: _openAyanamsaSelection,
+            ),
+            // 6. Style
+            CommandBarButton(
+              icon: Icon(
+                _style == ChartStyle.northIndian
+                    ? FluentIcons.grid_view_small
+                    : FluentIcons.diamond,
+              ),
+              label: const Text('Style'),
+              onPressed: () {
+                setState(() {
+                  _style = _style == ChartStyle.northIndian
+                      ? ChartStyle.southIndian
+                      : ChartStyle.northIndian;
+                });
+              },
+            ),
+            // 7. Rectify
+            CommandBarButton(
+              icon: const Icon(FluentIcons.build),
+              label: const Text('Rectify'),
+              onPressed: () async {
+                if (_birthData == null) return;
+                final newData = await Navigator.push(
+                  context,
+                  FluentPageRoute(
+                    builder: (context) => const BirthTimeRectifierScreen(),
+                    settings: RouteSettings(arguments: _birthData),
+                  ),
+                );
+
+                if (newData != null && newData is BirthData) {
+                  setState(() {
+                    _birthData = newData;
+                    _loadChartData();
+                  });
+                }
+              },
+            ),
           ],
-          secondaryItems: const [],
         ),
       ),
       pane: NavigationPane(
@@ -852,35 +920,7 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Widget _buildPlanetPositionsTable(CompleteChartData data) {
     final planets = data.baseChart.planets;
-    final nakshatras = [
-      'Ashwini',
-      'Bharani',
-      'Krittika',
-      'Rohini',
-      'Mrigashira',
-      'Ardra',
-      'Punarvasu',
-      'Pushya',
-      'Ashlesha',
-      'Magha',
-      'Purva Phalguni',
-      'Uttara Phalguni',
-      'Hasta',
-      'Chitra',
-      'Swati',
-      'Vishakha',
-      'Anuradha',
-      'Jyeshtha',
-      'Mula',
-      'Purva Ashadha',
-      'Uttara Ashadha',
-      'Shravana',
-      'Dhanishta',
-      'Shatabhisha',
-      'Purva Bhadrapada',
-      'Uttara Bhadrapada',
-      'Revati',
-    ];
+    final nakshatras = AppConstants.nakshatras;
 
     return Card(
       child: Padding(
@@ -1030,18 +1070,7 @@ class _ChartScreenState extends State<ChartScreen> {
     chart.planets.forEach((planet, info) {
       final sign = (info.longitude / 30).floor() + 1; // 1-12
       final planetName = planet.toString().split('.').last;
-      String abbr = planetName.length > 2
-          ? planetName.substring(0, 2)
-          : planetName;
-      if (planetName == 'Mars') abbr = 'Ma';
-      if (planetName == 'Mercury') abbr = 'Me';
-      if (planetName == 'Jupiter') abbr = 'Ju';
-      if (planetName == 'Venus') abbr = 'Ve';
-      if (planetName == 'Saturn') abbr = 'Sa';
-      if (planetName == 'Rahu') abbr = 'Ra';
-      if (planetName == 'Ketu') abbr = 'Ke';
-      if (planetName == 'Sun') abbr = 'Su';
-      if (planetName == 'Moon') abbr = 'Mo';
+      String abbr = AppConstants.getPlanetAbbreviation(planetName);
 
       map
           .putIfAbsent(sign, () => [])
@@ -1082,22 +1111,8 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   String _getSignName(int signNum) {
-    const signs = [
-      "Aries",
-      "Taurus",
-      "Gemini",
-      "Cancer",
-      "Leo",
-      "Virgo",
-      "Libra",
-      "Scorpio",
-      "Sagittarius",
-      "Capricorn",
-      "Aquarius",
-      "Pisces",
-    ];
     if (signNum <= 0) signNum = signNum + 12;
-    return signs[(signNum - 1) % 12];
+    return AppConstants.signs[(signNum - 1) % 12];
   }
 
   int _getAscendantSignInt(VedicChart chart) {

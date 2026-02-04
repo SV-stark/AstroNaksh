@@ -5,7 +5,7 @@ import 'ui/home_screen.dart';
 import 'ui/input_screen.dart';
 import 'ui/chart_screen.dart';
 import 'ui/settings_screen.dart';
-import 'core/ephemeris_manager.dart';
+import 'ui/loading_screen.dart';
 import 'core/settings_manager.dart';
 
 void main() async {
@@ -29,12 +29,8 @@ void main() async {
     debugPrint("Failed to load settings: $e");
   }
 
-  // Initialize ephemeris data before running the app
-  try {
-    await EphemerisManager.ensureEphemerisData();
-  } catch (e) {
-    debugPrint("Failed to initialize EphemerisManager: $e");
-  }
+  // We move EphemerisManager.ensureEphemerisData() to LoadingScreen
+  // to avoid blocking the app startup on a blank screen.
 
   runApp(const AstroNakshApp());
 }
@@ -52,8 +48,9 @@ class AstroNakshApp extends StatelessWidget {
           themeMode: SettingsManager().themeMode,
           theme: AppStyles.lightTheme,
           darkTheme: AppStyles.darkTheme,
-          initialRoute: '/',
+          initialRoute: '/loading',
           routes: {
+            '/loading': (context) => const LoadingScreen(),
             '/': (context) => const HomeScreen(),
             '/input': (context) => const InputScreen(),
             '/chart': (context) => const ChartScreen(),

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 import 'package:jyotish/jyotish.dart';
 import 'app_environment.dart';
 
@@ -37,9 +38,9 @@ class EphemerisManager {
 
   // File sizes in bytes (approximate)
   static const Map<String, int> _fileSizes = {
-    'sepl_18.se1': 540672,
-    'semo_18.se1': 540672,
-    'seas_18.se1': 270336,
+    'sepl_18.se1': 484055,
+    'semo_18.se1': 1304771,
+    'seas_18.se1': 223002,
     'seplm18.se1': 1081344,
     'semom18.se1': 1081344,
     'seasm18.se1': 540672,
@@ -64,11 +65,35 @@ class EphemerisManager {
     // First try to copy from bundled assets
     await _copyBundledAssets(ephemerisPath);
 
+    // Verify swisseph.dll existence (Windows only)
+    if (Platform.isWindows) {
+      if (AppEnvironment.isPortable) {
+        final dllPath =
+            '${p.dirname(Platform.resolvedExecutable)}\\swisseph.dll';
+        if (File(dllPath).existsSync()) {
+          AppEnvironment.log(
+            'EphemerisManager: swisseph.dll found at $dllPath',
+          );
+        } else {
+          AppEnvironment.log(
+            'EphemerisManager: ERROR - swisseph.dll NOT found at $dllPath',
+          );
+        }
+      } else {
+        // Standard check around executable
+        final dllPath =
+            '${p.dirname(Platform.resolvedExecutable)}\\swisseph.dll';
+        AppEnvironment.log(
+          'EphemerisManager: Checking for swisseph.dll at $dllPath: ${File(dllPath).existsSync()}',
+        );
+      }
+    }
+
     // Check if required files exist, download if still missing
     final missingFiles = await _getMissingFiles(ephemerisPath);
     if (missingFiles.isNotEmpty) {
       AppEnvironment.log(
-        'EphemerisManager: Missing files detected: $missingFiles',
+        'EphemerisManager: Missing files detected: $missingFiles. Attempting download/copy...',
       );
       await _downloadEphemerisFiles(ephemerisPath, missingFiles);
     } else {
@@ -77,15 +102,17 @@ class EphemerisManager {
 
     // Initialize the jyotish library
     try {
-      AppEnvironment.log('EphemerisManager: Initializing library...');
+      AppEnvironment.log(
+        'EphemerisManager: Initializing library with path: $ephemerisPath',
+      );
       await _initializeLibrary(ephemerisPath);
       _initialized = true;
       AppEnvironment.log('EphemerisManager: Initialization successful');
-    } catch (e) {
+    } catch (e, stack) {
       _initialized = false;
-      if (kDebugMode || AppEnvironment.isVerbose) {
-        print("Error initializing Jyotish: $e");
-      }
+      AppEnvironment.log(
+        "EphemerisManager: Error initializing Jyotish: $e\n$stack",
+      );
       // propagate error so UI can handle it
       throw EphemerisException('Failed to initialize astrology engine: $e');
     }
@@ -94,6 +121,20 @@ class EphemerisManager {
   /// Copy bundled ephemeris files from assets to app directory
   static Future<void> _copyBundledAssets(String targetPath) async {
     final files = _requiredFiles['standard']!;
+
+    // Debug: List Asset Manifest if possible to see what's available
+    try {
+      final manifestContent = await rootBundle.loadString('AssetManifest.json');
+      // Simple check
+      AppEnvironment.log(
+        'EphemerisManager: AssetManifest loaded. Length: ${manifestContent.length}',
+      );
+      if (AppEnvironment.isVerbose) {
+        // AppEnvironment.log('EphemerisManager: Manifest: $manifestContent'); // Too verbose
+      }
+    } catch (e) {
+      AppEnvironment.log('EphemerisManager: Could not load AssetManifest: $e');
+    }
 
     for (final file in files) {
       final targetFile = File('$targetPath/$file');
@@ -110,17 +151,18 @@ class EphemerisManager {
       // Try to copy from bundled assets
       try {
         final assetPath = 'assets/ephe/$file';
+        AppEnvironment.log(
+          'EphemerisManager: Attempting to load asset: $assetPath',
+        );
         final data = await rootBundle.load(assetPath);
         await targetFile.writeAsBytes(
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
         );
-        if (kDebugMode) {
-          print('Copied bundled asset: $file');
-        }
+        AppEnvironment.log('EphemerisManager: Copied bundled asset: $file');
       } catch (e) {
-        if (kDebugMode) {
-          print('Asset $file not bundled, will try download: $e');
-        }
+        AppEnvironment.log(
+          'EphemerisManager: Asset $file not bundled or copy failed: $e',
+        );
       }
     }
   }

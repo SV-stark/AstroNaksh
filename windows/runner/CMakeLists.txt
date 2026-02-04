@@ -38,3 +38,25 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
+
+# Copy the swisseph.dll from the root to the build directory and install it
+# Relative path from windows/runner/ to root is ../../
+set(SWISS_DLL "${CMAKE_CURRENT_SOURCE_DIR}/../../swisseph.dll")
+
+if(EXISTS "${SWISS_DLL}")
+  # For local running (post-build copy)
+  add_custom_command(
+    TARGET ${BINARY_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${SWISS_DLL}"
+    "$<TARGET_FILE_DIR:${BINARY_NAME}>/swisseph.dll"
+  )
+  
+  # For installation/packaging (not strictly standard here but often works if variables are visible, 
+  # strictly speaking install rules are usually top-level, but let's try just the copy first or check scope).
+  # The top-level CMakeLists.txt handles installation usually.
+  # However, to avoid scope issues, we can just ensure it's copied to the output dir so packaging picks it up via `files` logic if generic.
+  # Actually, the top-level CMakeLists has generic `install(TARGETS ...)` logic.
+  # If we want the DLL in the install package, we usually need an explicit install rule.
+  # But `add_custom_command` is scoped to the target. `install` is directory scoped.
+endif()

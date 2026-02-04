@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return ScaffoldPage(
       header: PageHeader(
-        title: const Text("AstroFast"),
+        title: const Text("AstroNaksh"),
         commandBar: CommandBar(
           primaryItems: [
             CommandBarButton(

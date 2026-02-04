@@ -1,7 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../painters/north_indian_chart_painter.dart';
 import '../painters/south_indian_chart_painter.dart';
-import '../styles.dart';
 
 enum ChartStyle { northIndian, southIndian }
 
@@ -21,11 +20,20 @@ class ChartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FluentTheme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final textColor = isDark ? Colors.white : Colors.black;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.5)
+        : Colors.black;
+    final southLineColor = isDark ? Colors.white : Colors.black;
+
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: FluentTheme.of(context).cardColor,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -40,12 +48,14 @@ class ChartWidget extends StatelessWidget {
             ? NorthIndianChartPainter(
                 planetsBySign: planetsBySign,
                 ascendantSign: ascendantSign,
-                borderColor: AppStyles.accentColor,
+                borderColor: borderColor,
+                textColor: textColor,
               )
             : SouthIndianChartPainter(
                 planetsBySign: planetsBySign,
                 ascendantSign: ascendantSign,
-                lineColor: AppStyles.accentColor,
+                lineColor: southLineColor,
+                textColor: textColor,
               ),
       ),
     );

@@ -91,11 +91,14 @@ class SouthIndianChartPainter extends CustomPainter {
 
       final text = displayList.join(' ');
 
+      // Dynamic Font Size based on cell width
+      final fontSize = cellWidth / 8; // Adjust divisor as needed
+
       final textSpan = TextSpan(
         text: text,
         style: TextStyle(
           color: textColor,
-          fontSize: 10,
+          fontSize: fontSize.clamp(8.0, 16.0), // Min/Max limits
           fontWeight: FontWeight.bold,
         ),
       );

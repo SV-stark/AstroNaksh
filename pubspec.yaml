@@ -37,6 +37,7 @@ dependencies:
   pdf: ^3.10.7
   printing: ^5.11.1
   share_plus: ^7.2.1
+  tutorial_coach_mark: ^1.2.10
   geolocator: ^14.0.2
   jyotish:
     git:

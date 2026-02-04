@@ -6,6 +6,7 @@ import 'ui/input_screen.dart';
 import 'ui/chart_screen.dart';
 import 'ui/settings_screen.dart';
 import 'ui/loading_screen.dart';
+import 'ui/panchang_screen.dart';
 import 'core/settings_manager.dart';
 
 void main() async {
@@ -55,6 +56,7 @@ class AstroNakshApp extends StatelessWidget {
             '/input': (context) => const InputScreen(),
             '/chart': (context) => const ChartScreen(),
             '/settings': (context) => const SettingsScreen(),
+            '/panchang': (context) => const PanchangScreen(),
           },
           debugShowCheckedModeBanner: false,
         );

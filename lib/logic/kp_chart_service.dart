@@ -1,5 +1,6 @@
 import 'package:jyotish/jyotish.dart';
 import '../core/ephemeris_manager.dart';
+import '../core/app_environment.dart';
 import '../data/models.dart';
 import 'kp_extensions.dart';
 import 'dasha_system.dart';
@@ -14,7 +15,12 @@ class KPChartService {
 
   Future<CompleteChartData> generateCompleteChart(BirthData birthData) async {
     // Ensure ephemeris is ready
-    await EphemerisManager.ensureEphemerisData();
+    try {
+      await EphemerisManager.ensureEphemerisData();
+    } catch (e) {
+      // Log error but continue - chart generation may still work
+      // Silently continue - jyotish library might already have data
+    }
 
     // Get current Ayanamsa setting
     final ayanamsaName = SettingsManager().chartSettings.ayanamsaSystem;

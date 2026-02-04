@@ -42,12 +42,10 @@ class _TransitScreenState extends State<TransitScreen> {
     return NavigationView(
       appBar: NavigationAppBar(
         title: const Text('Transit Analysis'),
-        leading:
-            const SizedBox.shrink(), // Back button handled by Navigator if using wrapping/context
-        // Note: NavigationView inside a pushed route might need manual leading if it overwrites the scaffold's appBar area completely
-        // without inheriting FluentPageRoute traits directly.
-        // Usually NavigationView is root. If used as page, standard is ScaffoldPage.
-        // If we want tabs, we use NavigationView with top pane.
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       pane: NavigationPane(
         selected: _currentIndex,

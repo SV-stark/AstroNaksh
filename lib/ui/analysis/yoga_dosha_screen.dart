@@ -18,7 +18,22 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final analysis = YogaDoshaAnalyzer.analyze(widget.chartData);
+    late YogaDoshaAnalysisResult analysis;
+    try {
+      analysis = YogaDoshaAnalyzer.analyze(widget.chartData);
+    } catch (e) {
+      if (context.mounted) {
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('Analysis Error'),
+            content: Text('Failed to analyze chart: $e'),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
+      }
+    }
 
     return CallbackShortcuts(
       bindings: {
@@ -581,11 +596,18 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 4),
-              ProgressBar(
-                value: dosha.strength,
-                backgroundColor: Colors.grey.withValues(alpha: 0.1),
-              ), // Color should be dynamic?
+               const SizedBox(height: 4),
+               ProgressBar(
+                 value: dosha.strength,
+                 backgroundColor: Colors.grey.withValues(alpha: 0.1),
+                 activeColor: dosha.strength >= 80
+                     ? Colors.green
+                     : dosha.strength >= 60
+                         ? Colors.teal
+                         : dosha.strength >= 40
+                             ? Colors.orange
+                             : Colors.red,
+               ),
               const SizedBox(height: 12),
             ],
 

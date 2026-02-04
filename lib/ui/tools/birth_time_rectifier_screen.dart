@@ -14,7 +14,7 @@ class BirthTimeRectifierScreen extends StatefulWidget {
 class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
   final BirthTimeRectifier _rectifier = BirthTimeRectifier();
 
-  late BirthData _originalData;
+  BirthData? _originalData;
   Duration _adjustment = Duration.zero;
 
   RectificationData? _currentData;
@@ -35,10 +35,12 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
   }
 
   Future<void> _calculate() async {
+    if (_originalData == null) return;
+    
     setState(() => _isLoading = true);
     try {
       final data = await _rectifier.calculateForTime(
-        originalData: _originalData,
+        originalData: _originalData!,
         adjustment: _adjustment,
       );
       setState(() => _currentData = data);
@@ -70,11 +72,12 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_initialized) {
+    if (!_initialized || _originalData == null) {
       return const ScaffoldPage(content: Center(child: ProgressRing()));
     }
 
-    final adjustedTime = _originalData.dateTime.add(_adjustment);
+    final originalData = _originalData!;
+    final adjustedTime = originalData.dateTime.add(_adjustment);
     final formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
     return ScaffoldPage(
@@ -85,13 +88,13 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
           primaryItems: [
             CommandBarButton(
               icon: const Icon(FluentIcons.check_mark),
-              onPressed: () {
+            onPressed: () {
                 // Return new BirthData to previous screen
                 final newData = BirthData(
-                  name: _originalData.name,
+                  name: originalData.name,
                   dateTime: adjustedTime,
-                  location: _originalData.location,
-                  place: _originalData.place,
+                  location: originalData.location,
+                  place: originalData.place,
                 );
                 Navigator.pop(context, newData);
               },
@@ -113,7 +116,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                 child: Column(
                   children: [
                     Text(
-                      "Original: ${formatter.format(_originalData.dateTime)}",
+                      "Original: ${formatter.format(originalData.dateTime)}",
                       style: FluentTheme.of(context).typography.caption,
                     ),
                     const SizedBox(height: 16),

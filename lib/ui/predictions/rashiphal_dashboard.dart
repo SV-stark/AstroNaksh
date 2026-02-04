@@ -27,7 +27,13 @@ class _RashiphalDashboardScreenState extends State<RashiphalDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
-      header: const PageHeader(title: Text('Daily Rashiphal')),
+      header: PageHeader(
+        title: const Text('Daily Rashiphal'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       content: FutureBuilder<RashiphalDashboard>(
         future: _dashboardFuture,
         builder: (context, snapshot) {

@@ -18,7 +18,13 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
-      header: const PageHeader(title: Text('Varshaphal (Annual Chart)')),
+      header: PageHeader(
+        title: const Text('Varshaphal (Annual Chart)'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       content: FutureBuilder<VarshaphalChart>(
         future: VarshaphalSystem.calculateVarshaphal(
           widget.birthData,
@@ -33,12 +39,16 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
+          if (!snapshot.hasData) {
+            return const Center(child: Text('No data available'));
+          }
+
           final varshaphal = snapshot.data!;
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Year selector
+                      // Year selector
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -53,11 +63,13 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                         children: [
                           IconButton(
                             icon: const Icon(FluentIcons.remove),
-                            onPressed: () {
-                              setState(() {
-                                _selectedYear--;
-                              });
-                            },
+                            onPressed: _selectedYear > 1800
+                                ? () {
+                                    setState(() {
+                                      _selectedYear--;
+                                    });
+                                  }
+                                : null,
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -71,11 +83,13 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                           ),
                           IconButton(
                             icon: const Icon(FluentIcons.add),
-                            onPressed: () {
-                              setState(() {
-                                _selectedYear++;
-                              });
-                            },
+                            onPressed: _selectedYear < 2100
+                                ? () {
+                                    setState(() {
+                                      _selectedYear++;
+                                    });
+                                  }
+                                : null,
                           ),
                         ],
                       ),

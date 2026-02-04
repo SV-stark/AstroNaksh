@@ -29,7 +29,25 @@ class BirthTimeRectifier {
     // We can use generateCompleteChart but it might be heavy.
     // Optimization: Just calculate Varga Lagnas?
     // For now, use robust service to ensure consistency.
-    final chartData = await _chartService.generateCompleteChart(newData);
+    CompleteChartData? chartData;
+    try {
+      chartData = await _chartService.generateCompleteChart(newData);
+    } catch (e) {
+      // Fallback to null - UI will handle gracefully
+      chartData = null;
+    }
+
+    if (chartData == null) {
+      return RectificationData(
+        adjustedTime: newTime,
+        adjustment: adjustment,
+        d1Ascendant: "-",
+        d9Ascendant: "-",
+        d60Ascendant: "-",
+        moonSign: "-",
+        d9MoonSign: "-",
+      );
+    }
 
     return RectificationData(
       adjustedTime: newTime,

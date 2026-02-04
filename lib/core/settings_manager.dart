@@ -72,17 +72,22 @@ class SettingsManager extends ChangeNotifier {
       // Theme
       if (settingsMap.containsKey(_themeModeKey)) {
         final modeStr = settingsMap[_themeModeKey];
-        _themeMode = ThemeMode.values.firstWhere(
-          (e) => e.toString() == modeStr,
-          orElse: () => ThemeMode.system,
-        );
+        if (modeStr != null) {
+          _themeMode = ThemeMode.values.firstWhere(
+            (e) => e.toString() == modeStr,
+            orElse: () => ThemeMode.system,
+          );
+        }
       }
 
       // Chart Settings
       if (settingsMap.containsKey(_chartSettingsKey)) {
         try {
-          final json = jsonDecode(settingsMap[_chartSettingsKey]);
-          _chartSettings = ChartCustomization.fromJson(json);
+          final chartSettingsValue = settingsMap[_chartSettingsKey];
+          if (chartSettingsValue != null) {
+            final json = jsonDecode(chartSettingsValue);
+            _chartSettings = ChartCustomization.fromJson(json);
+          }
         } catch (e) {
           debugPrint("Error loading chart settings from DB: $e");
         }
@@ -90,7 +95,8 @@ class SettingsManager extends ChangeNotifier {
 
       // Tutorial
       if (settingsMap.containsKey(_hasSeenTutorialKey)) {
-        _hasSeenTutorial = settingsMap[_hasSeenTutorialKey] == 'true';
+        final tutorialValue = settingsMap[_hasSeenTutorialKey];
+        _hasSeenTutorial = tutorialValue == 'true';
       }
 
       notifyListeners();

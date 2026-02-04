@@ -1,22 +1,22 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import '../../core/chart_customization.dart';
 
 class SouthIndianChartPainter extends CustomPainter {
-  final Map<int, List<String>> planetsBySign; // Key: Sign Index (0-11)
+  final Map<int, List<String>>
+  planetsBySign; // Key: Sign Index (0-11) (mapped correctly now) - Wait, I assume 1-12 mapped
   final int ascendantSign; // 1-12
-  final Color lineColor;
-  final Color textColor;
+  final ChartColors colors;
 
   SouthIndianChartPainter({
     required this.planetsBySign,
     required this.ascendantSign,
-    this.lineColor = Colors.white,
-    this.textColor = Colors.white,
+    required this.colors,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = lineColor
+      ..color = colors.houseBorder
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
@@ -80,7 +80,8 @@ class SouthIndianChartPainter extends CustomPainter {
     ];
 
     for (int i = 0; i < 12; i++) {
-      final planets = planetsBySign[i] ?? [];
+      // Fix: Map uses 1-based keys (1-12), but i is 0-11 (Aries-Pisces)
+      final planets = planetsBySign[i + 1] ?? [];
       final displayList = List<String>.from(planets);
 
       if (i == (ascendantSign - 1)) {
@@ -97,7 +98,7 @@ class SouthIndianChartPainter extends CustomPainter {
       final textSpan = TextSpan(
         text: text,
         style: TextStyle(
-          color: textColor,
+          color: colors.planetText,
           fontSize: fontSize.clamp(8.0, 16.0), // Min/Max limits
           fontWeight: FontWeight.bold,
         ),

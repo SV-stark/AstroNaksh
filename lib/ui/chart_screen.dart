@@ -9,6 +9,7 @@ import '../../core/constants.dart';
 
 import '../../core/settings_manager.dart';
 import 'tools/birth_time_rectifier_screen.dart';
+import '../../core/saved_charts_helper.dart';
 // New analysis screens
 import 'strength/ashtakavarga_screen.dart';
 import 'strength/shadbala_screen.dart';
@@ -132,6 +133,26 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
+  void _saveCurrentChart() async {
+    if (_birthData == null) return;
+    await SavedChartsHelper.saveChart(_birthData!);
+    if (!mounted) return;
+    displayInfoBar(
+      context,
+      builder: (context, close) {
+        return InfoBar(
+          title: const Text('Saved'),
+          content: const Text('Chart details saved successfully.'),
+          action: IconButton(
+            icon: const Icon(FluentIcons.clear),
+            onPressed: close,
+          ),
+          severity: InfoBarSeverity.success,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return NavigationView(
@@ -146,7 +167,13 @@ class _ChartScreenState extends State<ChartScreen> {
               label: const Text('Info'),
               onPressed: _showBirthDetails,
             ),
-            // 2. Share/Export Button (New)
+            // 2. Save Button (New)
+            CommandBarButton(
+              icon: const Icon(FluentIcons.save),
+              label: const Text('Save'),
+              onPressed: _saveCurrentChart,
+            ),
+            // 3. Share/Export Button (New)
             CommandBarButton(
               icon: const Icon(FluentIcons.share),
               label: const Text('Share'),

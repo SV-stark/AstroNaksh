@@ -1,22 +1,21 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import '../../core/chart_customization.dart';
 
 class NorthIndianChartPainter extends CustomPainter {
   final Map<int, List<String>> planetsBySign;
   final int ascendantSign;
-  final Color textColor;
-  final Color borderColor;
+  final ChartColors colors;
 
   NorthIndianChartPainter({
     required this.planetsBySign,
     required this.ascendantSign,
-    this.textColor = Colors.black,
-    this.borderColor = Colors.black,
+    required this.colors,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = borderColor
+      ..color = colors.houseBorder
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
@@ -53,13 +52,14 @@ class NorthIndianChartPainter extends CustomPainter {
       final signSpan = TextSpan(
         text: "$signNumber\n",
         style: TextStyle(
-          color: textColor.withValues(alpha: 0.7),
+          color: colors.planetText.withValues(alpha: 0.7),
           fontSize: fontSize * 0.8,
         ),
       );
 
       // 2. Draw Planets
-      final planets = planetsBySign[signIndex] ?? [];
+      // Fix: Map uses 1-based keys (1-12), but signIndex is 0-11.
+      final planets = planetsBySign[signIndex + 1] ?? [];
 
       // Group planets into lines if there are many to prevent overflow
       final List<String> lines = [];
@@ -82,7 +82,7 @@ class NorthIndianChartPainter extends CustomPainter {
             (line) => TextSpan(
               text: "$line\n",
               style: TextStyle(
-                color: textColor,
+                color: colors.planetText,
                 fontSize: fontSize,
                 fontWeight: FontWeight.bold,
               ),

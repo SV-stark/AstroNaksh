@@ -218,18 +218,24 @@ class CircularScoreIndicator extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              ProgressRing(
-                value: score,
-                strokeWidth: size * 0.1,
-                activeColor: _getScoreColor(),
-                backgroundColor: _getScoreColor().withValues(alpha: 0.2),
+              SizedBox(
+                width: size,
+                height: size,
+                child: ProgressRing(
+                  value: score,
+                  strokeWidth: size * 0.15, // Slightly thicker
+                  activeColor: _getScoreColor(),
+                  backgroundColor: _getScoreColor().withValues(alpha: 0.1),
+                ),
               ),
-              Text(
-                score.toStringAsFixed(0),
-                style: TextStyle(
-                  fontSize: size * 0.3,
-                  fontWeight: FontWeight.bold,
-                  color: _getScoreColor(),
+              Center(
+                child: Text(
+                  score.toStringAsFixed(0),
+                  style: TextStyle(
+                    fontSize: size * 0.35, // Adjust font size relative to ring
+                    fontWeight: FontWeight.bold,
+                    color: _getScoreColor(),
+                  ),
                 ),
               ),
             ],

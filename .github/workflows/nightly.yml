@@ -27,17 +27,23 @@ jobs:
         run: flutter pub get
 
       - name: Build Windows Application
-        run: flutter build windows --release
-
-      - name: Compile Inno Setup Script
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
-        with:
-          path: windows/installer.iss
+        run: |
+          flutter build windows --release
+          mkdir AstroNaksh
+          copy build\windows\x64\runner\Release\astronaksh.exe AstroNaksh\
+          copy build\windows\x64\runner\Release\flutter_windows.dll AstroNaksh\
+          if exist build\windows\x64\runner\Release\sqlite3.dll copy build\windows\x64\runner\Release\sqlite3.dll AstroNaksh\
+          if exist swisseph.dll copy swisseph.dll AstroNaksh\
+          xcopy /E /I /Y build\windows\x64\runner\Release\data AstroNaksh\data
+          echo. > AstroNaksh\.portable
+          mkdir AstroNaksh\user_data
+          mkdir AstroNaksh\settings
+          powershell -Command "Compress-Archive -Path 'AstroNaksh' -DestinationPath 'AstroNaksh_Portable.zip' -Force"
 
       - name: Upload Nightly Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "windows/Output/astronaksh_setup.exe"
+          artifacts: "AstroNaksh_Portable.zip"
           tag: nightly
           name: Nightly Windows Release
           body: "This is an automated nightly release from the latest push. Build: ${{ github.run_number }}"

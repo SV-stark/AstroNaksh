@@ -19,17 +19,18 @@ class CityDatabase {
 
     try {
       final String jsonString = await rootBundle.loadString(
-        'assets/data/cities.json',
+        'assets/data/cities2.json',
       );
       final List<dynamic> jsonList = json.decode(jsonString);
 
       _cities = jsonList.map((json) {
         return City(
           name: json['n'] as String,
-          country: 'India', // Default for this dataset
+          state: json['s'] as String,
+          country: json['c'] as String,
           latitude: (json['la'] as num).toDouble(),
           longitude: (json['lo'] as num).toDouble(),
-          timezone: 'Asia/Kolkata',
+          timezone: 'Asia/Kolkata', // Dataset is India-focused
         );
       }).toList();
 
@@ -44,6 +45,7 @@ class CityDatabase {
       _cities = [
         City(
           name: 'New Delhi',
+          state: 'Delhi',
           country: 'India',
           latitude: 28.6139,
           longitude: 77.2090,
@@ -51,6 +53,7 @@ class CityDatabase {
         ),
         City(
           name: 'Mumbai',
+          state: 'Maharashtra',
           country: 'India',
           latitude: 19.0760,
           longitude: 72.8777,
@@ -187,6 +190,7 @@ class CityDatabase {
 /// City data class
 class City {
   final String name;
+  final String state;
   final String country;
   final double latitude;
   final double longitude;
@@ -194,13 +198,14 @@ class City {
 
   const City({
     required this.name,
+    required this.state,
     required this.country,
     required this.latitude,
     required this.longitude,
     required this.timezone,
   });
 
-  String get displayName => '$name, $country';
+  String get displayName => '$name, $state, $country';
 
   @override
   String toString() => displayName;

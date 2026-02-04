@@ -123,6 +123,23 @@ class _InputScreenState extends State<InputScreen> {
         return;
       }
 
+      // Validate Date (Future checks)
+      final now = DateTime.now();
+      if (_selectedDate.isAfter(now)) {
+        displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Invalid Date'),
+              content: const Text('Birth date cannot be in the future.'),
+              severity: InfoBarSeverity.warning,
+              onClose: close,
+            );
+          },
+        );
+        return;
+      }
+
       final dt = DateTime(
         _selectedDate.year,
         _selectedDate.month,
@@ -144,6 +161,7 @@ class _InputScreenState extends State<InputScreen> {
         'latitude': lat,
         'longitude': long,
         'locationName': _selectedCity!.displayName,
+        'timezone': _selectedCity!.timezone,
       });
 
       final birthData = BirthData(
@@ -151,6 +169,7 @@ class _InputScreenState extends State<InputScreen> {
         location: Location(latitude: lat, longitude: long),
         name: name,
         place: _selectedCity!.displayName,
+        timezone: _selectedCity!.timezone,
       );
 
       // Navigate to Chart Screen

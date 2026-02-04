@@ -401,11 +401,17 @@ class KPExtensions {
     double subStart = 0;
 
     for (int i = 0; i < subBoundaries.length; i++) {
-      if (positionInNakshatra >= subBoundaries[i]['start']! &&
-          positionInNakshatra < subBoundaries[i]['end']!) {
-        subLord = subBoundaries[i]['lord']!;
-        subStart = subBoundaries[i]['start']!;
-        break;
+      final boundary = subBoundaries[i];
+      final start = boundary['start'] as double?;
+      final end = boundary['end'] as double?;
+      final lord = boundary['lord'] as String?;
+
+      if (start != null && end != null && lord != null) {
+        if (positionInNakshatra >= start && positionInNakshatra < end) {
+          subLord = lord;
+          subStart = start;
+          break;
+        }
       }
     }
 
@@ -434,7 +440,12 @@ class KPExtensions {
     double currentPosition = 0;
 
     for (final lord in subLords) {
-      final period = _dashaPeriods[lord]!;
+      final period = _dashaPeriods[lord];
+      if (period == null) {
+        // Skip invalid lords to prevent crashes
+        continue;
+      }
+
       final span = (period / _totalDashaYears) * _nakshatraSpan;
 
       boundaries.add({
@@ -456,37 +467,57 @@ class KPExtensions {
     double positionInSub,
     List<Map<String, dynamic>> subBoundaries,
   ) {
-    // Find the sub-boundary for this lord
-    final subBoundary = subBoundaries.firstWhere((b) => b['lord'] == subLord);
-    final subSpan = subBoundary['span'] as double;
+    if (subLord == 'Unknown') return 'Unknown';
 
-    // Sub-sub-lords follow the same vimshottari sequence
-    final sequence = _getVimshottariSequence(subLord);
-    final List<Map<String, dynamic>> subSubBoundaries = [];
-    double currentPos = 0;
+    try {
+      // Find the sub-boundary for this lord
+      final subBoundary = subBoundaries.firstWhere(
+        (b) => b['lord'] == subLord,
+        orElse: () => {},
+      );
 
-    for (final lord in sequence) {
-      final period = _dashaPeriods[lord]!;
-      final span = (period / _totalDashaYears) * subSpan;
+      if (subBoundary.isEmpty) return 'Unknown';
 
-      subSubBoundaries.add({
-        'lord': lord,
-        'start': currentPos,
-        'end': currentPos + span,
-      });
+      final subSpan = subBoundary['span'] as double?;
+      if (subSpan == null) return 'Unknown';
 
-      currentPos += span;
-    }
+      // Sub-sub-lords follow the same vimshottari sequence
+      final sequence = _getVimshottariSequence(subLord);
+      final List<Map<String, dynamic>> subSubBoundaries = [];
+      double currentPos = 0;
 
-    // Find which sub-sub-lord contains the position
-    for (final boundary in subSubBoundaries) {
-      if (positionInSub >= boundary['start']! &&
-          positionInSub < boundary['end']!) {
-        return boundary['lord']!;
+      for (final lord in sequence) {
+        final period = _dashaPeriods[lord];
+        if (period == null) continue;
+
+        final span = (period / _totalDashaYears) * subSpan;
+
+        subSubBoundaries.add({
+          'lord': lord,
+          'start': currentPos,
+          'end': currentPos + span,
+        });
+
+        currentPos += span;
       }
-    }
 
-    return sequence.last;
+      // Find which sub-sub-lord contains the position
+      for (final boundary in subSubBoundaries) {
+        final start = boundary['start'] as double?;
+        final end = boundary['end'] as double?;
+        final lord = boundary['lord'] as String?;
+
+        if (start != null && end != null && lord != null) {
+          if (positionInSub >= start && positionInSub < end) {
+            return lord;
+          }
+        }
+      }
+
+      return sequence.isNotEmpty ? sequence.last : 'Unknown';
+    } catch (e) {
+      return 'Unknown';
+    }
   }
 
   /// Get vimshottari sequence starting from a specific planet
@@ -594,59 +625,59 @@ class KPExtensions {
 
   /// Get house cusp longitude - safely access house cusps
   /// Falls back to equal houses from ascendant if cusps unavailable
+  /// Get house cusp longitude - safely access house cusps
+  /// Falls back to equal houses from ascendant if cusps unavailable
   static double _getHouseCuspLongitude(VedicChart chart, int houseIndex) {
-    // Try to access house cusp through the houses property
-    // VedicChart might have cusps as a List<double> or HouseSystem object
     try {
-      // Access houses as dynamic to avoid type errors
-      final houses = chart.houses;
+      // Access houses via dynamic to handle different library versions or potential types
+      final housesDynamic = chart.houses as dynamic;
 
-      // Try different access patterns
-
-      // Try accessing as a List
+      // Check if it has cusps property (HouseSystem)
       try {
-        final housesList = houses as dynamic;
-        if (houseIndex < housesList.length) {
-          final cusp = housesList[houseIndex];
-          if (cusp is Map) {
-            return (cusp['longitude'] as num?)?.toDouble() ?? 0.0;
-          } else if (cusp is num) {
-            return cusp.toDouble();
-          }
-        }
-      } catch (_) {
-        // Not a list, try other patterns
-      }
-
-      // Try accessing cusps property
-      try {
-        final cusps = (houses as dynamic).cusps;
-        if (cusps != null && cusps is List && houseIndex < cusps.length) {
+        final cusps = housesDynamic.cusps;
+        if (cusps is List && houseIndex < cusps.length) {
           final cusp = cusps[houseIndex];
           if (cusp is num) return cusp.toDouble();
         }
-      } catch (_) {
-        // No cusps property
-      }
+      } catch (_) {}
 
-      // Fallback: Get ascendant from first house cusp for equal house calculation
-      // Try to get ascendant longitude first
-      double ascendant = 0.0;
-      try {
-        final cusps = (houses as dynamic).cusps;
-        if (cusps != null && cusps is List && cusps.isNotEmpty) {
-          final firstCusp = cusps[0];
-          if (firstCusp is num) ascendant = firstCusp.toDouble();
+      // Check if it IS a List directly (backward compatibility)
+      if (housesDynamic is List && houseIndex < housesDynamic.length) {
+        final cusp = housesDynamic[houseIndex];
+        if (cusp is num) return cusp.toDouble();
+        if (cusp is Map) {
+          final val = cusp['longitude'];
+          if (val is num) return val.toDouble();
         }
-      } catch (_) {
-        // Use 0° if no ascendant available
       }
 
-      // Calculate equal house cusp from ascendant
+      // Fallback: Equal House System from Ascendant
+      double ascendant = 0.0;
+
+      // Try to get ascendant from cusps[0]
+      try {
+        final cusps = housesDynamic.cusps;
+        if (cusps is List && cusps.isNotEmpty) {
+          final first = cusps[0];
+          if (first is num) ascendant = first.toDouble();
+        }
+      } catch (_) {}
+
+      // Try to get ascendant from list[0]
+      if (ascendant == 0.0 &&
+          housesDynamic is List &&
+          housesDynamic.isNotEmpty) {
+        final first = housesDynamic[0];
+        if (first is num)
+          ascendant = first.toDouble();
+        else if (first is Map) {
+          final val = first['longitude'];
+          if (val is num) ascendant = val.toDouble();
+        }
+      }
+
       return (ascendant + houseIndex * 30.0) % 360.0;
     } catch (e) {
-      // Last resort fallback: equal houses from 0° Aries
-      // This is less accurate but prevents crashes
       return houseIndex * 30.0;
     }
   }

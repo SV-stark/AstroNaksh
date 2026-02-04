@@ -9,8 +9,11 @@ import 'ui/loading_screen.dart';
 import 'ui/panchang_screen.dart';
 import 'core/settings_manager.dart';
 
+import 'package:timezone/data/latest.dart' as tz;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
 
   // Initialize Window for Acrylic effect
   try {

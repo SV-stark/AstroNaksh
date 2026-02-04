@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../core/ephemeris_manager.dart';
+import '../data/city_database.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -21,8 +22,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
     try {
       // We can't easily get granular progress from ensureEphemerisData
       // without modifying it, but we can at least show it's working.
-      setState(() => _status = "Loading Ephemeris Data...");
+      setState(() => _status = "Loading City Database...");
+      await CityDatabase.initialize();
 
+      setState(() => _status = "Loading Ephemeris Data...");
       await EphemerisManager.ensureEphemerisData();
 
       if (mounted) {

@@ -234,10 +234,37 @@ class TransitAnalysis {
     }
 
     // Calculate tithi (lunar day) - normalize moon-sun difference to 0-360
-    final sunLongitude = transitChart.planets.entries
-        .firstWhere((e) => e.key.toString().toLowerCase().contains('sun'))
-        .value
-        .longitude;
+    double sunLongitude = 0;
+    try {
+      sunLongitude = transitChart.planets.entries
+          .firstWhere(
+            (e) => e.key == Planet.sun,
+            orElse: () => MapEntry(
+              Planet.sun,
+              VedicPlanetInfo(
+                position: PlanetPosition(
+                  planet: Planet.sun,
+                  longitude: 0,
+                  dateTime: DateTime.now(),
+                  latitude: 0,
+                  distance: 0,
+                  longitudeSpeed: 0,
+                  latitudeSpeed: 0,
+                  distanceSpeed: 0,
+                ),
+                house: 1,
+                dignity: PlanetaryDignity.neutralSign,
+                isCombust: false,
+              ),
+            ),
+          )
+          .value
+          .longitude;
+    } catch (_) {
+      // Fallback if Sun is completely missing
+      sunLongitude = 0;
+    }
+
     // Normalize difference to 0-360 range
     final moonSunDiff = (transitMoonLongitude - sunLongitude + 360) % 360;
     // Each tithi is 12 degrees of moon-sun separation (360/30 = 12)
@@ -326,7 +353,7 @@ class TransitAnalysis {
 
     // Find Saturn and Moon
     for (final entry in transitChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('saturn')) {
+      if (entry.key == Planet.saturn) {
         transitSaturn = entry.key;
         transitSaturnLongitude = entry.value.longitude;
         break;
@@ -334,7 +361,7 @@ class TransitAnalysis {
     }
 
     for (final entry in natalChart.baseChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
+      if (entry.key == Planet.moon) {
         natalMoon = entry.key;
         natalMoonLongitude = entry.value.longitude;
         break;

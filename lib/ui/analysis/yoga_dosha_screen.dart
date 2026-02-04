@@ -376,7 +376,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                   ),
                   child: Text(
                     dosha.status,
-                    style: const TextStyle(fontSize: 10, color: Colors.green),
+                    style: TextStyle(fontSize: 10, color: Colors.green),
                   ),
                 )
               : null,
@@ -448,7 +448,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
             ],
 
             if (yoga.cancellationReasons.isNotEmpty) ...[
-              const Text(
+              Text(
                 'Weakening Factors:',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -496,10 +496,11 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
 
     // Determine status color
     Color statusColor = Colors.red;
-    if (dosha.status == 'Fully Cancelled')
+    if (dosha.status == 'Fully Cancelled') {
       statusColor = Colors.green;
-    else if (dosha.status == 'Partially Cancelled')
+    } else if (dosha.status == 'Partially Cancelled') {
       statusColor = Colors.orange;
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -589,7 +590,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
             ],
 
             if (dosha.cancellationReasons.isNotEmpty) ...[
-              const Text(
+              Text(
                 'Cancellation Factors (Bhanga):',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,

@@ -25,12 +25,14 @@ class BirthData {
   final Location location;
   final String name;
   final String place;
+  final String timezone;
 
   BirthData({
     required this.dateTime,
     required this.location,
     this.name = '',
     this.place = '',
+    this.timezone = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -38,6 +40,7 @@ class BirthData {
     'location': location.toJson(),
     'name': name,
     'place': place,
+    'timezone': timezone,
   };
 
   factory BirthData.fromJson(Map<String, dynamic> json) {
@@ -46,6 +49,7 @@ class BirthData {
       location: Location.fromJson(json['location']),
       name: json['name'] ?? '',
       place: json['place'] ?? '',
+      timezone: json['timezone'] ?? '',
     );
   }
 }

@@ -32,6 +32,7 @@ class KPChartService {
         altitude: 0,
       ),
       ayanamsaMode: mode,
+      timezone: birthData.timezone,
     );
 
     // Calculate all systems

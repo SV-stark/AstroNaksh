@@ -1,62 +1,35 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:astronaksh/logic/yoga_dosha_analyzer.dart';
-import 'package:astronaksh/data/models.dart';
-import 'package:jyotish/jyotish.dart';
 
-// Helper to create a Planet
-Graha createPlanet(String name, double longitude) {
-  // Assuming Graha constructor or factory
-  // Since we don't see Graha definition, we'll try to find a way to mock it
-  // If Graha cannot be easily instantiated, we might need a different approach
-  // But usually: Graha(id: name, longitude: longitude, ...)
-  return Graha(name, longitude, speed: 1.0); // Best guess constructor
-}
-
-class MockCompleteChartData extends CompleteChartData {
-  final Map<String, double> planetPositions;
-  final int ascendantArg;
-
-  MockCompleteChartData(this.planetPositions, this.ascendantArg)
-    : super(
-        baseChart: VedicChart(
-          ayanamsa: Ayanamsa.lahiri,
-          datetime: DateTime.now(),
-          location: Location(latitude: 0, longitude: 0),
-          // We need to populate the chart with planets
-          // Assuming we can pass planets or set them
-        ),
-        kpData: KPData(subLords: [], significators: [], rulingPlanets: []),
-        dashaData: DashaData(
-          vimshottari: VimshottariDasha(
-            birthLord: 'Sun',
-            balanceAtBirth: 0,
-            mahadashas: [],
-          ),
-          yogini: YoginiDasha(startSign: 1, periods: []),
-          chara: CharaDasha(startSign: 1, periods: []),
-        ),
-        divisionalCharts: {},
-        significatorTable: {},
-        birthData: BirthData(
-          dateTime: DateTime.now(),
-          location: Location(latitude: 0, longitude: 0),
-        ),
-      );
-
-  // Override the internal accessors if possible, or ensure baseChart is populated
-  // Since YogaDoshaAnalyzer uses static helpers that take CompleteChartData,
-  // we cannot easily override those helpers.
-  // We must ensure the `baseChart` has the data.
-}
-
-// Since we can't easily rely on baseChart construction without knowing jyotish package details,
-// We will assume that YogaDoshaAnalyzer logic extracts data via getters we can control?
-// Unfortunately _getPlanetLongitude is static private.
-// We must populate `baseChart`.
-
+/// Placeholder test for Yoga/Dosha Bhanga (Cancellation) Logic
+///
+/// TODO: Implement comprehensive tests for cancellation logic:
+/// - Test Manglik Dosha cancellation scenarios
+/// - Test Kaal Sarp Dosha cancellation scenarios
+/// - Test Pitra Dosha cancellation scenarios
+/// - Test Kemadruma Dosha cancellation scenarios
+/// - Test Guru Chandal Dosha cancellation scenarios
+/// - Test Sakat Dosha cancellation scenarios
+/// - Test Yoga weakening scenarios
+///
+/// To implement these tests properly, we need to:
+/// 1. Create helper functions to build mock CompleteChartData with specific planetary positions
+/// 2. Test each bhanga rule individually
+/// 3. Verify strength calculations are correct
+/// 4. Verify cancellation reasons are properly detected
 void main() {
-  test('Bhanga Logic - Setup Test', () {
-    // This is a placeholder until we can confirm how to construct CompleteChartData
-    expect(true, isTrue);
+  group('Yoga/Dosha Bhanga Logic', () {
+    test('Placeholder - Tests need to be implemented', () {
+      // This is a placeholder test that passes
+      // Real tests should be implemented with proper mock chart data
+      expect(true, isTrue);
+    });
+
+    // TODO: Add test for Manglik Bhanga
+    // test('Manglik Dosha is cancelled when Mars is in own sign', () { ... });
+
+    // TODO: Add test for Kaal Sarp Bhanga
+    // test('Kaal Sarp Dosha is weakened when planet is with Rahu/Ketu', () { ... });
+
+    // TODO: Add test for other cancellation scenarios
   });
 }

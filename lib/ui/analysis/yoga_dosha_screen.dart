@@ -20,28 +20,6 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
   Widget build(BuildContext context) {
     final analysis = YogaDoshaAnalyzer.analyze(widget.chartData);
 
-    // Convert String lists to Map objects for UI
-    final yogaStrings = analysis['yogas'] as List;
-    final doshasStrings = analysis['doshas'] as List;
-
-    final yogas = yogaStrings
-        .map(
-          (y) => {
-            'name': y.toString(),
-            'description': _getYogaDescription(y.toString()),
-          },
-        )
-        .toList();
-
-    final doshas = doshasStrings
-        .map(
-          (d) => {
-            'name': d.toString(),
-            'description': _getDoshaDescription(d.toString()),
-          },
-        )
-        .toList();
-
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.escape): () {
@@ -64,19 +42,17 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
             PaneItem(
               icon: const Icon(FluentIcons.report_document),
               title: const Text('Summary'),
-              body: _buildBody(
-                _buildSummaryTab({'yogas': yogas, 'doshas': doshas}),
-              ),
+              body: _buildBody(_buildSummaryTab(analysis)),
             ),
             PaneItem(
               icon: const Icon(FluentIcons.favorite_star),
               title: const Text('Yogas'),
-              body: _buildBody(_buildYogasTab(yogas)),
+              body: _buildBody(_buildYogasTab(analysis.yogas)),
             ),
             PaneItem(
               icon: const Icon(FluentIcons.warning),
               title: const Text('Doshas'),
-              body: _buildBody(_buildDoshasTab(doshas)),
+              body: _buildBody(_buildDoshasTab(analysis.doshas)),
             ),
           ],
         ),
@@ -93,16 +69,14 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
     );
   }
 
-  Widget _buildSummaryTab(Map<String, dynamic> analysis) {
-    final yogas = analysis['yogas'] as List;
-    final doshas = analysis['doshas'] as List;
+  Widget _buildSummaryTab(YogaDoshaAnalysisResult analysis) {
+    final yogas = analysis.yogas;
+    final doshas = analysis.doshas;
 
-    // Calculate overall score
-    final yogaCount = yogas.length;
-    final doshaCount = doshas.length;
-    final overallScore = ((yogaCount - doshaCount) / 10 * 50 + 50)
-        .clamp(0, 100)
-        .toDouble();
+    // Count active items
+    final activeYogas = yogas.where((y) => y.isActive).length;
+    final activeDoshas = doshas.where((d) => d.isActive).length;
+    final cancelledDoshas = doshas.length - activeDoshas;
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 20),
@@ -119,13 +93,13 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                 ),
                 const SizedBox(height: 24),
                 CircularScoreIndicator(
-                  score: overallScore,
-                  label: _getQualityLabel(overallScore),
+                  score: analysis.overallScore,
+                  label: analysis.qualityLabel,
                   size: 120,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _getQualityDescription(overallScore),
+                  analysis.qualityDescription,
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 14),
                 ),
@@ -148,9 +122,9 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               child: const Icon(FluentIcons.completed, color: Colors.white),
             ),
             title: const Text('Auspicious Yogas'),
-            subtitle: Text('$yogaCount yoga(s) detected'),
+            subtitle: Text('$activeYogas active / ${yogas.length} total'),
             trailing: Text(
-              '$yogaCount',
+              '$activeYogas',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -174,9 +148,9 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               child: const Icon(FluentIcons.warning, color: Colors.white),
             ),
             title: const Text('Doshas/Challenges'),
-            subtitle: Text('$doshaCount dosha(s) detected'),
+            subtitle: Text('$activeDoshas active, $cancelledDoshas cancelled'),
             trailing: Text(
-              '$doshaCount',
+              '$activeDoshas',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -211,7 +185,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
     );
   }
 
-  Widget _buildYogasTab(List yogas) {
+  Widget _buildYogasTab(List<BhangaResult> yogas) {
     if (yogas.isEmpty) {
       return const Center(
         child: Padding(
@@ -232,9 +206,9 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
     }
 
     // Group yogas by type
-    final groupedYogas = <String, List>{};
+    final groupedYogas = <String, List<BhangaResult>>{};
     for (var yoga in yogas) {
-      final type = _getYogaType(yoga['name']);
+      final type = _getYogaType(yoga.name);
       groupedYogas.putIfAbsent(type, () => []);
       groupedYogas[type]!.add(yoga);
     }
@@ -243,7 +217,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
       padding: const EdgeInsets.only(bottom: 20),
       children: [
         Card(
-          backgroundColor: Colors.green.withValues(alpha: 0.1),
+          backgroundColor: Colors.green.withOpacity(0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -284,7 +258,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
     );
   }
 
-  Widget _buildDoshasTab(List doshas) {
+  Widget _buildDoshasTab(List<BhangaResult> doshas) {
     if (doshas.isEmpty) {
       return Center(
         child: Padding(
@@ -318,7 +292,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
       padding: const EdgeInsets.only(bottom: 20),
       children: [
         Card(
-          backgroundColor: Colors.orange.withValues(alpha: 0.1),
+          backgroundColor: Colors.orange.withOpacity(0.1),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -341,41 +315,79 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
     );
   }
 
-  Widget _buildQuickYogaCard(Map<String, dynamic> yoga) {
+  Widget _buildQuickYogaCard(BhangaResult yoga) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Card(
         child: ListTile(
           leading: Icon(FluentIcons.favorite_star, color: Colors.yellow),
-          title: Text(yoga['name']),
+          title: Text(yoga.name),
           subtitle: Text(
-            yoga['description'],
+            yoga.isActive
+                ? _getYogaDescription(yoga.name)
+                : '${yoga.status} - ${yoga.description}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          trailing: !yoga.isActive
+              ? Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    yoga.status,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                )
+              : null,
         ),
       ),
     );
   }
 
-  Widget _buildQuickDoshaCard(Map<String, dynamic> dosha) {
+  Widget _buildQuickDoshaCard(BhangaResult dosha) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Card(
         child: ListTile(
           leading: Icon(FluentIcons.warning, color: Colors.orange),
-          title: Text(dosha['name']),
+          title: Text(dosha.name),
           subtitle: Text(
-            dosha['description'],
+            dosha.isActive
+                ? _getDoshaDescription(dosha.name)
+                : '${dosha.status} - ${dosha.description}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          trailing: !dosha.isActive
+              ? Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    dosha.status,
+                    style: const TextStyle(fontSize: 10, color: Colors.green),
+                  ),
+                )
+              : null,
         ),
       ),
     );
   }
 
-  Widget _buildYogaCard(Map<String, dynamic> yoga) {
+  Widget _buildYogaCard(BhangaResult yoga) {
+    final description = _getYogaDescription(yoga.name);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Expander(
@@ -383,107 +395,253 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
           children: [
             Icon(FluentIcons.favorite_star, color: Colors.yellow, size: 24),
             const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  yoga['name'],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  _getYogaType(yoga['name']),
-                  style: TextStyle(fontSize: 12, color: Colors.green),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        yoga.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      if (!yoga.isActive) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            yoga.status,
+                            style: TextStyle(fontSize: 10),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Text(
+                    _getYogaType(yoga.name),
+                    style: TextStyle(fontSize: 12, color: Colors.green),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Status and Strength
+            if (yoga.strength < 100) ...[
+              Text(
+                'Strength: ${yoga.strength.toStringAsFixed(0)}%',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              ProgressBar(value: yoga.strength),
+              const SizedBox(height: 12),
+            ],
+
+            if (yoga.cancellationReasons.isNotEmpty) ...[
+              const Text(
+                'Weakening Factors:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.orange,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ...yoga.cancellationReasons.map(
+                (r) => Padding(
+                  padding: EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    children: [
+                      Icon(FluentIcons.warning, size: 12, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Expanded(child: Text(r)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+
             const Text(
               'Description:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 6),
-            Text(yoga['description']),
+            Text(description),
             const SizedBox(height: 12),
             const Text(
               'Effects:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 6),
-            Text(_getYogaEffects(yoga['name'])),
+            Text(_getYogaEffects(yoga.name)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDoshaCard(Map<String, dynamic> dosha) {
+  Widget _buildDoshaCard(BhangaResult dosha) {
+    final description = _getDoshaDescription(dosha.name);
+
+    // Determine status color
+    Color statusColor = Colors.red;
+    if (dosha.status == 'Fully Cancelled')
+      statusColor = Colors.green;
+    else if (dosha.status == 'Partially Cancelled')
+      statusColor = Colors.orange;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Expander(
         header: Row(
           children: [
-            Icon(FluentIcons.warning, color: Colors.orange, size: 24),
+            Icon(
+              FluentIcons.warning,
+              color: dosha.isActive ? Colors.orange : Colors.grey,
+              size: 24,
+            ),
             const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  dosha['name'],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Remedial measures recommended',
-                  style: TextStyle(fontSize: 12, color: Colors.orange),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        dosha.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      if (dosha.status != 'Active') ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: statusColor.withOpacity(0.5),
+                            ),
+                          ),
+                          child: Text(
+                            dosha.status,
+                            style: TextStyle(fontSize: 10, color: statusColor),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Text(
+                    dosha.isActive
+                        ? 'Remedial measures recommended'
+                        : 'Effects nullified or reduced',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: dosha.isActive ? Colors.orange : Colors.green,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Status and Strength
+            if (dosha.strength < 100) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Dosha Intensity: ${dosha.strength.toStringAsFixed(0)}%',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (dosha.strength == 0)
+                    Text(
+                      'CANCELLED',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              ProgressBar(
+                value: dosha.strength,
+                backgroundColor: Colors.grey.withOpacity(0.1),
+              ), // Color should be dynamic?
+              const SizedBox(height: 12),
+            ],
+
+            if (dosha.cancellationReasons.isNotEmpty) ...[
+              const Text(
+                'Cancellation Factors (Bhanga):',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ...dosha.cancellationReasons.map(
+                (r) => Padding(
+                  padding: EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    children: [
+                      Icon(
+                        FluentIcons.check_mark,
+                        size: 12,
+                        color: Colors.green,
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(child: Text(r)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+
             const Text(
               'Description:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 6),
-            Text(dosha['description']),
-            const SizedBox(height: 12),
-            const Text(
-              'Remedies:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            Text(
+              description ==
+                      'A challenging planetary combination requiring awareness and remedial measures.'
+                  ? dosha.description
+                  : description,
             ),
-            const SizedBox(height: 6),
-            Text(_getDoshaRemedies(dosha['name'])),
+
+            if (dosha.isActive) ...[
+              const SizedBox(height: 12),
+              const Text(
+                'Remedies:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 6),
+              Text(_getDoshaRemedies(dosha.name)),
+            ],
           ],
         ),
       ),
     );
-  }
-
-  String _getQualityLabel(double score) {
-    if (score >= 80) return 'Excellent';
-    if (score >= 65) return 'Very Good';
-    if (score >= 50) return 'Good';
-    if (score >= 35) return 'Average';
-    return 'Challenging';
-  }
-
-  String _getQualityDescription(double score) {
-    if (score >= 80) {
-      return 'This is an excellent chart with strong positive combinations and minimal afflictions.';
-    } else if (score >= 65) {
-      return 'This is a very good chart with several beneficial yogas that support success.';
-    } else if (score >= 50) {
-      return 'This is a good chart with balanced energies and opportunities for growth.';
-    } else if (score >= 35) {
-      return 'This chart has average potential with both opportunities and challenges to navigate.';
-    }
-    return 'This chart has some challenges that require conscious effort and remedial measures.';
   }
 
   String _getYogaType(String name) {

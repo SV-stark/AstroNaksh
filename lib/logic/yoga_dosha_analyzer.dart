@@ -4,32 +4,77 @@ import '../data/models.dart';
 /// Detects auspicious (Yoga) and inauspicious (Dosha) combinations.
 class YogaDoshaAnalyzer {
   /// Analyze chart for common Yogas and Doshas
-  static Map<String, dynamic> analyze(CompleteChartData chart) {
-    return {'yogas': _findYogas(chart), 'doshas': _findDoshas(chart)};
+  /// Analyze chart for common Yogas and Doshas
+  static YogaDoshaAnalysisResult analyze(CompleteChartData chart) {
+    var yogas = _findYogas(chart);
+    final doshas = _findDoshas(chart);
+
+    // Score calculation
+    double score = 50.0;
+    for (var y in yogas) {
+      score += (y.strength / 100.0) * 5;
+    }
+    for (var d in doshas) {
+      score -= (d.strength / 100.0) * 5;
+    }
+    score = score.clamp(0.0, 100.0);
+
+    return YogaDoshaAnalysisResult(
+      yogas: yogas,
+      doshas: doshas,
+      overallScore: score,
+      qualityLabel: _getQualityLabel(score),
+      qualityDescription: _getQualityDescription(score),
+    );
   }
 
   // --- Dosha Detection ---
 
-  static List<String> _findDoshas(CompleteChartData chart) {
-    List<String> doshas = [];
+  static List<BhangaResult> _findDoshas(CompleteChartData chart) {
+    List<BhangaResult> results = [];
 
     // Basic Checks
-    if (_hasKaalSarpDosha(chart)) doshas.add('Kaal Sarp Dosha');
-    if (_hasMangalDosha(chart)) {
-      doshas.add('Manglik Dosha (Mars in sensitive house)');
+    if (_hasKaalSarpDosha(chart)) {
+      results.add(_checkKaalSarpBhanga(chart));
     }
-    if (_hasPitraDosha(chart)) doshas.add('Pitra Dosha');
-    if (_hasKemadrumaDosha(chart)) doshas.add('Kemadruma Dosha (Lonely Moon)');
+    if (_hasMangalDosha(chart)) {
+      results.add(_checkManglikBhanga(chart));
+    }
+    if (_hasPitraDosha(chart)) {
+      results.add(_checkPitraDoshaBhanga(chart));
+    }
+    if (_hasKemadrumaDosha(chart)) {
+      results.add(_checkKemadrumaBhanga(chart));
+    }
 
-    // Advanced Checks
-    _checkConjunctionDoshas(chart, doshas);
-    _checkHousePlacementDoshas(chart, doshas);
-    _checkStateStrengthDoshas(chart, doshas);
-    _checkLifestyleKarmicDoshas(chart, doshas);
-    _checkBirthTimeDoshas(chart, doshas);
-    _checkCurseDoshas(chart, doshas);
+    // Advanced Checks (Text based conversion)
+    List<String> textDoshas = [];
+    _checkConjunctionDoshas(chart, textDoshas);
+    _checkHousePlacementDoshas(chart, textDoshas);
+    _checkStateStrengthDoshas(chart, textDoshas);
+    _checkLifestyleKarmicDoshas(chart, textDoshas);
+    _checkBirthTimeDoshas(chart, textDoshas);
+    _checkCurseDoshas(chart, textDoshas);
 
-    return doshas;
+    for (var d in textDoshas) {
+      if (d.contains('Guru Chandal')) {
+        results.add(_checkGuruChandalBhanga(chart));
+      } else if (d.contains('Sakat Dosha')) {
+        results.add(_checkSakatBhanga(chart));
+      } else {
+        // Check for generic weakening/cancellation if applicable, otherwise active
+        results.add(
+          BhangaResult(
+            name: d.split('(').first.trim(),
+            description: d,
+            isActive: true,
+            status: 'Active',
+          ),
+        );
+      }
+    }
+
+    return results;
   }
 
   static bool _hasKaalSarpDosha(CompleteChartData chart) {
@@ -117,7 +162,7 @@ class YogaDoshaAnalyzer {
 
   // --- Yoga Detection ---
 
-  static List<String> _findYogas(CompleteChartData chart) {
+  static List<BhangaResult> _findYogas(CompleteChartData chart) {
     List<String> yogas = [];
 
     // 1. Gajakesari Yoga
@@ -234,7 +279,10 @@ class YogaDoshaAnalyzer {
     // 28. Miscellaneous Yogas
     _checkMiscYogas(chart, yogas);
 
-    return yogas;
+    return yogas.map((y) {
+      String name = y.contains('(') ? y.split('(').first.trim() : y;
+      return _checkYogaWeakening(chart, name, y);
+    }).toList();
   }
 
   // --- Dhana Yogas (Wealth) ---
@@ -1891,6 +1939,300 @@ class YogaDoshaAnalyzer {
     }
   }
 
+  // --- Bhanga (Cancellation) Rules ---
+
+  static BhangaResult _checkManglikBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // 1. Mars in Own Sign or Exaltation
+    final marsSign = _getPlanetSign(chart, 'Mars');
+    if (_isOwnSign('Mars', marsSign) || _isExalted('Mars', marsSign)) {
+      cancellations.add('Mars is in own sign or exalted sign');
+    }
+
+    // 2. Aspect of Jupiter
+    if (_isAspecting(chart, 'Jupiter', 'Mars', [5, 7, 9]) ||
+        _areConjunct(chart, 'Jupiter', 'Mars')) {
+      cancellations.add('Mars is aspected by or conjunct with Jupiter');
+    }
+
+    // 3. Venus in Kendra
+    // Venus in 1, 4, 7, 10 from Lagna
+    if (_isPlanetInKendra(chart, 'Venus')) {
+      cancellations.add('Venus is in a Kendra house');
+    }
+
+    // 4. Mars in 2nd house with benefic aspect
+    final marsHouse = _getPlanetHouse(chart, 'Mars');
+    if (marsHouse == 2) {
+      // Check for benefic aspect (Jup, Ven, Mer, Moon)
+      // Simplified check
+      if (_isAspecting(chart, 'Jupiter', 'Mars', [5, 7, 9]) ||
+          _isAspecting(chart, 'Venus', 'Mars', [7])) {
+        cancellations.add('Mars is in 2nd house with benefic aspect');
+      }
+    }
+
+    // Calculate status
+    double strength = 100.0;
+    if (cancellations.isNotEmpty) {
+      if (cancellations.length >= 2 ||
+          cancellations.any((c) => c.contains('Jupiter'))) {
+        strength = 0.0; // Cancelled
+      } else {
+        strength = 40.0; // Reduced
+      }
+    }
+
+    String status = 'Active';
+    if (strength == 0.0)
+      status = 'Fully Cancelled';
+    else if (strength < 100.0)
+      status = 'Partially Cancelled';
+
+    return BhangaResult(
+      name: 'Manglik Dosha',
+      description: 'Mars in sensitive houses affecting relationships',
+      isActive: strength > 20,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: status,
+    );
+  }
+
+  static BhangaResult _checkKaalSarpBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // 1. Planet with Rahu/Ketu
+    // Check if any visible planet is conjunct Rahu or Ketu
+    for (var p in _visiblePlanets) {
+      if (_areConjunct(chart, p, 'Rahu') || _areConjunct(chart, p, 'Ketu')) {
+        cancellations.add('Measurement broken: $p is conjunct with Nodes');
+      }
+    }
+
+    // 2. Strong Planet in Kendra/Trikona
+    // If Lagna Lord is strong
+    final l1 = _getHouseLord(chart, 1);
+    if (_isStrong(chart, l1)) {
+      cancellations.add('Lagna Lord is strong');
+    }
+
+    // 3. Benefic Aspect on Nodes
+    if (_isAspecting(chart, 'Jupiter', 'Rahu', [5, 7, 9]) ||
+        _isAspecting(chart, 'Jupiter', 'Ketu', [5, 7, 9])) {
+      cancellations.add('Jupiter aspects Rahu/Ketu');
+    }
+
+    double strength = 100.0;
+    if (cancellations.isNotEmpty) strength = 20.0; // Heavily reduced if broken
+
+    return BhangaResult(
+      name: 'Kaal Sarp Dosha',
+      description: 'All planets hemmed between Rahu and Ketu',
+      isActive: strength > 50,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 50 ? 'Partially Cancelled' : 'Active',
+    );
+  }
+
+  static BhangaResult _checkPitraDoshaBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // 1. Jupiter influence
+    // If Jupiter aspects the affliction (Sun/Moon/Nodes)
+    bool jupAspect = false;
+    for (var p in ['Sun', 'Moon', 'Rahu', 'Ketu']) {
+      if (_isAspecting(chart, 'Jupiter', p, [5, 7, 9]) ||
+          _areConjunct(chart, 'Jupiter', p)) {
+        jupAspect = true;
+      }
+    }
+    if (jupAspect) cancellations.add('Jupiter influence on afflicted planets');
+
+    // 2. Strong 9th Lord
+    final l9 = _getHouseLord(chart, 9);
+    if (_isStrong(chart, l9)) cancellations.add('9th House Lord is strong');
+
+    double strength = 100.0;
+    if (cancellations.isNotEmpty)
+      strength -= (cancellations.length * 40).clamp(0, 100);
+
+    return BhangaResult(
+      name: 'Pitra Dosha',
+      description: 'Ancestral karmic debt indicators',
+      isActive: strength > 40,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 100
+          ? (strength < 40 ? 'Fully Cancelled' : 'Partially Cancelled')
+          : 'Active',
+    );
+  }
+
+  static BhangaResult _checkKemadrumaBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+    final moonSign = _getPlanetSign(chart, 'Moon');
+
+    // 1. Planet in Kendra from Moon
+    bool planetInKendraFromMoon = false;
+    for (var p in _visiblePlanets) {
+      if (p == 'Moon' || p == 'Sun') continue;
+      final pSign = _getPlanetSign(chart, p);
+      final dist = (pSign - moonSign + 12) % 12;
+      if ([0, 3, 6, 9].contains(dist))
+        planetInKendraFromMoon = true; // 1,4,7,10
+    }
+    if (planetInKendraFromMoon) cancellations.add('Planet in Kendra from Moon');
+
+    // 2. Planet in Kendra from Lagna
+    bool planetInKendraFromLagna = false;
+    for (var p in _visiblePlanets) {
+      if (p == 'Moon' || p == 'Sun') continue;
+      if (_isPlanetInKendra(chart, p)) planetInKendraFromLagna = true;
+    }
+    if (planetInKendraFromLagna)
+      cancellations.add('Planet in Kendra from Lagna');
+
+    // 3. Moon aspected by all planets (unlikely but rule)
+    // 4. Moon in own/exalted sign
+    if (_isOwnSign('Moon', moonSign) || _isExalted('Moon', moonSign)) {
+      cancellations.add('Moon is in Own/Exalted sign');
+    }
+
+    double strength = 100.0;
+    if (cancellations.isNotEmpty) strength = 0.0; // Usually fully cancelled
+
+    return BhangaResult(
+      name: 'Kemadruma Dosha',
+      description: 'Lonely Moon without support',
+      isActive: strength > 10,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 10 ? 'Fully Cancelled' : 'Active',
+    );
+  }
+
+  static BhangaResult _checkGuruChandalBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+    final jupSign = _getPlanetSign(chart, 'Jupiter');
+
+    if (_isOwnSign('Jupiter', jupSign) || _isExalted('Jupiter', jupSign)) {
+      cancellations.add('Jupiter is strong in Own/Exalted sign');
+    }
+
+    // Benefic aspect (Ven, Mer)
+    if (_isAspecting(chart, 'Venus', 'Jupiter', [7]) ||
+        _isAspecting(chart, 'Mercury', 'Jupiter', [7])) {
+      cancellations.add('Benefic aspect on Jupiter');
+    }
+
+    double strength = 100.0;
+    if (cancellations.isNotEmpty) strength = 50.0;
+
+    return BhangaResult(
+      name: 'Guru Chandal Dosha',
+      description: 'Jupiter afflicted by Nodes',
+      isActive: strength > 30,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 100 ? 'Partially Cancelled' : 'Active',
+    );
+  }
+
+  static BhangaResult _checkSakatBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // Moon in Kendra from Lagna
+    if (_isPlanetInKendra(chart, 'Moon')) {
+      cancellations.add('Moon is in Kendra from Lagna');
+    }
+
+    // Jupiter in Kendra from Lagna
+    if (_isPlanetInKendra(chart, 'Jupiter')) {
+      cancellations.add('Jupiter is in Kendra from Lagna');
+    }
+
+    double strength = 100.0;
+    if (cancellations.isNotEmpty) strength = 0.0;
+
+    return BhangaResult(
+      name: 'Sakat Dosha',
+      description: 'Moon in 6/8/12 from Jupiter',
+      isActive: strength > 10,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 10 ? 'Fully Cancelled' : 'Active',
+    );
+  }
+
+  // Generic Weakening Check for Yogas
+  static BhangaResult _checkYogaWeakening(
+    CompleteChartData chart,
+    String yogaName,
+    String description,
+  ) {
+    List<String> weaknesses = [];
+    double strength = 100.0;
+
+    // Identify key planets based on yoga name
+    List<String> keyPlanets = [];
+    if (yogaName.contains('Gajakesari')) keyPlanets.addAll(['Jupiter', 'Moon']);
+    if (yogaName.contains('Budhaditya')) keyPlanets.addAll(['Sun', 'Mercury']);
+    if (yogaName.contains('Chandra Mangala'))
+      keyPlanets.addAll(['Moon', 'Mars']);
+    if (yogaName.contains('Ruchaka')) keyPlanets.add('Mars');
+    if (yogaName.contains('Bhadra')) keyPlanets.add('Mercury');
+    if (yogaName.contains('Hamsa')) keyPlanets.add('Jupiter');
+    if (yogaName.contains('Malavya')) keyPlanets.add('Venus');
+    if (yogaName.contains('Sasa')) keyPlanets.add('Saturn');
+
+    // Check if key planets are weak
+    for (var p in keyPlanets) {
+      // Debilitated
+      if (_isDebilitated(p, _getPlanetSign(chart, p)) &&
+          !yogaName.contains('Neecha Bhanga')) {
+        // Excluding Neecha Bhanga yoga itself from this check
+        weaknesses.add('$p is Debilitated');
+        strength -= 40;
+      }
+      // Combust
+      if (_isCombust(chart, p)) {
+        weaknesses.add('$p is Combust');
+        strength -= 30;
+      }
+      // In Dusthana (6, 8, 12) - Context dependent, but generally weak for benefic yogas
+      int house = _getPlanetHouse(chart, p);
+      if ([6, 8, 12].contains(house) && !yogaName.contains('Vipreet')) {
+        weaknesses.add('$p is in Dusthana house ($house)');
+        strength -= 20;
+      }
+    }
+
+    strength = strength.clamp(0.0, 100.0);
+    String status = 'Active';
+    if (strength < 40)
+      status = 'Weak';
+    else if (strength < 80)
+      status = 'Moderate';
+    else
+      status = 'Strong';
+
+    if (weaknesses.isNotEmpty) {
+      // Append weakness info to status for display if needed, or just keep in cancellations list
+    }
+
+    return BhangaResult(
+      name: yogaName,
+      description: description,
+      isActive: true, // Yogas are usually positive even if weak, unless broken
+      cancellationReasons: weaknesses,
+      strength: strength,
+      status: status,
+    );
+  }
+
   // --- Logic Helpers ---
 
   static Map<String, dynamic> _calculateTithi(double moonLong, double sunLong) {
@@ -2006,5 +2348,26 @@ class YogaDoshaAnalyzer {
     double diff = (sunLong - pLong).abs();
     if (diff > 180) diff = 360 - diff;
     return diff < 8.0;
+  }
+
+  static String _getQualityLabel(double score) {
+    if (score >= 80) return 'Excellent';
+    if (score >= 65) return 'Very Good';
+    if (score >= 50) return 'Good';
+    if (score >= 35) return 'Average';
+    return 'Challenging';
+  }
+
+  static String _getQualityDescription(double score) {
+    if (score >= 80) {
+      return 'This is an excellent chart with strong positive combinations and minimal afflictions.';
+    } else if (score >= 65) {
+      return 'This is a very good chart with several beneficial yogas that support success.';
+    } else if (score >= 50) {
+      return 'This is a good chart with balanced energies and opportunities for growth.';
+    } else if (score >= 35) {
+      return 'This chart has average potential with both opportunities and challenges to navigate.';
+    }
+    return 'This chart has some challenges that require conscious effort and remedial measures.';
   }
 }

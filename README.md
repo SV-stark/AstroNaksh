@@ -276,15 +276,15 @@ flutter build web --release
 - [x] Chart comparison (Synastry)
 - [x] Ashtakavarga system
 - [x] Shadbala (Planetary strength)
-- [ ] Panchang (Daily almanac)
+- [x] Panchang (Daily almanac)
 - [ ] Eclipse calculations
 - [x] Retrograde analysis
 
 ### Phase 4: Community & Polish
 
 - [ ] Multi-language support (Hindi, Sanskrit, Tamil, etc.)
-- [ ] Chart sharing via social media
-- [ ] Tutorial mode for beginners
+- [x] Chart sharing
+- [x] Tutorial mode for beginners
 
 
 ### Phase 5: Research & Innovation

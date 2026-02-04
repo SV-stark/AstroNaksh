@@ -29,13 +29,9 @@ New-Item -ItemType Directory -Path "AstroNaksh" | Out-Null
 
 $RELEASE_DIR = "build\windows\x64\runner\Release"
 
-Copy-Item "$RELEASE_DIR\astronaksh.exe" -Destination "AstroNaksh\"
-Copy-Item "$RELEASE_DIR\flutter_windows.dll" -Destination "AstroNaksh\"
-
-# Check if sqlite3.dll exists
-if (Test-Path "$RELEASE_DIR\sqlite3.dll") {
-    Copy-Item "$RELEASE_DIR\sqlite3.dll" -Destination "AstroNaksh\"
-}
+# Copy all .exe and .dll files
+Get-ChildItem -Path "$RELEASE_DIR\*.exe" | ForEach-Object { Copy-Item $_.FullName -Destination "AstroNaksh\" }
+Get-ChildItem -Path "$RELEASE_DIR\*.dll" | ForEach-Object { Copy-Item $_.FullName -Destination "AstroNaksh\" }
 
 # Copy swisseph.dll from root
 if (Test-Path "swisseph.dll") {

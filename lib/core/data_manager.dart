@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import '../data/models.dart';
+import 'app_environment.dart';
 
 class DataManager {
   Future<String> exportChartToJson(BirthData data) async {
@@ -33,8 +33,9 @@ class DataManager {
   }
 
   Future<void> saveToFile(String fileName, String content) async {
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await AppEnvironment.getUserDataDirectory();
     final file = File('${directory.path}/$fileName.json');
+    AppEnvironment.log('DataManager: Saving file to ${file.path}');
     await file.writeAsString(content);
   }
 }

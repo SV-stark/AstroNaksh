@@ -245,7 +245,7 @@ flutter build web --release      # For Web
 ### Troubleshooting
 - **App won't start**: Ensure Swiss Ephemeris files are in `assets/ephe/`.
 - **Blank charts**: Verify the birth date is within 1800-2100 CE.
-- **Location Issues**: Use the built-in search for 30,000+ Indian cities.
+- **Location Issues**: Use the built-in search for 5  0,000+ Indian cities.
 
 ### FAQ
 **Q: Is this app free forever?**

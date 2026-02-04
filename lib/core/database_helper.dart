@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'dart:io';
+import 'app_environment.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -21,9 +23,17 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     try {
-      final path = await getDatabasesPath();
+      final path = await AppEnvironment.getDatabasePath();
+      AppEnvironment.log('DatabaseHelper: Opening database at $path');
+
+      // Ensure directory exists
+      final dir = Directory(dirname(path));
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
       return await openDatabase(
-        join(path, 'astronaksh.db'),
+        path,
         version: 1,
         onCreate: _onCreate,
         onOpen: (db) async {

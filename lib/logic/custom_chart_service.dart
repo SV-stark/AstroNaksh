@@ -2,6 +2,7 @@ import 'package:jyotish/jyotish.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter/foundation.dart';
 import '../core/ephemeris_manager.dart';
+import '../core/ayanamsa_calculator.dart';
 
 /// Service for calculating Vedic astrology charts with custom Ayanamsa.
 /// Replicates logic from [VedicChartService] but allows configurable SiderealMode.
@@ -18,6 +19,7 @@ class CustomChartService {
     required DateTime dateTime,
     required GeographicLocation location,
     required SiderealMode ayanamsaMode,
+    double? overrideAyanamsa,
     String? timezone,
     String houseSystem = 'W', // Whole Sign by default
     bool includeOuterPlanets = false,
@@ -46,23 +48,27 @@ class CustomChartService {
           debugPrint('Error converting timezone: $e');
           // Fallback: use input as is, possibly wrong if not UTC
         }
-      } else {
-        // If no timezone, assume input is correctly set to local but we don't know the offset?
-        // Or just use .toUtc() if the input DateTime has correct local wrapper.
-        // But usually input from UI is "Device Local".
-        // Ideally we REQUIRE timezone.
       }
 
-      // Use selected ayanamsa
-      final flags = CalculationFlags.sidereal(ayanamsaMode);
+      // Determine flags and ayanamsa to use
+      CalculationFlags flags;
 
-      // Calculate Ascendant and house cusps with the specific Ayanamsa
+      if (overrideAyanamsa != null) {
+        // Use Tropical for initial calculation, then manually adjust
+        flags = CalculationFlags.defaultFlags();
+      } else {
+        // Use standard engine calculation
+        flags = CalculationFlags.sidereal(ayanamsaMode);
+      }
+
+      // Calculate Ascendant and house cusps
       final houses = await _calculateHouses(
         ephemerisService: ephemerisService,
         dateTime: utcDateTime,
         location: location,
         houseSystem: houseSystem,
         ayanamsaMode: ayanamsaMode,
+        overrideAyanamsa: overrideAyanamsa,
       );
 
       // Get list of planets to calculate
@@ -73,22 +79,64 @@ class CustomChartService {
       // Calculate all planetary positions
       final planetPositions = <Planet, PlanetPosition>{};
       for (final planet in planetsToCalculate) {
-        final position = await ephemerisService.calculatePlanetPosition(
+        var position = await ephemerisService.calculatePlanetPosition(
           planet: planet,
           dateTime: utcDateTime,
           location: location,
           flags: flags,
         );
+
+        // If overriding, we need to subtract ayanamsa from the tropical position obtained
+        if (overrideAyanamsa != null) {
+          final correctedLongitude = AyanamsaCalculator.tropicalToSidereal(
+            position.longitude,
+            overrideAyanamsa,
+          );
+
+          // Reconstruct with corrected longitude
+          // Derived fields like zodiacSign and nakshatra are getters in PlanetPosition
+          // so they will be automatically recalculated based on the new longitude!
+          position = PlanetPosition(
+            planet: position.planet,
+            dateTime: position.dateTime,
+            longitude: correctedLongitude,
+            latitude: position.latitude,
+            distance: position.distance,
+            longitudeSpeed: position.longitudeSpeed,
+            latitudeSpeed: position.latitudeSpeed,
+            distanceSpeed: position.distanceSpeed,
+            isCombust: position.isCombust,
+          );
+        }
+
         planetPositions[planet] = position;
       }
 
       // Calculate Rahu (Mean Node)
-      final rahuPosition = await ephemerisService.calculatePlanetPosition(
+      var rahuPosition = await ephemerisService.calculatePlanetPosition(
         planet: Planet.meanNode,
         dateTime: utcDateTime,
         location: location,
         flags: flags,
       );
+
+      if (overrideAyanamsa != null) {
+        final correctedLongitude = AyanamsaCalculator.tropicalToSidereal(
+          rahuPosition.longitude,
+          overrideAyanamsa,
+        );
+        rahuPosition = PlanetPosition(
+          planet: rahuPosition.planet,
+          dateTime: rahuPosition.dateTime,
+          longitude: correctedLongitude,
+          latitude: rahuPosition.latitude,
+          distance: rahuPosition.distance,
+          longitudeSpeed: rahuPosition.longitudeSpeed,
+          latitudeSpeed: rahuPosition.latitudeSpeed,
+          distanceSpeed: rahuPosition.distanceSpeed,
+          isCombust: rahuPosition.isCombust,
+        );
+      }
 
       // Create Ketu position (180° opposite to Rahu)
       final ketu = KetuPosition(rahuPosition: rahuPosition);
@@ -159,6 +207,7 @@ class CustomChartService {
     required GeographicLocation location,
     required String houseSystem,
     required SiderealMode ayanamsaMode,
+    double? overrideAyanamsa,
   }) async {
     // Calculate houses (returns tropical positions)
     final houseData = await ephemerisService.calculateHouses(
@@ -168,10 +217,15 @@ class CustomChartService {
     );
 
     // Get ayanamsa for sidereal correction
-    final ayanamsa = await ephemerisService.getAyanamsa(
-      dateTime: dateTime,
-      mode: ayanamsaMode, // Use selected ayanamsa
-    );
+    double ayanamsa;
+    if (overrideAyanamsa != null) {
+      ayanamsa = overrideAyanamsa;
+    } else {
+      ayanamsa = await ephemerisService.getAyanamsa(
+        dateTime: dateTime,
+        mode: ayanamsaMode, // Use selected ayanamsa
+      );
+    }
 
     // Convert tropical positions to sidereal
     final tropicalAscendant = houseData['ascmc']![0];

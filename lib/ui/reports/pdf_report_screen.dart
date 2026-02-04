@@ -268,8 +268,16 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
             severity: InfoBarSeverity.success,
             action: Button(
               onPressed: () {
-                if (Platform.isWindows) {
-                  Process.run('explorer', [path]);
+                try {
+                  if (Platform.isWindows) {
+                    Process.run('explorer', [path]);
+                  } else if (Platform.isMacOS) {
+                    Process.run('open', [path]);
+                  } else if (Platform.isLinux) {
+                    Process.run('xdg-open', [path]);
+                  }
+                } catch (e) {
+                  // Silently fail - file is still saved
                 }
               },
               child: const Text('Open'),

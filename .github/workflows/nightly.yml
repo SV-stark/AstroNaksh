@@ -26,19 +26,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build Windows Application
-        run: |
-          flutter build windows --release
-          mkdir AstroNaksh
-          copy build\windows\x64\runner\Release\astronaksh.exe AstroNaksh\
-          copy build\windows\x64\runner\Release\flutter_windows.dll AstroNaksh\
-          if exist build\windows\x64\runner\Release\sqlite3.dll copy build\windows\x64\runner\Release\sqlite3.dll AstroNaksh\
-          if exist swisseph.dll copy swisseph.dll AstroNaksh\
-          xcopy /E /I /Y build\windows\x64\runner\Release\data AstroNaksh\data
-          echo. > AstroNaksh\.portable
-          mkdir AstroNaksh\user_data
-          mkdir AstroNaksh\settings
-          powershell -Command "Compress-Archive -Path 'AstroNaksh' -DestinationPath 'AstroNaksh_Portable.zip' -Force"
+      - name: Build and Package
+        # Default shell on Windows is PowerShell
+        run: .\build_portable.ps1
 
       - name: Upload Nightly Release
         uses: ncipollo/release-action@v1

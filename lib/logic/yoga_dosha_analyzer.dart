@@ -1183,8 +1183,9 @@ class YogaDoshaAnalyzer {
           break;
         }
       }
-      if (allInHouses)
+      if (allInHouses) {
         yogas.add('Bheri Yoga (Strong 9th Lord, Planets in 1/2/7/12)');
+      }
     }
 
     // 39. Akhanda Samrajya Yoga (2, 9, 11 lord in Kendra from Moon, Jupiter strong)
@@ -1555,21 +1556,27 @@ class YogaDoshaAnalyzer {
     if (rahuHouse == 1 && ketuHouse == 7) yogas.add('Ananta Kala Sarpa Yoga');
     if (rahuHouse == 2 && ketuHouse == 8) yogas.add('Kulika Kala Sarpa Yoga');
     if (rahuHouse == 3 && ketuHouse == 9) yogas.add('Vasuki Kala Sarpa Yoga');
-    if (rahuHouse == 4 && ketuHouse == 10)
+    if (rahuHouse == 4 && ketuHouse == 10) {
       yogas.add('Shankhapala Kala Sarpa Yoga');
+    }
     if (rahuHouse == 5 && ketuHouse == 11) yogas.add('Padma Kala Sarpa Yoga');
-    if (rahuHouse == 6 && ketuHouse == 12)
+    if (rahuHouse == 6 && ketuHouse == 12) {
       yogas.add('Mahapadma Kala Sarpa Yoga');
+    }
     if (rahuHouse == 7 && ketuHouse == 1) yogas.add('Takshaka Kala Sarpa Yoga');
-    if (rahuHouse == 8 && ketuHouse == 2)
+    if (rahuHouse == 8 && ketuHouse == 2) {
       yogas.add('Karkotaka Kala Sarpa Yoga');
-    if (rahuHouse == 9 && ketuHouse == 3)
+    }
+    if (rahuHouse == 9 && ketuHouse == 3) {
       yogas.add('Shankhachuda Kala Sarpa Yoga');
+    }
     if (rahuHouse == 10 && ketuHouse == 4) yogas.add('Ghataka Kala Sarpa Yoga');
-    if (rahuHouse == 11 && ketuHouse == 5)
+    if (rahuHouse == 11 && ketuHouse == 5) {
       yogas.add('Vishdhana Kala Sarpa Yoga');
-    if (rahuHouse == 12 && ketuHouse == 6)
+    }
+    if (rahuHouse == 12 && ketuHouse == 6) {
       yogas.add('Sheshnag Kala Sarpa Yoga');
+    }
 
     return yogas;
   }
@@ -1826,11 +1833,15 @@ class YogaDoshaAnalyzer {
     // "2nd Tithi" usually means 2 (Shukla) or 17 (Krishna). Let's assume generic Tithi number (1-15).
     int tithiDay = (tithi - 1) % 15 + 1;
 
-    if (weekday == 7 && tithiDay == 2 && nakshatraIndex == 8) vishaKanya = true;
-    if (weekday == 2 && tithiDay == 7 && nakshatraIndex == 23)
+    if (weekday == 7 && tithiDay == 2 && nakshatraIndex == 8) {
       vishaKanya = true;
-    if (weekday == 6 && tithiDay == 12 && nakshatraIndex == 2)
+    }
+    if (weekday == 2 && tithiDay == 7 && nakshatraIndex == 23) {
       vishaKanya = true;
+    }
+    if (weekday == 6 && tithiDay == 12 && nakshatraIndex == 2) {
+      vishaKanya = true;
+    }
 
     if (vishaKanya) {
       doshas.add('Visha Kanya Dosha (Inauspicious Time Combination)');
@@ -1902,8 +1913,9 @@ class YogaDoshaAnalyzer {
     // Conjunctions
     if (_areConjunct(chart, planet, 'Rahu') ||
         _areConjunct(chart, planet, 'Ketu') ||
-        _areConjunct(chart, planet, 'Saturn'))
+        _areConjunct(chart, planet, 'Saturn')) {
       return true;
+    }
     // Aspect by Saturn/Mars?
     if (_isAspecting(chart, 'Saturn', planet, [3, 7, 10])) return true;
     if (_isAspecting(chart, 'Mars', planet, [4, 7, 8])) return true;
@@ -1918,11 +1930,15 @@ class YogaDoshaAnalyzer {
     for (var m in malefics) {
       if (_areConjunct(chart, planet, m)) return true;
       // Aspects
-      if (m == 'Saturn' && _isAspecting(chart, m, planet, [3, 7, 10]))
+      if (m == 'Saturn' && _isAspecting(chart, m, planet, [3, 7, 10])) {
         return true;
-      if (m == 'Mars' && _isAspecting(chart, m, planet, [4, 7, 8])) return true;
-      if ((m == 'Rahu' || m == 'Ketu') && _areConjunct(chart, planet, m))
-        return true; // Nodes don't cast full aspect usually in basic logic
+      }
+      if (m == 'Mars' && _isAspecting(chart, m, planet, [4, 7, 8])) {
+        return true;
+      }
+      if ((m == 'Rahu' || m == 'Ketu') && _areConjunct(chart, planet, m)) {
+        return true;
+      }
     }
     return false;
   }

@@ -40,8 +40,7 @@ class ShadbalaCalculator {
   }
 
   // --- 1. Sthana Bala (Positional Strength) ---
-  // Components for now: Uchcha (Exaltation), Kendra (Angle)
-  // TODO: Add Saptavargaja, Ojayugmarasyamsa, Drekkan
+  // Components: Uchcha (Exaltation), Kendra (Angle), Saptavargaja, Ojayugmarasyamsa, Drekkan
   static Map<String, double> _calculateSthanaBala(CompleteChartData chart) {
     Map<String, double> bala = {};
 
@@ -82,12 +81,7 @@ class ShadbalaCalculator {
       total += dist / 3.0; // Max 60 units
 
       // B. Kendra Bala (House Position Strength)
-      // Get house number (1-based)
-      // Simple method: using Rashi chart signs relative to Ascendant sign
-      // Better method: using Bhava chart (typically uses house cusps)
-      // We will use house placement from specific Bhava if available, else Rashi
       int house = _getHousePlacement(chart, planetLong);
-
       if ([1, 4, 7, 10].contains(house)) {
         total += 60.0;
       } else if ([2, 5, 8, 11].contains(house)) {
@@ -95,6 +89,15 @@ class ShadbalaCalculator {
       } else {
         total += 15.0;
       }
+
+      // C. Saptavargaja Bala (Seven Divisional Charts Strength)
+      total += _calculateSaptavargajaBala(chart, planet);
+
+      // D. Ojayugmarasyamsa Bala (Odd/Even Sign Strength)
+      total += _calculateOjayugmarasyamsaBala(planet, planetLong);
+
+      // E. Drekkan Bala (Drekkana Strength)
+      total += _calculateDrekkanaStrength(chart, planet, planetLong);
 
       bala[planet] = total;
     }
@@ -471,5 +474,256 @@ class ShadbalaCalculator {
     }
 
     return 0.0; // No aspect
+  }
+
+  // --- Sthana Bala Sub-components ---
+
+  /// Calculate Saptavargaja Bala - Strength from 7 divisional charts
+  /// Evaluates planet's dignity in D-1, D-2, D-3, D-7, D-9, D-12, D-30
+  static double _calculateSaptavargajaBala(
+    CompleteChartData chart,
+    String planet,
+  ) {
+    final vargaCodes = ['D-1', 'D-2', 'D-3', 'D-7', 'D-9', 'D-12', 'D-30'];
+    double totalStrength = 0.0;
+
+    for (final code in vargaCodes) {
+      final vargaChart = chart.divisionalCharts[code];
+      if (vargaChart == null) continue;
+
+      final dignity = _getPlanetDignityInChart(chart, planet, vargaChart);
+      double strength = 0.0;
+
+      switch (dignity) {
+        case 'Vargottama':
+          strength = 5.0; // Highest strength
+          break;
+        case 'Exalted':
+          strength = 4.5;
+          break;
+        case 'Own':
+          strength = 4.0;
+          break;
+        case 'Friend':
+          strength = 3.0;
+          break;
+        case 'Neutral':
+          strength = 2.0;
+          break;
+        case 'Enemy':
+          strength = 1.0;
+          break;
+        case 'Debilitated':
+          strength = 0.0;
+          break;
+      }
+
+      totalStrength += strength;
+    }
+
+    // Scale to traditional Shadbala units (max ~30 units for 7 charts)
+    return totalStrength;
+  }
+
+  /// Calculate Ojayugmarasyamsa Bala - Odd/Even Sign Strength
+  /// Male planets strong in odd signs, female planets in even signs
+  static double _calculateOjayugmarasyamsaBala(
+    String planet,
+    double longitude,
+  ) {
+    final sign = (longitude / 30).floor();
+    final isOddSign =
+        sign % 2 == 0; // 0-indexed: 0=Aries (odd), 1=Taurus (even)
+
+    // Male planets: Sun, Mars, Jupiter
+    // Female planets: Moon, Venus
+    // Neutral: Mercury, Saturn
+    final malePlanets = ['Sun', 'Mars', 'Jupiter'];
+    final femalePlanets = ['Moon', 'Venus'];
+
+    if (malePlanets.contains(planet) && isOddSign) {
+      return 15.0;
+    } else if (femalePlanets.contains(planet) && !isOddSign) {
+      return 15.0;
+    } else if (['Mercury', 'Saturn'].contains(planet)) {
+      return 7.5; // Neutral planets get half strength
+    }
+
+    return 0.0;
+  }
+
+  /// Calculate Drekkan Bala - Drekkana (D-3) Strength
+  /// Based on planet's position in D-3 and relationship with drekkana lord
+  static double _calculateDrekkanaStrength(
+    CompleteChartData chart,
+    String planet,
+    double longitude,
+  ) {
+    final d3Chart = chart.divisionalCharts['D-3'];
+    if (d3Chart == null) return 0.0;
+
+    // Determine which drekkana (0-2) the planet occupies in its sign
+    final degreeInSign = longitude % 30;
+    final drekkanaIndex = (degreeInSign / 10).floor(); // 0, 1, or 2
+
+    // Get drekkana lord based on position
+    // First drekkana (0-10°): Same sign lord
+    // Second drekkana (10-20°): 5th sign lord
+    // Third drekkana (20-30°): 9th sign lord
+    final sign = (longitude / 30).floor();
+    int drekkanLordSign;
+
+    switch (drekkanaIndex) {
+      case 0:
+        drekkanLordSign = sign;
+        break;
+      case 1:
+        drekkanLordSign = (sign + 4) % 12; // 5th sign (0-indexed)
+        break;
+      case 2:
+        drekkanLordSign = (sign + 8) % 12; // 9th sign (0-indexed)
+        break;
+      default:
+        drekkanLordSign = sign;
+    }
+
+    final drekkanLord = _getSignLord(drekkanLordSign);
+
+    // Evaluate relationship between planet and drekkana lord
+    final relationship = _getFriendlyRelationship(planet, drekkanLord);
+
+    switch (relationship) {
+      case 'Friend':
+        return 10.0;
+      case 'Neutral':
+        return 5.0;
+      case 'Enemy':
+        return 2.0;
+      default:
+        return 5.0;
+    }
+  }
+
+  // --- Helper Methods for Dignity Calculations ---
+
+  /// Determine planet's dignity in a divisional chart
+  /// Returns: Vargottama, Exalted, Own, Friend, Neutral, Enemy, Debilitated
+  static String _getPlanetDignityInChart(
+    CompleteChartData chart,
+    String planet,
+    DivisionalChartData vargaChart,
+  ) {
+    final vargaLong = vargaChart.positions[planet];
+    if (vargaLong == null) return 'Neutral';
+
+    final vargaSign = (vargaLong / 30).floor();
+
+    // Check for Vargottama (same sign in Rasi and this varga)
+    final rasiLong = _getPlanetLongitude(chart, planet);
+    final rasiSign = (rasiLong / 30).floor();
+    if (vargaSign == rasiSign && vargaChart.code != 'D-1') {
+      return 'Vargottama';
+    }
+
+    // Check exaltation
+    final exaltationSigns = {
+      'Sun': 0, // Aries
+      'Moon': 1, // Taurus
+      'Mars': 9, // Capricorn
+      'Mercury': 5, // Virgo
+      'Jupiter': 3, // Cancer
+      'Venus': 11, // Pisces
+      'Saturn': 6, // Libra
+    };
+
+    if (exaltationSigns[planet] == vargaSign) {
+      return 'Exalted';
+    }
+
+    // Check debilitation (opposite of exaltation)
+    final debilitationSign = (exaltationSigns[planet]! + 6) % 12;
+    if (debilitationSign == vargaSign) {
+      return 'Debilitated';
+    }
+
+    // Check own sign
+    final ownSigns = _getOwnSigns(planet);
+    if (ownSigns.contains(vargaSign)) {
+      return 'Own';
+    }
+
+    // Check friendly/enemy relationship with sign lord
+    final signLord = _getSignLord(vargaSign);
+    final relationship = _getFriendlyRelationship(planet, signLord);
+
+    return relationship;
+  }
+
+  /// Get planet's own signs
+  static List<int> _getOwnSigns(String planet) {
+    const ownSigns = {
+      'Sun': [4], // Leo
+      'Moon': [3], // Cancer
+      'Mars': [0, 7], // Aries, Scorpio
+      'Mercury': [2, 5], // Gemini, Virgo
+      'Jupiter': [8, 11], // Sagittarius, Pisces
+      'Venus': [1, 6], // Taurus, Libra
+      'Saturn': [9, 10], // Capricorn, Aquarius
+    };
+    return ownSigns[planet] ?? [];
+  }
+
+  /// Get sign lord for a given sign (0-11)
+  static String _getSignLord(int sign) {
+    const lords = [
+      'Mars', // Aries
+      'Venus', // Taurus
+      'Mercury', // Gemini
+      'Moon', // Cancer
+      'Sun', // Leo
+      'Mercury', // Virgo
+      'Venus', // Libra
+      'Mars', // Scorpio
+      'Jupiter', // Sagittarius
+      'Saturn', // Capricorn
+      'Saturn', // Aquarius
+      'Jupiter', // Pisces
+    ];
+    return lords[sign % 12];
+  }
+
+  /// Get friendly relationship between two planets
+  /// Returns: Friend, Neutral, Enemy
+  static String _getFriendlyRelationship(String planet1, String planet2) {
+    if (planet1 == planet2) return 'Friend'; // Planet in own sign
+
+    // Simplified natural friendships (classical Vedic astrology)
+    const friendships = {
+      'Sun': {'Moon', 'Mars', 'Jupiter'},
+      'Moon': {'Sun', 'Mercury'},
+      'Mars': {'Sun', 'Moon', 'Jupiter'},
+      'Mercury': {'Sun', 'Venus'},
+      'Jupiter': {'Sun', 'Moon', 'Mars'},
+      'Venus': {'Mercury', 'Saturn'},
+      'Saturn': {'Mercury', 'Venus'},
+    };
+
+    const enemities = {
+      'Sun': {'Venus', 'Saturn'},
+      'Moon': {'None'},
+      'Mars': {'Mercury'},
+      'Mercury': {'Moon'},
+      'Jupiter': {'Mercury', 'Venus'},
+      'Venus': {'Sun', 'Moon'},
+      'Saturn': {'Sun', 'Moon', 'Mars'},
+    };
+
+    if (friendships[planet1]?.contains(planet2) ?? false) {
+      return 'Friend';
+    } else if (enemities[planet1]?.contains(planet2) ?? false) {
+      return 'Enemy';
+    }
+
+    return 'Neutral';
   }
 }

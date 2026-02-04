@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/yoga_dosha_analyzer.dart';
@@ -41,31 +42,44 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         )
         .toList();
 
-    return NavigationView(
-      appBar: const NavigationAppBar(title: Text('Yoga & Dosha Analysis')),
-      pane: NavigationPane(
-        selected: _currentIndex,
-        onChanged: (index) => setState(() => _currentIndex = index),
-        displayMode: PaneDisplayMode.top,
-        items: [
-          PaneItem(
-            icon: const Icon(FluentIcons.report_document),
-            title: const Text('Summary'),
-            body: _buildBody(
-              _buildSummaryTab({'yogas': yogas, 'doshas': doshas}),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          Navigator.pop(context);
+        },
+      },
+      child: NavigationView(
+        appBar: NavigationAppBar(
+          title: const Text('Yoga & Dosha Analysis'),
+          leading: IconButton(
+            icon: const Icon(FluentIcons.chrome_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        pane: NavigationPane(
+          selected: _currentIndex,
+          onChanged: (index) => setState(() => _currentIndex = index),
+          displayMode: PaneDisplayMode.top,
+          items: [
+            PaneItem(
+              icon: const Icon(FluentIcons.report_document),
+              title: const Text('Summary'),
+              body: _buildBody(
+                _buildSummaryTab({'yogas': yogas, 'doshas': doshas}),
+              ),
             ),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.favorite_star),
-            title: const Text('Yogas'),
-            body: _buildBody(_buildYogasTab(yogas)),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.warning),
-            title: const Text('Doshas'),
-            body: _buildBody(_buildDoshasTab(doshas)),
-          ),
-        ],
+            PaneItem(
+              icon: const Icon(FluentIcons.favorite_star),
+              title: const Text('Yogas'),
+              body: _buildBody(_buildYogasTab(yogas)),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.warning),
+              title: const Text('Doshas'),
+              body: _buildBody(_buildDoshasTab(doshas)),
+            ),
+          ],
+        ),
       ),
     );
   }

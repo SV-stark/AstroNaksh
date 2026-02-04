@@ -71,9 +71,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_initialized) {
-      return const ScaffoldPage(
-        content: Center(child: Text("No birth data provided")),
-      );
+      return const ScaffoldPage(content: Center(child: ProgressRing()));
     }
 
     final adjustedTime = _originalData.dateTime.add(_adjustment);
@@ -97,134 +95,250 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                 );
                 Navigator.pop(context, newData);
               },
-              label: const Text("Apply"),
+              label: const Text("Apply New Time"),
             ),
           ],
         ),
       ),
-      content: Column(
-        children: [
-          // Time Controls
-          Card(
-            backgroundColor: FluentTheme.of(context).cardColor,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Text(
-                    "Original: ${formatter.format(_originalData.dateTime)}",
-                    style: FluentTheme.of(context).typography.caption,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    formatter.format(adjustedTime),
-                    style: FluentTheme.of(context).typography.subtitle
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "Shift: ${_adjustment.inMinutes}m ${_adjustment.inSeconds % 60}s",
-                    style: TextStyle(
-                      color: _adjustment.isNegative ? Colors.red : Colors.green,
+      content: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Time Controls
+            Card(
+              backgroundColor: FluentTheme.of(context).cardColor,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      "Original: ${formatter.format(_originalData.dateTime)}",
+                      style: FluentTheme.of(context).typography.caption,
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    Text(
+                      formatter.format(adjustedTime),
+                      style: FluentTheme.of(context).typography.title,
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _adjustment.isNegative
+                            ? Colors.red.withValues(alpha: 0.1)
+                            : Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _adjustment.isNegative
+                              ? Colors.red
+                              : Colors.green,
+                        ),
+                      ),
+                      child: Text(
+                        "Shift: ${_adjustment.inMinutes}m ${_adjustment.inSeconds % 60}s",
+                        style: TextStyle(
+                          color: _adjustment.isNegative
+                              ? Colors.red
+                              : Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Negative Controls
+                        _buildGroup([
+                          _buildControlButton(
+                            "-1m",
+                            const Duration(minutes: -1),
+                            isNegative: true,
+                          ),
+                          _buildControlButton(
+                            "-10s",
+                            const Duration(seconds: -10),
+                            isNegative: true,
+                          ),
+                          _buildControlButton(
+                            "-1s",
+                            const Duration(seconds: -1),
+                            isNegative: true,
+                          ),
+                        ]),
+
+                        const SizedBox(width: 24),
+
+                        // Positive Controls
+                        _buildGroup([
+                          _buildControlButton(
+                            "+1s",
+                            const Duration(seconds: 1),
+                            isNegative: false,
+                          ),
+                          _buildControlButton(
+                            "+10s",
+                            const Duration(seconds: 10),
+                            isNegative: false,
+                          ),
+                          _buildControlButton(
+                            "+1m",
+                            const Duration(minutes: 1),
+                            isNegative: false,
+                          ),
+                        ]),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: ProgressRing(),
+                ),
+              )
+            else if (_currentData == null)
+              const Center(child: Text("Error calculating data"))
+            else
+              Column(
+                children: [
+                  _buildSectionHeader("Analysis"),
+                  _buildDataCard("Ascendants (Lagna)", [
+                    _buildDataRow("D-1 (Rashi)", _currentData!.d1Ascendant),
+                    _buildDataRow(
+                      "D-9 (Navamsa)",
+                      _currentData!.d9Ascendant,
+                      highlight: true,
+                    ),
+                    _buildDataRow(
+                      "D-60 (Shashtyamsa)",
+                      _currentData!.d60Ascendant,
+                    ),
+                  ]),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildControlButton("-1m", const Duration(minutes: -1)),
-                      _buildControlButton("-10s", const Duration(seconds: -10)),
-                      _buildControlButton("-1s", const Duration(seconds: -1)),
-                      const SizedBox(width: 16),
-                      _buildControlButton("+1s", const Duration(seconds: 1)),
-                      _buildControlButton("+10s", const Duration(seconds: 10)),
-                      _buildControlButton("+1m", const Duration(minutes: 1)),
-                    ],
+                  _buildDataCard("Key Positions", [
+                    _buildDataRow("Moon Sign", _currentData!.moonSign),
+                    _buildDataRow("Navamsa Moon", _currentData!.d9MoonSign),
+                  ]),
+                  const SizedBox(height: 24),
+                  InfoBar(
+                    title: const Text("Rectification Tip"),
+                    content: const Text(
+                      "Watch for changes in D-9 and D-60 Lagna. These are most sensitive to time. "
+                      "Matching D-9 Lagna with native's appearance/nature is a common rectification technique.",
+                    ),
+                    severity: InfoBarSeverity.info,
                   ),
                 ],
               ),
-            ),
-          ),
-
-          Expanded(
-            child: _isLoading
-                ? const Center(child: ProgressRing())
-                : _currentData == null
-                ? const Center(child: Text("Error calculating"))
-                : _buildAnalysis(_currentData!),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildControlButton(String label, Duration delta) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Button(onPressed: () => _adjustTime(delta), child: Text(label)),
+  Widget _buildGroup(List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: FluentTheme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: FluentTheme.of(context).resources.dividerStrokeColorDefault,
+        ),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: children),
     );
   }
 
-  Widget _buildAnalysis(RectificationData data) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _buildInfoCard("Ascendants (Lagna)", [
-          _buildRow("D-1 (Rashi)", data.d1Ascendant),
-          _buildRow("D-9 (Navamsa)", data.d9Ascendant, isBold: true),
-          _buildRow("D-60 (Shashtyamsa)", data.d60Ascendant),
-        ]),
-        const SizedBox(height: 16),
-        _buildInfoCard("Key Positions", [
-          _buildRow("Moon Sign", data.moonSign),
-          _buildRow("Navamsa Moon", data.d9MoonSign),
-        ]),
-        const SizedBox(height: 16),
-        const Card(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              "Note: Watch for changes in D-9 and D-60 Lagna. These are most sensitive to time. "
-              "Matching D-9 Lagna with native's appearance/nature is a common rectification technique.",
-              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-            ),
+  Widget _buildControlButton(
+    String label,
+    Duration delta, {
+    required bool isNegative,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Button(
+        onPressed: () => _adjustTime(delta),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isNegative ? Colors.red : Colors.green,
+            fontWeight: FontWeight.bold,
           ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildInfoCard(String title, List<Widget> children) {
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(title, style: FluentTheme.of(context).typography.subtitle),
+    );
+  }
+
+  Widget _buildDataCard(String title, List<TableRow> rows) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: FluentTheme.of(context).typography.bodyStrong),
-            const Divider(),
-            ...children,
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            Table(
+              columnWidths: const {
+                0: FlexColumnWidth(1),
+                1: FlexColumnWidth(2),
+              },
+              children: rows,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRow(String label, String value, {bool isBold = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label),
-          Text(
+  TableRow _buildDataRow(String label, String value, {bool highlight = false}) {
+    return TableRow(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: FluentTheme.of(
+              context,
+            ).resources.dividerStrokeColorDefault.withValues(alpha: 0.5),
+            width: 0.5,
+          ),
+        ),
+      ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(label, style: FluentTheme.of(context).typography.caption),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
             value,
             style: TextStyle(
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              color: isBold ? FluentTheme.of(context).accentColor : null,
+              fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
+              color: highlight ? FluentTheme.of(context).accentColor : null,
             ),
+            textAlign: TextAlign.right,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

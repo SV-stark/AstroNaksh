@@ -9,52 +9,74 @@ import 'ui/loading_screen.dart';
 import 'ui/panchang_screen.dart';
 import 'core/settings_manager.dart';
 import 'dart:io';
+import 'dart:async';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
 import 'core/app_environment.dart';
 
 void main(List<String> args) async {
-  WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize App Environment (Portable Mode / Verbose Checks)
-  await AppEnvironment.initialize(args);
+      // Initialize App Environment (Portable Mode / Verbose Checks)
+      await AppEnvironment.initialize(args);
 
-  if (AppEnvironment.isVerbose) {
-    debugPrint(
-      'Main: AppEnvironment initialized. Portable: ${AppEnvironment.isPortable}',
-    );
-  }
+      AppEnvironment.log('Main: Starting app initialization...');
+      AppEnvironment.log(
+        'Main: Platform: ${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+      );
 
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        try {
+          sqfliteFfiInit();
+          databaseFactory = databaseFactoryFfi;
+          AppEnvironment.log('Main: sqflite_ffi initialized successfully');
+        } catch (e, stack) {
+          AppEnvironment.log(
+            'Main: Failed to initialize sqflite_ffi: $e\n$stack',
+          );
+        }
+      }
 
-  tz.initializeTimeZones();
+      tz.initializeTimeZones();
+      AppEnvironment.log('Main: Timezones initialized');
 
-  // Initialize Window for Acrylic effect
-  try {
-    await Window.initialize();
-    await Window.setEffect(
-      effect: WindowEffect.acrylic,
-      color: const Color(0xCC222222),
-    );
-  } catch (e) {
-    debugPrint("Failed to initialize window effect: $e");
-  }
+      // Initialize Window for Acrylic effect
+      try {
+        await Window.initialize();
+        await Window.setEffect(
+          effect: WindowEffect.acrylic,
+          color: const Color(0xCC222222),
+        );
+        AppEnvironment.log('Main: Window effect initialized');
+      } catch (e) {
+        AppEnvironment.log("Main: Failed to initialize window effect: $e");
+      }
 
-  // Initialize settings
-  try {
-    await SettingsManager().loadSettings();
-  } catch (e) {
-    debugPrint("Failed to load settings: $e");
-  }
+      // Initialize settings
+      try {
+        final settings = SettingsManager();
+        AppEnvironment.log(
+          'Main: Loading settings (Portable: ${AppEnvironment.isPortable})...',
+        );
+        await settings.loadSettings();
+        AppEnvironment.log('Main: Settings loaded');
+      } catch (e, stack) {
+        AppEnvironment.log("Main: Failed to load settings: $e\n$stack");
+      }
 
-  // We move EphemerisManager.ensureEphemerisData() to LoadingScreen
-  // to avoid blocking the app startup on a blank screen.
-
-  runApp(const AstroNakshApp());
+      runApp(const AstroNakshApp());
+      AppEnvironment.log('Main: runApp called');
+    },
+    (error, stack) {
+      AppEnvironment.log('CRITICAL: Uncaught exception: $error\n$stack');
+      if (AppEnvironment.isVerbose) {
+        stderr.writeln('CRITICAL: Uncaught exception: $error\n$stack');
+      }
+    },
+  );
 }
 
 class AstroNakshApp extends StatelessWidget {

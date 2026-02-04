@@ -1,8 +1,7 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Manages application environment, paths, and global flags.
 /// Handles portable mode detection and verbose logging.
@@ -15,6 +14,8 @@ class AppEnvironment {
   static bool get isPortable => _isPortable;
   static bool get isVerbose => _isVerbose;
 
+  static File? _logFile;
+
   /// Initialize the environment.
   /// Checks for portable mode marker and parses arguments.
   static Future<void> initialize(List<String> args) async {
@@ -23,37 +24,69 @@ class AppEnvironment {
     // 1. Check for Verbose Flag
     if (args.contains('--verbose') || args.contains('-v')) {
       _isVerbose = true;
-      debugPrint('Core: Verbose mode enabled via CLI arguments');
     }
 
     // 2. Determine Executable Directory
     try {
       _executableDir = p.dirname(Platform.resolvedExecutable);
-      if (_isVerbose) {
-        debugPrint('Core: Executable directory resolved to: $_executableDir');
-      }
     } catch (e) {
-      debugPrint('Core: Failed to resolve executable directory: $e');
-      // Fallback if needed, though Platform.resolvedExecutable should be reliable on desktop
+      // Fallback if needed
     }
 
     // 3. Check for Portable Marker
-    // Look for a .portable file in the same directory as the executable
     if (_executableDir != null) {
       final portableFile = File(p.join(_executableDir!, '.portable'));
       if (await portableFile.exists()) {
         _isPortable = true;
-        if (_isVerbose) {
-          debugPrint('Core: Portable mode detected (.portable file found)');
-        }
+      }
+    }
+
+    // 4. Setup Logging
+    await _setupLogging();
+
+    if (_isVerbose) {
+      log('Core: Verbose mode enabled via CLI arguments');
+      log('Core: Executable directory resolved to: $_executableDir');
+      if (_isPortable) {
+        log('Core: Portable mode detected (.portable file found)');
       } else {
-        if (_isVerbose) {
-          debugPrint('Core: Standard installation mode (no .portable marker)');
-        }
+        log('Core: Standard installation mode (no .portable marker)');
       }
     }
 
     _isInitialized = true;
+  }
+
+  static Future<void> _setupLogging() async {
+    try {
+      Directory logDir;
+      if (_isPortable && _executableDir != null) {
+        logDir = Directory(p.join(_executableDir!, 'user_data', 'logs'));
+      } else {
+        final appSupport = await getApplicationSupportDirectory();
+        logDir = Directory(p.join(appSupport.path, 'logs'));
+      }
+
+      if (!await logDir.exists()) {
+        await logDir.create(recursive: true);
+      }
+
+      _logFile = File(p.join(logDir.path, 'startup.log'));
+
+      // Clear old log on startup
+      if (await _logFile!.exists()) {
+        await _logFile!.writeAsString(
+          '--- Log Started: ${DateTime.now()} ---\n',
+        );
+      } else {
+        await _logFile!.writeAsString(
+          '--- Log Started: ${DateTime.now()} ---\n',
+        );
+      }
+    } catch (e) {
+      // Cannot log if logging setup fails, just print to stdout
+      if (_isVerbose) print('Failed to setup logging: $e');
+    }
   }
 
   /// Get the directory for storing user data (db, settings, etc.)
@@ -104,9 +137,22 @@ class AppEnvironment {
 
   /// Helper for verbose logging
   static void log(String message) {
+    final timestamp = DateTime.now().toIso8601String();
+    final logMessage = '[$timestamp] $message';
+
+    // 1. Print to console (stdout) for CLI visibility
     if (_isVerbose) {
-      // Print with a timestamp or tag
-      debugPrint('[VERBOSE] $message');
+      // Use stdout directly for CLI visibility in some contexts
+      stdout.writeln(logMessage);
+    }
+
+    // 2. Write to file
+    if (_logFile != null) {
+      try {
+        _logFile!.writeAsStringSync('$logMessage\n', mode: FileMode.append);
+      } catch (e) {
+        // Silently fail if file write fails to avoid crash loops
+      }
     }
   }
 }

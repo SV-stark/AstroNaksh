@@ -42,10 +42,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         .toList();
 
     return NavigationView(
-      appBar: const NavigationAppBar(
-        title: Text('Yoga & Dosha Analysis'),
-        leading: SizedBox.shrink(), // Managed by Navigator usually
-      ),
+      appBar: const NavigationAppBar(title: Text('Yoga & Dosha Analysis')),
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (index) => setState(() => _currentIndex = index),

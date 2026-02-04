@@ -1,6 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../painters/north_indian_chart_painter.dart';
 import '../painters/south_indian_chart_painter.dart';
+import '../../core/settings_manager.dart';
+import '../../core/chart_customization.dart';
 
 enum ChartStyle { northIndian, southIndian }
 
@@ -20,44 +22,42 @@ class ChartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FluentTheme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    // Listen to SettingsManager for updates
+    return ListenableBuilder(
+      listenable: SettingsManager(),
+      builder: (context, child) {
+        final settings = SettingsManager().chartSettings;
+        final colors = settings.colorScheme.colors;
 
-    final textColor = isDark ? Colors.white : Colors.black;
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.5)
-        : Colors.black;
-    final southLineColor = isDark ? Colors.white : Colors.black;
-
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: CustomPaint(
-        painter: style == ChartStyle.northIndian
-            ? NorthIndianChartPainter(
-                planetsBySign: planetsBySign,
-                ascendantSign: ascendantSign,
-                borderColor: borderColor,
-                textColor: textColor,
-              )
-            : SouthIndianChartPainter(
-                planetsBySign: planetsBySign,
-                ascendantSign: ascendantSign,
-                lineColor: southLineColor,
-                textColor: textColor,
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: colors.background, // Use theme background
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
               ),
-      ),
+            ],
+          ),
+          child: CustomPaint(
+            painter: style == ChartStyle.northIndian
+                ? NorthIndianChartPainter(
+                    planetsBySign: planetsBySign,
+                    ascendantSign: ascendantSign,
+                    colors: colors,
+                  )
+                : SouthIndianChartPainter(
+                    planetsBySign: planetsBySign,
+                    ascendantSign: ascendantSign,
+                    colors: colors,
+                  ),
+          ),
+        );
+      },
     );
   }
 }

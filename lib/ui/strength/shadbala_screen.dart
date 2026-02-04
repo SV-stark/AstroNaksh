@@ -11,10 +11,34 @@ class ShadbalaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shadbalaData = ShadbalaCalculator.calculateShadbala(chartData);
+    late Map<String, double> shadbalaData;
+    try {
+      shadbalaData = ShadbalaCalculator.calculateShadbala(chartData);
+    } catch (e) {
+      shadbalaData = {};
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          displayInfoBar(
+            context,
+            builder: (context, close) => InfoBar(
+              title: const Text('Calculation Error'),
+              content: Text('Failed to calculate Shadbala: $e'),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          );
+        }
+      });
+    }
 
     return ScaffoldPage(
-      header: const PageHeader(title: Text('Shadbala Analysis')),
+      header: PageHeader(
+        title: const Text('Shadbala Analysis'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       content: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: [

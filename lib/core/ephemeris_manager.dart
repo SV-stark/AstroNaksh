@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:jyotish/jyotish.dart';
+import 'dart:ffi';
 import 'app_environment.dart';
 
 /// Manages Swiss Ephemeris data files for planetary calculations
@@ -74,6 +75,58 @@ class EphemerisManager {
           AppEnvironment.log(
             'EphemerisManager: swisseph.dll found at $dllPath',
           );
+
+          // 1. Check Architecture
+          try {
+            final bytes = await File(dllPath).readAsBytes();
+            // PE Header offset is at 0x3C (60)
+            if (bytes.length > 64) {
+              final peOffset =
+                  bytes[0x3C] |
+                  (bytes[0x3D] << 8) |
+                  (bytes[0x3E] << 16) |
+                  (bytes[0x3F] << 24);
+              if (peOffset + 6 < bytes.length) {
+                // Machine type is at PE Offset + 4
+                // 0x8664 = x64, 0x014c = x86
+                final machine =
+                    bytes[peOffset + 4] | (bytes[peOffset + 5] << 8);
+                final is64Bit = machine == 0x8664;
+                AppEnvironment.log(
+                  'EphemerisManager: DLL Machine Type: 0x${machine.toRadixString(16)} (Is x64: $is64Bit)',
+                );
+
+                if (!is64Bit) {
+                  AppEnvironment.log(
+                    'EphemerisManager: WARNING - DLL does not appear to be x64! This implies a mismatch.',
+                  );
+                }
+              }
+            }
+          } catch (e) {
+            AppEnvironment.log(
+              'EphemerisManager: Failed to parse DLL header: $e',
+            );
+          }
+
+          // 2. Try Explicit Load
+          try {
+            AppEnvironment.log(
+              'EphemerisManager: Attempting explicit DynamicLibrary.open...',
+            );
+            // On Windows, open by path
+            final lib = DynamicLibrary.open(dllPath);
+            AppEnvironment.log(
+              'EphemerisManager: Explicit load successful: $lib',
+            );
+          } catch (e) {
+            AppEnvironment.log(
+              'EphemerisManager: CRITICAL - Explicit load failed: $e',
+            );
+            AppEnvironment.log(
+              'EphemerisManager: This usually means missing dependencies (VC++ Redist check?) or bad arch.',
+            );
+          }
         } else {
           AppEnvironment.log(
             'EphemerisManager: ERROR - swisseph.dll NOT found at $dllPath',

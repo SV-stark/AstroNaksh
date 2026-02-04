@@ -43,10 +43,30 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    try {
+      AshtakavargaSystem.calculateSarvashtakavargaWithSodhana(widget.chartData);
+      AshtakavargaSystem.calculateBhinnashtakavarga(widget.chartData, _selectedPlanet);
+    } catch (e) {
+      if (context.mounted) {
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('Calculation Error'),
+            content: Text('Failed to calculate Ashtakavarga: $e'),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
+      }
+    }
+
     return NavigationView(
-      appBar: const NavigationAppBar(
-        title: Text('Ashtakavarga Analysis'),
-        leading: SizedBox.shrink(),
+      appBar: NavigationAppBar(
+        title: const Text('Ashtakavarga Analysis'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       pane: NavigationPane(
         selected: _currentIndex,

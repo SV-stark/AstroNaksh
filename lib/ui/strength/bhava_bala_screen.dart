@@ -16,7 +16,23 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bhavaBalaData = BhavaBala.calculateBhavaBala(widget.chartData);
+    late Map<int, BhavaStrength> bhavaBalaData;
+    try {
+      bhavaBalaData = BhavaBala.calculateBhavaBala(widget.chartData);
+    } catch (e) {
+      bhavaBalaData = {};
+      if (context.mounted) {
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('Calculation Error'),
+            content: Text('Failed to calculate Bhava Bala: $e'),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
+      }
+    }
 
     // Convert to list for sorting
     List<MapEntry<int, BhavaStrength>> houses = bhavaBalaData.entries.toList();
@@ -32,6 +48,10 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
     return ScaffoldPage(
       header: PageHeader(
         title: const Text('Bhava Bala (House Strength)'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
         commandBar: CommandBar(
           primaryItems: [
             CommandBarButton(

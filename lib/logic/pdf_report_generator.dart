@@ -24,7 +24,12 @@ class PdfReportGenerator {
     // Save PDF
     final path = outputPath ?? _getDefaultPath(birthData);
     final file = File(path);
-    await file.writeAsBytes(await pdf.save());
+    try {
+      await file.writeAsBytes(await pdf.save());
+    } catch (e) {
+      // Re-throw with more context
+      throw Exception('Failed to write PDF to $path: $e');
+    }
 
     return file;
   }
@@ -125,6 +130,10 @@ class PdfReportGenerator {
 
     for (int house = 1; house <= 12; house++) {
       try {
+        if (chart.baseChart.houses.cusps.isEmpty || house - 1 >= chart.baseChart.houses.cusps.length) {
+          rows.add([_getHouseName(house), 'N/A', 'N/A', 'N/A']);
+          continue;
+        }
         final cuspLong = chart.baseChart.houses.cusps[house - 1];
         final sign = (cuspLong / 30).floor();
         final degree = cuspLong % 30;
@@ -358,6 +367,9 @@ class PdfReportGenerator {
 
   static int _getHouseNumber(CompleteChartData chart, double longitude) {
     try {
+      if (chart.baseChart.houses.cusps.isEmpty) {
+        return 1;
+      }
       final ascLong = chart.baseChart.houses.cusps[0];
       final diff = (longitude - ascLong + 360) % 360;
       return (diff / 30).floor() + 1;

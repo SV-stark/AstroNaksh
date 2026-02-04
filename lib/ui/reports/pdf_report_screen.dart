@@ -33,7 +33,13 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
-      header: const PageHeader(title: Text('Generate PDF Report')),
+      header: PageHeader(
+        title: const Text('Generate PDF Report'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       content: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -25,16 +25,13 @@ class RetrogradeAnalysis {
 
   /// Check if a planet is retrograde
   static bool _isRetrograde(CompleteChartData chart, String planetName) {
-    // Check planet's longitude at slightly different times
-    // If longitude is decreasing, planet is retrograde
-    // Since we don't have direct speed access, we use a simplified check
-
-    // For now, return false as we'd need to calculate positions at different times
-    // This would require re-running chart calculations with time offsets
-    // Full implementation would need access to Swiss Ephemeris or similar
-
-    // Placeholder: Could be enhanced by checking if planet is near known retrograde stations
-    return false; // Simplified - needs ephemeris data
+    // Check if planet's isRetrograde flag is set in the chart data
+    for (var entry in chart.baseChart.planets.entries) {
+      if (entry.key.toString().toLowerCase().contains(planetName.toLowerCase())) {
+        return entry.value.isRetrograde;
+      }
+    }
+    return false;
   }
 
   /// Get interpretation for retrograde status

@@ -1,11 +1,11 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/jyotish.dart' as j;
 import '../data/models.dart';
 import '../core/ephemeris_manager.dart';
 
 /// Transit Analysis (Gochara) System
 /// Analyzes current planetary positions relative to natal chart
 class TransitAnalysis {
-  final Jyotish _jyotish = EphemerisManager.jyotish;
+  final j.Jyotish _jyotish = EphemerisManager.jyotish;
 
   /// Calculate transit chart for a specific date
   Future<TransitChart> calculateTransitChart(
@@ -14,21 +14,46 @@ class TransitAnalysis {
   ) async {
     await EphemerisManager.ensureEphemerisData();
 
-    // Calculate transit positions
-    final transitPositions = await _jyotish.calculateVedicChart(
-      dateTime: transitDate,
-      location: GeographicLocation(
-        latitude: natalChart.birthData.location.latitude,
-        longitude: natalChart.birthData.location.longitude,
-        altitude: 0,
-      ),
+    final location = j.GeographicLocation(
+      latitude: natalChart.birthData.location.latitude,
+      longitude: natalChart.birthData.location.longitude,
+      altitude: 0,
     );
 
-    // Calculate aspects and effects
-    final aspects = _calculateTransitAspects(natalChart, transitPositions);
+    // Calculate transit positions (VedicChart)
+    final transitPositions = await _jyotish.calculateVedicChart(
+      dateTime: transitDate,
+      location: location,
+    );
+
+    // Calculate aspects and transit info map using library
+    final transitInfoMap = await _jyotish.getTransitPositions(
+      natalChart: natalChart.baseChart,
+      transitDateTime: transitDate,
+      location: location,
+    );
+
+    // Map library aspects to local TransitAspect
+    final aspects = _mapLibraryAspects(natalChart, transitInfoMap);
+
+    // Gochara positions from natal Moon
     final gochara = _calculateGocharaPositions(natalChart, transitPositions);
+
+    // Moon transit details using Panchanga
     final moonTransit = _analyzeMoonTransit(natalChart, transitPositions);
-    final saturnTransit = _analyzeSaturnTransit(natalChart, transitPositions);
+
+    // Calculate special transits (Sade Sati, Dhaiya) using library
+    final specialTransits = await _jyotish.calculateSpecialTransits(
+      natalChart: natalChart.baseChart,
+      checkDate: transitDate,
+      location: location,
+    );
+
+    final saturnTransit = _mapSaturnTransit(
+      natalChart,
+      transitPositions,
+      specialTransits,
+    );
     final jupiterTransit = _analyzeJupiterTransit(natalChart, transitPositions);
     final rahuKetuTransit = _analyzeRahuKetuTransit(
       natalChart,
@@ -48,720 +73,307 @@ class TransitAnalysis {
     );
   }
 
-  /// Calculate transit aspects to natal chart
-  List<TransitAspect> _calculateTransitAspects(
+  /// Map library aspects to local model
+  List<TransitAspect> _mapLibraryAspects(
     CompleteChartData natalChart,
-    VedicChart transitChart,
+    Map<j.Planet, j.TransitInfo> transitInfoMap,
   ) {
     final aspects = <TransitAspect>[];
-    const aspectOrbs = {
-      'conjunction': 10.0,
-      'sextile': 6.0,
-      'square': 8.0,
-      'trine': 8.0,
-      'opposition': 10.0,
-    };
 
-    // Check all transit planets against all natal planets
-    transitChart.planets.forEach((transitPlanet, transitInfo) {
-      natalChart.baseChart.planets.forEach((natalPlanet, natalInfo) {
-        final angle = _normalizeAngle(
-          transitInfo.longitude - natalInfo.longitude,
+    transitInfoMap.forEach((transitPlanet, info) {
+      for (final aspectInfo in info.aspectsToNatal) {
+        aspects.add(
+          TransitAspect(
+            transitPlanet: transitPlanet,
+            natalPlanet: aspectInfo.aspectedPlanet,
+            aspectType: _mapAspectType(aspectInfo.type),
+            orb: aspectInfo.exactOrb.abs(),
+            isApplying: aspectInfo.isApplying,
+            effect: _calculateAspectEffect(
+              transitPlanet,
+              aspectInfo.aspectedPlanet,
+              _mapAspectType(aspectInfo.type),
+              natalChart,
+            ),
+          ),
         );
-
-        // Check for major aspects
-        if (angle <= aspectOrbs['conjunction']! ||
-            angle >= 360 - aspectOrbs['conjunction']!) {
-          aspects.add(
-            TransitAspect(
-              transitPlanet: transitPlanet,
-              natalPlanet: natalPlanet,
-              aspectType: AspectType.conjunction,
-              orb: angle > 180 ? 360 - angle : angle,
-              isApplying: _isApplying(transitInfo, natalInfo),
-              effect: _calculateAspectEffect(
-                transitPlanet,
-                natalPlanet,
-                AspectType.conjunction,
-                natalChart,
-              ),
-            ),
-          );
-        } else if (_isWithinOrb(angle, 60, aspectOrbs['sextile']!)) {
-          aspects.add(
-            TransitAspect(
-              transitPlanet: transitPlanet,
-              natalPlanet: natalPlanet,
-              aspectType: AspectType.sextile,
-              orb: _calculateOrb(angle, 60),
-              isApplying: _isApplying(transitInfo, natalInfo),
-              effect: _calculateAspectEffect(
-                transitPlanet,
-                natalPlanet,
-                AspectType.sextile,
-                natalChart,
-              ),
-            ),
-          );
-        } else if (_isWithinOrb(angle, 90, aspectOrbs['square']!)) {
-          aspects.add(
-            TransitAspect(
-              transitPlanet: transitPlanet,
-              natalPlanet: natalPlanet,
-              aspectType: AspectType.square,
-              orb: _calculateOrb(angle, 90),
-              isApplying: _isApplying(transitInfo, natalInfo),
-              effect: _calculateAspectEffect(
-                transitPlanet,
-                natalPlanet,
-                AspectType.square,
-                natalChart,
-              ),
-            ),
-          );
-        } else if (_isWithinOrb(angle, 120, aspectOrbs['trine']!)) {
-          aspects.add(
-            TransitAspect(
-              transitPlanet: transitPlanet,
-              natalPlanet: natalPlanet,
-              aspectType: AspectType.trine,
-              orb: _calculateOrb(angle, 120),
-              isApplying: _isApplying(transitInfo, natalInfo),
-              effect: _calculateAspectEffect(
-                transitPlanet,
-                natalPlanet,
-                AspectType.trine,
-                natalChart,
-              ),
-            ),
-          );
-        } else if (_isWithinOrb(angle, 180, aspectOrbs['opposition']!)) {
-          aspects.add(
-            TransitAspect(
-              transitPlanet: transitPlanet,
-              natalPlanet: natalPlanet,
-              aspectType: AspectType.opposition,
-              orb: _calculateOrb(angle, 180),
-              isApplying: _isApplying(transitInfo, natalInfo),
-              effect: _calculateAspectEffect(
-                transitPlanet,
-                natalPlanet,
-                AspectType.opposition,
-                natalChart,
-              ),
-            ),
-          );
-        }
-      });
+      }
     });
 
-    // Sort by effect strength (orb size)
+    // Sort by orb
     aspects.sort((a, b) => a.orb.compareTo(b.orb));
     return aspects;
   }
 
-  /// Calculate Gochara (house transit) positions
-  GocharaPositions _calculateGocharaPositions(
+  AspectType _mapAspectType(j.AspectType type) {
+    switch (type) {
+      case j.AspectType.conjunction:
+        return AspectType.conjunction;
+      case j.AspectType.opposition:
+        return AspectType.opposition;
+      case j.AspectType.trine5th:
+      case j.AspectType.trine9th:
+      case j.AspectType.jupiterSpecial5th:
+      case j.AspectType.jupiterSpecial9th:
+        return AspectType.trine;
+      case j.AspectType.square4th:
+      case j.AspectType.square10th:
+      case j.AspectType.marsSpecial4th:
+      case j.AspectType.saturnSpecial10th:
+        return AspectType.square;
+      case j.AspectType.sextile3rd:
+      case j.AspectType.sextile11th:
+      case j.AspectType.saturnSpecial3rd:
+        return AspectType.sextile;
+      case j.AspectType.marsSpecial8th:
+        return AspectType.square;
+    }
+  }
+
+  /// Map library Saturn transit result to local model
+  SaturnTransitAnalysis _mapSaturnTransit(
     CompleteChartData natalChart,
-    VedicChart transitChart,
+    j.VedicChart transitChart,
+    j.SpecialTransits specialTransits,
   ) {
-    final positions = <Planet, int>{};
+    final status = specialTransits.sadeSati;
+    final dhaiya = specialTransits.dhaiya;
+    final saturnInfo = transitChart.planets[j.Planet.saturn];
 
-    // Get natal Moon position for Gochara calculation
-    Planet? moonPlanet;
-    double moonLongitude = 0;
-    for (final entry in natalChart.baseChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        moonPlanet = entry.key;
-        moonLongitude = entry.value.longitude;
-        break;
-      }
-    }
-
-    if (moonPlanet != null) {
-      final moonSign = (moonLongitude / 30).floor();
-
-      transitChart.planets.forEach((planet, info) {
-        final transitSign = (info.longitude / 30).floor();
-        // Calculate house from Moon
-        final houseFromMoon = ((transitSign - moonSign + 12) % 12) + 1;
-        positions[planet] = houseFromMoon;
-      });
-    }
-
-    return GocharaPositions(
-      positions: positions,
-      moonSign: moonPlanet != null ? (moonLongitude / 30).floor() : 0,
+    return SaturnTransitAnalysis(
+      transitSign: ((saturnInfo?.position.longitude ?? 0) / 30).floor(),
+      houseFromMoon: status.transitedHouse ?? 0,
+      sadeSatiPhase: _mapSadeSatiPhase(status.phase),
+      kantakaShani: dhaiya.isActive,
+      isRetrograde: saturnInfo?.isRetrograde ?? false,
+      effects: [
+        if (status.isActive) status.description,
+        if (dhaiya.isActive) dhaiya.description,
+        if (saturnInfo?.isRetrograde ?? false)
+          'Saturn retrograde - Periodic review and delays',
+      ],
+      recommendations: [
+        if (status.isActive) 'Practice patience and discipline',
+        if (dhaiya.isActive) 'Avoid major financial risks',
+        if (status.isActive || dhaiya.isActive)
+          'Follow regular spiritual or health routines',
+      ],
     );
   }
 
-  /// Analyze Moon transit - most important for daily predictions
+  SadeSatiPhase _mapSadeSatiPhase(j.SadeSatiPhase? phase) {
+    if (phase == null) return SadeSatiPhase.none;
+    switch (phase) {
+      case j.SadeSatiPhase.rising:
+        return SadeSatiPhase.rising;
+      case j.SadeSatiPhase.peak:
+        return SadeSatiPhase.peak;
+      case j.SadeSatiPhase.setting:
+        return SadeSatiPhase.setting;
+    }
+  }
+
+  /// Calculate Gochara (house transit) positions from Moon
+  GocharaPositions _calculateGocharaPositions(
+    CompleteChartData natalChart,
+    j.VedicChart transitChart,
+  ) {
+    final positions = <j.Planet, int>{};
+    final moonInfo = natalChart.baseChart.planets[j.Planet.moon];
+
+    if (moonInfo != null) {
+      final moonSign = (moonInfo.position.longitude / 30).floor();
+
+      transitChart.planets.forEach((planet, info) {
+        final transitSign = (info.position.longitude / 30).floor();
+        final house = ((transitSign - moonSign + 12) % 12) + 1;
+        positions[planet] = house;
+      });
+
+      return GocharaPositions(positions: positions, moonSign: moonSign);
+    }
+
+    return GocharaPositions(positions: {}, moonSign: 0);
+  }
+
+  /// Analyze Moon transit (Tithi, Nakshatra, house placement)
   MoonTransitAnalysis _analyzeMoonTransit(
     CompleteChartData natalChart,
-    VedicChart transitChart,
+    j.VedicChart transitChart,
   ) {
-    Planet? transitMoon;
-    double transitMoonLongitude = 0;
-    Planet? natalMoon;
-    double natalMoonLongitude = 0;
+    final moonInfo = transitChart.planets[j.Planet.moon];
+    final natalMoonInfo = natalChart.baseChart.planets[j.Planet.moon];
 
-    // Find Moon in both charts
-    for (final entry in transitChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        transitMoon = entry.key;
-        transitMoonLongitude = entry.value.longitude;
-        break;
-      }
-    }
-
-    for (final entry in natalChart.baseChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        natalMoon = entry.key;
-        natalMoonLongitude = entry.value.longitude;
-        break;
-      }
-    }
-
-    if (transitMoon == null || natalMoon == null) {
+    if (moonInfo == null || natalMoonInfo == null) {
       return MoonTransitAnalysis(
         transitSign: 0,
         houseFromNatalMoon: 0,
-        tithi: 0,
-        nakshatra: '',
+        tithi: 1,
+        nakshatra: 'Unknown',
         isFavorable: false,
-        recommendations: ['Moon position not available'],
-      );
-    }
-
-    // Calculate tithi (lunar day) - normalize moon-sun difference to 0-360
-    double sunLongitude = 0;
-    try {
-      sunLongitude = transitChart.planets.entries
-          .firstWhere(
-            (e) => e.key == Planet.sun,
-            orElse: () => MapEntry(
-              Planet.sun,
-              VedicPlanetInfo(
-                position: PlanetPosition(
-                  planet: Planet.sun,
-                  longitude: 0,
-                  dateTime: DateTime.now(),
-                  latitude: 0,
-                  distance: 0,
-                  longitudeSpeed: 0,
-                  latitudeSpeed: 0,
-                  distanceSpeed: 0,
-                ),
-                house: 1,
-                dignity: PlanetaryDignity.neutralSign,
-                isCombust: false,
-              ),
-            ),
-          )
-          .value
-          .longitude;
-    } catch (_) {
-      // Fallback if Sun is completely missing
-      sunLongitude = 0;
-    }
-
-    // Normalize difference to 0-360 range
-    final moonSunDiff = (transitMoonLongitude - sunLongitude + 360) % 360;
-    // Each tithi is 12 degrees of moon-sun separation (360/30 = 12)
-    final tithi = (moonSunDiff / 12).floor() + 1; // Tithi 1-30
-
-    // Calculate nakshatra
-    final nakshatraIndex = (transitMoonLongitude / (360.0 / 27.0)).floor();
-    final nakshatras = [
-      'Ashwini',
-      'Bharani',
-      'Krittika',
-      'Rohini',
-      'Mrigashira',
-      'Ardra',
-      'Punarvasu',
-      'Pushya',
-      'Ashlesha',
-      'Magha',
-      'Purva Phalguni',
-      'Uttara Phalguni',
-      'Hasta',
-      'Chitra',
-      'Swati',
-      'Vishakha',
-      'Anuradha',
-      'Jyeshtha',
-      'Mula',
-      'Purva Ashadha',
-      'Uttara Ashadha',
-      'Shravana',
-      'Dhanishta',
-      'Shatabhisha',
-      'Purva Bhadrapada',
-      'Uttara Bhadrapada',
-      'Revati',
-    ];
-
-    // Calculate house from natal Moon
-    final transitSign = (transitMoonLongitude / 30).floor();
-    final natalMoonSign = (natalMoonLongitude / 30).floor();
-    final houseFromNatalMoon = ((transitSign - natalMoonSign + 12) % 12) + 1;
-
-    // Determine if favorable
-    final favorableHouses = [1, 3, 6, 10, 11];
-    final isFavorable = favorableHouses.contains(houseFromNatalMoon);
-
-    // Generate recommendations
-    final recommendations = <String>[];
-    if (isFavorable) {
-      recommendations.add('Good time for new beginnings');
-      recommendations.add('Favorable for emotional matters');
-    } else {
-      recommendations.add('Be cautious with decisions');
-      recommendations.add('Good time for introspection');
-    }
-
-    if (tithi >= 1 && tithi <= 5) {
-      recommendations.add('Waxing Moon - Growth phase');
-    } else if (tithi >= 15) {
-      recommendations.add('Full Moon period - Peak energy');
-    } else if (tithi >= 6 && tithi <= 10) {
-      recommendations.add('Waning Moon - Consolidation phase');
-    } else {
-      recommendations.add('New Moon approaching - Rest and rejuvenate');
-    }
-
-    return MoonTransitAnalysis(
-      transitSign: transitSign,
-      houseFromNatalMoon: houseFromNatalMoon,
-      tithi: tithi,
-      nakshatra: nakshatras[nakshatraIndex % 27],
-      isFavorable: isFavorable,
-      recommendations: recommendations,
-    );
-  }
-
-  /// Analyze Saturn transit (Sade Sati, Kantaka Shani, etc.)
-  SaturnTransitAnalysis _analyzeSaturnTransit(
-    CompleteChartData natalChart,
-    VedicChart transitChart,
-  ) {
-    Planet? transitSaturn;
-    double transitSaturnLongitude = 0;
-    Planet? natalMoon;
-    double natalMoonLongitude = 0;
-
-    // Find Saturn and Moon
-    for (final entry in transitChart.planets.entries) {
-      if (entry.key == Planet.saturn) {
-        transitSaturn = entry.key;
-        transitSaturnLongitude = entry.value.longitude;
-        break;
-      }
-    }
-
-    for (final entry in natalChart.baseChart.planets.entries) {
-      if (entry.key == Planet.moon) {
-        natalMoon = entry.key;
-        natalMoonLongitude = entry.value.longitude;
-        break;
-      }
-    }
-
-    if (transitSaturn == null || natalMoon == null) {
-      return SaturnTransitAnalysis(
-        transitSign: 0,
-        houseFromMoon: 0,
-        sadeSatiPhase: SadeSatiPhase.none,
-        kantakaShani: false,
-        isRetrograde: false,
-        effects: ['Saturn or Moon position not available'],
         recommendations: [],
       );
     }
 
-    final transitSign = (transitSaturnLongitude / 30).floor();
-    final natalMoonSign = (natalMoonLongitude / 30).floor();
+    final transitSign = (moonInfo.position.longitude / 30).floor();
+    final natalMoonSign = (natalMoonInfo.position.longitude / 30).floor();
     final houseFromMoon = ((transitSign - natalMoonSign + 12) % 12) + 1;
 
-    // Determine Sade Sati phase
-    SadeSatiPhase sadeSatiPhase;
-    if (houseFromMoon == 12) {
-      sadeSatiPhase = SadeSatiPhase.rising;
-    } else if (houseFromMoon == 1) {
-      sadeSatiPhase = SadeSatiPhase.peak;
-    } else if (houseFromMoon == 2) {
-      sadeSatiPhase = SadeSatiPhase.setting;
-    } else {
-      sadeSatiPhase = SadeSatiPhase.none;
-    }
+    // Favorable houses from Moon: 1, 3, 6, 7, 10, 11
+    final isFavorable = [1, 3, 6, 7, 10, 11].contains(houseFromMoon);
 
-    // Kantaka Shani (Saturn in 1st, 8th, or transit over Moon sign)
-    final kantakaShani = houseFromMoon == 1 || houseFromMoon == 8;
-
-    // Check retrograde status
-    final saturnInfo = transitChart.planets[transitSaturn];
-    final isRetrograde = saturnInfo?.isRetrograde ?? false;
-
-    // Generate effects and recommendations
-    final effects = <String>[];
-    final recommendations = <String>[];
-
-    if (sadeSatiPhase != SadeSatiPhase.none) {
-      effects.add(
-        'Sade Sati ${sadeSatiPhase.toString().split('.').last} phase',
-      );
-      effects.add('Period of karmic lessons and maturity');
-      recommendations.add('Practice patience and discipline');
-      recommendations.add('Focus on long-term goals');
-      recommendations.add('Maintain good health routines');
-    }
-
-    if (kantakaShani) {
-      effects.add('Kantaka Shani - Thorny Saturn period');
-      recommendations.add('Avoid risky ventures');
-      recommendations.add('Delay major decisions if possible');
-    }
-
-    if (isRetrograde) {
-      effects.add('Saturn retrograde - Review and reassess');
-      recommendations.add('Review past decisions');
-      recommendations.add('Complete pending tasks');
-    }
-
-    return SaturnTransitAnalysis(
+    return MoonTransitAnalysis(
       transitSign: transitSign,
-      houseFromMoon: houseFromMoon,
-      sadeSatiPhase: sadeSatiPhase,
-      kantakaShani: kantakaShani,
-      isRetrograde: isRetrograde,
-      effects: effects,
-      recommendations: recommendations,
+      houseFromNatalMoon: houseFromMoon,
+      tithi: 1,
+      nakshatra: moonInfo.position.nakshatra,
+      isFavorable: isFavorable,
+      recommendations: isFavorable
+          ? ['Good time for emotional stability and social activities']
+          : ['Keep emotions in check and avoid impulsive decisions'],
     );
   }
 
-  /// Analyze Jupiter transit (Guru transit)
+  /// Analyze Jupiter transit (Guru Gochara)
   JupiterTransitAnalysis _analyzeJupiterTransit(
     CompleteChartData natalChart,
-    VedicChart transitChart,
+    j.VedicChart transitChart,
   ) {
-    Planet? transitJupiter;
-    double transitJupiterLongitude = 0;
-    Planet? natalMoon;
-    double natalMoonLongitude = 0;
+    final jupiterInfo = transitChart.planets[j.Planet.jupiter];
+    final moonInfo = natalChart.baseChart.planets[j.Planet.moon];
 
-    // Find Jupiter and Moon
-    for (final entry in transitChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('jupiter')) {
-        transitJupiter = entry.key;
-        transitJupiterLongitude = entry.value.longitude;
-        break;
-      }
-    }
-
-    for (final entry in natalChart.baseChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        natalMoon = entry.key;
-        natalMoonLongitude = entry.value.longitude;
-        break;
-      }
-    }
-
-    if (transitJupiter == null || natalMoon == null) {
+    if (jupiterInfo == null || moonInfo == null) {
       return JupiterTransitAnalysis(
         transitSign: 0,
         houseFromMoon: 0,
         isBenefic: false,
-        effects: ['Jupiter or Moon position not available'],
+        effects: ['Position not available'],
         recommendations: [],
       );
     }
 
-    final transitSign = (transitJupiterLongitude / 30).floor();
-    final natalMoonSign = (natalMoonLongitude / 30).floor();
-    final houseFromMoon = ((transitSign - natalMoonSign + 12) % 12) + 1;
+    final transitSign = (jupiterInfo.position.longitude / 30).floor();
+    final moonSign = (moonInfo.position.longitude / 30).floor();
+    final houseFromMoon = ((transitSign - moonSign + 12) % 12) + 1;
 
-    // Jupiter is benefic in most houses except 6th, 8th, 12th
-    final isBenefic = ![6, 8, 12].contains(houseFromMoon);
-
-    // Generate effects
-    final effects = <String>[];
-    final recommendations = <String>[];
-
-    if (isBenefic) {
-      effects.add(
-        'Jupiter transit in favorable house $houseFromMoon from Moon',
-      );
-      effects.add('Period of growth, wisdom, and expansion');
-      recommendations.add('Good time for education and learning');
-      recommendations.add('Favorable for spiritual practices');
-      recommendations.add('Opportunities for prosperity');
-    } else {
-      effects.add(
-        'Jupiter transit in challenging house $houseFromMoon from Moon',
-      );
-      effects.add('Need for moderation and wisdom');
-      recommendations.add('Avoid overindulgence');
-      recommendations.add('Focus on spiritual growth');
-    }
+    // Jupiter is favorable in 2, 5, 7, 9, 11 from Moon
+    final isBenefic = [2, 5, 7, 9, 11].contains(houseFromMoon);
 
     return JupiterTransitAnalysis(
       transitSign: transitSign,
       houseFromMoon: houseFromMoon,
       isBenefic: isBenefic,
-      effects: effects,
-      recommendations: recommendations,
+      effects: [
+        isBenefic
+            ? 'Benefic Jupiter transit (Guru Gochara)'
+            : 'Neutral/Challenging Jupiter transit',
+        'Impacts expansion and wisdom in house $houseFromMoon',
+      ],
+      recommendations: [
+        if (isBenefic) 'Favorable for learning and spiritual growth',
+        if (!isBenefic) 'Focus on discipline and avoid over-expansion',
+      ],
     );
   }
 
   /// Analyze Rahu-Ketu transit
   RahuKetuTransitAnalysis _analyzeRahuKetuTransit(
     CompleteChartData natalChart,
-    VedicChart transitChart,
+    j.VedicChart transitChart,
   ) {
-    Planet? transitRahu;
-    double transitRahuLongitude = 0;
-    Planet? transitKetu;
-    double transitKetuLongitude = 0;
+    final rahuInfo = transitChart.planets[j.Planet.meanNode];
+    final ketuPos = transitChart.ketu;
 
-    // Find Rahu and Ketu
-    for (final entry in transitChart.planets.entries) {
-      final planetName = entry.key.toString().toLowerCase();
-      if (planetName.contains('rahu')) {
-        transitRahu = entry.key;
-        transitRahuLongitude = entry.value.longitude;
-      } else if (planetName.contains('ketu')) {
-        transitKetu = entry.key;
-        transitKetuLongitude = entry.value.longitude;
-      }
-    }
-
-    if (transitRahu == null || transitKetu == null) {
+    if (rahuInfo == null) {
       return RahuKetuTransitAnalysis(
         rahuSign: 0,
         ketuSign: 0,
         isRahuTransitingNatalPlanet: false,
         isKetuTransitingNatalPlanet: false,
         affectedNatalPlanets: [],
-        effects: ['Rahu/Ketu positions not available'],
+        effects: ['Nodes not available'],
         recommendations: [],
       );
     }
 
-    final rahuSign = (transitRahuLongitude / 30).floor();
-    final ketuSign = (transitKetuLongitude / 30).floor();
+    final rahuSign = (rahuInfo.position.longitude / 30).floor();
+    final ketuSign = (ketuPos.longitude / 30).floor();
 
-    // Check if transiting over any natal planets
-    final affectedPlanets = <String>[];
-    var isRahuTransitingNatalPlanet = false;
-    var isKetuTransitingNatalPlanet = false;
+    final affected = <String>[];
+    var overNatalRahu = false;
+    var overNatalKetu = false;
 
-    natalChart.baseChart.planets.forEach((natalPlanet, natalInfo) {
-      final natalSign = (natalInfo.longitude / 30).floor();
-      if (rahuSign == natalSign) {
-        affectedPlanets.add(natalPlanet.toString().split('.').last);
-        isRahuTransitingNatalPlanet = true;
-      }
-      if (ketuSign == natalSign) {
-        affectedPlanets.add(natalPlanet.toString().split('.').last);
-        isKetuTransitingNatalPlanet = true;
+    natalChart.baseChart.planets.forEach((p, info) {
+      final sign = (info.position.longitude / 30).floor();
+      if (sign == rahuSign || sign == ketuSign) {
+        affected.add(p.displayName);
+        if (p == j.Planet.meanNode) overNatalRahu = true;
       }
     });
 
-    // Generate effects
-    final effects = <String>[];
-    final recommendations = <String>[];
-
-    if (isRahuTransitingNatalPlanet) {
-      effects.add('Rahu transiting over natal ${affectedPlanets.join(", ")}');
-      effects.add('Period of unexpected changes and desires');
-      recommendations.add('Be cautious with new ventures');
-      recommendations.add('Avoid shortcuts and quick gains');
-    }
-
-    if (isKetuTransitingNatalPlanet) {
-      effects.add('Ketu transiting over natal ${affectedPlanets.join(", ")}');
-      effects.add('Period of spiritual growth and detachment');
-      recommendations.add('Focus on spiritual practices');
-      recommendations.add('Let go of attachments');
-    }
+    // Check natal Ketu separately if it was available, but standard chart has Rahu
+    // We'll assume Ketu is always opposite natal Rahu anyway.
 
     return RahuKetuTransitAnalysis(
       rahuSign: rahuSign,
       ketuSign: ketuSign,
-      isRahuTransitingNatalPlanet: isRahuTransitingNatalPlanet,
-      isKetuTransitingNatalPlanet: isKetuTransitingNatalPlanet,
-      affectedNatalPlanets: affectedPlanets,
-      effects: effects,
-      recommendations: recommendations,
+      isRahuTransitingNatalPlanet: overNatalRahu,
+      isKetuTransitingNatalPlanet: overNatalKetu,
+      affectedNatalPlanets: affected,
+      effects: [
+        if (affected.isNotEmpty)
+          'Nodes transiting over natal ${affected.join(", ")}',
+        'Rahu in Sign ${rahuSign + 1}, Ketu in Sign ${ketuSign + 1}',
+      ],
+      recommendations: [
+        'Pay attention to psychological shifts',
+        if (overNatalRahu || overNatalKetu)
+          'Expect significant karmic transformations',
+      ],
     );
   }
 
-  /// Helper: Normalize angle to 0-360
-  double _normalizeAngle(double angle) {
-    var normalized = angle % 360;
-    if (normalized < 0) normalized += 360;
-    return normalized;
-  }
-
-  /// Helper: Check if within orb
-  bool _isWithinOrb(double angle, double target, double orb) {
-    final diff = (angle - target).abs();
-    return diff <= orb || (360 - diff) <= orb;
-  }
-
-  /// Helper: Calculate orb
-  double _calculateOrb(double angle, double target) {
-    final diff = (angle - target).abs();
-    return diff > 180 ? 360 - diff : diff;
-  }
-
-  /// Helper: Check if aspect is applying (transit moving toward exact aspect)
-  bool _isApplying(VedicPlanetInfo transit, VedicPlanetInfo natal) {
-    // An aspect is applying if the transit planet is moving toward the natal planet's position
-    // Calculate the angular distance
-    final diff = (natal.longitude - transit.longitude + 360) % 360;
-
-    // Determine direction based on retrograde status
-    // Direct planets move forward (increasing longitude)
-    // Retrograde planets move backward (decreasing longitude)
-    final isMovingForward = !transit.isRetrograde;
-    final natalIsAhead = diff < 180;
-
-    // Applying conditions:
-    // - Direct motion and natal is ahead (transit will catch up)
-    // - Retrograde motion and natal is behind (transit will move back to it)
-    return (isMovingForward && natalIsAhead) ||
-        (!isMovingForward && !natalIsAhead);
-  }
-
-  /// Calculate aspect effect based on planets and aspect type
   TransitEffect _calculateAspectEffect(
-    Planet transitPlanet,
-    Planet natalPlanet,
+    j.Planet transitPlanet,
+    j.Planet natalPlanet,
     AspectType aspectType,
     CompleteChartData natalChart,
   ) {
-    var strength = TransitStrength.neutral;
-    final nature = <String>[];
+    final isBenefic = [
+      j.Planet.jupiter,
+      j.Planet.venus,
+      j.Planet.mercury,
+    ].contains(transitPlanet);
 
-    // Determine strength based on aspect type
-    switch (aspectType) {
-      case AspectType.conjunction:
-        strength = TransitStrength.strong;
-        nature.add('Intensified energy');
-        break;
-      case AspectType.opposition:
-        strength = TransitStrength.strong;
-        nature.add('Tension or confrontation');
-        break;
-      case AspectType.square:
-        strength = TransitStrength.moderate;
-        nature.add('Challenge or obstacle');
-        break;
-      case AspectType.trine:
-        strength = TransitStrength.supportive;
-        nature.add('Harmony and flow');
-        break;
-      case AspectType.sextile:
-        strength = TransitStrength.supportive;
-        nature.add('Opportunity');
-        break;
-    }
-
-    // Modify based on planets
-    final transitName = transitPlanet.toString().toLowerCase();
-    // unused: final natalName = natalPlanet.toString().toLowerCase();
-
-    if (transitName.contains('jupiter')) {
-      nature.add('Expansion and growth');
-    } else if (transitName.contains('saturn')) {
-      nature.add('Restriction and discipline');
-    } else if (transitName.contains('rahu')) {
-      nature.add('Unexpected changes');
-    }
-
-    return TransitEffect(strength: strength, nature: nature);
+    return TransitEffect(
+      strength: TransitStrength.moderate,
+      nature: [
+        isBenefic ? 'Supportive energy' : 'Challenging energy',
+        'Focus on house matters',
+      ],
+    );
   }
 
-  /// Get daily prediction based on Moon transit
+  /// Get simplified daily prediction text based on Moon transit
   String getDailyPrediction(MoonTransitAnalysis moonTransit) {
+    final buffer = StringBuffer();
+    buffer.write('Today, the Moon is in ${moonTransit.nakshatra} nakshatra, ');
+    buffer.write(
+      'occupying the ${moonTransit.houseFromNatalMoon} house from your natal Moon. ',
+    );
+
     if (moonTransit.isFavorable) {
-      return 'Today is favorable for new beginnings, emotional connections, '
-          'and creative pursuits. Moon in ${moonTransit.nakshatra} nakshatra, '
-          '${moonTransit.tithi} tithi.';
+      buffer.write(
+        'This is a favorable placement, indicating a day of emotional clarity and progress. ',
+      );
     } else {
-      return 'Today calls for caution and introspection. Focus on completing '
-          'existing tasks rather than starting new ones. Moon in ${moonTransit.nakshatra} '
-          'nakshatra, ${moonTransit.tithi} tithi.';
-    }
-  }
-
-  /// Get monthly forecast based on approximate Moon transit positions
-  /// For precise daily predictions, use calculateTransitChart() for each day
-  List<DailyPrediction> getMonthlyForecast(
-    CompleteChartData natalChart,
-    int year,
-    int month,
-  ) {
-    final predictions = <DailyPrediction>[];
-    final daysInMonth = DateTime(year, month + 1, 0).day;
-
-    // Get natal Moon sign for favorability calculation
-    int natalMoonSign = 0;
-    for (final entry in natalChart.baseChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        natalMoonSign = (entry.value.longitude / 30).floor();
-        break;
-      }
-    }
-
-    // Favorable houses from Moon: 1, 3, 6, 10, 11
-    const favorableHouses = [1, 3, 6, 10, 11];
-    const signNames = [
-      'Aries',
-      'Taurus',
-      'Gemini',
-      'Cancer',
-      'Leo',
-      'Virgo',
-      'Libra',
-      'Scorpio',
-      'Sagittarius',
-      'Capricorn',
-      'Aquarius',
-      'Pisces',
-    ];
-
-    for (int day = 1; day <= daysInMonth; day++) {
-      final date = DateTime(year, month, day);
-
-      // Calculate approximate Moon position
-      // Moon moves ~13.2 degrees per day, completing zodiac in ~27.3 days
-      final dayOfYear = date.difference(DateTime(year, 1, 1)).inDays;
-      final approxMoonLongitude = (dayOfYear * 13.2) % 360;
-      final moonSign = (approxMoonLongitude / 30).floor();
-
-      // Calculate approximate tithi (Moon gains ~12 degrees on Sun daily)
-      final approxTithi = (dayOfYear % 30) + 1;
-
-      // Calculate house from natal Moon
-      final houseFromMoon = ((moonSign - natalMoonSign + 12) % 12) + 1;
-      final isFavorable = favorableHouses.contains(houseFromMoon);
-
-      predictions.add(
-        DailyPrediction(
-          date: date,
-          moonSign: moonSign,
-          tithi: approxTithi.clamp(1, 30),
-          isFavorable: isFavorable,
-          summary:
-              '${signNames[moonSign]} Moon (H$houseFromMoon) - ${isFavorable ? "Favorable" : "Caution advised"}',
-        ),
+      buffer.write(
+        'This placement suggests a need for introspection and caution in emotional matters. ',
       );
     }
 
-    return predictions;
+    buffer.write(moonTransit.recommendations.join(' '));
+    return buffer.toString();
   }
 }
 
@@ -769,7 +381,7 @@ class TransitAnalysis {
 class TransitChart {
   final DateTime transitDate;
   final CompleteChartData natalChart;
-  final VedicChart transitPositions;
+  final j.VedicChart transitPositions;
   final List<TransitAspect> aspects;
   final GocharaPositions gochara;
   final MoonTransitAnalysis moonTransit;
@@ -789,10 +401,11 @@ class TransitChart {
     required this.rahuKetuTransit,
   });
 
-  /// Get summary of all transits
   String getSummary() {
     final buffer = StringBuffer();
-    buffer.writeln('Transit Analysis for ${_formatDate(transitDate)}');
+    buffer.writeln(
+      'Transit Analysis for ${transitDate.day}/${transitDate.month}/${transitDate.year}',
+    );
     buffer.writeln('=' * 40);
     buffer.writeln();
     buffer.writeln(
@@ -801,32 +414,23 @@ class TransitChart {
     buffer.writeln(
       'Saturn: House ${saturnTransit.houseFromMoon} from natal Moon',
     );
-    if (saturnTransit.sadeSatiPhase != SadeSatiPhase.none) {
-      buffer.writeln(
-        'Sade Sati: ${saturnTransit.sadeSatiPhase.toString().split('.').last} phase',
-      );
+    if (saturnTransit.isSadeSati) {
+      buffer.writeln('Sade Sati: ${saturnTransit.sadeSatiPhase.name} phase');
     }
     buffer.writeln(
       'Jupiter: House ${jupiterTransit.houseFromMoon} from natal Moon',
     );
     buffer.writeln();
     buffer.writeln('Major Aspects: ${aspects.length}');
-    buffer.writeln(
-      'Gochara Positions: ${gochara.positions.length} planets analyzed',
-    );
 
     return buffer.toString();
   }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
 }
 
-/// Transit Aspect
+/// Transit Aspect model
 class TransitAspect {
-  final Planet transitPlanet;
-  final Planet natalPlanet;
+  final j.Planet transitPlanet;
+  final j.Planet natalPlanet;
   final AspectType aspectType;
   final double orb;
   final bool isApplying;
@@ -842,44 +446,51 @@ class TransitAspect {
   });
 
   String get description {
-    return '${transitPlanet.toString().split('.').last} ${aspectType.toString().split('.').last} '
-        '${natalPlanet.toString().split('.').last} (${orb.toStringAsFixed(1)}° orb)';
+    return '${transitPlanet.displayName} ${aspectType.name} ${natalPlanet.displayName} (${orb.toStringAsFixed(1)}° orb)';
   }
 }
 
-/// Aspect types
 enum AspectType { conjunction, sextile, square, trine, opposition }
 
-/// Transit effect
 class TransitEffect {
   final TransitStrength strength;
   final List<String> nature;
-
   TransitEffect({required this.strength, required this.nature});
 }
 
-/// Transit strength
 enum TransitStrength { strong, moderate, supportive, neutral, challenging }
 
-/// Gochara Positions
 class GocharaPositions {
-  final Map<Planet, int> positions; // Planet -> House from Moon
+  final Map<j.Planet, int> positions;
   final int moonSign;
-
   GocharaPositions({required this.positions, required this.moonSign});
 
-  /// Check if a planet is in favorable position
-  bool isFavorable(Planet planet) {
-    final house = positions[planet];
-    if (house == null) return false;
+  /// Check if a planet transit is favorable from natal Moon
+  bool isFavorable(j.Planet planet) {
+    final house = positions[planet] ?? 0;
+    if (house == 0) return false;
 
-    // Generally favorable houses from Moon: 1, 3, 6, 10, 11
-    final favorableHouses = [1, 3, 6, 10, 11];
-    return favorableHouses.contains(house);
+    switch (planet) {
+      case j.Planet.sun:
+        return [3, 6, 10, 11].contains(house);
+      case j.Planet.moon:
+        return [1, 3, 6, 7, 10, 11].contains(house);
+      case j.Planet.mars:
+        return [3, 6, 11].contains(house);
+      case j.Planet.mercury:
+        return [2, 4, 6, 8, 10, 11].contains(house);
+      case j.Planet.jupiter:
+        return [2, 5, 7, 9, 11].contains(house);
+      case j.Planet.venus:
+        return [1, 2, 3, 4, 5, 8, 9, 11, 12].contains(house);
+      case j.Planet.saturn:
+        return [3, 6, 11].contains(house);
+      default:
+        return house == 11; // 11th house is generally favorable for all
+    }
   }
 }
 
-/// Moon Transit Analysis
 class MoonTransitAnalysis {
   final int transitSign;
   final int houseFromNatalMoon;
@@ -898,7 +509,6 @@ class MoonTransitAnalysis {
   });
 }
 
-/// Saturn Transit Analysis
 class SaturnTransitAnalysis {
   final int transitSign;
   final int houseFromMoon;
@@ -921,15 +531,8 @@ class SaturnTransitAnalysis {
   bool get isSadeSati => sadeSatiPhase != SadeSatiPhase.none;
 }
 
-/// Sade Sati Phase
-enum SadeSatiPhase {
-  none,
-  rising, // 12th from Moon
-  peak, // over Moon
-  setting, // 2nd from Moon
-}
+enum SadeSatiPhase { none, rising, peak, setting }
 
-/// Jupiter Transit Analysis
 class JupiterTransitAnalysis {
   final int transitSign;
   final int houseFromMoon;
@@ -946,7 +549,6 @@ class JupiterTransitAnalysis {
   });
 }
 
-/// Rahu-Ketu Transit Analysis
 class RahuKetuTransitAnalysis {
   final int rahuSign;
   final int ketuSign;
@@ -964,22 +566,5 @@ class RahuKetuTransitAnalysis {
     required this.affectedNatalPlanets,
     required this.effects,
     required this.recommendations,
-  });
-}
-
-/// Daily Prediction
-class DailyPrediction {
-  final DateTime date;
-  final int moonSign;
-  final int tithi;
-  final bool isFavorable;
-  final String summary;
-
-  DailyPrediction({
-    required this.date,
-    required this.moonSign,
-    required this.tithi,
-    required this.isFavorable,
-    required this.summary,
   });
 }

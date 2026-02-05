@@ -87,6 +87,11 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
           mainAxisAlignment: MainAxisAlignment.end,
           primaryItems: [
             CommandBarButton(
+              icon: const Icon(FluentIcons.cancel),
+              label: const Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            CommandBarButton(
               icon: const Icon(FluentIcons.check_mark),
             onPressed: () {
                 // Return new BirthData to previous screen

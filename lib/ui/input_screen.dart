@@ -155,7 +155,7 @@ class _InputScreenState extends State<InputScreen> {
       final name = _nameController.text;
       final dbHelper = DatabaseHelper();
 
-      dbHelper.insertChart({
+      await dbHelper.insertChart({
         'name': name,
         'dateTime': dt.toIso8601String(),
         'latitude': lat,

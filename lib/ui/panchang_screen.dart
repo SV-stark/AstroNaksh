@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../logic/panchang_service.dart';
 import '../data/models.dart';
+import 'package:intl/intl.dart';
 
 class PanchangScreen extends StatefulWidget {
   const PanchangScreen({super.key});
@@ -24,9 +25,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
   Future<void> _calculatePanchang() async {
     setState(() => _isLoading = true);
     try {
-      // Default to New Delhi coordinates
       final location = Location(latitude: 28.6139, longitude: 77.2090);
-
       final result = await _panchangService.getPanchang(
         _selectedDate,
         location,
@@ -51,11 +50,22 @@ class _PanchangScreenState extends State<PanchangScreen> {
     }
   }
 
+  void _changeDate(int days) {
+    setState(() {
+      _selectedDate = _selectedDate.add(Duration(days: days));
+    });
+    _calculatePanchang();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
       header: PageHeader(
         title: const Text('Daily Panchang'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
         commandBar: CommandBar(
           primaryItems: [
             CommandBarBuilderItem(
@@ -89,71 +99,348 @@ class _PanchangScreenState extends State<PanchangScreen> {
           ? const Center(child: ProgressRing())
           : _result == null
           ? const Center(child: Text("No Data"))
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // Date Header
-                  Text(
-                    _result!.date,
-                    style: FluentTheme.of(context).typography.subtitle,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Grid of Cards
-                  Expanded(
-                    child: GridView.count(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: 2.0,
+          : CustomScrollView(
+              slivers: [
+                // Date Navigation Header
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          FluentTheme.of(context).accentColor.withAlpha(30),
+                          FluentTheme.of(context).accentColor.withAlpha(10),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: FluentTheme.of(context).accentColor.withAlpha(50),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
                       children: [
-                        _buildInfoCard(
-                          'Tithi',
-                          _result!.tithi,
-                          FluentIcons.calendar_day,
+                        // Date Navigation
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(FluentIcons.chevron_left),
+                              onPressed: () => _changeDate(-1),
+                            ),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    DateFormat('EEEE').format(_selectedDate),
+                                    style: FluentTheme.of(context).typography.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: FluentTheme.of(context).accentColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _result!.date,
+                                    style: FluentTheme.of(context).typography.title?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(FluentIcons.chevron_right),
+                              onPressed: () => _changeDate(1),
+                            ),
+                          ],
                         ),
-                        _buildInfoCard(
-                          'Nakshatra',
-                          _result!.nakshatra,
-                          FluentIcons.favorite_star,
-                        ),
-                        _buildInfoCard('Yoga', _result!.yoga, FluentIcons.flow),
-                        _buildInfoCard(
-                          'Karana',
-                          _result!.karana,
-                          FluentIcons.stopwatch,
-                        ),
-                        _buildInfoCard(
-                          'Vara',
-                          _result!.vara,
-                          FluentIcons.calendar,
+                        const SizedBox(height: 12),
+                        // Location indicator
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              FluentIcons.location,
+                              size: 14,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'New Delhi, India',
+                              style: FluentTheme.of(context).typography.caption?.copyWith(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // Main Panchang Elements
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Panchang Elements',
+                          style: FluentTheme.of(context).typography.subtitle?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  sliver: SliverGrid.count(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.4,
+                    children: [
+                      _buildPanchangCard(
+                        title: 'Tithi',
+                        value: _result!.tithi,
+                        subtitle: 'Lunar Day',
+                        icon: FluentIcons.calendar_day,
+                        color: Colors.orange,
+                        description: 'The lunar day based on moon phases',
+                      ),
+                      _buildPanchangCard(
+                        title: 'Nakshatra',
+                        value: _result!.nakshatra,
+                        subtitle: 'Lunar Mansion',
+                        icon: FluentIcons.favorite_star,
+                        color: Colors.purple,
+                        description: 'The constellation moon is transiting',
+                      ),
+                      _buildPanchangCard(
+                        title: 'Yoga',
+                        value: _result!.yoga,
+                        subtitle: 'Sun-Moon Angle',
+                        icon: FluentIcons.flow,
+                        color: Colors.blue,
+                        description: 'Angular relationship between Sun and Moon',
+                      ),
+                      _buildPanchangCard(
+                        title: 'Karana',
+                        value: _result!.karana,
+                        subtitle: 'Half Tithi',
+                        icon: FluentIcons.stopwatch,
+                        color: Colors.teal,
+                        description: 'Half of a lunar day',
+                      ),
+                      _buildPanchangCard(
+                        title: 'Vara',
+                        value: _result!.vara,
+                        subtitle: 'Weekday',
+                        icon: FluentIcons.calendar,
+                        color: Colors.green,
+                        description: 'Day of the week ruled by a planet',
+                        fullWidth: true,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Information Section
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withAlpha(20),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              FluentIcons.info,
+                              size: 16,
+                              color: FluentTheme.of(context).accentColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'About Panchang',
+                              style: FluentTheme.of(context).typography.body?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Panchang (Five Limbs) is the Hindu almanac that provides astrological information about the day. '
+                          'It consists of five elements: Tithi (lunar day), Nakshatra (lunar mansion), Yoga (sun-moon angle), '
+                          'Karana (half tithi), and Vara (weekday). These elements help determine auspicious times and activities for the day.',
+                          style: FluentTheme.of(context).typography.caption,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              ],
             ),
     );
   }
 
-  Widget _buildInfoCard(String title, String value, IconData icon) {
-    return Card(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 24, color: FluentTheme.of(context).accentColor),
-          const SizedBox(height: 8),
-          Text(title, style: FluentTheme.of(context).typography.caption),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: FluentTheme.of(context).typography.bodyStrong,
-            textAlign: TextAlign.center,
+  Widget _buildPanchangCard({
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required String description,
+    bool fullWidth = false,
+  }) {
+    return HoverButton(
+      onPressed: () {
+        // Show detailed info
+        showDialog(
+          context: context,
+          builder: (context) => ContentDialog(
+            title: Row(
+              children: [
+                Icon(icon, color: color),
+                const SizedBox(width: 12),
+                Text(title),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: FluentTheme.of(context).typography.title?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(description),
+              ],
+            ),
+            actions: [
+              Button(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
+      builder: (context, states) {
+        return Card(
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: states.isHovered
+                  ? LinearGradient(
+                      colors: [
+                        color.withAlpha(20),
+                        Colors.transparent,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon and Title Row
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: color.withAlpha(30),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        icon,
+                        size: 20,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: FluentTheme.of(context).typography.body?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: color,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                // Value
+                Text(
+                  value,
+                  style: FluentTheme.of(context).typography.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                // Hint text
+                Text(
+                  'Click for details',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey.withAlpha(150),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

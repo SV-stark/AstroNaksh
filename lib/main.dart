@@ -7,6 +7,7 @@ import 'ui/chart_screen.dart';
 import 'ui/settings_screen.dart';
 import 'ui/loading_screen.dart';
 import 'ui/panchang_screen.dart';
+import 'ui/comparison/chart_comparison_screen.dart';
 import 'core/settings_manager.dart';
 import 'dart:io';
 import 'dart:async';
@@ -100,6 +101,7 @@ class AstroNakshApp extends StatelessWidget {
             '/chart': (context) => const ChartScreen(),
             '/settings': (context) => const SettingsScreen(),
             '/panchang': (context) => const PanchangScreen(),
+            '/comparison': (context) => const ChartComparisonScreen(),
           },
           debugShowCheckedModeBanner: false,
         );

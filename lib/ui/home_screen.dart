@@ -213,12 +213,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadCharts() async {
     setState(() => _isLoading = true);
-    final charts = await _dbHelper.getCharts();
-    setState(() {
-      _charts = charts;
-      _filteredCharts = charts;
-      _isLoading = false;
-    });
+    try {
+      // Ensure database is initialized
+      await _dbHelper.database;
+      final charts = await _dbHelper.getCharts();
+      print('DEBUG: Loaded ${charts.length} charts from database');
+      setState(() {
+        _charts = charts;
+        _filteredCharts = charts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('DEBUG ERROR loading charts: $e');
+      setState(() {
+        _charts = [];
+        _filteredCharts = [];
+        _isLoading = false;
+      });
+      if (mounted) {
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('Error Loading Charts'),
+            content: Text('Failed to load saved charts: $e'),
+            severity: InfoBarSeverity.error,
+          ),
+        );
+      }
+    }
   }
 
   void _onSearchChanged() {
@@ -277,11 +299,6 @@ class _HomeScreenState extends State<HomeScreen> {
           primaryItems: [],
           secondaryItems: [
             CommandBarButton(
-              icon: const Icon(FluentIcons.share),
-              label: const Text('Import/Export'),
-              onPressed: () {},
-            ),
-            CommandBarButton(
               key: _settingsKey,
               icon: const Icon(FluentIcons.settings),
               label: const Text('Settings'),
@@ -292,16 +309,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Dashboard Quick Actions
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
-                vertical: 16.0,
-              ),
+      content: CustomScrollView(
+        slivers: [
+          // Dashboard Quick Actions
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 16.0,
+            ),
+            sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -313,10 +329,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
+                    crossAxisCount: 3,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    childAspectRatio: 2.5,
+                    childAspectRatio: 1.8,
                     children: [
                       _buildQuickAction(
                         key: _newChartKey,
@@ -327,6 +343,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () async {
                           await Navigator.pushNamed(context, '/input');
                           _loadCharts();
+                        },
+                      ),
+                      _buildQuickAction(
+                        icon: FluentIcons.heart_fill,
+                        title: "Compare",
+                        subtitle: "Chart compatibility",
+                        color: Colors.purple,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/comparison');
                         },
                       ),
                       _buildQuickAction(
@@ -344,12 +369,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+          ),
 
-            const SizedBox(height: 8),
-
-            // Search & History Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          // Search & History Header
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            sliver: SliverToBoxAdapter(
               child: Row(
                 children: [
                   Text(
@@ -372,45 +397,63 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+          ),
 
-            const SizedBox(height: 16),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-            _isLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Center(child: ProgressRing()),
-                  )
-                : _filteredCharts.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(40.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            FluentIcons.contact_list,
-                            size: 48,
-                            color: Colors.grey.withAlpha(128),
+          _isLoading
+              ? const SliverFillRemaining(
+                  child: Center(child: ProgressRing()),
+                )
+              : _filteredCharts.isEmpty
+              ? SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          FluentIcons.contact_list,
+                          size: 64,
+                          color: Colors.grey.withAlpha(128),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          "No saved charts yet",
+                          style: FluentTheme.of(context).typography.title,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Create your first chart to get started",
+                          style: TextStyle(color: Colors.grey[100]),
+                        ),
+                        const SizedBox(height: 24),
+                        FilledButton(
+                          onPressed: () async {
+                            await Navigator.pushNamed(context, '/input');
+                            _loadCharts();
+                          },
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(FluentIcons.add),
+                              SizedBox(width: 8),
+                              Text("Create New Chart"),
+                            ],
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            "No charts found.",
-                            style: TextStyle(color: Colors.grey[100]),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
+                  ),
+                )
+              : SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  sliver: SliverList.builder(
                     itemCount: _filteredCharts.length,
                     itemBuilder: (context, index) {
                       final chart = _filteredCharts[index];
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Card(
                           padding: EdgeInsets.zero,
                           child: ListTile.selectable(
@@ -451,9 +494,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-            const SizedBox(height: 32),
-          ],
-        ),
+                ),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+        ],
       ),
     );
   }

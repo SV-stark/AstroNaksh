@@ -10,6 +10,7 @@ import '../../core/constants.dart';
 import '../../core/settings_manager.dart';
 import 'tools/birth_time_rectifier_screen.dart';
 import '../../core/saved_charts_helper.dart';
+import '../../core/database_helper.dart';
 // New analysis screens
 import 'strength/ashtakavarga_screen.dart';
 import 'strength/shadbala_screen.dart';
@@ -47,6 +48,21 @@ class _ChartScreenState extends State<ChartScreen> {
       if (args != null) {
         _birthData = args;
         _loadChartData();
+      } else {
+        // Handle missing arguments
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            displayInfoBar(
+              context,
+              builder: (context, close) => InfoBar(
+                title: const Text('Error'),
+                content: const Text('No birth data provided'),
+                severity: InfoBarSeverity.error,
+              ),
+            );
+            Navigator.pop(context);
+          }
+        });
       }
     }
   }
@@ -201,7 +217,20 @@ class _ChartScreenState extends State<ChartScreen> {
 
   void _saveCurrentChart() async {
     if (_birthData == null) return;
+    
+    // Save to both SharedPreferences and Database for compatibility
     await SavedChartsHelper.saveChart(_birthData!);
+    
+    final dbHelper = DatabaseHelper();
+    await dbHelper.insertChart({
+      'name': _birthData!.name,
+      'dateTime': _birthData!.dateTime.toIso8601String(),
+      'latitude': _birthData!.location.latitude,
+      'longitude': _birthData!.location.longitude,
+      'locationName': _birthData!.place,
+      'timezone': _birthData!.timezone ?? 'UTC',
+    });
+    
     if (!mounted) return;
     displayInfoBar(
       context,
@@ -226,6 +255,7 @@ class _ChartScreenState extends State<ChartScreen> {
         title: const Text("Vedic Chart"),
         actions: CommandBar(
           overflowBehavior: CommandBarOverflowBehavior.noWrap,
+          mainAxisAlignment: MainAxisAlignment.end,
           primaryItems: [
             // 1. Info Button (New)
             CommandBarButton(
@@ -466,13 +496,13 @@ class _ChartScreenState extends State<ChartScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
-                FluentIcons.chart,
+                _getCurrentTabIcon(_currentIndex),
                 size: 32,
                 color: FluentTheme.of(context).accentColor,
               ),
               const SizedBox(height: 8),
               Text(
-                'Chart Views',
+                _getCurrentTabTitle(_currentIndex),
                 style: FluentTheme.of(
                   context,
                 ).typography.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -572,7 +602,42 @@ class _ChartScreenState extends State<ChartScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: ProgressRing());
         } else if (snapshot.hasError) {
-          return Center(child: Text("Error: ${snapshot.error}"));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FluentIcons.error, size: 48, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  "Error: ${snapshot.error}",
+                  textAlign: TextAlign.center,
+                  style: FluentTheme.of(context).typography.bodyLarge,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Button(
+                      onPressed: _loadChartData,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(FluentIcons.refresh, size: 16),
+                          const SizedBox(width: 8),
+                          const Text("Retry"),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Button(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Go Back"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
         } else if (!snapshot.hasData) {
           return const Center(child: Text("No Data"));
         }
@@ -1753,5 +1818,43 @@ class _ChartScreenState extends State<ChartScreen> {
         ),
       ],
     );
+  }
+
+  IconData _getCurrentTabIcon(int index) {
+    switch (index) {
+      case 0:
+        return FluentIcons.contact_card;
+      case 1:
+        return FluentIcons.grid_view_large;
+      case 2:
+        return FluentIcons.scatter_chart;
+      case 3:
+        return FluentIcons.timer;
+      case 4:
+        return FluentIcons.list;
+      case 5:
+        return FluentIcons.lightbulb;
+      default:
+        return FluentIcons.chart;
+    }
+  }
+
+  String _getCurrentTabTitle(int index) {
+    switch (index) {
+      case 0:
+        return "D-1 Rashi";
+      case 1:
+        return "Vargas";
+      case 2:
+        return "KP System";
+      case 3:
+        return "Dasha Periods";
+      case 4:
+        return "Planet Details";
+      case 5:
+        return "Daily Rashiphal";
+      default:
+        return "Chart Views";
+    }
   }
 }

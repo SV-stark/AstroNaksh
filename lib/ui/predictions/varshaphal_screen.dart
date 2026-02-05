@@ -49,12 +49,33 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
 
           if (snapshot.hasError) {
             return Center(
-              child: InfoBar(
-                title: const Text('Error'),
-                content: Text(
-                  'Could not calculate Varshaphal: ${snapshot.error}',
-                ),
-                severity: InfoBarSeverity.error,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(FluentIcons.error, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  InfoBar(
+                    title: const Text('Error'),
+                    content: Text(
+                      'Could not calculate Varshaphal: ${snapshot.error}',
+                    ),
+                    severity: InfoBarSeverity.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Button(
+                    onPressed: () {
+                      setState(() {}); // Trigger rebuild which recreates the Future
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(FluentIcons.refresh, size: 16),
+                        const SizedBox(width: 8),
+                        const Text("Retry"),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             );
           }

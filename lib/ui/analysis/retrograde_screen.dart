@@ -22,7 +22,7 @@ class RetrogradeScreen extends StatelessWidget {
         header: PageHeader(
           title: const Text('Retrograde Analysis'),
           leading: IconButton(
-            icon: const Icon(FluentIcons.chrome_back),
+            icon: const Icon(FluentIcons.back),
             onPressed: () => Navigator.pop(context),
           ),
         ),

@@ -15,25 +15,92 @@ class YogaDoshaScreen extends StatefulWidget {
 
 class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
   int _currentIndex = 0;
+  YogaDoshaAnalysisResult? _analysis;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _analyzeChart();
+  }
+
+  void _analyzeChart() {
+    setState(() {
+      _error = null;
+      _analysis = null;
+    });
+    try {
+      final result = YogaDoshaAnalyzer.analyze(widget.chartData);
+      setState(() => _analysis = result);
+    } catch (e) {
+      setState(() => _error = e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    late YogaDoshaAnalysisResult analysis;
-    try {
-      analysis = YogaDoshaAnalyzer.analyze(widget.chartData);
-    } catch (e) {
-      if (context.mounted) {
-        displayInfoBar(
-          context,
-          builder: (context, close) => InfoBar(
-            title: const Text('Analysis Error'),
-            content: Text('Failed to analyze chart: $e'),
-            severity: InfoBarSeverity.error,
-            onClose: close,
+    if (_error != null) {
+      return CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.escape): () {
+            Navigator.pop(context);
+          },
+        },
+        child: ScaffoldPage(
+          header: PageHeader(
+            title: const Text('Yoga & Dosha Analysis'),
+            leading: IconButton(
+              icon: const Icon(FluentIcons.back),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
-        );
-      }
+          content: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FluentIcons.error, size: 48, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  "Failed to analyze chart:\n$_error",
+                  textAlign: TextAlign.center,
+                  style: FluentTheme.of(context).typography.bodyLarge,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Button(
+                      onPressed: _analyzeChart,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(FluentIcons.refresh, size: 16),
+                          const SizedBox(width: 8),
+                          const Text("Retry"),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Button(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Go Back"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
+
+    if (_analysis == null) {
+      return const ScaffoldPage(
+        content: Center(child: ProgressRing()),
+      );
+    }
+
+    final analysis = _analysis!;
 
     return CallbackShortcuts(
       bindings: {
@@ -45,7 +112,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         appBar: NavigationAppBar(
           title: const Text('Yoga & Dosha Analysis'),
           leading: IconButton(
-            icon: const Icon(FluentIcons.chrome_back),
+            icon: const Icon(FluentIcons.back),
             onPressed: () => Navigator.pop(context),
           ),
         ),

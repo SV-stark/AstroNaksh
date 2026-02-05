@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
 import '../core/ephemeris_manager.dart';
 import '../data/city_database.dart';
@@ -38,16 +39,66 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isError = _status.startsWith("Error:");
+
     return ScaffoldPage(
       content: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const ProgressRing(),
-            const SizedBox(height: 20),
+            if (!isError) ...[
+              const ProgressRing(),
+              const SizedBox(height: 20),
+            ] else ...[
+              Icon(FluentIcons.error, size: 48, color: Colors.red),
+              const SizedBox(height: 20),
+            ],
             Text("AstroNaksh", style: FluentTheme.of(context).typography.title),
             const SizedBox(height: 10),
-            Text(_status),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                _status,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            if (isError) ...[
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Button(
+                    onPressed: () {
+                      setState(() => _status = "Retrying...");
+                      _initApp();
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(FluentIcons.refresh, size: 16),
+                        const SizedBox(width: 8),
+                        const Text("Retry"),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Button(
+                    onPressed: () {
+                      // Exit the application
+                      exit(0);
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(FluentIcons.cancel, size: 16),
+                        const SizedBox(width: 8),
+                        const Text("Exit"),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

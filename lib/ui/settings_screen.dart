@@ -54,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: PaneDisplayMode.auto,
+        displayMode: PaneDisplayMode.open,
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.brush),

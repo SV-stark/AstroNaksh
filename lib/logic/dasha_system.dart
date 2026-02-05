@@ -4,211 +4,93 @@ import '../data/models.dart';
 /// Complete Dasha System Implementation
 /// Includes Vimshottari, Yogini, and Chara Dasha
 class DashaSystem {
-  // Vimshottari Dasha periods (in years)
-  static const Map<String, double> _vimshottariPeriods = {
-    'Ketu': 7,
-    'Venus': 20,
-    'Sun': 6,
-    'Moon': 10,
-    'Mars': 7,
-    'Rahu': 18,
-    'Jupiter': 16,
-    'Saturn': 19,
-    'Mercury': 17,
-  };
-
-  // Vimshottari sequence
-  static const List<String> _vimshottariSequence = [
-    'Ketu',
-    'Venus',
-    'Sun',
-    'Moon',
-    'Mars',
-    'Rahu',
-    'Jupiter',
-    'Saturn',
-    'Mercury',
-  ];
-
-  // Nakshatra lords for 27 nakshatras
-  static const List<String> _nakshatraLords = [
-    'Ketu',
-    'Venus',
-    'Sun',
-    'Moon',
-    'Mars',
-    'Rahu',
-    'Jupiter',
-    'Saturn',
-    'Mercury',
-    'Ketu',
-    'Venus',
-    'Sun',
-    'Moon',
-    'Mars',
-    'Rahu',
-    'Jupiter',
-    'Saturn',
-    'Mercury',
-    'Ketu',
-    'Venus',
-    'Sun',
-    'Moon',
-    'Mars',
-    'Rahu',
-    'Jupiter',
-    'Saturn',
-    'Mercury',
-  ];
+  static DashaService? _service;
 
   /// Calculate Vimshottari Dasha for a birth chart
   /// Returns the complete Dasha tree (Mahadasha, Antardasha, Pratyantardasha)
   static VimshottariDasha calculateVimshottariDasha(VedicChart chart) {
-    // Find Moon's position
-    Planet? moonPlanet;
-    double moonLongitude = 0;
+    _service ??= DashaService();
 
-    for (final entry in chart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        moonPlanet = entry.key;
-        moonLongitude = entry.value.longitude;
-        break;
-      }
-    }
+    // Calculate 3 levels (Maha, Antar, Pratyantar)
+    final result = _service!.calculateVimshottariDasha(
+      moonLongitude: chart.getPlanet(Planet.moon)?.longitude ?? 0,
+      birthDateTime: chart.dateTime,
+      levels: 3,
+    );
 
-    if (moonPlanet == null) {
-      throw Exception('Moon position not found in chart');
-    }
+    return _mapToVimshottari(result);
+  }
 
-    // Calculate which nakshatra Moon is in (exact span = 360°/27)
-    const double nakshatraSpan = 360.0 / 27.0;
-    final nakshatraIndex = (moonLongitude / nakshatraSpan).floor();
-    final nakshatraLord = _nakshatraLords[nakshatraIndex];
-    final positionInNakshatra = moonLongitude % nakshatraSpan;
-
-    // Calculate balance of dasha at birth
-    final remainingNakshatra = nakshatraSpan - positionInNakshatra;
-    final dashaPeriod = _vimshottariPeriods[nakshatraLord]!;
-    final balanceAtBirth = (remainingNakshatra / nakshatraSpan) * dashaPeriod;
-
-    // Calculate start date
-    final birthDate = chart.dateTime;
-    final firstDashaStart = birthDate;
-
-    // Build complete Dasha sequence
-    final mahadashas = <Mahadasha>[];
-    var currentDate = firstDashaStart;
-    var currentLordIndex = _vimshottariSequence.indexOf(nakshatraLord);
-
-    // Calculate 9 mahadashas (full cycle = 120 years)
-    for (int i = 0; i < 9; i++) {
-      final lord = _vimshottariSequence[(currentLordIndex + i) % 9];
-      double period;
-
-      if (i == 0) {
-        // First dasha has balance remaining
-        period = balanceAtBirth;
-      } else {
-        period = _vimshottariPeriods[lord]!;
-      }
-
-      final endDate = currentDate.add(_yearsToDuration(period));
-
-      mahadashas.add(
-        Mahadasha(
-          lord: lord,
-          startDate: currentDate,
-          endDate: endDate,
-          periodYears: period,
-          antardashas: _calculateAntardashas(lord, currentDate, endDate),
-        ),
-      );
-
-      currentDate = endDate;
-    }
-
+  static VimshottariDasha _mapToVimshottari(DashaResult result) {
     return VimshottariDasha(
-      birthLord: nakshatraLord,
-      balanceAtBirth: balanceAtBirth,
-      mahadashas: mahadashas,
+      birthLord: result.allMahadashas.first.lord.displayName,
+      balanceAtBirth: result.balanceOfFirstDasha / 365.25,
+      mahadashas: result.allMahadashas
+          .map(
+            (m) => Mahadasha(
+              lord: m.lord.displayName,
+              startDate: m.startDate,
+              endDate: m.endDate,
+              periodYears: m.durationYears,
+              antardashas: m.subPeriods
+                  .map(
+                    (a) => Antardasha(
+                      lord: a.lord.displayName,
+                      startDate: a.startDate,
+                      endDate: a.endDate,
+                      periodYears: a.durationYears,
+                      pratyantardashas: a.subPeriods
+                          .map(
+                            (p) => Pratyantardasha(
+                              mahadashaLord: m.lord.displayName,
+                              antardashaLord: a.lord.displayName,
+                              lord: p.lord.displayName,
+                              startDate: p.startDate,
+                              endDate: p.endDate,
+                              periodYears: p.durationYears,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  )
+                  .toList(),
+            ),
+          )
+          .toList(),
     );
   }
 
-  /// Calculate Antardashas within a Mahadasha
-  static List<Antardasha> _calculateAntardashas(
-    String mahadashaLord,
-    DateTime start,
-    DateTime end,
-  ) {
-    final antardashas = <Antardasha>[];
-    final mahadashaPeriod = end.difference(start).inDays / 365.25;
+  /// Calculate Yogini Dasha
+  /// 36-year cycle with 8 yoginis
+  static YoginiDasha calculateYoginiDasha(VedicChart chart) {
+    _service ??= DashaService();
 
-    var currentDate = start;
-    final startIndex = _vimshottariSequence.indexOf(mahadashaLord);
+    final result = _service!.calculateYoginiDasha(
+      moonLongitude: chart.getPlanet(Planet.moon)?.longitude ?? 0,
+      birthDateTime: chart.dateTime,
+      levels: 1, // local model only supports Mahadashas for Yogini
+    );
 
-    for (int i = 0; i < 9; i++) {
-      final antarLord = _vimshottariSequence[(startIndex + i) % 9];
-      final antarPeriod =
-          (mahadashaPeriod * _vimshottariPeriods[antarLord]!) / 120;
-
-      final antarEnd = currentDate.add(_yearsToDuration(antarPeriod));
-
-      antardashas.add(
-        Antardasha(
-          lord: antarLord,
-          startDate: currentDate,
-          endDate: antarEnd,
-          periodYears: antarPeriod,
-          pratyantardashas: _calculatePratyantardashas(
-            mahadashaLord,
-            antarLord,
-            currentDate,
-            antarEnd,
-          ),
-        ),
-      );
-
-      currentDate = antarEnd;
-    }
-
-    return antardashas;
+    return YoginiDasha(
+      startYogini: result.allMahadashas.first.lord.displayName,
+      mahadashas: result.allMahadashas
+          .map(
+            (m) => YoginiMahadasha(
+              name: m.lord.displayName,
+              lord: _getYoginiPlanetLord(m.lord),
+              startDate: m.startDate,
+              endDate: m.endDate,
+              periodYears: m.durationYears,
+            ),
+          )
+          .toList(),
+    );
   }
 
-  /// Calculate Pratyantardashas within an Antardasha
-  static List<Pratyantardasha> _calculatePratyantardashas(
-    String mahadashaLord,
-    String antardashaLord,
-    DateTime start,
-    DateTime end,
-  ) {
-    final pratyantardashas = <Pratyantardasha>[];
-    final antarPeriod = end.difference(start).inDays / 365.25;
-
-    var currentDate = start;
-    final startIndex = _vimshottariSequence.indexOf(antardashaLord);
-
-    for (int i = 0; i < 9; i++) {
-      final pratyanLord = _vimshottariSequence[(startIndex + i) % 9];
-      final pratyanPeriod =
-          (antarPeriod * _vimshottariPeriods[pratyanLord]!) / 120;
-
-      final pratyanEnd = currentDate.add(_yearsToDuration(pratyanPeriod));
-
-      pratyantardashas.add(
-        Pratyantardasha(
-          mahadashaLord: mahadashaLord,
-          antardashaLord: antardashaLord,
-          lord: pratyanLord,
-          startDate: currentDate,
-          endDate: pratyanEnd,
-          periodYears: pratyanPeriod,
-        ),
-      );
-
-      currentDate = pratyanEnd;
-    }
-
-    return pratyantardashas;
+  static String _getYoginiPlanetLord(Planet yoginiPlanet) {
+    // In the library, Yogini enum might be used, but DashaPeriod just says Planet.
+    // If it's a planet, we use its name.
+    return yoginiPlanet.displayName;
   }
 
   /// Convert years to Duration (preserves fractional days as hours)
@@ -217,99 +99,6 @@ class DashaSystem {
     final wholeDays = totalDays.floor();
     final fractionalHours = ((totalDays - wholeDays) * 24).round();
     return Duration(days: wholeDays, hours: fractionalHours);
-  }
-
-  /// Calculate Yogini Dasha
-  /// 36-year cycle with 8 yoginis - calculates multiple cycles for full lifetime
-  static YoginiDasha calculateYoginiDasha(VedicChart chart) {
-    const yoginiNames = [
-      'Mangala',
-      'Pingala',
-      'Dhanya',
-      'Bhramari',
-      'Bhadrika',
-      'Ulka',
-      'Siddha',
-      'Sankata',
-    ];
-
-    const yoginiPeriods = [1, 2, 3, 4, 5, 6, 7, 8]; // years
-    const yoginiLords = [
-      'Moon',
-      'Sun',
-      'Jupiter',
-      'Mars',
-      'Mercury',
-      'Saturn',
-      'Venus',
-      'Rahu',
-    ];
-
-    // Yogini cycle = 36 years; calculate 4 cycles (144 years coverage)
-    const numCyclesForLifetime = 4;
-
-    // Determine starting yogini based on Moon's nakshatra
-    final moonNakshatra = _getMoonNakshatra(chart);
-    final startIndex = (moonNakshatra % 8);
-
-    // Calculate balance at birth (similar to Vimshottari)
-    double moonLongitude = 0;
-    for (final entry in chart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        moonLongitude = entry.value.longitude;
-        break;
-      }
-    }
-    const double nakshatraSpan = 360.0 / 27.0;
-    final positionInNakshatra = moonLongitude % nakshatraSpan;
-    final remainingNakshatra = nakshatraSpan - positionInNakshatra;
-    final proportionRemaining = remainingNakshatra / nakshatraSpan;
-    final firstYoginiPeriod = yoginiPeriods[startIndex].toDouble();
-    final balanceAtBirth = proportionRemaining * firstYoginiPeriod;
-
-    final mahadashas = <YoginiMahadasha>[];
-    var currentDate = chart.dateTime;
-
-    // First yogini with balance
-    var currentYoginiIndex = startIndex;
-    var firstPeriod = balanceAtBirth;
-    var endDate = currentDate.add(_yearsToDuration(firstPeriod));
-    mahadashas.add(
-      YoginiMahadasha(
-        name: yoginiNames[currentYoginiIndex],
-        lord: yoginiLords[currentYoginiIndex],
-        startDate: currentDate,
-        endDate: endDate,
-        periodYears: firstPeriod,
-      ),
-    );
-    currentDate = endDate;
-    currentYoginiIndex = (currentYoginiIndex + 1) % 8;
-
-    // Calculate remaining yoginis for multiple cycles
-    final totalYoginis = numCyclesForLifetime * 8 - 1; // -1 for first partial
-    for (int i = 0; i < totalYoginis; i++) {
-      final period = yoginiPeriods[currentYoginiIndex].toDouble();
-      endDate = currentDate.add(_yearsToDuration(period));
-
-      mahadashas.add(
-        YoginiMahadasha(
-          name: yoginiNames[currentYoginiIndex],
-          lord: yoginiLords[currentYoginiIndex],
-          startDate: currentDate,
-          endDate: endDate,
-          periodYears: period,
-        ),
-      );
-
-      currentDate = endDate;
-      currentYoginiIndex = (currentYoginiIndex + 1) % 8;
-    }
-
-    return YoginiDasha(
-      startYogini: yoginiNames[startIndex],
-      mahadashas: mahadashas,
-    );
   }
 
   /// Calculate Chara Dasha (Jaimini System)
@@ -395,16 +184,6 @@ class DashaSystem {
 
     // Period in years (max 12)
     return distance.toDouble().clamp(1.0, 12.0);
-  }
-
-  /// Get Moon's nakshatra index
-  static int _getMoonNakshatra(VedicChart chart) {
-    for (final entry in chart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        return (entry.value.longitude / (360.0 / 27.0)).floor();
-      }
-    }
-    return 0;
   }
 
   /// Get ascendant sign

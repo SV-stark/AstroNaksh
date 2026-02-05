@@ -4,9 +4,9 @@ import 'package:jyotish/jyotish.dart';
 
 void main() {
   group('Ayanamsa Support Tests', () {
-    test('AyanamsaCalculator should have 44 systems', () {
+    test('AyanamsaCalculator should have 49 systems', () {
       final systems = AyanamsaCalculator.systems;
-      expect(systems.length, 44); // 43 SiderealModes + New KP
+      expect(systems.length, 49); // 48 SiderealModes + New KP
     });
 
     test('Default Ayanamsa should be New KP', () {

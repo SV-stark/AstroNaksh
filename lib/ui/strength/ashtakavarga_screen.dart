@@ -44,8 +44,13 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
   @override
   Widget build(BuildContext context) {
     try {
-      AshtakavargaSystem.calculateSarvashtakavargaWithSodhana(widget.chartData);
-      AshtakavargaSystem.calculateBhinnashtakavarga(widget.chartData, _selectedPlanet);
+      AshtakavargaSystem.calculateSarvashtakavargaWithSodhana(
+        widget.chartData.baseChart,
+      );
+      AshtakavargaSystem.calculateBhinnashtakavarga(
+        widget.chartData.baseChart,
+        _selectedPlanet,
+      );
     } catch (e) {
       if (context.mounted) {
         displayInfoBar(
@@ -102,9 +107,11 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
   Widget _buildSarvashtakavargaTab() {
     final sarva = _showSodhana
         ? AshtakavargaSystem.calculateSarvashtakavargaWithSodhana(
-            widget.chartData,
+            widget.chartData.baseChart,
           )
-        : AshtakavargaSystem.calculateSarvashtakavarga(widget.chartData);
+        : AshtakavargaSystem.calculateSarvashtakavarga(
+            widget.chartData.baseChart,
+          );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +184,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
 
   Widget _buildBhinnashtakavargaTab() {
     final bhinna = AshtakavargaSystem.calculateBhinnashtakavarga(
-      widget.chartData,
+      widget.chartData.baseChart,
       _selectedPlanet,
     );
 

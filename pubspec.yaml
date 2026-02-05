@@ -41,7 +41,7 @@ dependencies:
   geolocator: ^14.0.2
   jyotish:
     git:
-      url: https://github.com/rajsanjib/jyotish-flutter-library.git
+      url: https://github.com/SV-stark/jyotish-flutter-library-fork.git
       ref: main
   fluent_ui: ^4.13.0
   math_expressions: ^2.6.0

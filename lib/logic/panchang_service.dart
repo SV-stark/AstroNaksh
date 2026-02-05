@@ -12,6 +12,10 @@ class PanchangResult {
   final int yogaNumber;
   final String karana;
   final String vara;
+  final String? sunrise;
+  final String? sunset;
+  final String? moonrise;
+  final String? moonset;
 
   PanchangResult({
     required this.date,
@@ -23,6 +27,10 @@ class PanchangResult {
     required this.yogaNumber,
     required this.karana,
     required this.vara,
+    this.sunrise,
+    this.sunset,
+    this.moonrise,
+    this.moonset,
   });
 }
 
@@ -52,7 +60,28 @@ class PanchangService {
       location: geoLoc,
     );
 
+    // Calculate Rise/Set times
+    final (sr, ss) = await _jyotish.getSunriseSunset(
+      date: dateTime,
+      location: geoLoc,
+    );
+
+    // Moonrise/set (using default rsmi flags from documentation)
+    final mr = await _jyotish.getRiseSet(
+      planet: Planet.moon,
+      date: dateTime,
+      location: geoLoc,
+      rsmi: 1, // calcRise
+    );
+    final ms = await _jyotish.getRiseSet(
+      planet: Planet.moon,
+      date: dateTime,
+      location: geoLoc,
+      rsmi: 2, // calcSet
+    );
+
     final moon = chart.getPlanet(Planet.moon)!;
+    final timeFormat = DateFormat('HH:mm');
 
     return PanchangResult(
       date: DateFormat('dd MMMM yyyy, HH:mm').format(dateTime),
@@ -65,6 +94,10 @@ class PanchangService {
       yogaNumber: panchanga.yoga.number,
       karana: panchanga.karana.name,
       vara: panchanga.vara.name,
+      sunrise: sr != null ? timeFormat.format(sr.toLocal()) : '--:--',
+      sunset: ss != null ? timeFormat.format(ss.toLocal()) : '--:--',
+      moonrise: mr != null ? timeFormat.format(mr.toLocal()) : '--:--',
+      moonset: ms != null ? timeFormat.format(ms.toLocal()) : '--:--',
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
-import 'kp_extensions.dart';
 
 /// Chart Comparison & Synastry Analysis
 /// Compares two charts for compatibility analysis
@@ -256,8 +255,8 @@ class ChartComparison {
     final total = varna + vashya + tara + yoni + maitri + gana + bhakoot + nadi;
 
     return NakshatraAnalysis(
-      moon1Nakshatra: KPExtensions.nakshatraNames[nak1 % 27],
-      moon2Nakshatra: KPExtensions.nakshatraNames[nak2 % 27],
+      moon1Nakshatra: AstrologyConstants.nakshatraNames[nak1 % 27],
+      moon2Nakshatra: AstrologyConstants.nakshatraNames[nak2 % 27],
       varna: varna,
       vashya: vashya,
       tara: tara,

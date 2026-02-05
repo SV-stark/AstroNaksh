@@ -29,29 +29,21 @@ class AyanamsaCalculator {
 
   /// Get all available ayanamsa systems
   static List<AyanamsaSystem> get systems {
-    final list = SiderealMode.values.map((mode) {
+    return SiderealMode.values.map((mode) {
       String name = mode.name;
       String description = mode.toString();
 
-      // Rename Krishnamurti to KP Old
+      // Custom names for KP systems
       if (mode == SiderealMode.krishnamurti) {
         description = "KP Old";
+      } else if (mode == SiderealMode.krishnamurtiVP291) {
+        description = "KP New";
+        // Map 'newKP' identifier to this mode for backward compatibility
+        name = 'newKP';
       }
 
       return AyanamsaSystem(name: name, description: description, mode: mode);
     }).toList();
-
-    // Add New KP
-    list.insert(
-      0,
-      const AyanamsaSystem(
-        name: 'newKP',
-        description: 'New KP',
-        mode: null, // Custom calculation
-      ),
-    );
-
-    return list;
   }
 
   /// Get a specific system by name
@@ -59,8 +51,8 @@ class AyanamsaCalculator {
     if (name == 'newKP') {
       return const AyanamsaSystem(
         name: 'newKP',
-        description: 'New KP',
-        mode: null,
+        description: 'KP New',
+        mode: SiderealMode.krishnamurtiVP291,
       );
     }
 
@@ -87,40 +79,25 @@ class AyanamsaCalculator {
   /// Calculate ayanamsa for a given date using specified system
   /// Returns 0.0 if the library fails or system is invalid
   static Future<double> calculate(String systemName, DateTime date) async {
-    if (systemName == 'newKP') {
-      return calculateNewKPAyanamsa(date);
-    }
-
     final system = getSystem(systemName);
-    if (system == null) return 0.0;
+    if (system == null || system.mode == null) return 0.0;
 
     try {
       final service = await _getEphemerisService();
-      // If mode is null (unexpected for non-custom), fallback to Lahiri or 0.0
-      if (system.mode == null) return 0.0;
       return await service.getAyanamsa(dateTime: date, mode: system.mode!);
     } catch (e) {
-      // Propagate error to let caller handle it, instead of returning incorrect value
       throw Exception('Failed to calculate ayanamsa: $e');
     }
   }
 
-  /// Calculate New KP Ayanamsa
+  /// DEPRECATED: Use SiderealMode.krishnamurtiVP291 instead.
   /// Formula: 23° 33' 03" + (Rate * (Year - 2000))
-  /// Reference: 291 AD as zero year, 50.2388475" precession rate
-  /// J2000 Value: 23° 33' 03" (23.55083333 degrees)
   static double calculateNewKPAyanamsa(DateTime date) {
-    // Julian Day Calculation for high precision time diff
-    // Simplified: Use J2000 epoch difference in years
     final j2000 = DateTime.utc(2000, 1, 1, 12, 0, 0);
     final diff = date.difference(j2000);
-    final yearsFromJ2000 =
-        diff.inSeconds / (365.25 * 24 * 3600); // Julian years
-
-    // Constants
+    final yearsFromJ2000 = diff.inSeconds / (365.25 * 24 * 3600);
     const double initialValue = 23.0 + (33.0 / 60.0) + (03.0 / 3600.0);
-    const double ratePerYear = 50.2388475 / 3600.0; // degrees per year
-
+    const double ratePerYear = 50.2388475 / 3600.0;
     return initialValue + (yearsFromJ2000 * ratePerYear);
   }
 

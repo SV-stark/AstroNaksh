@@ -51,40 +51,8 @@ class DivisionalCharts {
   }
 
   /// Get zodiac sign name from index (0-11)
-  static String getSignName(int sign) {
-    const signs = [
-      'Aries',
-      'Taurus',
-      'Gemini',
-      'Cancer',
-      'Leo',
-      'Virgo',
-      'Libra',
-      'Scorpio',
-      'Sagittarius',
-      'Capricorn',
-      'Aquarius',
-      'Pisces',
-    ];
-    return signs[sign % 12];
-  }
+  static String getSignName(int sign) => AstrologyConstants.getSignName(sign);
 
   /// Get sign lord
-  static String getSignLord(int sign) {
-    const lords = [
-      'Mars',
-      'Venus',
-      'Mercury',
-      'Moon',
-      'Sun',
-      'Mercury',
-      'Venus',
-      'Mars',
-      'Jupiter',
-      'Saturn',
-      'Saturn',
-      'Jupiter',
-    ];
-    return lords[sign % 12];
-  }
+  static String getSignLord(int sign) => AstrologyConstants.getSignLord(sign);
 }

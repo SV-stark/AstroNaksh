@@ -1,7 +1,6 @@
 import 'package:jyotish/jyotish.dart';
 import '../core/ephemeris_manager.dart';
 import '../data/models.dart';
-import 'kp_extensions.dart';
 import 'dasha_system.dart';
 import 'divisional_charts.dart';
 import 'custom_chart_service.dart'; // New service
@@ -52,11 +51,14 @@ class KPChartService {
       timezone: birthData.timezone,
     );
 
+    // Use library's native KP calculation
+    final nativeKPData = EphemerisManager.jyotish.calculateKPData(chart);
+
     // Calculate all systems
-    final kpData = await _calculateKPExtensions(chart);
+    final kpData = _mapNativeKPData(nativeKPData, chart);
     final dashaData = _calculateDashaSystems(chart);
     final divisionalCharts = DivisionalCharts.calculateAllCharts(chart);
-    final significatorTable = KPExtensions.getFullSignificatorTable(chart);
+    final significatorTable = _generateSignificatorTable(nativeKPData, chart);
 
     return CompleteChartData(
       baseChart: chart,
@@ -76,34 +78,67 @@ class KPChartService {
     );
   }
 
-  Future<KPData> _calculateKPExtensions(VedicChart chart) async {
+  KPData _mapNativeKPData(dynamic nativeKPData, VedicChart chart) {
+    // Map planetary data to our KPSubLord model
+    final List<KPSubLord> subLords = [];
+
+    chart.planets.forEach((planet, info) {
+      final planetKP = nativeKPData.planetaryData[planet];
+      if (planetKP != null) {
+        subLords.add(
+          KPSubLord(
+            starLord: planetKP.starLord.displayName,
+            subLord: planetKP.subLord.displayName,
+            subSubLord: planetKP.subSubLord?.displayName ?? '--',
+            nakshatraIndex: info.position.nakshatraIndex,
+            nakshatraName: info.nakshatra,
+          ),
+        );
+      }
+    });
+
+    // significators and ruling planets from native data
+    // Map significations to string list
+    final List<String> significators = [];
+    nativeKPData.houseSignificators.forEach((house, list) {
+      significators.addAll(list.cast<String>());
+    });
+
+    final List<String> rulingPlanets = nativeKPData.rulingPlanets
+        .map<String>((p) => p.displayName as String)
+        .toList();
+
     return KPData(
-      subLords: _calculateSubLords(chart),
-      significators: _calculateSignificators(chart),
-      rulingPlanets: _calculateRulingPlanets(chart),
+      subLords: subLords,
+      significators: significators.toSet().toList(),
+      rulingPlanets: rulingPlanets,
     );
   }
 
-  List<KPSubLord> _calculateSubLords(VedicChart chart) {
-    return chart.planets.entries.map((entry) {
-      return KPExtensions.calculateSubLord(entry.value.longitude);
-    }).toList();
-  }
+  Map<String, Map<String, dynamic>> _generateSignificatorTable(
+    dynamic nativeKPData,
+    VedicChart chart,
+  ) {
+    final Map<String, Map<String, dynamic>> table = {};
 
-  List<String> _calculateSignificators(VedicChart chart) {
-    final Set<String> allSignificators = {};
-    for (int i = 1; i <= 12; i++) {
-      // Flatten ABCD structure to get all acting significators
-      final abcdMap = KPExtensions.calculateSignificators(chart, i);
-      for (final list in abcdMap.values) {
-        allSignificators.addAll(list);
+    chart.planets.forEach((planet, info) {
+      final planetName = planet.toString().split('.').last;
+      final planetKP = nativeKPData.planetaryData[planet];
+
+      if (planetKP != null) {
+        table[planetName] = {
+          'position': info.longitude,
+          'house': chart.houses.getHouseForLongitude(info.longitude) + 1,
+          'starLord': planetKP.starLord.displayName,
+          'subLord': planetKP.subLord.displayName,
+          'subSubLord': planetKP.subSubLord?.displayName ?? '--',
+          'nakshatra': info.nakshatra,
+          'significations': planetKP.significations.toList(),
+        };
       }
-    }
-    return allSignificators.toList();
-  }
+    });
 
-  List<String> _calculateRulingPlanets(VedicChart chart) {
-    return KPExtensions.calculateRulingPlanets(chart, DateTime.now());
+    return table;
   }
 
   DashaData _calculateDashaSystems(VedicChart chart) {

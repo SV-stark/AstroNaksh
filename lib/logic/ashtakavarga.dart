@@ -19,72 +19,17 @@ class AshtakavargaSystem {
 
   /// Calculate Sarvashtakavarga with Sodhana (Reduction) applied
   static Map<int, int> calculateSarvashtakavargaWithSodhana(VedicChart chart) {
-    Map<int, int> sarva = calculateSarvashtakavarga(chart);
+    _service ??= AshtakavargaService();
+    var av = _service!.calculateAshtakavarga(chart);
 
-    // Apply Trikona Sodhana
-    sarva = applyTrikonaSodhana(sarva);
+    // Use library's native reduction logic
+    av = _service!.applyTrikonaShodhana(av);
+    av = _service!.applyEkadhipatiShodhana(av);
 
-    // Apply Ekadhipatya Sodhana
-    sarva = applyEkadhipatyaSodhana(sarva);
-
-    return sarva;
-  }
-
-  /// Trikona Sodhana - Reduce trinal signs by minimum value
-  static Map<int, int> applyTrikonaSodhana(Map<int, int> sarva) {
-    Map<int, int> result = Map.from(sarva);
-
-    // For each fire trine (Aries, Leo, Sag: 0, 4, 8)
-    _reduceTrine(result, [0, 4, 8]);
-
-    // Earth trine (Taurus, Virgo, Cap: 1, 5, 9)
-    _reduceTrine(result, [1, 5, 9]);
-
-    // Air trine (Gemini, Libra, Aquarius: 2, 6, 10)
-    _reduceTrine(result, [2, 6, 10]);
-
-    // Water trine (Cancer, Scorpio, Pisces: 3, 7, 11)
-    _reduceTrine(result, [3, 7, 11]);
-
-    return result;
-  }
-
-  static void _reduceTrine(Map<int, int> sarva, List<int> signs) {
-    // Find minimum points in the trine
-    int minPoints = signs
-        .map((s) => sarva[s] ?? 0)
-        .reduce((a, b) => a < b ? a : b);
-
-    // Subtract minimum from each sign in the trine
-    for (var sign in signs) {
-      sarva[sign] = (sarva[sign] ?? 0) - minPoints;
+    final result = <int, int>{};
+    for (int i = 0; i < 12; i++) {
+      result[i] = av.sarvashtakavarga.bindus[i];
     }
-  }
-
-  /// Ekadhipatya Sodhana - Reduce signs with same lord
-  static Map<int, int> applyEkadhipatyaSodhana(Map<int, int> sarva) {
-    Map<int, int> result = Map.from(sarva);
-
-    // Pairs of signs with same lord
-    final pairs = [
-      [0, 7], // Mars: Aries, Scorpio
-      [1, 6], // Venus: Taurus, Libra
-      [2, 5], // Mercury: Gemini, Virgo
-      [8, 11], // Jupiter: Sagittarius, Pisces
-      [9, 10], // Saturn: Capricorn, Aquarius
-      // Sun (Leo) and Moon (Cancer) have only one sign each
-    ];
-
-    for (var pair in pairs) {
-      int minPoints = [
-        result[pair[0]]!,
-        result[pair[1]]!,
-      ].reduce((a, b) => a < b ? a : b);
-
-      result[pair[0]] = result[pair[0]]! - minPoints;
-      result[pair[1]] = result[pair[1]]! - minPoints;
-    }
-
     return result;
   }
 

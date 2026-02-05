@@ -23,28 +23,28 @@ class DashaSystem {
 
   static VimshottariDasha _mapToVimshottari(DashaResult result) {
     return VimshottariDasha(
-      birthLord: result.allMahadashas.first.lord.displayName,
+      birthLord: result.allMahadashas.first.lord?.displayName ?? '--',
       balanceAtBirth: result.balanceOfFirstDasha / 365.25,
       mahadashas: result.allMahadashas
           .map(
             (m) => Mahadasha(
-              lord: m.lord.displayName,
+              lord: m.lord?.displayName ?? '--',
               startDate: m.startDate,
               endDate: m.endDate,
               periodYears: m.durationYears,
               antardashas: m.subPeriods
                   .map(
                     (a) => Antardasha(
-                      lord: a.lord.displayName,
+                      lord: a.lord?.displayName ?? '--',
                       startDate: a.startDate,
                       endDate: a.endDate,
                       periodYears: a.durationYears,
                       pratyantardashas: a.subPeriods
                           .map(
                             (p) => Pratyantardasha(
-                              mahadashaLord: m.lord.displayName,
-                              antardashaLord: a.lord.displayName,
-                              lord: p.lord.displayName,
+                              mahadashaLord: m.lord?.displayName ?? '--',
+                              antardashaLord: a.lord?.displayName ?? '--',
+                              lord: p.lord?.displayName ?? '--',
                               startDate: p.startDate,
                               endDate: p.endDate,
                               periodYears: p.durationYears,
@@ -72,11 +72,11 @@ class DashaSystem {
     );
 
     return YoginiDasha(
-      startYogini: result.allMahadashas.first.lord.displayName,
+      startYogini: result.allMahadashas.first.lord?.displayName ?? '--',
       mahadashas: result.allMahadashas
           .map(
             (m) => YoginiMahadasha(
-              name: m.lord.displayName,
+              name: m.lord?.displayName ?? '--',
               lord: _getYoginiPlanetLord(m.lord),
               startDate: m.startDate,
               endDate: m.endDate,
@@ -87,10 +87,8 @@ class DashaSystem {
     );
   }
 
-  static String _getYoginiPlanetLord(Planet yoginiPlanet) {
-    // In the library, Yogini enum might be used, but DashaPeriod just says Planet.
-    // If it's a planet, we use its name.
-    return yoginiPlanet.displayName;
+  static String _getYoginiPlanetLord(Planet? yoginiPlanet) {
+    return yoginiPlanet?.displayName ?? '--';
   }
 
   /// Convert years to Duration (preserves fractional days as hours)
@@ -127,8 +125,8 @@ class DashaSystem {
       periods.add(
         CharaDashaPeriod(
           sign: signIndex,
-          signName: _getSignName(signIndex),
-          lord: _getSignLord(signIndex),
+          signName: AstrologyConstants.getSignName(signIndex),
+          lord: AstrologyConstants.getSignLord(signIndex),
           startDate: currentDate,
           endDate: endDate,
           periodYears: period,
@@ -145,7 +143,7 @@ class DashaSystem {
   /// Period = distance from sign to its lord's position (or to Aquarius/Leo)
   static double _calculateCharaPeriod(VedicChart chart, int sign) {
     // Get the lord of this sign
-    final signLord = _getSignLord(sign);
+    final signLord = AstrologyConstants.getSignLord(sign);
 
     // Find the sign where the lord is placed
     int lordSign = sign; // Default to same sign
@@ -201,43 +199,8 @@ class DashaSystem {
     }
   }
 
-  /// Get sign name
-  static String _getSignName(int sign) {
-    const names = [
-      'Aries',
-      'Taurus',
-      'Gemini',
-      'Cancer',
-      'Leo',
-      'Virgo',
-      'Libra',
-      'Scorpio',
-      'Sagittarius',
-      'Capricorn',
-      'Aquarius',
-      'Pisces',
-    ];
-    return names[sign % 12];
-  }
-
   /// Get sign lord
-  static String _getSignLord(int sign) {
-    const lords = [
-      'Mars',
-      'Venus',
-      'Mercury',
-      'Moon',
-      'Sun',
-      'Mercury',
-      'Venus',
-      'Mars',
-      'Jupiter',
-      'Saturn',
-      'Saturn',
-      'Jupiter',
-    ];
-    return lords[sign % 12];
-  }
+  static String getSignLord(int sign) => AstrologyConstants.getSignLord(sign);
 
   /// Get current running dasha for a date
   static Map<String, dynamic> getCurrentDasha(

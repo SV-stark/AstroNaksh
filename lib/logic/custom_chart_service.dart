@@ -209,14 +209,7 @@ class CustomChartService {
     required SiderealMode ayanamsaMode,
     double? overrideAyanamsa,
   }) async {
-    // Calculate houses (returns tropical positions)
-    final houseData = await ephemerisService.calculateHouses(
-      dateTime: dateTime,
-      location: location,
-      houseSystem: 'P', // Placidus system
-    );
-
-    // Get ayanamsa for sidereal correction
+    // Get ayanamsa for sidereal correction first
     double ayanamsa;
     if (overrideAyanamsa != null) {
       ayanamsa = overrideAyanamsa;
@@ -227,17 +220,31 @@ class CustomChartService {
       );
     }
 
-    // Convert tropical positions to sidereal
+    // Calculate houses (returns tropical positions)
+    final houseData = await ephemerisService.calculateHouses(
+      dateTime: dateTime,
+      location: location,
+      houseSystem: 'P', // Placidus system
+    );
+
+    // Convert tropical positions to sidereal using the ayanamsa calculator
+    // for consistency with planet calculations
     final tropicalAscendant = houseData['ascmc']![0];
-    final ascendant = (tropicalAscendant - ayanamsa + 360) % 360;
+    final ascendant = AyanamsaCalculator.tropicalToSidereal(
+      tropicalAscendant,
+      ayanamsa,
+    );
 
     final tropicalMidheaven = houseData['ascmc']![1];
-    final midheaven = (tropicalMidheaven - ayanamsa + 360) % 360;
+    final midheaven = AyanamsaCalculator.tropicalToSidereal(
+      tropicalMidheaven,
+      ayanamsa,
+    );
 
     // Convert house cusps to sidereal
     final tropicalCusps = houseData['cusps']!;
     final cusps = tropicalCusps
-        .map((cusp) => (cusp - ayanamsa + 360) % 360)
+        .map((cusp) => AyanamsaCalculator.tropicalToSidereal(cusp, ayanamsa))
         .toList();
 
     return HouseSystem(

@@ -16,6 +16,8 @@ class PDFReportScreen extends StatefulWidget {
 class _PDFReportScreenState extends State<PDFReportScreen> {
   String _reportType = 'comprehensive';
   bool _isGenerating = false;
+  double _generationProgress = 0.0;
+  String _generationStatus = '';
 
   final Map<String, bool> _sections = {
     'Basic Info': true,
@@ -175,13 +177,34 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                     const SizedBox(width: 12),
                   ],
                   Text(
-                    _isGenerating ? 'Generating...' : 'Generate PDF Report',
+                    _isGenerating
+                        ? _generationStatus.isNotEmpty
+                            ? '$_generationStatus (${(_generationProgress * 100).toInt()}%)'
+                            : 'Generating...'
+                        : 'Generate PDF Report',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ],
               ),
             ),
           ),
+
+          if (_isGenerating)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                children: [
+                  ProgressBar(
+                    value: _generationProgress,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _generationStatus,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -217,6 +240,8 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
   Future<void> _generateReport() async {
     setState(() {
       _isGenerating = true;
+      _generationProgress = 0.0;
+      _generationStatus = 'Initializing...';
     });
 
     try {
@@ -239,23 +264,38 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
           ? widget.chartData.birthData.place
           : 'Place';
 
-      final filename = '$name - $place.pdf'.replaceAll(
-        RegExp(r'[<>:"/\\|?*]'),
-        '_',
-      ); // Sanitize filename
+      final sanitized = '$name - $place'
+          .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
+          .trim()
+          .replaceAll(RegExp(r'_+'), '_');
 
-      // Ensure directory exists
+      final filename = '$sanitized.pdf';
+
       if (!await dir.exists()) {
         await dir.create(recursive: true);
       }
 
       final path = '${dir.path}${Platform.pathSeparator}$filename';
 
+      if (mounted) {
+        setState(() {
+          _generationProgress = 0.3;
+          _generationStatus = 'Generating PDF content...';
+        });
+      }
+
       await PdfReportGenerator.generateBirthChartReport(
         widget.chartData,
         widget.chartData.birthData,
         outputPath: path,
       );
+
+      if (mounted) {
+        setState(() {
+          _generationProgress = 1.0;
+          _generationStatus = 'Complete!';
+        });
+      }
 
       if (!mounted) return;
 
@@ -269,15 +309,32 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
             action: Button(
               onPressed: () {
                 try {
+                  final file = File(path);
+                  if (!file.existsSync()) {
+                    throw Exception('File not found');
+                  }
+
                   if (Platform.isWindows) {
-                    Process.run('explorer', [path]);
+                    Process.run('explorer', ['/select,', path]);
                   } else if (Platform.isMacOS) {
                     Process.run('open', [path]);
                   } else if (Platform.isLinux) {
                     Process.run('xdg-open', [path]);
                   }
                 } catch (e) {
-                  // Silently fail - file is still saved
+                  if (context.mounted) {
+                    displayInfoBar(
+                      context,
+                      builder: (context, close) {
+                        return InfoBar(
+                          title: const Text('Unable to Open'),
+                          content: Text('Could not open file: $e'),
+                          severity: InfoBarSeverity.warning,
+                          onClose: close,
+                        );
+                      },
+                    );
+                  }
                 }
               },
               child: const Text('Open'),

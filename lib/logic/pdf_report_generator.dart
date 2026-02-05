@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../data/models.dart';
 
@@ -24,11 +25,20 @@ class PdfReportGenerator {
     // Save PDF
     final path = outputPath ?? _getDefaultPath(birthData);
     final file = File(path);
+    
     try {
-      await file.writeAsBytes(await pdf.save());
+      final pdfBytes = await pdf.save();
+      await file.writeAsBytes(pdfBytes);
     } catch (e) {
-      // Re-throw with more context
-      throw Exception('Failed to write PDF to $path: $e');
+      if (e is FileSystemException) {
+        throw Exception(
+          'Unable to save PDF. Please check if you have write permissions for the directory: $path'
+        );
+      } else {
+        throw Exception(
+          'Failed to generate PDF report. Please try again. Error: ${e.toString()}'
+        );
+      }
     }
 
     return file;
@@ -125,12 +135,41 @@ class PdfReportGenerator {
 
   /// Add house positions page
   static void _addHousePositions(pw.Document pdf, CompleteChartData chart) {
+    if (chart.baseChart.houses.cusps.isEmpty) {
+      pdf.addPage(
+        pw.Page(
+          build: (context) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(level: 0, child: pw.Text('House Cusps')),
+              pw.SizedBox(height: 20),
+              pw.Container(
+                padding: const pw.EdgeInsets.all(15),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.amber50,
+                  border: pw.Border.all(color: PdfColors.amber),
+                ),
+                child: pw.Text(
+                  'House cusp data is not available for this chart.',
+                  style: pw.TextStyle(
+                    color: PdfColors.amber900,
+                    fontStyle: pw.FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
+
     final rows = <List<String>>[];
     rows.add(['House', 'Sign', 'Degree', 'Lord']);
 
     for (int house = 1; house <= 12; house++) {
       try {
-        if (chart.baseChart.houses.cusps.isEmpty || house - 1 >= chart.baseChart.houses.cusps.length) {
+        if (house - 1 >= chart.baseChart.houses.cusps.length) {
           rows.add([_getHouseName(house), 'N/A', 'N/A', 'N/A']);
           continue;
         }
@@ -145,7 +184,7 @@ class PdfReportGenerator {
           _getSignLord(sign),
         ]);
       } catch (e) {
-        rows.add([_getHouseName(house), 'N/A', 'N/A', 'N/A']);
+        rows.add([_getHouseName(house), 'Error', 'Error', 'Error']);
       }
     }
 
@@ -161,6 +200,7 @@ class PdfReportGenerator {
               data: rows.skip(1).toList(),
               border: pw.TableBorder.all(),
               headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              cellAlignment: pw.Alignment.centerLeft,
             ),
           ],
         ),

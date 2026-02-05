@@ -1,6 +1,5 @@
 import 'package:jyotish/jyotish.dart';
 import '../core/ephemeris_manager.dart';
-import '../core/app_environment.dart';
 import '../data/models.dart';
 import 'kp_extensions.dart';
 import 'dasha_system.dart';

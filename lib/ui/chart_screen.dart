@@ -458,11 +458,33 @@ class _ChartScreenState extends State<ChartScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: PaneDisplayMode.top,
+        displayMode: PaneDisplayMode.open,
+        size: const NavigationPaneSize(openWidth: 200),
+        header: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                FluentIcons.chart,
+                size: 32,
+                color: FluentTheme.of(context).accentColor,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Chart Views',
+                style: FluentTheme.of(
+                  context,
+                ).typography.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
         items: [
+          PaneItemHeader(header: const Text('Main Charts')),
           PaneItem(
             icon: const Icon(FluentIcons.contact_card),
-            title: const Text("D-1"),
+            title: const Text("D-1 Rashi"),
             body: _buildBody(_buildD1Tab),
           ),
           PaneItem(
@@ -472,22 +494,23 @@ class _ChartScreenState extends State<ChartScreen> {
           ),
           PaneItem(
             icon: const Icon(FluentIcons.scatter_chart),
-            title: const Text("KP"),
+            title: const Text("KP System"),
             body: _buildBody(_buildKPTab),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.timer),
-            title: const Text("Dasha"),
+            title: const Text("Dasha Periods"),
             body: _buildBody(_buildDashaTab),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.list),
-            title: const Text("Details"),
+            title: const Text("Planet Details"),
             body: _buildBody(_buildDetailsTab),
           ),
+          PaneItemHeader(header: const Text('Analysis')),
           PaneItem(
             icon: const Icon(FluentIcons.lightbulb),
-            title: const Text("Rashiphal"),
+            title: const Text("Daily Rashiphal"),
             body: _buildBody(
               (data) => RashiphalDashboardScreen(chartData: data),
             ),
@@ -1226,6 +1249,74 @@ class _ChartScreenState extends State<ChartScreen> {
                           ],
                         );
                       }),
+                      // Add Rahu
+                      TableRow(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Text(
+                              'Rahu',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Text(
+                              _getSignName(
+                                (data.baseChart.rahu.longitude / 30).floor() +
+                                    1,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Text(
+                              (data.baseChart.rahu.longitude % 30)
+                                  .toStringAsFixed(2),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6),
+                            child: Text(''),
+                          ),
+                        ],
+                      ),
+                      // Add Ketu
+                      TableRow(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Text(
+                              'Ketu',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Text(
+                              _getSignName(
+                                (data.baseChart.ketu.longitude / 30).floor() +
+                                    1,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Text(
+                              (data.baseChart.ketu.longitude % 30)
+                                  .toStringAsFixed(2),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6),
+                            child: Text(''),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ],
@@ -1484,6 +1575,20 @@ class _ChartScreenState extends State<ChartScreen> {
                     ],
                   );
                 }),
+                // Add Rahu
+                _buildRahuKetuTableRow(
+                  'Rahu',
+                  data.baseChart.rahu.longitude,
+                  data.baseChart,
+                  nakshatras,
+                ),
+                // Add Ketu
+                _buildRahuKetuTableRow(
+                  'Ketu',
+                  data.baseChart.ketu.longitude,
+                  data.baseChart,
+                  nakshatras,
+                ),
               ],
             ),
           ],
@@ -1503,6 +1608,19 @@ class _ChartScreenState extends State<ChartScreen> {
           .putIfAbsent(sign, () => [])
           .add(abbr + (info.isRetrograde ? "(R)" : ""));
     });
+
+    // Add Rahu
+    {
+      final rahuSign = (chart.rahu.longitude / 30).floor() + 1;
+      map.putIfAbsent(rahuSign, () => []).add("Ra");
+    }
+
+    // Add Ketu
+    {
+      final ketuSign = (chart.ketu.longitude / 30).floor() + 1;
+      map.putIfAbsent(ketuSign, () => []).add("Ke");
+    }
+
     // Ascendant
     final ascSign = _getAscendantSignInt(chart);
     map.putIfAbsent(ascSign, () => []).add("Asc");
@@ -1572,5 +1690,68 @@ class _ChartScreenState extends State<ChartScreen> {
 
   String _formatDate(DateTime dt) {
     return "${dt.day}/${dt.month}/${dt.year}";
+  }
+
+  TableRow _buildRahuKetuTableRow(
+    String name,
+    double longitude,
+    VedicChart chart,
+    List<String> nakshatras,
+  ) {
+    // Sign (1-12)
+    final signIndex = (longitude / 30).floor();
+    final signName = _getSignName(signIndex + 1);
+
+    // Degrees within sign
+    final degInSign = longitude % 30;
+    final degrees = degInSign.floor();
+    final minutes = ((degInSign - degrees) * 60).floor();
+    final seconds = (((degInSign - degrees) * 60 - minutes) * 60).round();
+    final degStr =
+        '${degrees.toString().padLeft(2, '0')}°${minutes.toString().padLeft(2, '0')}\'${seconds.toString().padLeft(2, '0')}"';
+
+    // Nakshatra (each is 13°20' = 13.333...)
+    final nakshatraIndex = (longitude / 13.333333).floor() % 27;
+    final nakshatraName = nakshatras[nakshatraIndex];
+
+    // Pada (4 padas per nakshatra, each 3°20' = 3.333...)
+    final padaInNakshatra = ((longitude % 13.333333) / 3.333333).floor() + 1;
+
+    // House (approximate based on sign difference from ascendant)
+    final ascSign = _getAscendantSignInt(chart);
+    final house = ((signIndex + 1) - ascSign + 12) % 12 + 1;
+
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Text(name),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Text(signName),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Text(degStr),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Text(nakshatraName),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Text('$padaInNakshatra'),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Text('$house'),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 6),
+          child: Text(''), // Rahu/Ketu are never retrograde
+        ),
+      ],
+    );
   }
 }

@@ -60,6 +60,36 @@ class DivisionalCharts {
       positions[planetName] = newSign * 30 + (degree * 2) % 30;
     });
 
+    // Add Rahu
+    {
+      final sign = (chart.rahu.longitude / 30).floor();
+      final degree = chart.rahu.longitude % 30;
+      final isOdd = sign % 2 == 0;
+      final inFirstHalf = degree < 15;
+      int newSign;
+      if (isOdd) {
+        newSign = inFirstHalf ? 4 : 3;
+      } else {
+        newSign = inFirstHalf ? 3 : 4;
+      }
+      positions['Rahu'] = newSign * 30 + (degree * 2) % 30;
+    }
+
+    // Add Ketu
+    {
+      final sign = (chart.ketu.longitude / 30).floor();
+      final degree = chart.ketu.longitude % 30;
+      final isOdd = sign % 2 == 0;
+      final inFirstHalf = degree < 15;
+      int newSign;
+      if (isOdd) {
+        newSign = inFirstHalf ? 4 : 3;
+      } else {
+        newSign = inFirstHalf ? 3 : 4;
+      }
+      positions['Ketu'] = newSign * 30 + (degree * 2) % 30;
+    }
+
     return DivisionalChartData(
       code: 'D-2',
       name: 'Hora',
@@ -304,6 +334,74 @@ class DivisionalCharts {
       positions[planetName] = newSign * 30 + degree;
     });
 
+    // Add Rahu
+    {
+      final sign = (chart.rahu.longitude / 30).floor();
+      final degree = chart.rahu.longitude % 30;
+      final isOdd = sign % 2 == 0;
+      int newSign;
+      if (isOdd) {
+        if (degree < 5) {
+          newSign = 0;
+        } else if (degree < 10) {
+          newSign = 10;
+        } else if (degree < 18) {
+          newSign = 8;
+        } else if (degree < 25) {
+          newSign = 2;
+        } else {
+          newSign = 6;
+        }
+      } else {
+        if (degree < 5) {
+          newSign = 6;
+        } else if (degree < 12) {
+          newSign = 2;
+        } else if (degree < 20) {
+          newSign = 8;
+        } else if (degree < 25) {
+          newSign = 10;
+        } else {
+          newSign = 0;
+        }
+      }
+      positions['Rahu'] = newSign * 30 + degree;
+    }
+
+    // Add Ketu
+    {
+      final sign = (chart.ketu.longitude / 30).floor();
+      final degree = chart.ketu.longitude % 30;
+      final isOdd = sign % 2 == 0;
+      int newSign;
+      if (isOdd) {
+        if (degree < 5) {
+          newSign = 0;
+        } else if (degree < 10) {
+          newSign = 10;
+        } else if (degree < 18) {
+          newSign = 8;
+        } else if (degree < 25) {
+          newSign = 2;
+        } else {
+          newSign = 6;
+        }
+      } else {
+        if (degree < 5) {
+          newSign = 6;
+        } else if (degree < 12) {
+          newSign = 2;
+        } else if (degree < 20) {
+          newSign = 8;
+        } else if (degree < 25) {
+          newSign = 10;
+        } else {
+          newSign = 0;
+        }
+      }
+      positions['Ketu'] = newSign * 30 + degree;
+    }
+
     return DivisionalChartData(
       code: 'D-30',
       name: 'Trimsamsa',
@@ -393,6 +491,24 @@ class DivisionalCharts {
       final planetName = planet.toString().split('.').last;
       positions[planetName] = newLongitude;
     });
+
+    // Add Rahu
+    {
+      final sign = (chart.rahu.longitude / 30).floor();
+      final degree = chart.rahu.longitude % 30;
+      final newSign = calculateNewSign(sign, degree);
+      final newLongitude = newSign * 30 + (degree * divisions) % 30;
+      positions['Rahu'] = newLongitude;
+    }
+
+    // Add Ketu
+    {
+      final sign = (chart.ketu.longitude / 30).floor();
+      final degree = chart.ketu.longitude % 30;
+      final newSign = calculateNewSign(sign, degree);
+      final newLongitude = newSign * 30 + (degree * divisions) % 30;
+      positions['Ketu'] = newLongitude;
+    }
 
     // Calculate ascendant for this division
     final ascSign = _getHouseCuspSign(chart, 0);

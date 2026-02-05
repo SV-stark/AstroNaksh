@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
+import 'package:flutter/foundation.dart';
 
 /// Manages application environment, paths, and global flags.
 /// Handles portable mode detection and verbose logging.
@@ -84,8 +85,8 @@ class AppEnvironment {
         );
       }
     } catch (e) {
-      // Cannot log if logging setup fails, just print to stdout
-      if (_isVerbose) print('Failed to setup logging: $e');
+      // Cannot log if logging setup fails, just print to debug console
+      if (_isVerbose) debugPrint('Failed to setup logging: $e');
     }
   }
 

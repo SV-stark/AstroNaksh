@@ -1,9 +1,10 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
 import '../../logic/chart_comparison.dart';
 import '../../logic/kp_chart_service.dart';
 import '../../core/database_helper.dart';
-import '../widgets/strength_meter.dart';
+import '../widgets/chart_widget.dart';
 
 class ChartComparisonScreen extends StatefulWidget {
   final CompleteChartData? chart1;
@@ -26,6 +27,14 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     _selectedChart1 = widget.chart1;
   }
 
+  void _swapCharts() {
+    setState(() {
+      final temp = _selectedChart1;
+      _selectedChart1 = _selectedChart2;
+      _selectedChart2 = temp;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_selectedChart1 == null || _selectedChart2 == null) {
@@ -42,30 +51,66 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
 
     return NavigationView(
       appBar: NavigationAppBar(
-        title: const Text('Chart Comparison'),
-        leading: CommandBar(
+        title: Row(
+          children: [
+            const Text('Chart Comparison'),
+            const SizedBox(width: 16),
+            // Chart names display
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: FluentTheme.of(
+                  context,
+                ).accentColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _selectedChart1!.birthData.name,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(FluentIcons.heart_fill, size: 12),
+                  const SizedBox(width: 8),
+                  Text(
+                    _selectedChart2!.birthData.name,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: CommandBar(
+          overflowBehavior: CommandBarOverflowBehavior.noWrap,
           primaryItems: [
+            // Swap Button
             CommandBarButton(
-              icon: const Icon(FluentIcons.back),
+              icon: const Icon(FluentIcons.switch_widget),
+              label: const Text('Swap'),
+              onPressed: _swapCharts,
+            ),
+            // Side-by-Side View Button
+            CommandBarButton(
+              icon: const Icon(FluentIcons.side_panel_mirrored),
+              label: const Text('View Charts'),
+              onPressed: () => _showSideBySideView(),
+            ),
+            const CommandBarSeparator(),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.edit),
+              label: const Text('Change'),
               onPressed: () {
-                // Try to navigate back, or reset state
-                if (widget.chart1 != null) {
-                  Navigator.pop(context);
-                } else {
-                  setState(() {
-                    _selectedChart2 = null; // Basic reset
-                  });
-                }
+                setState(() {
+                  _selectedChart2 = null;
+                });
               },
             ),
             CommandBarButton(
-              icon: const Icon(FluentIcons.edit),
-              label: const Text('Change Charts'),
-              onPressed: () {
-                setState(() {
-                  _selectedChart2 = null; // Reset to go back to selection
-                });
-              },
+              icon: const Icon(FluentIcons.back),
+              onPressed: () => Navigator.pop(context),
             ),
           ],
         ),
@@ -73,11 +118,40 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: PaneDisplayMode.top,
+        displayMode: PaneDisplayMode.open,
+        size: const NavigationPaneSize(openWidth: 220),
+        header: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                FluentIcons.heart_fill,
+                size: 32,
+                color: FluentTheme.of(context).accentColor,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Compatibility',
+                style: FluentTheme.of(
+                  context,
+                ).typography.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Score: ${compatibility.overallScore.toStringAsFixed(1)}',
+                style: TextStyle(
+                  color: _getScoreColor(compatibility.overallScore),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.heart),
-            title: const Text('Compatibility'),
+            title: const Text('Overview'),
             body: _buildBody(_buildCompatibilityTab(compatibility)),
           ),
           PaneItem(
@@ -104,6 +178,118 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     return ScaffoldPage(content: content);
   }
 
+  void _showSideBySideView() {
+    showDialog(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Charts Side by Side'),
+        constraints: const BoxConstraints(maxWidth: 900),
+        content: SizedBox(
+          height: 500,
+          child: Row(
+            children: [
+              // Person 1 Chart
+              Expanded(
+                child: Card(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          _selectedChart1!.birthData.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: _buildMiniChart(_selectedChart1!)),
+                    ],
+                  ),
+                ),
+              ),
+              // VS indicator
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      FluentIcons.heart_fill,
+                      color: FluentTheme.of(context).accentColor,
+                      size: 24,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'VS',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: FluentTheme.of(context).accentColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Person 2 Chart
+              Expanded(
+                child: Card(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          _selectedChart2!.birthData.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: _buildMiniChart(_selectedChart2!)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          Button(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniChart(CompleteChartData data) {
+    final planetsMap = _getPlanetsMap(data.baseChart);
+    final ascSign = _getAscendantSignInt(data.baseChart);
+
+    return ChartWidget(
+      planetsBySign: planetsMap,
+      ascendantSign: ascSign,
+      style: ChartStyle.northIndian,
+      size: 300,
+    );
+  }
+
+  Map<int, List<String>> _getPlanetsMap(VedicChart chart) {
+    final map = <int, List<String>>{};
+    chart.planets.forEach((planet, info) {
+      final sign = (info.longitude / 30).floor() + 1;
+      map.putIfAbsent(sign, () => []);
+      map[sign]!.add(planet.toString().split('.').last);
+    });
+    return map;
+  }
+
+  int _getAscendantSignInt(VedicChart chart) {
+    final asc = chart.houses.cusps[0];
+    return ((asc / 30).floor() + 1);
+  }
+
   Widget _buildChartSelector() {
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -116,46 +302,81 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Chart Comparison',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  'Kundali Matching (36 Kutas)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
                 SizedBox(height: 8),
                 Text(
-                  'Compare two birth charts for compatibility analysis. '
-                  'This includes Kuta matching, synastry aspects, and house overlays.',
+                  'Compare two birth charts for marriage compatibility. '
+                  'The Ashtakoota system analyzes 8 factors totaling 36 points.',
                   style: TextStyle(fontSize: 14),
                 ),
               ],
             ),
           ),
         ),
-
-        const SizedBox(height: 16),
-
-        _buildChartSelection(
-          'Person 1',
-          _selectedChart1,
-          (chart) => setState(() => _selectedChart1 = chart),
-        ),
-
-        const SizedBox(height: 16),
-
-        _buildChartSelection(
-          'Person 2',
-          _selectedChart2,
-          (chart) => setState(() => _selectedChart2 = chart),
-        ),
-
         const SizedBox(height: 24),
 
+        // Charts Selection Area
+        Row(
+          children: [
+            Expanded(
+              child: _buildChartSelection(
+                'Person 1',
+                _selectedChart1,
+                (chart) => setState(() => _selectedChart1 = chart),
+                Colors.blue,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // VS or Swap indicator
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: FluentTheme.of(
+                  context,
+                ).accentColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _selectedChart1 != null && _selectedChart2 != null
+                    ? FluentIcons.heart_fill
+                    : FluentIcons.heart,
+                color: FluentTheme.of(context).accentColor,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildChartSelection(
+                'Person 2',
+                _selectedChart2,
+                (chart) => setState(() => _selectedChart2 = chart),
+                Colors.purple,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 32),
+
+        // Compare Button
         if (_selectedChart1 != null && _selectedChart2 != null)
-          FilledButton(
-            onPressed: () {
-              setState(() {}); // Trigger rebuild
-            },
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Compare Charts', style: TextStyle(fontSize: 16)),
+          Center(
+            child: FilledButton(
+              onPressed: () {
+                setState(() {});
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FluentIcons.heart),
+                    SizedBox(width: 8),
+                    Text('Compare Charts', style: TextStyle(fontSize: 16)),
+                  ],
+                ),
+              ),
             ),
           ),
       ],
@@ -166,30 +387,69 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     String label,
     CompleteChartData? selected,
     Function(CompleteChartData?) onSelect,
+    Color accentColor,
   ) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: accentColor, width: 4)),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            if (selected != null)
-              ListTile(
-                leading: const Icon(FluentIcons.contact),
-                title: const Text('Chart Selected'),
-                subtitle: Text(selected.birthData.name),
-                trailing: IconButton(
-                  icon: const Icon(FluentIcons.clear),
-                  onPressed: () => onSelect(null),
+            Row(
+              children: [
+                Icon(FluentIcons.contact, color: accentColor),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: accentColor,
+                  ),
                 ),
-              )
-            else
-              Button(
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (selected != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(FluentIcons.check_mark),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            selected.birthData.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '${selected.birthData.dateTime.day}/${selected.birthData.dateTime.month}/${selected.birthData.dateTime.year}',
+                            style: FluentTheme.of(context).typography.caption,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(FluentIcons.delete),
+                      onPressed: () => onSelect(null),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              FilledButton(
                 onPressed: () async {
                   final chart = await _showChartPicker();
                   if (chart != null) {
@@ -205,6 +465,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                   ],
                 ),
               ),
+            ],
           ],
         ),
       ),
@@ -223,44 +484,86 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
         return ContentDialog(
           title: const Text('Select Chart'),
           content: SizedBox(
-            width: 300,
-            height: 400,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: charts.length,
-              itemBuilder: (context, index) {
-                final chart = charts[index];
-                return ListTile.selectable(
-                  title: Text(chart['name'] ?? 'Unknown'),
-                  subtitle: Text(chart['dateTime'] ?? ''),
-                  onPressed: () async {
-                    // Show loading if needed, or better, confirm
-                    // Here we will try to load data
-                    try {
-                      final birthData = BirthData(
-                        dateTime: DateTime.parse(chart['dateTime']),
-                        location: Location(
-                          latitude: chart['latitude'],
-                          longitude: chart['longitude'],
-                        ),
-                        name: chart['name'] ?? '',
-                        place: chart['locationName'] ?? '',
-                      );
+            width: 350,
+            height: 450,
+            child: charts.isEmpty
+                ? const Center(
+                    child: Text('No saved charts found. Create a chart first.'),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: charts.length,
+                    itemBuilder: (context, index) {
+                      final chart = charts[index];
+                      return ListTile.selectable(
+                        title: Text(chart['name'] ?? 'Unknown'),
+                        subtitle: Text(chart['dateTime'] ?? ''),
+                        onPressed: () async {
+                          if (chart['dateTime'] == null ||
+                              chart['latitude'] == null ||
+                              chart['longitude'] == null) {
+                            if (context.mounted) {
+                              await showDialog<void>(
+                                context: context,
+                                builder: (context) => ContentDialog(
+                                  title: const Text('Invalid Chart Data'),
+                                  content: const Text(
+                                    'This chart is missing required information (date/time or location). Please delete and recreate this chart.',
+                                  ),
+                                  actions: [
+                                    Button(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            return;
+                          }
 
-                      // Note: This is async and might take time.
-                      // Ideally show progress.
-                      final completeData = await _kpChartService
-                          .generateCompleteChart(birthData);
-                      if (context.mounted) {
-                        Navigator.pop(context, completeData);
-                      }
-                    } catch (e) {
-                      // Handle error
-                    }
-                  },
-                );
-              },
-            ),
+                          try {
+                            final birthData = BirthData(
+                              dateTime: DateTime.parse(
+                                chart['dateTime'] as String,
+                              ),
+                              location: Location(
+                                latitude: (chart['latitude'] as num).toDouble(),
+                                longitude: (chart['longitude'] as num)
+                                    .toDouble(),
+                              ),
+                              name: chart['name'] ?? '',
+                              place: chart['locationName'] ?? '',
+                            );
+
+                            final completeData = await _kpChartService
+                                .generateCompleteChart(birthData);
+                            if (context.mounted) {
+                              Navigator.pop(context, completeData);
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              await showDialog<void>(
+                                context: context,
+                                builder: (context) => ContentDialog(
+                                  title: const Text('Error Loading Chart'),
+                                  content: Text(
+                                    'Failed to load chart data: $e',
+                                  ),
+                                  actions: [
+                                    Button(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      );
+                    },
+                  ),
           ),
           actions: [
             Button(
@@ -277,57 +580,98 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Overall score
+        // Overall score card with visual indicator
         Card(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
                 const Text(
-                  'Compatibility Score',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  'Overall Compatibility',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 24),
-                // Custom Score Indicator using ProgressRing
-                Stack(
-                  alignment: Alignment.center,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 120,
-                      height: 120,
-                      child: ProgressRing(
-                        value: compatibility.overallScore,
-                        strokeWidth: 8,
-                        backgroundColor: Colors.grey.withValues(alpha: 0.2),
-                        activeColor: _getScoreColor(compatibility.overallScore),
-                      ),
-                    ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
+                    // Score ring
+                    Stack(
+                      alignment: Alignment.center,
                       children: [
-                        Text(
-                          compatibility.overallScore.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                        SizedBox(
+                          width: 140,
+                          height: 140,
+                          child: ProgressRing(
+                            value: compatibility.overallScore,
+                            strokeWidth: 10,
+                            backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                            activeColor: _getScoreColor(
+                              compatibility.overallScore,
+                            ),
                           ),
                         ),
-                        Text(
-                          _getCompatibilityGrade(compatibility.overallScore),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: _getScoreColor(compatibility.overallScore),
-                          ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              compatibility.overallScore.toStringAsFixed(1),
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '/ 100',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                    const SizedBox(width: 32),
+                    // Grade and description
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getScoreColor(
+                                compatibility.overallScore,
+                              ).withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _getCompatibilityGrade(
+                                compatibility.overallScore,
+                              ),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: _getScoreColor(
+                                  compatibility.overallScore,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _getCompatibilityDescription(
+                              compatibility.overallScore,
+                            ),
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _getCompatibilityDescription(compatibility.overallScore),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -336,66 +680,95 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
 
         const SizedBox(height: 16),
 
-        // Kuta matching
+        // Kuta matching detailed breakdown
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Kuta Matching (Ashtakoota)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Kuta Matching (Ashtakoota)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: FluentTheme.of(
+                          context,
+                        ).accentColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        '${compatibility.nakshatraAnalysis.totalScore.toStringAsFixed(0)}/36',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: FluentTheme.of(context).accentColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 16),
+                const Divider(),
                 const SizedBox(height: 12),
-                Text(
-                  'Total: ${compatibility.nakshatraAnalysis.totalScore}/36',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                _buildKutaMeter(
+                  'Varna (Caste)',
+                  compatibility.nakshatraAnalysis.varna,
+                  1,
+                  'Spiritual compatibility',
                 ),
-                const SizedBox(height: 12),
-                StrengthMeter(
-                  value: (compatibility.nakshatraAnalysis.varna / 1) * 100,
-                  label: 'Varna: ${compatibility.nakshatraAnalysis.varna}/1',
-                  showPercentage: false,
+                _buildKutaMeter(
+                  'Vashya (Control)',
+                  compatibility.nakshatraAnalysis.vashya,
+                  2,
+                  'Mutual control and dominance',
                 ),
-                StrengthMeter(
-                  value: (compatibility.nakshatraAnalysis.vashya / 2) * 100,
-                  label: 'Vashya: ${compatibility.nakshatraAnalysis.vashya}/2',
-                  showPercentage: false,
+                _buildKutaMeter(
+                  'Tara (Star)',
+                  compatibility.nakshatraAnalysis.tara,
+                  3,
+                  'Destiny and fortune',
                 ),
-                StrengthMeter(
-                  value: (compatibility.nakshatraAnalysis.tara / 3) * 100,
-                  label: 'Tara: ${compatibility.nakshatraAnalysis.tara}/3',
-                  showPercentage: false,
+                _buildKutaMeter(
+                  'Yoni (Sexual)',
+                  compatibility.nakshatraAnalysis.yoni,
+                  4,
+                  'Physical compatibility',
                 ),
-                StrengthMeter(
-                  value: (compatibility.nakshatraAnalysis.yoni / 4) * 100,
-                  label: 'Yoni: ${compatibility.nakshatraAnalysis.yoni}/4',
-                  showPercentage: false,
+                _buildKutaMeter(
+                  'Graha Maitri (Friendship)',
+                  compatibility.nakshatraAnalysis.maitri,
+                  5,
+                  'Planetary friendship',
                 ),
-                StrengthMeter(
-                  value: (compatibility.nakshatraAnalysis.maitri / 5) * 100,
-                  label: 'Maitri: ${compatibility.nakshatraAnalysis.maitri}/5',
-                  showPercentage: false,
+                _buildKutaMeter(
+                  'Gana (Temperament)',
+                  compatibility.nakshatraAnalysis.gana,
+                  6,
+                  'Nature compatibility',
                 ),
-                StrengthMeter(
-                  value: (compatibility.nakshatraAnalysis.gana / 6) * 100,
-                  label: 'Gana: ${compatibility.nakshatraAnalysis.gana}/6',
-                  showPercentage: false,
+                _buildKutaMeter(
+                  'Bhakoot (Relative)',
+                  compatibility.nakshatraAnalysis.bhakoot,
+                  7,
+                  'Sign relationship',
                 ),
-                StrengthMeter(
-                  value: (compatibility.nakshatraAnalysis.bhakoot / 7) * 100,
-                  label:
-                      'Bhakoot: ${compatibility.nakshatraAnalysis.bhakoot}/7',
-                  showPercentage: false,
-                ),
-                StrengthMeter(
-                  value: (compatibility.nakshatraAnalysis.nadi / 8) * 100,
-                  label: 'Nadi: ${compatibility.nakshatraAnalysis.nadi}/8',
-                  showPercentage: false,
+                _buildKutaMeter(
+                  'Nadi (Health)',
+                  compatibility.nakshatraAnalysis.nadi,
+                  8,
+                  'Health and progeny',
                 ),
               ],
             ),
@@ -425,6 +798,65 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     );
   }
 
+  Widget _buildKutaMeter(
+    String label,
+    double value,
+    int max,
+    String description,
+  ) {
+    final percentage = (value / max) * 100;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      description,
+                      style: FluentTheme.of(context).typography.caption,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: percentage >= 50
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.orange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${value.toStringAsFixed(0)}/$max',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: percentage >= 50 ? Colors.green : Colors.orange,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ProgressBar(
+            value: percentage,
+            backgroundColor: Colors.grey.withValues(alpha: 0.2),
+            activeColor: percentage >= 50 ? Colors.green : Colors.orange,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSynastryTab(SynastryAnalysis compatibility) {
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -433,8 +865,16 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
           backgroundColor: Colors.purple.withValues(alpha: 0.1),
           child: const Padding(
             padding: EdgeInsets.all(16),
-            child: Text(
-              'Synastry aspects show how planets from one chart interact with planets in another chart.',
+            child: Row(
+              children: [
+                Icon(FluentIcons.info),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Synastry aspects show how planets from one chart interact with planets in another chart.',
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -453,16 +893,25 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Card(
         child: ListTile(
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isPositive
+                  ? Colors.green.withValues(alpha: 0.2)
+                  : Colors.orange.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              isPositive ? FluentIcons.heart_fill : FluentIcons.warning,
+              color: isPositive ? Colors.green : Colors.orange,
+            ),
+          ),
           title: Text(
             '${aspect.planet1} ${aspect.aspectType} ${aspect.planet2}',
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
             '${aspect.effect.toString().split('.').last} • Orb: ${aspect.orb.toStringAsFixed(1)}°',
-          ),
-          leading: Icon(
-            isPositive ? FluentIcons.heart : FluentIcons.warning,
-            color: isPositive ? Colors.green : Colors.orange,
           ),
         ),
       ),
@@ -477,8 +926,16 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
           backgroundColor: Colors.blue.withValues(alpha: 0.1),
           child: const Padding(
             padding: EdgeInsets.all(16),
-            child: Text(
-              'House overlays show where one person\'s planets fall in the other person\'s houses.',
+            child: Row(
+              children: [
+                Icon(FluentIcons.info),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'House overlays show where one person\'s planets fall in the other person\'s houses.',
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -493,11 +950,39 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Card(
         child: ListTile(
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: FluentTheme.of(context).accentColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'H${overlay.house}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: FluentTheme.of(context).accentColor,
+              ),
+            ),
+          ),
           title: Text(
             '${overlay.planet} in House ${overlay.house}',
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(overlay.significance),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: FluentTheme.of(context).accentColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Chart ${overlay.chart}',
+              style: TextStyle(
+                fontSize: 12,
+                color: FluentTheme.of(context).accentColor,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -514,21 +999,88 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Navamsa Compatibility',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  'Navamsa (D-9) Compatibility',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
+                const SizedBox(height: 16),
+                const Divider(),
                 const SizedBox(height: 12),
-                Text(
-                  'Ascendant: ${compatibility.navamsaCompatibility.ascendantCompatibility}\n'
-                  'Moon: ${compatibility.navamsaCompatibility.moonSignCompatibility}\n'
-                  'Venus: ${compatibility.navamsaCompatibility.venusSignCompatibility}\n'
-                  'Score: ${compatibility.navamsaCompatibility.score}',
+                _buildNavamsaItem(
+                  'Ascendant',
+                  compatibility.navamsaCompatibility.ascendantCompatibility,
+                  FluentIcons.contact,
+                ),
+                _buildNavamsaItem(
+                  'Moon Sign',
+                  compatibility.navamsaCompatibility.moonSignCompatibility,
+                  FluentIcons.heart,
+                ),
+                _buildNavamsaItem(
+                  'Venus Sign',
+                  compatibility.navamsaCompatibility.venusSignCompatibility,
+                  FluentIcons.favorite_star,
+                ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Navamsa Score',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: FluentTheme.of(
+                          context,
+                        ).accentColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        compatibility.navamsaCompatibility.score
+                            .toStringAsFixed(1),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: FluentTheme.of(context).accentColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNavamsaItem(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: FluentTheme.of(context).typography.caption),
+                Text(
+                  value,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

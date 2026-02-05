@@ -57,9 +57,11 @@ class PDFReportService {
 
     // Save PDF
     final output = await getTemporaryDirectory();
-    final file = File(
-      '${output.path}/chart_report_${DateTime.now().millisecondsSinceEpoch}.pdf',
-    );
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final filename = 'chart_report_$timestamp.pdf';
+    final filePath = '${output.path}${Platform.pathSeparator}$filename';
+    
+    final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
     return file;
@@ -186,6 +188,37 @@ class PDFReportService {
   static pw.Widget _buildPlanetTable(
     Map<String, Map<String, dynamic>> significators,
   ) {
+    if (significators.isEmpty) {
+      return pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'Planet Positions',
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.deepPurple,
+            ),
+          ),
+          pw.SizedBox(height: 10),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(15),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.amber50,
+              border: pw.Border.all(color: PdfColors.amber),
+            ),
+            child: pw.Text(
+              'No planet data available.',
+              style: pw.TextStyle(
+                color: PdfColors.amber900,
+                fontStyle: pw.FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -297,7 +330,37 @@ class PDFReportService {
   /// Add D-9 (Navamsa) section
   static void _addD9Section(pw.Document pdf, CompleteChartData chartData) {
     final navamsa = chartData.divisionalCharts['D-9'];
-    if (navamsa == null) return;
+    if (navamsa == null) {
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader('Navamsa Chart (D-9) - Spouse & Dharma'),
+                pw.SizedBox(height: 20),
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(15),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.amber50,
+                    border: pw.Border.all(color: PdfColors.amber),
+                  ),
+                  child: pw.Text(
+                    'Navamsa chart data is not available for this chart.',
+                    style: pw.TextStyle(
+                      color: PdfColors.amber900,
+                      fontStyle: pw.FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+      return;
+    }
 
     pdf.addPage(
       pw.Page(
@@ -327,6 +390,23 @@ class PDFReportService {
 
   /// Build divisional chart table
   static pw.Widget _buildDivisionalTable(DivisionalChartData chart) {
+    if (chart.positions.isEmpty) {
+      return pw.Container(
+        padding: const pw.EdgeInsets.all(15),
+        decoration: pw.BoxDecoration(
+          color: PdfColors.amber50,
+          border: pw.Border.all(color: PdfColors.amber),
+        ),
+        child: pw.Text(
+          'No planetary data available for this divisional chart.',
+          style: pw.TextStyle(
+            color: PdfColors.amber900,
+            fontStyle: pw.FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
     return pw.Table(
       border: pw.TableBorder.all(),
       children: [
@@ -381,6 +461,37 @@ class PDFReportService {
 
   /// Build Vimshottari dasha table
   static pw.Widget _buildVimshottariTable(VimshottariDasha dasha) {
+    if (dasha.mahadashas.isEmpty) {
+      return pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'Vimshottari Dasha (120 Year Cycle)',
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.deepPurple,
+            ),
+          ),
+          pw.SizedBox(height: 10),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(15),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.amber50,
+              border: pw.Border.all(color: PdfColors.amber),
+            ),
+            child: pw.Text(
+              'No dasha data available.',
+              style: pw.TextStyle(
+                color: PdfColors.amber900,
+                fontStyle: pw.FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -431,7 +542,21 @@ class PDFReportService {
     final current = chartData.getCurrentDashas(DateTime.now());
 
     if (current.isEmpty) {
-      return pw.Container();
+      return pw.Container(
+        padding: const pw.EdgeInsets.all(15),
+        decoration: pw.BoxDecoration(
+          color: PdfColors.grey200,
+          borderRadius: pw.BorderRadius.circular(8),
+          border: pw.Border.all(color: PdfColors.grey400),
+        ),
+        child: pw.Text(
+          'Current Dasha information is not available.',
+          style: pw.TextStyle(
+            color: PdfColors.grey700,
+            fontStyle: pw.FontStyle.italic,
+          ),
+        ),
+      );
     }
 
     return pw.Container(
@@ -453,11 +578,11 @@ class PDFReportService {
             ),
           ),
           pw.SizedBox(height: 10),
-          _buildDashaInfoRow('Mahadasha:', current['mahadasha'] ?? ''),
-          _buildDashaInfoRow('Antardasha:', current['antardasha'] ?? ''),
+          _buildDashaInfoRow('Mahadasha:', current['mahadasha'] ?? 'N/A'),
+          _buildDashaInfoRow('Antardasha:', current['antardasha'] ?? 'N/A'),
           _buildDashaInfoRow(
             'Pratyantardasha:',
-            current['pratyantardasha'] ?? '',
+            current['pratyantardasha'] ?? 'N/A',
           ),
         ],
       ),
@@ -507,6 +632,37 @@ class PDFReportService {
   static pw.Widget _buildKPSubLordsTable(
     Map<String, Map<String, dynamic>> significators,
   ) {
+    if (significators.isEmpty) {
+      return pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'KP Sub Lords (3-Level Analysis)',
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.deepPurple,
+            ),
+          ),
+          pw.SizedBox(height: 10),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(15),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.amber50,
+              border: pw.Border.all(color: PdfColors.amber),
+            ),
+            child: pw.Text(
+              'No KP data available.',
+              style: pw.TextStyle(
+                color: PdfColors.amber900,
+                fontStyle: pw.FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -538,9 +694,9 @@ class PDFReportService {
               return pw.TableRow(
                 children: [
                   _buildTableCell(planet),
-                  _buildTableCell(info['starLord'] ?? ''),
-                  _buildTableCell(info['subLord'] ?? ''),
-                  _buildTableCell(info['subSubLord'] ?? ''),
+                  _buildTableCell(info['starLord'] ?? 'N/A'),
+                  _buildTableCell(info['subLord'] ?? 'N/A'),
+                  _buildTableCell(info['subSubLord'] ?? 'N/A'),
                 ],
               );
             }),
@@ -552,6 +708,24 @@ class PDFReportService {
 
   /// Build ruling planets box
   static pw.Widget _buildRulingPlanetsBox(CompleteChartData chartData) {
+    if (chartData.kpData.rulingPlanets.isEmpty) {
+      return pw.Container(
+        padding: const pw.EdgeInsets.all(15),
+        decoration: pw.BoxDecoration(
+          color: PdfColors.grey200,
+          borderRadius: pw.BorderRadius.circular(8),
+          border: pw.Border.all(color: PdfColors.grey400),
+        ),
+        child: pw.Text(
+          'No ruling planets data available.',
+          style: pw.TextStyle(
+            color: PdfColors.grey700,
+            fontStyle: pw.FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
     return pw.Container(
       padding: const pw.EdgeInsets.all(15),
       decoration: pw.BoxDecoration(
@@ -619,6 +793,23 @@ class PDFReportService {
   static pw.Widget _buildVargasSummaryTable(
     Map<String, DivisionalChartData> charts,
   ) {
+    if (charts.isEmpty) {
+      return pw.Container(
+        padding: const pw.EdgeInsets.all(15),
+        decoration: pw.BoxDecoration(
+          color: PdfColors.amber50,
+          border: pw.Border.all(color: PdfColors.amber),
+        ),
+        child: pw.Text(
+          'No divisional charts available.',
+          style: pw.TextStyle(
+            color: PdfColors.amber900,
+            fontStyle: pw.FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
     return pw.Table(
       border: pw.TableBorder.all(),
       children: [

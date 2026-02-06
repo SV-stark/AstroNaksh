@@ -46,7 +46,9 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
             return Center(
               child: InfoBar(
                 title: const Text('Error'),
-                content: Text('Could not generate predictions: ${snapshot.error}'),
+                content: Text(
+                  'Could not generate predictions: ${snapshot.error}',
+                ),
                 severity: InfoBarSeverity.error,
               ),
             );
@@ -158,9 +160,9 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
               children: [
                 Text(
                   'Life Overview',
-                  style: FluentTheme.of(context).typography.subtitle?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: FluentTheme.of(
+                    context,
+                  ).typography.subtitle?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -364,10 +366,7 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
                         width: width * progress.clamp(0, 1),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [
-                              color.withValues(alpha: 0.7),
-                              color,
-                            ],
+                            colors: [color.withValues(alpha: 0.7), color],
                           ),
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -393,7 +392,10 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
     );
   }
 
-  Widget _buildInfluenceRow(BuildContext context, PlanetaryInfluence influence) {
+  Widget _buildInfluenceRow(
+    BuildContext context,
+    PlanetaryInfluence influence,
+  ) {
     final color = influence.isBenefic ? Colors.green : Colors.orange;
     final strengthColor = _getStrengthColor(influence.strength);
 
@@ -437,7 +439,9 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(influence.status).withValues(alpha: 0.15),
+                    color: _getStatusColor(
+                      influence.status,
+                    ).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -548,7 +552,7 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
   IconData _getAspectIcon(String iconName) {
     switch (iconName) {
       case 'work':
-        return FluentIcons.work;
+        return FluentIcons.calendar;
       case 'money':
         return FluentIcons.money;
       case 'home':
@@ -558,13 +562,13 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
       case 'health':
         return FluentIcons.health;
       case 'child':
-        return FluentIcons.child_of;
+        return FluentIcons.people;
       case 'education':
         return FluentIcons.education;
       case 'peace':
         return FluentIcons.hands_free;
       default:
-        return FluentIcons.circle;
+        return FluentIcons.circle_ring;
     }
   }
 }

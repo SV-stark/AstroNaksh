@@ -1,5 +1,4 @@
-import 'package:jyotish/jyotish.dart';
-import '../../data/models.dart';
+import 'package:jyotish/jyotish.dart' hide RelationshipType;
 
 /// Planetary Maitri (Friendship) Analysis Service
 /// Calculates Natural, Temporary, and Compound relationships between planets
@@ -65,17 +64,20 @@ class PlanetaryMaitriService {
   };
 
   /// Get natural relationship between two planets
-  static RelationshipType getNaturalRelationship(Planet planet1, Planet planet2) {
-    if (planet1 == planet2) return RelationshipType.friend; // Same planet is friend
+  static RelationshipType getNaturalRelationship(
+    Planet planet1,
+    Planet planet2,
+  ) {
+    if (planet1 == planet2)
+      return RelationshipType.friend; // Same planet is friend
     return _naturalFriendship[planet1]?[planet2] ?? RelationshipType.neutral;
   }
 
   /// Calculate temporary (Tatkalika) relationships based on chart positions
   /// Planets in 2nd, 3rd, 4th, 10th, 11th, 12th houses from each other are temporary friends
   /// Planets in 1st, 5th, 6th, 7th, 8th, 9th houses from each other are temporary enemies
-  static Map<Planet, Map<Planet, RelationshipType>> calculateTemporaryRelationships(
-    VedicChart chart,
-  ) {
+  static Map<Planet, Map<Planet, RelationshipType>>
+  calculateTemporaryRelationships(VedicChart chart) {
     final Map<Planet, Map<Planet, RelationshipType>> tempRelations = {};
     final planets = chart.planets.keys.toList();
 
@@ -115,9 +117,8 @@ class PlanetaryMaitriService {
   /// - Natural Neutral + Temporary Enemy = Neutral (Sama)
   /// - Natural Enemy + Temporary Friend = Neutral (Sama)
   /// - Natural Enemy + Temporary Enemy = Enemy (Satru)
-  static Map<Planet, Map<Planet, CompoundRelationship>> calculateCompoundRelationships(
-    VedicChart chart,
-  ) {
+  static Map<Planet, Map<Planet, CompoundRelationship>>
+  calculateCompoundRelationships(VedicChart chart) {
     final tempRelations = calculateTemporaryRelationships(chart);
     final Map<Planet, Map<Planet, CompoundRelationship>> compoundRelations = {};
     final planets = chart.planets.keys.toList();
@@ -129,9 +130,13 @@ class PlanetaryMaitriService {
         if (planet1 == planet2) continue;
 
         final natural = getNaturalRelationship(planet1, planet2);
-        final temporary = tempRelations[planet1]?[planet2] ?? RelationshipType.neutral;
+        final temporary =
+            tempRelations[planet1]?[planet2] ?? RelationshipType.neutral;
 
-        compoundRelations[planet1]![planet2] = _getCompoundRelationship(natural, temporary);
+        compoundRelations[planet1]![planet2] = _getCompoundRelationship(
+          natural,
+          temporary,
+        );
       }
     }
 
@@ -143,13 +148,18 @@ class PlanetaryMaitriService {
     RelationshipType natural,
     RelationshipType temporary,
   ) {
-    if (natural == RelationshipType.friend && temporary == RelationshipType.friend) {
+    if (natural == RelationshipType.friend &&
+        temporary == RelationshipType.friend) {
       return CompoundRelationship.bestFriend;
-    } else if ((natural == RelationshipType.friend && temporary == RelationshipType.enemy) ||
-               (natural == RelationshipType.neutral && temporary == RelationshipType.friend)) {
+    } else if ((natural == RelationshipType.friend &&
+            temporary == RelationshipType.enemy) ||
+        (natural == RelationshipType.neutral &&
+            temporary == RelationshipType.friend)) {
       return CompoundRelationship.friend;
-    } else if ((natural == RelationshipType.neutral && temporary == RelationshipType.enemy) ||
-               (natural == RelationshipType.enemy && temporary == RelationshipType.friend)) {
+    } else if ((natural == RelationshipType.neutral &&
+            temporary == RelationshipType.enemy) ||
+        (natural == RelationshipType.enemy &&
+            temporary == RelationshipType.friend)) {
       return CompoundRelationship.neutral;
     } else {
       return CompoundRelationship.enemy;
@@ -194,18 +204,14 @@ class PlanetaryMaitriService {
 }
 
 /// Types of planetary relationships
-enum RelationshipType {
-  friend,
-  neutral,
-  enemy,
-}
+enum RelationshipType { friend, neutral, enemy }
 
 /// Compound relationship types (Panchadha Maitri)
 enum CompoundRelationship {
-  bestFriend,    // Adhi Mitr
-  friend,        // Mitr
-  neutral,       // Sama
-  enemy,         // Satru
+  bestFriend, // Adhi Mitr
+  friend, // Mitr
+  neutral, // Sama
+  enemy, // Satru
 }
 
 /// Complete maitri data for a chart

@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/jyotish.dart' hide RelationshipType;
 import '../../data/models.dart';
 import '../../logic/planetary_maitri_service.dart';
 
@@ -19,7 +19,9 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
   @override
   void initState() {
     super.initState();
-    _maitriData = PlanetaryMaitriService.getAllMaitriData(widget.chartData.baseChart);
+    _maitriData = PlanetaryMaitriService.getAllMaitriData(
+      widget.chartData.baseChart,
+    );
   }
 
   @override
@@ -39,17 +41,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Expanded(
-                  child: _buildTabButton('Natural\n(Naisargika)', 0),
-                ),
+                Expanded(child: _buildTabButton('Natural\n(Naisargika)', 0)),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: _buildTabButton('Temporary\n(Tatkalika)', 1),
-                ),
+                Expanded(child: _buildTabButton('Temporary\n(Tatkalika)', 1)),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: _buildTabButton('Compound\n(Panchadha)', 2),
-                ),
+                Expanded(child: _buildTabButton('Compound\n(Panchadha)', 2)),
               ],
             ),
           ),
@@ -185,10 +181,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             const SizedBox(height: 8),
             Text(
               description,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 13),
             ),
           ],
         ),
@@ -220,40 +213,73 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columnSpacing: 16,
-                columns: [
-                  const DataColumn(
-                    label: Text('Planet', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                  ...planets.map((p) => DataColumn(
-                    label: Text(
-                      _getPlanetSymbol(p),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  )),
-                ],
-                rows: planets.map((planet) {
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(
-                        _getPlanetName(planet),
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      )),
-                      ...planets.map((other) {
-                        if (planet == other) {
-                          return const DataCell(
-                            Center(child: Text('-', style: TextStyle(color: Colors.grey))),
-                          );
-                        }
-                        final relation = PlanetaryMaitriService.getNaturalRelationship(planet, other);
-                        return DataCell(
-                          Center(child: _buildRelationshipIcon(relation)),
-                        );
-                      }),
+              child: Table(
+                defaultColumnWidth: const FixedColumnWidth(50),
+                children: [
+                  // Header row
+                  TableRow(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          'Planet',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      ...planets.map(
+                        (p) => Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            _getPlanetSymbol(p),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  );
-                }).toList(),
+                  ),
+                  // Data rows
+                  ...planets.map((planet) {
+                    return TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            _getPlanetName(planet),
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        ...planets.map((other) {
+                          if (planet == other) {
+                            return const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Center(
+                                child: Text(
+                                  '-',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
+                            );
+                          }
+                          final relation =
+                              PlanetaryMaitriService.getNaturalRelationship(
+                                planet,
+                                other,
+                              );
+                          return Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Center(
+                              child: _buildRelationshipIcon(relation),
+                            ),
+                          );
+                        }),
+                      ],
+                    );
+                  }),
+                ],
               ),
             ),
           ],
@@ -278,40 +304,71 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columnSpacing: 16,
-                columns: [
-                  const DataColumn(
-                    label: Text('Planet', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                  ...planets.map((p) => DataColumn(
-                    label: Text(
-                      _getPlanetSymbol(p),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  )),
-                ],
-                rows: planets.map((planet) {
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(
-                        _getPlanetName(planet),
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      )),
-                      ...planets.map((other) {
-                        if (planet == other) {
-                          return const DataCell(
-                            Center(child: Text('-', style: TextStyle(color: Colors.grey))),
-                          );
-                        }
-                        final relation = _maitriData.temporary[planet]?[other] ?? RelationshipType.neutral;
-                        return DataCell(
-                          Center(child: _buildRelationshipIcon(relation)),
-                        );
-                      }),
+              child: Table(
+                defaultColumnWidth: const FixedColumnWidth(50),
+                children: [
+                  // Header row
+                  TableRow(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          'Planet',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      ...planets.map(
+                        (p) => Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            _getPlanetSymbol(p),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  );
-                }).toList(),
+                  ),
+                  // Data rows
+                  ...planets.map((planet) {
+                    return TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            _getPlanetName(planet),
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        ...planets.map((other) {
+                          if (planet == other) {
+                            return const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Center(
+                                child: Text(
+                                  '-',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
+                            );
+                          }
+                          final relation =
+                              _maitriData.temporary[planet]?[other] ??
+                              RelationshipType.neutral;
+                          return Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Center(
+                              child: _buildRelationshipIcon(relation),
+                            ),
+                          );
+                        }),
+                      ],
+                    );
+                  }),
+                ],
               ),
             ),
           ],
@@ -336,40 +393,71 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columnSpacing: 16,
-                columns: [
-                  const DataColumn(
-                    label: Text('Planet', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                  ...planets.map((p) => DataColumn(
-                    label: Text(
-                      _getPlanetSymbol(p),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  )),
-                ],
-                rows: planets.map((planet) {
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(
-                        _getPlanetName(planet),
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      )),
-                      ...planets.map((other) {
-                        if (planet == other) {
-                          return const DataCell(
-                            Center(child: Text('-', style: TextStyle(color: Colors.grey))),
-                          );
-                        }
-                        final relation = _maitriData.compound[planet]?[other] ?? CompoundRelationship.neutral;
-                        return DataCell(
-                          Center(child: _buildCompoundRelationshipIcon(relation)),
-                        );
-                      }),
+              child: Table(
+                defaultColumnWidth: const FixedColumnWidth(50),
+                children: [
+                  // Header row
+                  TableRow(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          'Planet',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      ...planets.map(
+                        (p) => Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            _getPlanetSymbol(p),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  );
-                }).toList(),
+                  ),
+                  // Data rows
+                  ...planets.map((planet) {
+                    return TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            _getPlanetName(planet),
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        ...planets.map((other) {
+                          if (planet == other) {
+                            return const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Center(
+                                child: Text(
+                                  '-',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
+                            );
+                          }
+                          final relation =
+                              _maitriData.compound[planet]?[other] ??
+                              CompoundRelationship.neutral;
+                          return Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Center(
+                              child: _buildCompoundRelationshipIcon(relation),
+                            ),
+                          );
+                        }),
+                      ],
+                    );
+                  }),
+                ],
               ),
             ),
           ],
@@ -388,7 +476,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             color: Colors.green.withAlpha(200),
             shape: BoxShape.circle,
           ),
-          child: const Icon(FluentIcons.check_mark, size: 14, color: Colors.white),
+          child: const Icon(
+            FluentIcons.check_mark,
+            size: 14,
+            color: Colors.white,
+          ),
         );
       case RelationshipType.neutral:
         return Container(
@@ -424,7 +516,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             shape: BoxShape.circle,
             border: Border.all(color: Colors.green.withAlpha(150), width: 2),
           ),
-          child: const Icon(FluentIcons.favorite_star, size: 14, color: Colors.white),
+          child: const Icon(
+            FluentIcons.favorite_star,
+            size: 14,
+            color: Colors.white,
+          ),
         );
       case CompoundRelationship.friend:
         return Container(
@@ -434,7 +530,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             color: Colors.green.withAlpha(200),
             shape: BoxShape.circle,
           ),
-          child: const Icon(FluentIcons.check_mark, size: 14, color: Colors.white),
+          child: const Icon(
+            FluentIcons.check_mark,
+            size: 14,
+            color: Colors.white,
+          ),
         );
       case CompoundRelationship.neutral:
         return Container(
@@ -466,10 +566,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Legend',
-              style: FluentTheme.of(context).typography.subtitle,
-            ),
+            Text('Legend', style: FluentTheme.of(context).typography.subtitle),
             const SizedBox(height: 12),
             _buildLegendItem(
               Container(
@@ -479,7 +576,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                   color: Colors.green.withAlpha(200),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(FluentIcons.check_mark, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.check_mark,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Friend (Mitr) - Natural allies that support each other',
             ),
@@ -492,7 +593,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                   color: Colors.grey.withAlpha(150),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(FluentIcons.remove, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.remove,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Neutral (Sama) - No special relationship',
             ),
@@ -505,7 +610,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                   color: Colors.red.withAlpha(200),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(FluentIcons.cancel, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.cancel,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Enemy (Satru) - Natural opposition',
             ),
@@ -540,7 +649,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                   color: Colors.green.withAlpha(200),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(FluentIcons.check_mark, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.check_mark,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Temporary Friends: 2nd, 3rd, 4th, 10th, 11th, 12th houses',
             ),
@@ -553,7 +666,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                   color: Colors.red.withAlpha(200),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(FluentIcons.cancel, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.cancel,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Temporary Enemies: 1st, 5th, 6th, 7th, 8th, 9th houses',
             ),
@@ -582,9 +699,16 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                 decoration: BoxDecoration(
                   color: Colors.green,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.green.withAlpha(150), width: 2),
+                  border: Border.all(
+                    color: Colors.green.withAlpha(150),
+                    width: 2,
+                  ),
                 ),
-                child: const Icon(FluentIcons.favorite_star, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.favorite_star,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Best Friend (Adhi Mitr) - Natural Friend + Temporary Friend',
             ),
@@ -597,7 +721,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                   color: Colors.green.withAlpha(200),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(FluentIcons.check_mark, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.check_mark,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Friend (Mitr) - Natural Friend + Temporary Enemy OR Natural Neutral + Temporary Friend',
             ),
@@ -610,7 +738,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                   color: Colors.grey.withAlpha(150),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(FluentIcons.remove, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.remove,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Neutral (Sama) - Natural Neutral + Temporary Enemy OR Natural Enemy + Temporary Friend',
             ),
@@ -623,7 +755,11 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
                   color: Colors.red.withAlpha(200),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(FluentIcons.cancel, size: 14, color: Colors.white),
+                child: const Icon(
+                  FluentIcons.cancel,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
               'Enemy (Satru) - Natural Enemy + Temporary Enemy',
             ),
@@ -638,12 +774,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
       children: [
         icon,
         const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 13),
-          ),
-        ),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
       ],
     );
   }
@@ -668,11 +799,14 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
         return '♀';
       case Planet.saturn:
         return '♄';
-      case Planet.rahu:
-        return '☊';
       case Planet.ketu:
         return '☋';
       default:
+        // Handles meanNode (Rahu) and any other cases
+        if (planet.name.toLowerCase().contains('node') ||
+            planet.name.toLowerCase().contains('rahu')) {
+          return '☊';
+        }
         return planet.name.substring(0, 1).toUpperCase();
     }
   }

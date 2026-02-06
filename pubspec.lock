@@ -330,7 +330,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: 4056c011737de2768a77662c23710473bbac9918
+      resolved-ref: "4056c011737de2768a77662c23710473bbac9918"
       url: "https://github.com/SV-stark/jyotish-flutter-library-fork.git"
     source: git
     version: "1.0.1"

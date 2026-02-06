@@ -117,7 +117,9 @@ class _InputScreenState extends State<InputScreen> {
           builder: (context, close) {
             return InfoBar(
               title: const Text('Missing Information'),
-              content: const Text('Please select a birth place or enter coordinates manually'),
+              content: const Text(
+                'Please select a birth place or enter coordinates manually',
+              ),
               severity: InfoBarSeverity.warning,
               onClose: close,
             );
@@ -130,13 +132,20 @@ class _InputScreenState extends State<InputScreen> {
         final lat = double.tryParse(_latitudeController.text);
         final long = double.tryParse(_longitudeController.text);
 
-        if (lat == null || long == null || lat < -90 || lat > 90 || long < -180 || long > 180) {
+        if (lat == null ||
+            long == null ||
+            lat < -90 ||
+            lat > 90 ||
+            long < -180 ||
+            long > 180) {
           displayInfoBar(
             context,
             builder: (context, close) {
               return InfoBar(
                 title: const Text('Invalid Coordinates'),
-                content: const Text('Please enter valid latitude (-90 to 90) and longitude (-180 to 180)'),
+                content: const Text(
+                  'Please enter valid latitude (-90 to 90) and longitude (-180 to 180)',
+                ),
                 severity: InfoBarSeverity.warning,
                 onClose: close,
               );
@@ -179,7 +188,8 @@ class _InputScreenState extends State<InputScreen> {
       if (_useManualCoordinates) {
         lat = double.parse(_latitudeController.text);
         long = double.parse(_longitudeController.text);
-        locationName = 'Lat: ${lat.toStringAsFixed(4)}, Long: ${long.toStringAsFixed(4)}';
+        locationName =
+            'Lat: ${lat.toStringAsFixed(4)}, Long: ${long.toStringAsFixed(4)}';
         timezone = DateTime.now().timeZoneName;
       } else {
         lat = _selectedCity!.latitude;
@@ -362,15 +372,21 @@ class _InputScreenState extends State<InputScreen> {
                                   placeholder: "e.g., 28.6139",
                                   prefix: const Padding(
                                     padding: EdgeInsets.only(left: 8.0),
-                                    child: Icon(FluentIcons.coordinate_system),
+                                    child: Icon(FluentIcons.globe),
                                   ),
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                        signed: true,
+                                      ),
                                   validator: (value) {
                                     if (!_useManualCoordinates) return null;
-                                    if (value == null || value.isEmpty) return "Required";
+                                    if (value == null || value.isEmpty)
+                                      return "Required";
                                     final lat = double.tryParse(value);
                                     if (lat == null) return "Invalid number";
-                                    if (lat < -90 || lat > 90) return "Must be -90 to 90";
+                                    if (lat < -90 || lat > 90)
+                                      return "Must be -90 to 90";
                                     return null;
                                   },
                                 ),
@@ -385,15 +401,21 @@ class _InputScreenState extends State<InputScreen> {
                                   placeholder: "e.g., 77.2090",
                                   prefix: const Padding(
                                     padding: EdgeInsets.only(left: 8.0),
-                                    child: Icon(FluentIcons.coordinate_system),
+                                    child: Icon(FluentIcons.globe),
                                   ),
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                        signed: true,
+                                      ),
                                   validator: (value) {
                                     if (!_useManualCoordinates) return null;
-                                    if (value == null || value.isEmpty) return "Required";
+                                    if (value == null || value.isEmpty)
+                                      return "Required";
                                     final long = double.tryParse(value);
                                     if (long == null) return "Invalid number";
-                                    if (long < -180 || long > 180) return "Must be -180 to 180";
+                                    if (long < -180 || long > 180)
+                                      return "Must be -180 to 180";
                                     return null;
                                   },
                                 ),

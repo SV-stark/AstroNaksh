@@ -157,7 +157,11 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                 ),
               ],
             ),
-            const Divider(style: DividerThemeData(verticalMargin: 12)),
+            const Divider(
+              style: DividerThemeData(
+                verticalMargin: EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -406,12 +410,19 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                         runSpacing: 4,
                         children: period.keyThemes
                             .map(
-                              (t) => Chip(
-                                label: Text(
+                              (t) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withAlpha(25),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
                                   t,
                                   style: const TextStyle(fontSize: 11),
                                 ),
-                                backgroundColor: Colors.blue.withOpacity(0.1),
                               ),
                             )
                             .toList(),
@@ -420,7 +431,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                     ],
                     // Cautions
                     if (period.cautions.isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'Watch Out For:',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -432,7 +443,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                           padding: const EdgeInsets.only(left: 8, top: 2),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 FluentIcons.warning,
                                 size: 12,
                                 color: Colors.orange,

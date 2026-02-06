@@ -192,10 +192,11 @@ class LifePredictionService {
 
   /// Find planet in chart
   dynamic _findPlanet(CompleteChartData chartData, String planetName) {
-    for (final planet in chartData.baseChart.planets) {
-      if (planet.name == planetName ||
-          planet.displayName == planetName ||
-          planet.name.toString().split('.').last == planetName) {
+    for (final entry in chartData.baseChart.planets.entries) {
+      final planet = entry.value;
+      final pName = entry.key.toString().split('.').last;
+      if (pName == planetName ||
+          pName.toLowerCase() == planetName.toLowerCase()) {
         return planet;
       }
     }
@@ -323,8 +324,7 @@ class LifePredictionService {
 
     // Check if planet is placed in relevant houses (good placement)
     if (aspect.houses.contains(house)) {
-      return naturalBenefics.contains(planetName) ||
-          status == 'Friendly Sign';
+      return naturalBenefics.contains(planetName) || status == 'Friendly Sign';
     }
 
     // Check if in kendra or trikona from relevant houses
@@ -479,8 +479,9 @@ class LifePredictionService {
     List<PlanetaryInfluence> influences,
     int score,
   ) {
-    final weakPlanets =
-        influences.where((i) => !i.isBenefic || i.strength < 50).toList();
+    final weakPlanets = influences
+        .where((i) => !i.isBenefic || i.strength < 50)
+        .toList();
 
     if (weakPlanets.isEmpty || score >= 80) {
       switch (aspect) {
@@ -538,7 +539,8 @@ class LifePredictionService {
       'Ketu':
           'Worship Lord Ganesha. Practice meditation and develop detachment.',
     };
-    return remedies[planetName] ?? 'Consult an astrologer for specific remedies.';
+    return remedies[planetName] ??
+        'Consult an astrologer for specific remedies.';
   }
 
   /// Get ordinal suffix

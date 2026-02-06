@@ -4,6 +4,7 @@ import 'styles.dart';
 import '../core/database_helper.dart';
 import '../data/models.dart';
 import '../core/settings_manager.dart';
+import 'horary/horary_input_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -362,6 +363,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.orange,
                         onTap: () {
                           Navigator.pushNamed(context, '/panchang');
+                        },
+                      ),
+                      _buildQuickAction(
+                        icon: FluentIcons
+                            .health, // Using Health icon as placeholder for Prasha/Question
+                        title: "Horary (Prashna)",
+                        subtitle: "Ask a question",
+                        color: Colors.teal,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            FluentPageRoute(
+                              builder: (_) => const HoraryInputScreen(),
+                            ),
+                          );
                         },
                       ),
                     ],

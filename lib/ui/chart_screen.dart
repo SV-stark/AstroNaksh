@@ -18,10 +18,12 @@ import 'strength/bhava_bala_screen.dart';
 import 'analysis/yoga_dosha_screen.dart';
 import 'analysis/planetary_maitri_screen.dart';
 import 'predictions/transit_screen.dart';
+import '../../logic/planetary_aspect_service.dart';
 import 'predictions/varshaphal_screen.dart';
 import 'analysis/retrograde_screen.dart';
 import 'comparison/chart_comparison_screen.dart';
 import 'predictions/rashiphal_dashboard.dart';
+import 'predictions/life_predictions_screen.dart';
 import 'reports/pdf_report_screen.dart';
 import '../../core/chart_share_service.dart';
 
@@ -40,6 +42,7 @@ class _ChartScreenState extends State<ChartScreen> {
   BirthData? _birthData;
   int _currentIndex = 0;
   int _dashaTabIndex = 0; // 0 = Vimshottari, 1 = Yogini, 2 = Chara
+  bool _showAspects = false; // Toggle for planetary aspects (drishti)
   final GlobalKey _d1ChartKey = GlobalKey();
 
   @override
@@ -471,7 +474,21 @@ class _ChartScreenState extends State<ChartScreen> {
                 });
               },
             ),
-            // 7. Rectify
+            // 7. Aspects (Drishti) Toggle
+            CommandBarButton(
+              icon: Icon(
+                _showAspects
+                    ? FluentIcons.view
+                    : FluentIcons.hide,
+              ),
+              label: Text(_showAspects ? 'Aspects On' : 'Aspects Off'),
+              onPressed: () {
+                setState(() {
+                  _showAspects = !_showAspects;
+                });
+              },
+            ),
+            // 8. Rectify
             CommandBarButton(
               icon: const Icon(FluentIcons.build),
               label: const Text('Rectify'),
@@ -549,6 +566,13 @@ class _ChartScreenState extends State<ChartScreen> {
             body: _buildBody(_buildDetailsTab),
           ),
           PaneItemHeader(header: const Text('Analysis')),
+          PaneItem(
+            icon: const Icon(FluentIcons.heart),
+            title: const Text("Life Predictions"),
+            body: _buildBody(
+              (data) => LifePredictionsScreen(chartData: data),
+            ),
+          ),
           PaneItem(
             icon: const Icon(FluentIcons.lightbulb),
             title: const Text("Daily Rashiphal"),
@@ -663,6 +687,7 @@ class _ChartScreenState extends State<ChartScreen> {
   Widget _buildD1Tab(CompleteChartData data) {
     final planetsMap = _getPlanetsMap(data.baseChart);
     final ascSign = _getAscendantSignInt(data.baseChart);
+    final aspects = PlanetaryAspectService.calculateAspects(data.baseChart);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -685,6 +710,8 @@ class _ChartScreenState extends State<ChartScreen> {
               ascendantSign: ascSign,
               style: _style,
               size: 350,
+              aspects: aspects,
+              showAspects: _showAspects,
             ),
           ),
           const SizedBox(height: 16),
@@ -777,6 +804,13 @@ class _ChartScreenState extends State<ChartScreen> {
               chart.description,
               style: FluentTheme.of(context).typography.caption,
             ),
+            if (chart.ascendantSign != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                "Ascendant: ${_getSignName(chart.ascendantSign! + 1)}",
+                style: FluentTheme.of(context).typography.body,
+              ),
+            ],
             const SizedBox(height: 8),
             const Divider(),
             const SizedBox(height: 16),
@@ -786,11 +820,150 @@ class _ChartScreenState extends State<ChartScreen> {
               style: _style,
               size: 350,
             ),
+            const SizedBox(height: 16),
+            _buildDivisionalPlanetPositionsTable(chart),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildDivisionalPlanetPositionsTable(DivisionalChartData chart) {
+    final positions = chart.positions;
+    final nakshatras = AppConstants.nakshatras;
+
+    return Container(
+      width: double.infinity,
+      child: Card(
+        backgroundColor: FluentTheme.of(context).accentColor.withAlpha(10),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Planet Positions in ${chart.name}',
+                style: FluentTheme.of(context).typography.subtitle,
+              ),
+              const SizedBox(height: 16),
+              Table(
+                columnWidths: const {
+                  0: FlexColumnWidth(1.5),
+                  1: FlexColumnWidth(1),
+                  2: FlexColumnWidth(1.2),
+                  3: FlexColumnWidth(1.5),
+                  4: FlexColumnWidth(0.6),
+                },
+                children: [
+                  const TableRow(
+                    children: [
+                      Text(
+                        'Planet',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text('Sign', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                        'Degrees',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Nakshatra',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text('Pada', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const TableRow(
+                    children: [
+                      SizedBox(height: 8),
+                      SizedBox(),
+                      SizedBox(),
+                      SizedBox(),
+                      SizedBox(),
+                    ],
+                  ),
+                  // Divider Row
+                  TableRow(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: FluentTheme.of(
+                            context,
+                          ).resources.dividerStrokeColorDefault,
+                        ),
+                      ),
+                    ),
+                    children: List.filled(5, const SizedBox(height: 4)),
+                  ),
+                  const TableRow(
+                    children: [
+                      SizedBox(height: 8),
+                      SizedBox(),
+                      SizedBox(),
+                      SizedBox(),
+                      SizedBox(),
+                    ],
+                  ),
+                  ...positions.entries.map((entry) {
+                    final planetName = entry.key;
+                    final longitude = entry.value;
+
+                    // Sign (1-12)
+                    final signIndex = (longitude / 30).floor();
+                    final signName = _getSignName(signIndex + 1);
+
+                    // Degrees within sign
+                    final degInSign = longitude % 30;
+                    final degrees = degInSign.floor();
+                    final minutes = ((degInSign - degrees) * 60).floor();
+                    final seconds = (((degInSign - degrees) * 60 - minutes) * 60)
+                        .round();
+                    final degStr =
+                        '${degrees.toString().padLeft(2, '0')}°${minutes.toString().padLeft(2, '0')}\'${seconds.toString().padLeft(2, '0')}"';
+
+                    // Nakshatra (each is 13°20' = 13.333...)
+                    final nakshatraIndex = (longitude / 13.333333).floor() % 27;
+                    final nakshatraName = nakshatras[nakshatraIndex];
+
+                    // Pada (4 padas per nakshatra, each 3°20' = 3.333...)
+                    final padaInNakshatra =
+                        ((longitude % 13.333333) / 3.333333).floor() + 1;
+
+                    return TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Text(
+                            planetName.substring(0, 1).toUpperCase() +
+                                planetName.substring(1),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Text(signName),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Text(degStr),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Text(nakshatraName),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Text('$padaInNakshatra'),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
 
   Widget _buildKPTab(CompleteChartData data) {
     return SingleChildScrollView(

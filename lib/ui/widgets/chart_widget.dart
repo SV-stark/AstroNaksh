@@ -1,8 +1,10 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../painters/north_indian_chart_painter.dart';
 import '../painters/south_indian_chart_painter.dart';
+import '../painters/aspect_painter.dart';
 import '../../core/settings_manager.dart';
 import '../../core/chart_customization.dart';
+import '../../logic/planetary_aspect_service.dart';
 
 enum ChartStyle { northIndian, southIndian }
 
@@ -11,6 +13,8 @@ class ChartWidget extends StatelessWidget {
   final int ascendantSign; // 1-12
   final ChartStyle style;
   final double size;
+  final List<PlanetaryAspect>? aspects;
+  final bool showAspects;
 
   const ChartWidget({
     super.key,
@@ -18,6 +22,8 @@ class ChartWidget extends StatelessWidget {
     required this.ascendantSign,
     required this.style,
     this.size = 300,
+    this.aspects,
+    this.showAspects = false,
   });
 
   @override
@@ -43,18 +49,36 @@ class ChartWidget extends StatelessWidget {
               ),
             ],
           ),
-          child: CustomPaint(
-            painter: style == ChartStyle.northIndian
-                ? NorthIndianChartPainter(
+          child: Stack(
+            children: [
+              // Base chart painter
+              CustomPaint(
+                size: Size(size, size),
+                painter: style == ChartStyle.northIndian
+                    ? NorthIndianChartPainter(
+                        planetsBySign: planetsBySign,
+                        ascendantSign: ascendantSign,
+                        colors: colors,
+                      )
+                    : SouthIndianChartPainter(
+                        planetsBySign: planetsBySign,
+                        ascendantSign: ascendantSign,
+                        colors: colors,
+                      ),
+              ),
+              // Aspect overlay
+              if (showAspects && aspects != null && aspects!.isNotEmpty)
+                CustomPaint(
+                  size: Size(size, size),
+                  painter: AspectPainter(
+                    aspects: aspects!,
                     planetsBySign: planetsBySign,
                     ascendantSign: ascendantSign,
                     colors: colors,
-                  )
-                : SouthIndianChartPainter(
-                    planetsBySign: planetsBySign,
-                    ascendantSign: ascendantSign,
-                    colors: colors,
+                    lineOpacity: 0.4,
                   ),
+                ),
+            ],
           ),
         );
       },

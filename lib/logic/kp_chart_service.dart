@@ -52,7 +52,7 @@ class KPChartService {
     );
 
     // Use library's native KP calculation
-    final nativeKPData = EphemerisManager.jyotish.calculateKPData(chart);
+    final nativeKPData = await EphemerisManager.jyotish.calculateKPData(chart);
 
     // Calculate all systems
     final kpData = _mapNativeKPData(nativeKPData, chart);

@@ -153,4 +153,73 @@ class RashiphalRules {
 
     return timings;
   }
+
+  /// Get Tarabala category (1-9)
+  /// [birthNakshatra] 1-27
+  /// [dailyNakshatra] 1-27
+  static int getTarabalaCategory(int birthNakshatra, int dailyNakshatra) {
+    // Count from birth to daily (inclusive)
+    int count = (dailyNakshatra - birthNakshatra + 27) % 27 + 1;
+    int tarabala = count % 9;
+    return tarabala == 0 ? 9 : tarabala;
+  }
+
+  /// Get score for Tarabala category
+  /// Returns points (0-30)
+  static int getTarabalaScore(int category) {
+    switch (category) {
+      case 2: // Sampat
+      case 4: // Kshema
+      case 6: // Sadhana
+      case 8: // Mitra
+      case 9: // Param Mitra
+        return 30;
+      case 1: // Janma (Mixed/Body stress)
+        return 10;
+      case 3: // Vipat
+      case 5: // Pratyak
+      case 7: // Naidhana
+      default:
+        return 0;
+    }
+  }
+
+  /// Get Murti (Form of the Moon) based on Transit Sign relative to Natal Moon Sign
+  /// [natalSign] 0-11
+  /// [transitSign] 0-11
+  static String getMurti(int natalSign, int transitSign) {
+    // Murti is calculated by position from natal Moon
+    // 1st, 6th, 11th - Gold (Swarna)
+    // 2nd, 5th, 9th - Silver (Rajat)
+    // 3rd, 7th, 10th - Copper (Tamra)
+    // 4th, 8th, 12th - Iron (Loha)
+    int houseFromMoon = ((transitSign - natalSign + 12) % 12) + 1;
+
+    if ([1, 6, 11].contains(houseFromMoon)) return 'Gold';
+    if ([2, 5, 9].contains(houseFromMoon)) return 'Silver';
+    if ([3, 7, 10].contains(houseFromMoon)) return 'Copper';
+    return 'Iron';
+  }
+
+  /// Get points for Murti (0-20)
+  static int getMurtiScore(String murti) {
+    switch (murti) {
+      case 'Gold':
+        return 20;
+      case 'Silver':
+        return 20;
+      case 'Copper':
+        return 10;
+      case 'Iron':
+      default:
+        return 0;
+    }
+  }
+
+  /// Check if the Nithya Yoga is considered malefic (Vyatipata or Vaidhriti)
+  /// [yogaNumber] 1-27
+  static bool isMaleficYoga(int yogaNumber) {
+    // Vyatipata is 17th, Vaidhriti is 27th
+    return yogaNumber == 17 || yogaNumber == 27;
+  }
 }

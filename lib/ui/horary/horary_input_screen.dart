@@ -87,7 +87,13 @@ class _HoraryInputScreenState extends State<HoraryInputScreen> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
-      header: const PageHeader(title: Text('Horary (Prashna) ASTRO')),
+      header: PageHeader(
+        title: const Text('Horary (Prashna) ASTRO'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       content: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

@@ -92,18 +92,19 @@ class _TransitScreenState extends State<TransitScreen> {
   }
 
   Widget _buildDateSelector() {
-    // Fluent UI DatePicker is inline. We can wrap it nicely.
-    // Or just return it.
     return Row(
       children: [
         const Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(width: 8),
-        DatePicker(
-          selected: _selectedDate,
-          onChanged: (date) {
-            setState(() => _selectedDate = date);
-            _loadTransits();
-          },
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 200),
+          child: DatePicker(
+            selected: _selectedDate,
+            onChanged: (date) {
+              setState(() => _selectedDate = date);
+              _loadTransits();
+            },
+          ),
         ),
       ],
     );

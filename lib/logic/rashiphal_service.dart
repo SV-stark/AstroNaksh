@@ -1,3 +1,4 @@
+import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
 import '../core/rashiphal_rules.dart';
 import 'transit_analysis.dart';
@@ -78,24 +79,86 @@ class RashiphalService {
     final tithiRec = RashiphalRules.getTithiRecommendation(tithiNum);
     final muhurta = RashiphalRules.getMuhurtaTimings(date);
 
-    // 5. Synthesize Highlights and Cautions
+    // 5. Hybrid Scoring Calculation
+    // Base Scores (Max 100)
+    double score = 0;
+
+    // A. Moon Transit (House) - Weight: 35
+    final moonHouseScore = switch (moonTransit.quality) {
+      TransitQuality.favorable => 35.0,
+      TransitQuality.medium => 20.0,
+      TransitQuality.challenging => 5.0,
+    };
+    score += moonHouseScore;
+
+    // B. Tarabala (Star Strength) - Weight: 35
+    final birthNakshatraIndex =
+        chartData.baseChart.planets[Planet.moon]?.position.nakshatraIndex ?? 0;
+    final tarabalaCategory = RashiphalRules.getTarabalaCategory(
+      birthNakshatraIndex + 1,
+      panchang.nakshatraNumber,
+    );
+    final tarabalaPoints = RashiphalRules.getTarabalaScore(tarabalaCategory);
+    // getTarabalaScore returns 30, 10, or 0. Map to 35 max.
+    final tarabalaScore = (tarabalaPoints / 30.0) * 35.0;
+    score += tarabalaScore;
+
+    // C. Murti (Moon Form) - Weight: 30
+    final natalMoonSign =
+        ((chartData.baseChart.planets[Planet.moon]?.position.longitude ?? 0) /
+                30)
+            .floor();
+    final murti = RashiphalRules.getMurti(natalMoonSign, moonSign);
+    final murtiPoints = RashiphalRules.getMurtiScore(murti);
+    // getMurtiScore returns 20, 10, or 0. Map to 30 max.
+    final murtiScore = (murtiPoints / 20.0) * 30.0;
+    score += murtiScore;
+
+    // D. Penalties
+    // 1. Vedha (Obstruction)
+    final vedha = _transitAnalysis.analyzeVedha(
+      moonNakshatra: panchang.nakshatraNumber,
+      gocharaPositions: transitChart.gochara.positions,
+    );
+    final isMoonObstructed = vedha.affectedTransits.contains(Planet.moon);
+    if (isMoonObstructed) {
+      score -= 20.0; // Significant penalty
+    }
+
+    // 2. Malefic Yoga
+    if (RashiphalRules.isMaleficYoga(panchang.yogaNumber)) {
+      score -= 10.0;
+    }
+
+    // Normalize and Clamp (35% to 95%)
+    // Raw score range is approx -30 to 100
+    double normalizedScore = score / 100;
+    final finalScore = normalizedScore.clamp(0.35, 0.95);
+
+    // 6. Synthesize Highlights and Cautions
     final keyHighlights = <String>[];
     final cautions = <String>[];
 
     // Add transit recommendations
     if (moonTransit.isFavorable) {
-      keyHighlights.add('Moon transit is favorable.');
+      keyHighlights.add('Moon transit is favorable ($murti Murti)');
       keyHighlights.addAll(moonTransit.recommendations);
     } else {
-      cautions.add('Moon transit advises caution.');
+      cautions.add('Moon transit advises caution ($murti Murti)');
       cautions.addAll(moonTransit.recommendations);
     }
 
-    // Add KP Significance if needed
-    // Simple check: Is sub-lord of 1st/10th house favorable?
-    // For now, we'll keep it simple and focus on the generated text.
+    if (tarabalaPoints >= 30) {
+      keyHighlights.add('Excellent Tarabala: Highly supportive star energy.');
+    } else if (tarabalaPoints == 0) {
+      cautions.add('Weak Tarabala: Success may require extra effort.');
+    }
 
-    // 6. Construct Final Object
+    if (isMoonObstructed) {
+      cautions.add('Moon is obstructed (Vedha) - positive energy is blocked.');
+    }
+
+    // 7. Construct Final Object
     return DailyRashiphal(
       date: date,
       moonSign: _getSignName(moonSign),
@@ -106,7 +169,7 @@ class RashiphalService {
       auspiciousPeriods: muhurta,
       cautions: cautions,
       recommendation: tithiRec,
-      favorableScore: moonTransit.isFavorable ? 0.8 : 0.4,
+      favorableScore: finalScore,
     );
   }
 

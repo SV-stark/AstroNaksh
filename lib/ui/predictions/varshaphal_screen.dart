@@ -15,14 +15,20 @@ class VarshaphalScreen extends StatefulWidget {
 }
 
 class _VarshaphalScreenState extends State<VarshaphalScreen> {
-  int _selectedYear = DateTime.now().year;
-  int _expandedPeriodIndex = 0; // First period expanded by default
+  late int _selectedYear;
+  int _expandedPeriodIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedYear = DateTime.now().year;
+  }
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
       header: PageHeader(
-        title: const Text('Varshaphal (Annual Predictions)'),
+        title: const Text('Varshaphal (Annual Horoscope)'),
         leading: IconButton(
           icon: const Icon(FluentIcons.back),
           onPressed: () => Navigator.pop(context),
@@ -35,86 +41,39 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
         ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ProgressRing(),
-                  SizedBox(height: 16),
-                  Text('Calculating annual chart...'),
-                ],
-              ),
-            );
+            return const Center(child: ProgressRing());
           }
 
           if (snapshot.hasError) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(FluentIcons.error, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  InfoBar(
-                    title: const Text('Error'),
-                    content: Text(
-                      'Could not calculate Varshaphal: ${snapshot.error}',
-                    ),
-                    severity: InfoBarSeverity.error,
-                  ),
-                  const SizedBox(height: 16),
-                  Button(
-                    onPressed: () {
-                      setState(() {}); // Trigger rebuild which recreates the Future
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(FluentIcons.refresh, size: 16),
-                        const SizedBox(width: 8),
-                        const Text("Retry"),
-                      ],
-                    ),
-                  ),
-                ],
+              child: InfoBar(
+                title: const Text('Calculation Error'),
+                content: Text(snapshot.error.toString()),
+                severity: InfoBarSeverity.error,
               ),
             );
           }
 
           if (!snapshot.hasData) {
-            return const Center(child: Text('No data available'));
+            return const Center(child: Text('No Data'));
           }
 
-          final varshaphal = snapshot.data!;
+          final chart = snapshot.data!;
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Year selector card
-              _buildYearSelectorCard(),
+              _buildYearSelector(),
               const SizedBox(height: 16),
-
-              // Solar Return Info Card
-              _buildSolarReturnCard(varshaphal),
+              _buildHeaderCard(chart),
               const SizedBox(height: 16),
-
-              // Annual Chart Display
-              _buildChartCard(varshaphal),
+              _buildChartDisplay(chart),
               const SizedBox(height: 16),
-
-              // Year Lord & Muntha Info
-              _buildYearLordCard(varshaphal),
+              _buildVarsheshAnalysisCard(chart),
               const SizedBox(height: 16),
-
-              // Varshik Dasha Periods with Predictions
-              _buildVarshikDashaSection(varshaphal),
+              _buildMuddaDashaSection(chart),
               const SizedBox(height: 16),
-
-              // Sahams (Arabic Parts)
-              _buildSahamsCard(varshaphal),
-              const SizedBox(height: 16),
-
-              // Overall Annual Interpretation
-              _buildInterpretationCard(varshaphal),
+              _buildSahamsCard(chart),
             ],
           );
         },
@@ -122,521 +81,370 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
     );
   }
 
-  Widget _buildYearSelectorCard() {
+  Widget _buildYearSelector() {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              icon: const Icon(FluentIcons.chevron_left),
-              onPressed: _selectedYear > 1800
-                  ? () => setState(() => _selectedYear--)
-                  : null,
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              decoration: BoxDecoration(
-                color: FluentTheme.of(
-                  context,
-                ).accentColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '$_selectedYear',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(FluentIcons.chevron_right),
-              onPressed: _selectedYear < 2100
-                  ? () => setState(() => _selectedYear++)
-                  : null,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSolarReturnCard(VarshaphalChart varshaphal) {
-    return Card(
-      backgroundColor: FluentTheme.of(
-        context,
-      ).accentColor.withValues(alpha: 0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  FluentIcons.calendar,
-                  color: FluentTheme.of(context).accentColor,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Solar Return (Tajik)',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Exact Return Time: ${DateFormat('MMM dd, yyyy - HH:mm').format(varshaphal.solarReturnTime)}',
-              style: FluentTheme.of(context).typography.body,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'This is the moment when the Sun returns to its exact natal position, marking the beginning of your ${_selectedYear - widget.birthData.dateTime.year}th year.',
-              style: FluentTheme.of(context).typography.caption,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildChartCard(VarshaphalChart varshaphal) {
-    final planetsMap = _getPlanetsMap(varshaphal.chart);
-    final ascSign = _getAscendantSignInt(varshaphal.chart);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Annual Chart (Tajik)',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: FluentTheme.of(
-                      context,
-                    ).accentColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Lagna: ${_getSignName(ascSign - 1)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: FluentTheme.of(context).accentColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: ChartWidget(
-                planetsBySign: planetsMap,
-                ascendantSign: ascSign,
-                style: ChartStyle.northIndian,
-                size: 350,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildYearLordCard(VarshaphalChart varshaphal) {
-    final munthaSign = _getSignName(varshaphal.muntha);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Expanded(
-              child: _buildInfoTile(
-                'Year Lord',
-                varshaphal.yearLord,
-                FluentIcons.contact,
-                Colors.orange,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildInfoTile(
-                'Muntha Position',
-                munthaSign,
-                FluentIcons.location,
-                Colors.purple,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoTile(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: color,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          IconButton(
+            icon: const Icon(FluentIcons.chevron_left),
+            onPressed: () => setState(() => _selectedYear--),
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              '$_selectedYear - ${_selectedYear + 1}',
+              style: FluentTheme.of(context).typography.title,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(FluentIcons.chevron_right),
+            onPressed: () => setState(() => _selectedYear++),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildVarshikDashaSection(VarshaphalChart varshaphal) {
+  Widget _buildHeaderCard(VarshaphalChart chart) {
     return Card(
+      backgroundColor: FluentTheme.of(context).accentColor.withOpacity(0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Varshik Dasha Periods',
-                  style: FluentTheme.of(context).typography.subtitle,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Solar Return (Varsha Pravesh)',
+                      style: FluentTheme.of(context).typography.subtitle,
+                    ),
+                    Text(
+                      DateFormat(
+                        'MMM dd, yyyy HH:mm:ss',
+                      ).format(chart.solarReturnTime),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      chart.isDayBirth ? 'Day Chart' : 'Night Chart',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: chart.isDayBirth ? Colors.orange : Colors.blue,
+                      ),
+                    ),
+                  ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    '12 Periods',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Varshesh',
+                      style: FluentTheme.of(context).typography.subtitle,
+                    ),
+                    Text(
+                      chart.yearLord,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: _getPlanetColor(chart.yearLord),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Monthly periods ruled by planets. Click each period to see detailed predictions.',
-              style: FluentTheme.of(context).typography.caption,
+            const Divider(style: DividerThemeData(verticalMargin: 12)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildCompactInfo('Muntha', _getSignName(chart.muntha)),
+                _buildCompactInfo('Muntha Lord', chart.munthaLord),
+              ],
             ),
-            const SizedBox(height: 16),
-            ...varshaphal.varshikDasha.asMap().entries.map((entry) {
-              final index = entry.key;
-              final period = entry.value;
-              return _buildPeriodCard(period, index);
-            }),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPeriodCard(VarshikDashaPeriod period, int index) {
-    final isExpanded = _expandedPeriodIndex == index;
-    final score = (period.favorableScore * 100).round();
-    final color = _getScoreColor(score);
+  Widget _buildCompactInfo(String label, String value) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12)),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Expander(
-        initiallyExpanded: isExpanded,
-        onStateChanged: (expanded) {
-          setState(() {
-            _expandedPeriodIndex = expanded ? index : -1;
-          });
-        },
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: _getPlanetColor(period.planet).withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              _getPlanetSymbol(period.planet),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: _getPlanetColor(period.planet),
-              ),
-            ),
-          ),
-        ),
-        header: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildChartDisplay(VarshaphalChart chart) {
+    final planetsMap = _getPlanetsMap(chart.chart);
+    final ascSign = _getAscendantSignInt(chart.chart);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            Text(
-              '${period.planet} Period',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            Text(
-              '${DateFormat('MMM dd').format(period.startDate)} - ${DateFormat('MMM dd').format(period.endDate)}',
-              style: FluentTheme.of(context).typography.caption,
+            const Text('Varsha Kundali'),
+            const SizedBox(height: 10),
+            ChartWidget(
+              planetsBySign: planetsMap,
+              ascendantSign: ascSign,
+              style: ChartStyle.northIndian,
+              size: 300,
             ),
           ],
         ),
-        content: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: FluentTheme.of(context).cardColor.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+
+  Widget _buildVarsheshAnalysisCard(VarshaphalChart chart) {
+    return Expander(
+      header: const Text('Varshesh Selection & Strength (Panchavargiya Bala)'),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'The Year Lord (Varshesh) is selected from the 5 Office Bearers based on aspect and strength.',
+            style: TextStyle(fontSize: 12),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 12),
+          // Candidates List
+          ...chart.varsheshCandidates.map(
+            (c) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text('• $c'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Planetary Strengths (0-20 scale):',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Table(
+            border: TableBorder.all(color: Colors.grey.withOpacity(0.3)),
+            columnWidths: const {
+              0: FlexColumnWidth(2),
+              1: FlexColumnWidth(1),
+              2: FlexColumnWidth(1),
+              3: FlexColumnWidth(1),
+              4: FlexColumnWidth(1),
+              5: FlexColumnWidth(1),
+              6: FlexColumnWidth(1.5),
+            },
             children: [
-              // Period Score
-              Row(
+              const TableRow(
+                decoration: BoxDecoration(color: Color(0xFFF0F0F0)),
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
+                  Padding(padding: EdgeInsets.all(4), child: Text('Planet')),
+                  Padding(padding: EdgeInsets.all(4), child: Text('Ksh')),
+                  Padding(padding: EdgeInsets.all(4), child: Text('Uch')),
+                  Padding(padding: EdgeInsets.all(4), child: Text('Had')),
+                  Padding(padding: EdgeInsets.all(4), child: Text('Dre')),
+                  Padding(padding: EdgeInsets.all(4), child: Text('Nav')),
+                  Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Text(
+                      'Total',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(FluentIcons.favorite_star, size: 14, color: color),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$score% ${score >= 70
-                              ? 'Favorable'
-                              : score >= 40
-                              ? 'Mixed'
-                              : 'Challenging'}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: color,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${period.durationDays.toStringAsFixed(0)} days',
-                    style: FluentTheme.of(context).typography.caption,
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-
-              // Main Prediction
-              Text(
-                'Period Overview',
-                style: FluentTheme.of(context).typography.bodyStrong,
-              ),
-              const SizedBox(height: 8),
-              Text(period.prediction),
-              const SizedBox(height: 16),
-
-              // Key Themes
-              if (period.keyThemes.isNotEmpty) ...[
-                Text(
-                  'Key Themes',
-                  style: FluentTheme.of(context).typography.bodyStrong,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: period.keyThemes.map((theme) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.green.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            FluentIcons.check_mark,
-                            size: 12,
-                            color: Colors.green,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            theme,
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Cautions
-              if (period.cautions.isNotEmpty) ...[
-                Text(
-                  'Cautions',
-                  style: FluentTheme.of(context).typography.bodyStrong,
-                ),
-                const SizedBox(height: 8),
-                ...period.cautions.map((caution) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          FluentIcons.warning,
-                          size: 14,
-                          color: Colors.orange,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            caution,
-                            style: TextStyle(color: Colors.orange),
-                          ),
-                        ),
-                      ],
+              ...chart.panchavargiyaBala.entries.map((e) {
+                final s = e.value;
+                return TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(e.key),
                     ),
-                  );
-                }),
-              ],
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(s.kshetra.toStringAsFixed(1)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(s.uchcha.toStringAsFixed(1)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(s.hadda.toStringAsFixed(1)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(s.drekkana.toStringAsFixed(1)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(s.navamsa.toStringAsFixed(1)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(
+                        s.total.toStringAsFixed(1),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                );
+              }),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildSahamsCard(VarshaphalChart varshaphal) {
+  Widget _buildMuddaDashaSection(VarshaphalChart chart) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(FluentIcons.calculator, color: Colors.purple),
-                const SizedBox(width: 8),
-                Text(
-                  'Sahams (Arabic Parts)',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-              ],
+            const Text(
+              'Mudda Dasha (Annual Vimshottari)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            ...varshaphal.sahams.entries.map((entry) {
-              final saham = entry.value;
-              final signName = _getSignName(saham.sign);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: FluentTheme.of(
-                      context,
-                    ).cardColor.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: FluentTheme.of(
-                        context,
-                      ).resources.dividerStrokeColorDefault,
+            const SizedBox(height: 8),
+            ...chart.varshikDasha.asMap().entries.map((entry) {
+              final period = entry.value;
+              final scorePercent = period.favorableScore; // 0.35 to 0.95
+              final scoreInt = (scorePercent * 100).round();
+
+              return Expander(
+                header: Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: _getPlanetColor(period.planet),
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${period.planet}: ${DateFormat('MMM dd').format(period.startDate)} - ${DateFormat('MMM dd').format(period.endDate)}',
+                      ),
+                    ),
+                    // Score Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getScoreColor(scoreInt),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$scoreInt',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.purple.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Score Bar
+                    Row(
+                      children: [
+                        const Text('Score: '),
+                        Expanded(
+                          child: Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: scorePercent,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: _getScoreColor(scoreInt),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Text(
-                          entry.key,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple,
+                        const SizedBox(width: 8),
+                        Text('$scoreInt/100'),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Duration: ${period.durationDays.toStringAsFixed(1)} days',
+                      style: const TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(period.prediction),
+                    const SizedBox(height: 12),
+                    // Key Themes
+                    if (period.keyThemes.isNotEmpty) ...[
+                      const Text(
+                        'Key Themes:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: period.keyThemes
+                            .map(
+                              (t) => Chip(
+                                label: Text(
+                                  t,
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                                backgroundColor: Colors.blue.withOpacity(0.1),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    // Cautions
+                    if (period.cautions.isNotEmpty) ...[
+                      const Text(
+                        'Watch Out For:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      ...period.cautions.map(
+                        (c) => Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 2),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                FluentIcons.warning,
+                                size: 12,
+                                color: Colors.orange,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(c, style: const TextStyle(fontSize: 12)),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              saham.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              '$signName ${saham.degreeInSign.toStringAsFixed(1)}° - ${saham.interpretation}',
-                              style: FluentTheme.of(context).typography.caption,
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
-                  ),
+                  ],
                 ),
               );
             }),
@@ -646,112 +454,77 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
     );
   }
 
-  Widget _buildInterpretationCard(VarshaphalChart varshaphal) {
+  Widget _buildSahamsCard(VarshaphalChart chart) {
     return Card(
-      backgroundColor: Colors.blue.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(FluentIcons.lightbulb, color: Colors.blue),
-                const SizedBox(width: 8),
-                Text(
-                  'Overall Yearly Guidance',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-              ],
+            const Text(
+              'Sahams (Key Points)',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            Text(varshaphal.interpretation),
+            const SizedBox(height: 8),
+            ...chart.sahams.values.map(
+              (s) => Text(
+                '${s.name}: ${_getSignName(s.sign)} ${s.degreeInSign.toStringAsFixed(2)}°',
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Helper methods
+  // Helpers
+  String _getSignName(int sign) => AstrologyConstants.getSignName(sign);
+
   Map<int, List<String>> _getPlanetsMap(VedicChart chart) {
     final map = <int, List<String>>{};
-    chart.planets.forEach((planet, info) {
+    chart.planets.forEach((p, info) {
       final sign = (info.longitude / 30).floor() + 1;
       map.putIfAbsent(sign, () => []);
-      map[sign]!.add(planet.toString().split('.').last);
+      map[sign]!.add(p.toString().split('.').last);
     });
     return map;
   }
 
   int _getAscendantSignInt(VedicChart chart) {
-    final asc = chart.houses.cusps[0];
-    return ((asc / 30).floor() + 1);
-  }
-
-  String _getSignName(int sign) {
-    const signs = [
-      'Aries',
-      'Taurus',
-      'Gemini',
-      'Cancer',
-      'Leo',
-      'Virgo',
-      'Libra',
-      'Scorpio',
-      'Sagittarius',
-      'Capricorn',
-      'Aquarius',
-      'Pisces',
-    ];
-    return signs[sign % 12];
+    return (chart.houses.cusps[0] / 30).floor() + 1;
   }
 
   Color _getPlanetColor(String planet) {
-    switch (planet) {
-      case 'Sun':
+    switch (planet.toLowerCase()) {
+      case 'sun':
         return Colors.orange;
-      case 'Moon':
+      case 'moon':
         return Colors.blue;
-      case 'Mars':
+      case 'mars':
         return Colors.red;
-      case 'Mercury':
+      case 'mercury':
         return Colors.green;
-      case 'Jupiter':
+      case 'jupiter':
         return Colors.purple;
-      case 'Venus':
-        return const Color(0xFFE91E63);
-      case 'Saturn':
+      case 'venus':
+        return Colors.magenta;
+      case 'saturn':
         return Colors.grey;
       default:
-        return Colors.grey;
-    }
-  }
-
-  String _getPlanetSymbol(String planet) {
-    switch (planet) {
-      case 'Sun':
-        return '☉';
-      case 'Moon':
-        return '☽';
-      case 'Mars':
-        return '♂';
-      case 'Mercury':
-        return '☿';
-      case 'Jupiter':
-        return '♃';
-      case 'Venus':
-        return '♀';
-      case 'Saturn':
-        return '♄';
-      default:
-        return '○';
+        return Colors.black;
     }
   }
 
   Color _getScoreColor(int score) {
-    if (score >= 80) return Colors.green;
-    if (score >= 60) return Colors.teal;
-    if (score >= 40) return Colors.orange;
-    return Colors.red;
+    // Gradient from Red (35) to Yellow (60) to Green (95)
+    if (score >= 75) {
+      return Colors.green;
+    } else if (score >= 60) {
+      return Colors.orange;
+    } else if (score >= 50) {
+      return Colors.yellow.darkest;
+    } else {
+      return Colors.red;
+    }
   }
 }

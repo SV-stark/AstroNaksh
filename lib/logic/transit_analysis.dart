@@ -313,6 +313,7 @@ class TransitAnalysis {
         tithi: 1,
         nakshatra: 'Unknown',
         isFavorable: false,
+        quality: TransitQuality.challenging,
         recommendations: [],
       );
     }
@@ -321,8 +322,37 @@ class TransitAnalysis {
     final natalMoonSign = (natalMoonInfo.position.longitude / 30).floor();
     final houseFromMoon = ((transitSign - natalMoonSign + 12) % 12) + 1;
 
-    // Favorable houses from Moon: 1, 3, 6, 7, 10, 11
-    final isFavorable = [1, 3, 6, 7, 10, 11].contains(houseFromMoon);
+    // Favorable houses: 3, 6, 7, 10, 11
+    final favorableHouses = [3, 6, 7, 10, 11];
+
+    // Medium (Madhya) houses: 1, 2, 4, 5, 9
+    final mediumHouses = [1, 2, 4, 5, 9];
+
+    // Unfavorable (remaining): 8, 12
+
+    TransitQuality quality;
+    bool isFavorable = false;
+    List<String> recommendations = [];
+
+    if (favorableHouses.contains(houseFromMoon)) {
+      quality = TransitQuality.favorable;
+      isFavorable = true;
+      recommendations = [
+        'Good time for emotional stability and social activities',
+      ];
+    } else if (mediumHouses.contains(houseFromMoon)) {
+      quality = TransitQuality.medium;
+      isFavorable = true; // Medium tends to be okay/manageable mostly
+      recommendations = [
+        'Mixed influences. Proceed with balance and awareness.',
+      ];
+    } else {
+      quality = TransitQuality.challenging;
+      isFavorable = false;
+      recommendations = [
+        'Keep emotions in check and avoid impulsive decisions',
+      ];
+    }
 
     return MoonTransitAnalysis(
       transitSign: transitSign,
@@ -330,9 +360,8 @@ class TransitAnalysis {
       tithi: 1,
       nakshatra: moonInfo.position.nakshatra,
       isFavorable: isFavorable,
-      recommendations: isFavorable
-          ? ['Good time for emotional stability and social activities']
-          : ['Keep emotions in check and avoid impulsive decisions'],
+      quality: quality,
+      recommendations: recommendations,
     );
   }
 
@@ -562,6 +591,8 @@ class TransitEffect {
 
 enum TransitStrength { strong, moderate, supportive, neutral, challenging }
 
+enum TransitQuality { favorable, medium, challenging }
+
 class GocharaPositions {
   final Map<j.Planet, int> positions;
   final int moonSign;
@@ -599,6 +630,7 @@ class MoonTransitAnalysis {
   final int tithi;
   final String nakshatra;
   final bool isFavorable;
+  final TransitQuality quality;
   final List<String> recommendations;
 
   MoonTransitAnalysis({
@@ -607,6 +639,7 @@ class MoonTransitAnalysis {
     required this.tithi,
     required this.nakshatra,
     required this.isFavorable,
+    required this.quality,
     required this.recommendations,
   });
 }

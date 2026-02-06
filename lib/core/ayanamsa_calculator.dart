@@ -29,15 +29,26 @@ class AyanamsaCalculator {
 
   /// Get all available ayanamsa systems
   static List<AyanamsaSystem> get systems {
-    return SiderealMode.values.map((mode) {
+    // Define custom order: Lahiri first, then KP Old, then KP New, then rest
+    final List<SiderealMode> orderedModes = [
+      SiderealMode.lahiri,
+      SiderealMode.krishnamurti,
+      SiderealMode.krishnamurtiVP291,
+      ...SiderealMode.values.where((m) =>
+          m != SiderealMode.lahiri &&
+          m != SiderealMode.krishnamurti &&
+          m != SiderealMode.krishnamurtiVP291),
+    ];
+
+    return orderedModes.map((mode) {
       String name = mode.name;
       String description = mode.toString();
 
-      // Custom names for KP systems
+      // Custom names for KP systems with consistent naming
       if (mode == SiderealMode.krishnamurti) {
-        description = "KP Old";
+        description = "Krishnamurti (Old)";
       } else if (mode == SiderealMode.krishnamurtiVP291) {
-        description = "KP New";
+        description = "Krishnamurti (New)";
         // Map 'newKP' identifier to this mode for backward compatibility
         name = 'newKP';
       }

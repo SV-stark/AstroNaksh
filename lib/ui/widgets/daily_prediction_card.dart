@@ -259,24 +259,24 @@ class DailyPredictionCard extends StatelessWidget {
   }
 
   Color _getScoreColor(int score) {
-    if (score >= 80) return Colors.green;
-    if (score >= 60) return Colors.teal;
+    if (score >= 75) return Colors.green;
+    if (score >= 55) return Colors.yellow;
     if (score >= 40) return Colors.orange;
     return Colors.red;
   }
 
   String _getScoreLabel(int score) {
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Good';
+    if (score >= 75) return 'Excellent';
+    if (score >= 55) return 'Medium';
     if (score >= 40) return 'Fair';
     return 'Challenging';
   }
 
   String _getScoreDescription(int score) {
-    if (score >= 80) {
+    if (score >= 75) {
       return 'Highly favorable day for important activities and decisions.';
-    } else if (score >= 60) {
-      return 'Generally positive day with good energy for most endeavors.';
+    } else if (score >= 55) {
+      return 'Medium (Madhya) - Mixed influences. Proceed with balance.';
     } else if (score >= 40) {
       return 'Mixed influences - proceed with caution and awareness.';
     }

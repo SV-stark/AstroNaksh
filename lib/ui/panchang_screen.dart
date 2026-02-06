@@ -204,10 +204,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   sliver: SliverGrid.count(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.4,
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 1.2,
                     children: [
                       _buildPanchangCard(
                         title: 'Tithi',
@@ -248,7 +248,6 @@ class _PanchangScreenState extends State<PanchangScreen> {
                         icon: FluentIcons.calendar,
                         color: Colors.green,
                         description: 'Day of the week ruled by a planet',
-                        fullWidth: true,
                       ),
                     ],
                   ),
@@ -307,11 +306,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
     required IconData icon,
     required Color color,
     required String description,
-    bool fullWidth = false,
   }) {
     return HoverButton(
       onPressed: () {
-        // Show detailed info
         showDialog(
           context: context,
           builder: (context) => ContentDialog(
@@ -355,89 +352,64 @@ class _PanchangScreenState extends State<PanchangScreen> {
       },
       builder: (context, states) {
         return Card(
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: states.isHovered
-                  ? LinearGradient(
-                      colors: [
-                        color.withAlpha(20),
-                        Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          padding: const EdgeInsets.all(12.0),
+          backgroundColor: states.isHovered ? color.withAlpha(15) : null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(25),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 16,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey,
+                            fontSize: 11,
+                          ),
+                        ),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: color,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Icon and Title Row
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: color.withAlpha(30),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        icon,
-                        size: 20,
-                        color: color,
-                      ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: FluentTheme.of(context).typography.body?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            subtitle,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: color,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // Value
-                Text(
-                  value,
-                  style: FluentTheme.of(context).typography.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
-                const SizedBox(height: 4),
-                // Hint text
-                Text(
-                  'Click for details',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey.withAlpha(150),
-                  ),
-                ),
-              ],
-            ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         );
       },

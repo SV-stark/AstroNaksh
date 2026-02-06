@@ -252,6 +252,10 @@ class _ChartScreenState extends State<ChartScreen> {
   Widget build(BuildContext context) {
     return NavigationView(
       appBar: NavigationAppBar(
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text("Vedic Chart"),
         actions: CommandBar(
           overflowBehavior: CommandBarOverflowBehavior.noWrap,

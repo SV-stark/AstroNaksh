@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:path_provider/path_provider.dart';
+import '../../core/pdf_report_service.dart';
 import '../../data/models.dart';
-import '../../logic/pdf_report_generator.dart';
 
 class PDFReportScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -179,8 +179,8 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                   Text(
                     _isGenerating
                         ? _generationStatus.isNotEmpty
-                            ? '$_generationStatus (${(_generationProgress * 100).toInt()}%)'
-                            : 'Generating...'
+                              ? '$_generationStatus (${(_generationProgress * 100).toInt()}%)'
+                              : 'Generating...'
                         : 'Generate PDF Report',
                     style: const TextStyle(fontSize: 16),
                   ),
@@ -194,9 +194,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Column(
                 children: [
-                  ProgressBar(
-                    value: _generationProgress,
-                  ),
+                  ProgressBar(value: _generationProgress),
                   const SizedBox(height: 8),
                   Text(
                     _generationStatus,
@@ -284,11 +282,21 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
         });
       }
 
-      await PdfReportGenerator.generateBirthChartReport(
+      // Use PDFReportService with section selections from UI
+      final file = await PDFReportService.generateReport(
         widget.chartData,
-        widget.chartData.birthData,
-        outputPath: path,
+        reportTitle: '$name - Birth Chart Report',
+        includeD1: _sections['Chart Diagram'] ?? true,
+        includeD9: _sections['Planetary Positions'] ?? true,
+        includeDasha: _sections['Dasha Periods'] ?? true,
+        includeKP: _sections['KP System'] ?? true,
+        includeDivisional: _reportType == 'comprehensive',
+        includeYogaDosha: _sections['Yogas & Doshas'] ?? true,
+        includeAshtakavarga: _sections['Ashtakavarga'] ?? false,
       );
+
+      // Copy to requested location
+      await file.copy(path);
 
       if (mounted) {
         setState(() {

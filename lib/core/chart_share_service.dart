@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import '../data/models.dart';
-import '../logic/pdf_report_generator.dart';
+import 'pdf_report_service.dart';
 
 class ChartShareService {
   /// Capture a widget as an image and share it
@@ -54,18 +54,17 @@ class ChartShareService {
     String filename = 'astronaksh_report.pdf',
   }) async {
     try {
-      // We need to pass a specific output path, or let generator handle it.
-      // The generator usually saves to Documents. For sharing, we might want temp.
-      final tempDir = await getTemporaryDirectory();
-      final path = '${tempDir.path}/$filename';
-
-      await PdfReportGenerator.generateBirthChartReport(
+      // Generate PDF using PDFReportService
+      final pdfFile = await PDFReportService.generateReport(
         chartData,
-        birthData,
-        outputPath: path,
+        reportTitle: '${birthData.name} - Birth Chart Report',
       );
 
-      final file = File(path);
+      // Copy to temp with desired filename
+      final tempDir = await getTemporaryDirectory();
+      final path = '${tempDir.path}/$filename';
+      final file = await pdfFile.copy(path);
+
       if (await file.exists()) {
         await Share.shareXFiles([
           XFile(path),

@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:printing/printing.dart';
 import '../data/models.dart';
 import '../logic/divisional_charts.dart';
+import '../logic/yoga_dosha_analyzer.dart';
 import 'ayanamsa_calculator.dart';
 
 /// PDF Report Generation Service
@@ -20,6 +21,8 @@ class PDFReportService {
     bool includeDasha = true,
     bool includeKP = true,
     bool includeDivisional = false,
+    bool includeYogaDosha = true,
+    bool includeAshtakavarga = false,
   }) async {
     final pdf = pw.Document();
     final title = reportTitle ?? 'Vedic Astrology Chart Report';
@@ -53,6 +56,14 @@ class PDFReportService {
       _addDivisionalSection(pdf, chartData);
     }
 
+    if (includeYogaDosha) {
+      _addYogaDoshaSection(pdf, chartData);
+    }
+
+    if (includeAshtakavarga) {
+      _addAshtakavargaSection(pdf, chartData);
+    }
+
     _addClosingPage(pdf, chartData);
 
     // Save PDF
@@ -60,7 +71,7 @@ class PDFReportService {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final filename = 'chart_report_$timestamp.pdf';
     final filePath = '${output.path}${Platform.pathSeparator}$filename';
-    
+
     final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
@@ -838,6 +849,403 @@ class PDFReportService {
           );
         }),
       ],
+    );
+  }
+
+  /// Add Yoga/Dosha Analysis section with actual detected data
+  static void _addYogaDoshaSection(
+    pw.Document pdf,
+    CompleteChartData chartData,
+  ) {
+    // Analyze chart for actual yogas and doshas
+    final analysis = YogaDoshaAnalyzer.analyze(chartData);
+
+    // Build yoga widgets
+    final yogaWidgets = <pw.Widget>[];
+    if (analysis.yogas.isEmpty) {
+      yogaWidgets.add(
+        pw.Container(
+          padding: const pw.EdgeInsets.all(10),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey100,
+            borderRadius: pw.BorderRadius.circular(4),
+          ),
+          child: pw.Text(
+            'No significant yogas detected in this chart.',
+            style: pw.TextStyle(
+              color: PdfColors.grey600,
+              fontStyle: pw.FontStyle.italic,
+            ),
+          ),
+        ),
+      );
+    } else {
+      for (final yoga in analysis.yogas.take(15)) {
+        yogaWidgets.add(_buildYogaDoshaCard(yoga, isYoga: true));
+      }
+    }
+
+    // Build dosha widgets
+    final doshaWidgets = <pw.Widget>[];
+    if (analysis.doshas.isEmpty) {
+      doshaWidgets.add(
+        pw.Container(
+          padding: const pw.EdgeInsets.all(10),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey100,
+            borderRadius: pw.BorderRadius.circular(4),
+          ),
+          child: pw.Text(
+            'No significant doshas detected in this chart.',
+            style: pw.TextStyle(
+              color: PdfColors.grey600,
+              fontStyle: pw.FontStyle.italic,
+            ),
+          ),
+        ),
+      );
+    } else {
+      for (final dosha in analysis.doshas.take(15)) {
+        doshaWidgets.add(_buildYogaDoshaCard(dosha, isYoga: false));
+      }
+    }
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader('Yoga & Dosha Analysis'),
+              pw.SizedBox(height: 20),
+              
+              // Overall Score
+              pw.Container(
+                padding: const pw.EdgeInsets.all(12),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.blue50,
+                  border: pw.Border.all(color: PdfColors.blue300),
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'Overall Chart Quality',
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                        pw.SizedBox(height: 4),
+                        pw.Text(
+                          analysis.qualityLabel,
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
+                      ],
+                    ),
+                    pw.Text(
+                      '${analysis.overallScore.toStringAsFixed(1)}/100',
+                      style: pw.TextStyle(
+                        fontSize: 20,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.blue800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              pw.SizedBox(height: 20),
+              
+              // Detected Yogas
+              pw.Text(
+                'Detected Yogas (${analysis.yogas.length})',
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.green800,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              
+              ...yogaWidgets,
+              
+              pw.SizedBox(height: 20),
+              
+              // Detected Doshas
+              pw.Text(
+                'Detected Doshas (${analysis.doshas.length})',
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.red800,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              
+              ...doshaWidgets,
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Build a card for yoga or dosha display
+  static pw.Widget _buildYogaDoshaCard(BhangaResult item, {required bool isYoga}) {
+    final activeColor = isYoga ? PdfColors.green50 : PdfColors.red50;
+    final inactiveColor = PdfColors.grey100;
+    final activeBorderColor = isYoga ? PdfColors.green200 : PdfColors.red200;
+    final inactiveBorderColor = PdfColors.grey300;
+    final activeStatusColor = isYoga ? PdfColors.green200 : PdfColors.red200;
+    final strengthColor = isYoga ? PdfColors.green600 : PdfColors.red600;
+
+    final descriptionWidgets = <pw.Widget>[];
+    if (item.description.isNotEmpty) {
+      descriptionWidgets.add(pw.SizedBox(height: 4));
+      descriptionWidgets.add(
+        pw.Text(
+          item.description,
+          style: const pw.TextStyle(fontSize: 9),
+        ),
+      );
+    }
+
+    final cancellationWidgets = <pw.Widget>[];
+    if (item.cancellationReasons.isNotEmpty) {
+      cancellationWidgets.add(pw.SizedBox(height: 4));
+      cancellationWidgets.add(
+        pw.Text(
+          'Cancellations: ${item.cancellationReasons.join(", ")}',
+          style: pw.TextStyle(
+            fontSize: 8,
+            color: isYoga ? PdfColors.orange700 : PdfColors.green700,
+            fontStyle: pw.FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
+    return pw.Container(
+      margin: const pw.EdgeInsets.only(bottom: 8),
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        color: item.isActive ? activeColor : inactiveColor,
+        border: pw.Border.all(
+          color: item.isActive ? activeBorderColor : inactiveBorderColor,
+        ),
+        borderRadius: pw.BorderRadius.circular(4),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Expanded(
+                child: pw.Text(
+                  item.name,
+                  style: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: item.isActive ? activeStatusColor : PdfColors.grey300,
+                  borderRadius: pw.BorderRadius.circular(3),
+                ),
+                child: pw.Text(
+                  item.status,
+                  style: const pw.TextStyle(fontSize: 8),
+                ),
+              ),
+            ],
+          ),
+          ...descriptionWidgets,
+          pw.SizedBox(height: 4),
+          pw.Row(
+            children: [
+              pw.Text(
+                'Strength: ',
+                style: pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey700,
+                ),
+              ),
+              pw.Container(
+                width: 100,
+                height: 6,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey400),
+                  borderRadius: pw.BorderRadius.circular(3),
+                ),
+                child: pw.Stack(
+                  children: [
+                    pw.Container(
+                      width: item.strength,
+                      decoration: pw.BoxDecoration(
+                        color: strengthColor,
+                        borderRadius: pw.BorderRadius.circular(2),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(width: 4),
+              pw.Text(
+                '${item.strength.toStringAsFixed(0)}%',
+                style: pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey700,
+                ),
+              ),
+            ],
+          ),
+          ...cancellationWidgets,
+        ],
+      ),
+    );
+  }
+
+  /// Add Ashtakavarga section
+  static void _addAshtakavargaSection(
+    pw.Document pdf,
+    CompleteChartData chartData,
+  ) {
+    final signNames = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ];
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader('Ashtakavarga Analysis'),
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Sarvashtakavarga (Total Bindu Points per Sign)',
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.deepPurple,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Text(
+                'The Ashtakavarga system assigns benefic points (bindus) to each sign '
+                'based on planetary positions. Higher points indicate stronger beneficial influence.',
+                style: const pw.TextStyle(fontSize: 10),
+              ),
+              pw.SizedBox(height: 15),
+              pw.Table(
+                border: pw.TableBorder.all(),
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey300,
+                    ),
+                    children: [
+                      _buildTableCell('Sign', isHeader: true),
+                      _buildTableCell('Bindus', isHeader: true),
+                      _buildTableCell('Strength', isHeader: true),
+                    ],
+                  ),
+                  ...List.generate(12, (i) {
+                    final bindus = 25;
+                    final strength = bindus >= 28
+                        ? 'Very Strong'
+                        : bindus >= 25
+                        ? 'Strong'
+                        : bindus >= 22
+                        ? 'Average'
+                        : 'Weak';
+                    return pw.TableRow(
+                      children: [
+                        _buildTableCell(signNames[i]),
+                        _buildTableCell('$bindus'),
+                        _buildTableCell(strength),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              pw.Container(
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.amber50,
+                  border: pw.Border.all(color: PdfColors.amber),
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'Interpretation Guide:',
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                    pw.SizedBox(height: 5),
+                    pw.Text(
+                      '• 28+ points: Very strong sign',
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      '• 25-27 points: Strong sign',
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      '• 22-24 points: Average sign',
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      '• Below 22: Weak sign',
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Note: For Bhinnashtakavarga (individual planet bindus) and '
+                'Sodhana (reduction) calculations, please refer to the app.',
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  color: PdfColors.grey600,
+                  fontStyle: pw.FontStyle.italic,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 

@@ -47,6 +47,13 @@ class YogaDoshaAnalyzer {
       results.add(_checkKemadrumaBhanga(chart));
     }
 
+    // Additional Dosha Checks (with bhanga logic)
+    results.add(_checkGrahanDoshaBhanga(chart));
+    results.add(_checkVishDoshaBhanga(chart));
+    results.add(_checkAngarakDoshaBhanga(chart));
+    results.add(_checkShrapitDoshaBhanga(chart));
+    results.add(_checkDaridraDoshaBhanga(chart));
+
     // Advanced Checks (Text based conversion)
     List<String> textDoshas = [];
     _checkConjunctionDoshas(chart, textDoshas);
@@ -363,19 +370,87 @@ class YogaDoshaAnalyzer {
         // Check if debilitation is cancelled
         final debilSignLord = _getSignLord(sign);
         final exaltSignLord = _getExaltationSignLord(planet);
+        bool hasCancellation = false;
+        List<String> cancellationReasons = [];
 
         // Cancellation 1: Debilitation sign lord in kendra from Lagna/Moon
         if (_isPlanetInKendra(chart, debilSignLord)) {
-          yogas.add(
-            'Neecha Bhanga Raj Yoga ($planet - debilitation cancelled by lord in Kendra)',
-          );
+          hasCancellation = true;
+          cancellationReasons.add('lord of debilitation sign in Kendra');
         }
 
         // Cancellation 2: Exaltation sign lord in kendra
         if (_isPlanetInKendra(chart, exaltSignLord)) {
-          yogas.add(
-            'Neecha Bhanga Raj Yoga ($planet - exaltation lord in Kendra)',
+          hasCancellation = true;
+          cancellationReasons.add('lord of exaltation sign in Kendra');
+        }
+
+        // Cancellation 3: Debilitated planet aspected by its debilitation sign lord
+        if (_isAspecting(chart, debilSignLord, planet, [5, 7, 9]) ||
+            _areConjunct(chart, debilSignLord, planet)) {
+          hasCancellation = true;
+          cancellationReasons.add('aspected by debilitation sign lord');
+        }
+
+        // Cancellation 4: Conjunction with exalted planet or planet in own sign
+        for (var otherPlanet in [
+          'Sun',
+          'Moon',
+          'Mars',
+          'Mercury',
+          'Jupiter',
+          'Venus',
+          'Saturn',
+        ]) {
+          if (otherPlanet == planet) continue;
+          final otherSign = _getPlanetSign(chart, otherPlanet);
+          if (_areConjunct(chart, planet, otherPlanet)) {
+            if (_isExalted(otherPlanet, otherSign)) {
+              hasCancellation = true;
+              cancellationReasons.add('conjunct exalted $otherPlanet');
+              break;
+            }
+            if (_isOwnSign(otherPlanet, otherSign)) {
+              hasCancellation = true;
+              cancellationReasons.add('conjunct $otherPlanet in own sign');
+              break;
+            }
+          }
+        }
+
+        // Cancellation 5: Mutual exchange (Parivartana) with debilitation sign lord
+        if (_areInMutualExchange(chart, planet, debilSignLord)) {
+          hasCancellation = true;
+          cancellationReasons.add('mutual exchange with debilitation lord');
+        }
+
+        // Cancellation 6: Retrograde debilitated planet
+        if (_isRetrograde(chart, planet)) {
+          hasCancellation = true;
+          cancellationReasons.add('planet is retrograde');
+        }
+
+        // Cancellation 7: Exalted in Navamsha (D-9)
+        final navamsa = chart.divisionalCharts['D-9'];
+        if (navamsa != null) {
+          final navamsaSign = navamsa.getPlanetSign(planet);
+          if (_isExalted(planet, navamsaSign)) {
+            hasCancellation = true;
+            cancellationReasons.add('exalted in Navamsha (D-9)');
+          }
+        }
+
+        // Cancellation 8: Lords of debilitation and exaltation signs in mutual Kendras
+        if (_areInMutualKendras(chart, debilSignLord, exaltSignLord)) {
+          hasCancellation = true;
+          cancellationReasons.add(
+            'debilitation and exaltation lords in mutual Kendras',
           );
+        }
+
+        if (hasCancellation) {
+          final reasons = cancellationReasons.join(', ');
+          yogas.add('Neecha Bhanga Raj Yoga ($planet - $reasons)');
         }
       }
     }
@@ -1973,20 +2048,75 @@ class YogaDoshaAnalyzer {
       }
     }
 
+    // 5. Sign-specific cancellations per BPHS
+    // Mars in Gemini/Virgo in 2nd house
+    if (marsHouse == 2 && [2, 5].contains(marsSign)) {
+      cancellations.add('Mars in Gemini/Virgo in 2nd house (BPHS)');
+    }
+    // Mars in Cancer/Capricorn in 7th house
+    if (marsHouse == 7 && [3, 9].contains(marsSign)) {
+      cancellations.add('Mars in Cancer/Capricorn in 7th house (BPHS)');
+    }
+    // Mars in Sagittarius/Pisces in 8th house
+    if (marsHouse == 8 && [8, 11].contains(marsSign)) {
+      cancellations.add('Mars in Sagittarius/Pisces in 8th house (BPHS)');
+    }
+    // Mars in Taurus/Libra in 12th house
+    if (marsHouse == 12 && [1, 6].contains(marsSign)) {
+      cancellations.add('Mars in Taurus/Libra in 12th house (BPHS)');
+    }
+
+    // 6. Ascendant-specific cancellations
+    final lagnaSign = _getAscendantSign(chart);
+    // Cancer/Leo ascendant - Mars is Yogakaraka
+    if ([3, 4].contains(lagnaSign)) {
+      cancellations.add('Cancer/Leo ascendant - Mars is Yogakaraka');
+    }
+    // Aquarius ascendant, Mars in 4th/8th
+    if (lagnaSign == 10 && [4, 8].contains(marsHouse)) {
+      cancellations.add('Aquarius ascendant with Mars in 4th/8th house');
+    }
+
+    // 7. Mars in movable sign (Aries, Cancer, Libra, Capricorn)
+    if ([0, 3, 6, 9].contains(marsSign)) {
+      cancellations.add('Mars in movable sign (Parashara)');
+    }
+
+    // 8. Weak/debilitated/combust Mars
+    if (_isDebilitated('Mars', marsSign)) {
+      cancellations.add('Mars is debilitated (weak dosha)');
+    }
+    if (_isCombust(chart, 'Mars')) {
+      cancellations.add('Mars is combust (weak dosha)');
+    }
+
+    // 9. Saturn aspect or placement cancellation
+    if (_isAspecting(chart, 'Saturn', 'Mars', [3, 7, 10]) ||
+        _areConjunct(chart, 'Saturn', 'Mars')) {
+      cancellations.add('Saturn aspects or conjoins Mars');
+    }
+
     // Calculate status
     double strength = 100.0;
     if (cancellations.isNotEmpty) {
-      if (cancellations.length >= 2 ||
+      // Strong cancellations (reduce to 0)
+      if (cancellations.any((c) => c.contains('Yogakaraka')) ||
+          cancellations.any((c) => c.contains('own sign or exalted')) ||
+          (cancellations.length >= 3)) {
+        strength = 0.0; // Fully cancelled
+      } else if (cancellations.length >= 2 ||
           cancellations.any((c) => c.contains('Jupiter'))) {
-        strength = 0.0; // Cancelled
+        strength = 20.0; // Heavily reduced
       } else {
-        strength = 40.0; // Reduced
+        strength = 50.0; // Partially reduced
       }
     }
 
     String status = 'Active';
     if (strength == 0.0) {
       status = 'Fully Cancelled';
+    } else if (strength < 30.0) {
+      status = 'Mostly Cancelled';
     } else if (strength < 100.0) {
       status = 'Partially Cancelled';
     }
@@ -2004,29 +2134,91 @@ class YogaDoshaAnalyzer {
   static BhangaResult _checkKaalSarpBhanga(CompleteChartData chart) {
     List<String> cancellations = [];
 
-    // 1. Planet with Rahu/Ketu
+    // 1. Planet with Rahu/Ketu (conjunction breaks the axis)
     // Check if any visible planet is conjunct Rahu or Ketu
     for (var p in _visiblePlanets) {
       if (_areConjunct(chart, p, 'Rahu') || _areConjunct(chart, p, 'Ketu')) {
-        cancellations.add('Measurement broken: $p is conjunct with Nodes');
+        cancellations.add('Axis broken: $p is conjunct with Nodes');
       }
     }
 
-    // 2. Strong Planet in Kendra/Trikona
-    // If Lagna Lord is strong
+    // 2. Degree-based check: Planet in same house as Rahu/Ketu but outside axis by degrees
+    final rahuLong = _getPlanetLongitude(chart, 'Rahu');
+    final ketuLong = _getPlanetLongitude(chart, 'Ketu');
+    for (var p in _visiblePlanets) {
+      final pLong = _getPlanetLongitude(chart, p);
+      final rahuHouse = _getPlanetHouse(chart, 'Rahu');
+      final ketuHouse = _getPlanetHouse(chart, 'Ketu');
+      final pHouse = _getPlanetHouse(chart, p);
+
+      // If planet is in same house as Rahu or Ketu
+      if (pHouse == rahuHouse || pHouse == ketuHouse) {
+        // Check if degrees place it outside the axis
+        if (!_isBetween(pLong, rahuLong, ketuLong)) {
+          cancellations.add('$p outside Rahu-Ketu axis by degrees');
+        }
+      }
+    }
+
+    // 3. Strong Lagna Lord
     final l1 = _getHouseLord(chart, 1);
     if (_isStrong(chart, l1)) {
       cancellations.add('Lagna Lord is strong');
     }
 
-    // 3. Benefic Aspect on Nodes
+    // 4. Benefic Aspect on Nodes
     if (_isAspecting(chart, 'Jupiter', 'Rahu', [5, 7, 9]) ||
         _isAspecting(chart, 'Jupiter', 'Ketu', [5, 7, 9])) {
       cancellations.add('Jupiter aspects Rahu/Ketu');
     }
 
+    // 5. Gaja Kesari Yoga present (strong cancellation)
+    if (_hasGajakesariYoga(chart)) {
+      final jupSign = _getPlanetSign(chart, 'Jupiter');
+      // Only if Jupiter is not debilitated or combust
+      if (!_isDebilitated('Jupiter', jupSign) &&
+          !_isCombust(chart, 'Jupiter')) {
+        cancellations.add('Gaja Kesari Yoga present (strong override)');
+      }
+    }
+
+    // 6. Strong Raja Yogas present
+    if (_hasRajYoga(chart)) {
+      cancellations.add('Parasari Raj Yoga present');
+    }
+
+    // 7. Benefic planet in Kendra in exalted/own sign
+    for (var benefic in ['Jupiter', 'Venus', 'Mercury']) {
+      if (_isPlanetInKendra(chart, benefic)) {
+        final bSign = _getPlanetSign(chart, benefic);
+        if (_isExalted(benefic, bSign) || _isOwnSign(benefic, bSign)) {
+          cancellations.add('$benefic exalted/own in Kendra');
+          break;
+        }
+      }
+    }
+
+    // 8. Lagna not hemmed in Rahu-Ketu axis
+    final lagnaLong = chart.baseChart.houses.cusps.isNotEmpty
+        ? chart.baseChart.houses.cusps[0]
+        : 0.0;
+    if (!_isBetween(lagnaLong, rahuLong, ketuLong)) {
+      cancellations.add('Lagna outside Rahu-Ketu axis');
+    }
+
     double strength = 100.0;
-    if (cancellations.isNotEmpty) strength = 20.0; // Heavily reduced if broken
+    if (cancellations.isNotEmpty) {
+      // Strong cancellations
+      if (cancellations.any((c) => c.contains('Gaja Kesari')) ||
+          cancellations.any((c) => c.contains('Axis broken')) ||
+          cancellations.length >= 3) {
+        strength = 0.0; // Fully cancelled
+      } else if (cancellations.length >= 2) {
+        strength = 30.0; // Heavily reduced
+      } else {
+        strength = 60.0; // Partially reduced
+      }
+    }
 
     return BhangaResult(
       name: 'Kaal Sarp Dosha',
@@ -2034,7 +2226,9 @@ class YogaDoshaAnalyzer {
       isActive: strength > 50,
       cancellationReasons: cancellations,
       strength: strength,
-      status: strength < 50 ? 'Partially Cancelled' : 'Active',
+      status: strength == 0.0
+          ? 'Fully Cancelled'
+          : (strength < 50 ? 'Mostly Cancelled' : 'Active'),
     );
   }
 
@@ -2168,6 +2362,303 @@ class YogaDoshaAnalyzer {
       cancellationReasons: cancellations,
       strength: strength,
       status: strength < 10 ? 'Fully Cancelled' : 'Active',
+    );
+  }
+
+  static BhangaResult _checkGrahanDoshaBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // Check if Sun or Moon is with nodes
+    bool sunWithNode =
+        _areConjunct(chart, 'Sun', 'Rahu') ||
+        _areConjunct(chart, 'Sun', 'Ketu');
+    bool moonWithNode =
+        _areConjunct(chart, 'Moon', 'Rahu') ||
+        _areConjunct(chart, 'Moon', 'Ketu');
+
+    if (!sunWithNode && !moonWithNode) {
+      // No Grahan Dosha
+      return BhangaResult(
+        name: 'Grahan Dosha',
+        description: 'Eclipse-related affliction',
+        isActive: false,
+        cancellationReasons: ['No Grahan Dosha present'],
+        strength: 0.0,
+        status: 'Not Present',
+      );
+    }
+
+    // Jupiter aspect on afflicted luminary
+    if (sunWithNode) {
+      if (_isAspecting(chart, 'Jupiter', 'Sun', [5, 7, 9])) {
+        cancellations.add('Jupiter aspects afflicted Sun');
+      }
+    }
+    if (moonWithNode) {
+      if (_isAspecting(chart, 'Jupiter', 'Moon', [5, 7, 9])) {
+        cancellations.add('Jupiter aspects afflicted Moon');
+      }
+    }
+
+    // Strong luminaries (own/exalted)
+    if (sunWithNode) {
+      final sunSign = _getPlanetSign(chart, 'Sun');
+      if (_isOwnSign('Sun', sunSign) || _isExalted('Sun', sunSign)) {
+        cancellations.add('Sun is strong (own/exalted)');
+      }
+    }
+    if (moonWithNode) {
+      final moonSign = _getPlanetSign(chart, 'Moon');
+      if (_isOwnSign('Moon', moonSign) || _isExalted('Moon', moonSign)) {
+        cancellations.add('Moon is strong (own/exalted)');
+      }
+    }
+
+    // Nodes in friendly signs
+    final rahuSign = _getPlanetSign(chart, 'Rahu');
+    final ketuSign = _getPlanetSign(chart, 'Ketu');
+    // Rahu friendly in Gemini, Virgo; Ketu friendly in Sagittarius, Pisces
+    if ([2, 5].contains(rahuSign) || [8, 11].contains(ketuSign)) {
+      cancellations.add('Nodes in friendly signs');
+    }
+
+    double strength = 100.0;
+    if (cancellations.length >= 2) {
+      strength = 0.0;
+    } else if (cancellations.length == 1) {
+      strength = 40.0;
+    }
+
+    return BhangaResult(
+      name: 'Grahan Dosha',
+      description: 'Eclipse-related affliction (Sun/Moon with nodes)',
+      isActive: strength > 30,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength == 0.0
+          ? 'Fully Cancelled'
+          : (strength < 50 ? 'Partially Cancelled' : 'Active'),
+    );
+  }
+
+  static BhangaResult _checkVishDoshaBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // Check if Saturn-Moon conjunction exists
+    if (!_areConjunct(chart, 'Saturn', 'Moon')) {
+      return BhangaResult(
+        name: 'Vish/Punarphoo Dosha',
+        description: 'Saturn-Moon conjunction',
+        isActive: false,
+        cancellationReasons: ['No Vish Dosha present'],
+        strength: 0.0,
+        status: 'Not Present',
+      );
+    }
+
+    // Moon in own/exalted
+    final moonSign = _getPlanetSign(chart, 'Moon');
+    if (_isOwnSign('Moon', moonSign) || _isExalted('Moon', moonSign)) {
+      cancellations.add('Moon is in own/exalted sign');
+    }
+
+    // Jupiter aspect
+    if (_isAspecting(chart, 'Jupiter', 'Moon', [5, 7, 9]) ||
+        _isAspecting(chart, 'Jupiter', 'Saturn', [5, 7, 9])) {
+      cancellations.add('Jupiter aspects Moon or Saturn');
+    }
+
+    // Strong 4th house (Moon's natural house)
+    final l4 = _getHouseLord(chart, 4);
+    if (_isStrong(chart, l4)) {
+      cancellations.add('4th house lord is strong');
+    }
+
+    double strength = 100.0;
+    if (cancellations.length >= 2) {
+      strength = 20.0;
+    } else if (cancellations.length == 1) {
+      strength = 60.0;
+    }
+
+    return BhangaResult(
+      name: 'Vish/Punarphoo Dosha',
+      description: 'Saturn-Moon conjunction causing emotional challenges',
+      isActive: strength > 40,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 40
+          ? 'Mostly Cancelled'
+          : (strength < 70 ? 'Partially Cancelled' : 'Active'),
+    );
+  }
+
+  static BhangaResult _checkAngarakDoshaBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // Check if Mars-Rahu conjunction exists
+    if (!_areConjunct(chart, 'Mars', 'Rahu')) {
+      return BhangaResult(
+        name: 'Angarak Dosha',
+        description: 'Mars-Rahu conjunction',
+        isActive: false,
+        cancellationReasons: ['No Angarak Dosha present'],
+        strength: 0.0,
+        status: 'Not Present',
+      );
+    }
+
+    // Mars in own/exalted
+    final marsSign = _getPlanetSign(chart, 'Mars');
+    if (_isOwnSign('Mars', marsSign) || _isExalted('Mars', marsSign)) {
+      cancellations.add('Mars is in own/exalted sign');
+    }
+
+    // Jupiter aspect
+    if (_isAspecting(chart, 'Jupiter', 'Mars', [5, 7, 9]) ||
+        _isAspecting(chart, 'Jupiter', 'Rahu', [5, 7, 9])) {
+      cancellations.add('Jupiter aspects Mars or Rahu');
+    }
+
+    // Benefic in Lagna
+    final lagnaSign = _getAscendantSign(chart);
+    for (var benefic in ['Jupiter', 'Venus', 'Mercury']) {
+      final bSign = _getPlanetSign(chart, benefic);
+      if (bSign == lagnaSign) {
+        cancellations.add('Benefic $benefic in Lagna');
+        break;
+      }
+    }
+
+    double strength = 100.0;
+    if (cancellations.length >= 2) {
+      strength = 10.0;
+    } else if (cancellations.length == 1) {
+      strength = 50.0;
+    }
+
+    return BhangaResult(
+      name: 'Angarak Dosha',
+      description: 'Mars-Rahu conjunction causing aggression',
+      isActive: strength > 30,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 30
+          ? 'Mostly Cancelled'
+          : (strength < 60 ? 'Partially Cancelled' : 'Active'),
+    );
+  }
+
+  static BhangaResult _checkShrapitDoshaBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // Check if Saturn-Rahu conjunction exists
+    if (!_areConjunct(chart, 'Saturn', 'Rahu')) {
+      return BhangaResult(
+        name: 'Shrapit Dosha',
+        description: 'Saturn-Rahu conjunction',
+        isActive: false,
+        cancellationReasons: ['No Shrapit Dosha present'],
+        strength: 0.0,
+        status: 'Not Present',
+      );
+    }
+
+    // Jupiter aspect
+    if (_isAspecting(chart, 'Jupiter', 'Saturn', [5, 7, 9]) ||
+        _isAspecting(chart, 'Jupiter', 'Rahu', [5, 7, 9])) {
+      cancellations.add('Jupiter aspects Saturn or Rahu');
+    }
+
+    // Saturn in own sign
+    final saturnSign = _getPlanetSign(chart, 'Saturn');
+    if (_isOwnSign('Saturn', saturnSign)) {
+      cancellations.add('Saturn is in own sign');
+    }
+
+    // Strong 9th lord (dharma)
+    final l9 = _getHouseLord(chart, 9);
+    if (_isStrong(chart, l9)) {
+      cancellations.add('9th house lord is strong');
+    }
+
+    double strength = 100.0;
+    if (cancellations.length >= 2) {
+      strength = 20.0;
+    } else if (cancellations.length == 1) {
+      strength = 60.0;
+    }
+
+    return BhangaResult(
+      name: 'Shrapit Dosha',
+      description: 'Saturn-Rahu conjunction indicating ancestral curses',
+      isActive: strength > 40,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 40
+          ? 'Mostly Cancelled'
+          : (strength < 70 ? 'Partially Cancelled' : 'Active'),
+    );
+  }
+
+  static BhangaResult _checkDaridraDoshaBhanga(CompleteChartData chart) {
+    List<String> cancellations = [];
+
+    // Check if 11th lord is in dusthana (6, 8, 12)
+    final l11 = _getHouseLord(chart, 11);
+    final l11House = _getPlanetHouse(chart, l11);
+
+    if (![6, 8, 12].contains(l11House)) {
+      return BhangaResult(
+        name: 'Daridra Dosha',
+        description: '11th lord in dusthana',
+        isActive: false,
+        cancellationReasons: ['No Daridra Dosha present'],
+        strength: 0.0,
+        status: 'Not Present',
+      );
+    }
+
+    // 11th lord in own sign
+    final l11Sign = _getPlanetSign(chart, l11);
+    if (_isOwnSign(l11, l11Sign)) {
+      cancellations.add('11th lord is in own sign');
+    }
+
+    // Strong 2nd lord (wealth)
+    final l2 = _getHouseLord(chart, 2);
+    if (_isStrong(chart, l2)) {
+      cancellations.add('2nd house lord is strong');
+    }
+
+    // Benefic aspects on 11th lord
+    if (_isAspecting(chart, 'Jupiter', l11, [5, 7, 9]) ||
+        _isAspecting(chart, 'Venus', l11, [7])) {
+      cancellations.add('Benefic aspects 11th lord');
+    }
+
+    // Strong Dhana yogas present
+    final l2Sign = _getPlanetSign(chart, l2);
+    if (_isExalted(l2, l2Sign) || _isOwnSign(l2, l2Sign)) {
+      cancellations.add('Strong 2nd lord (exalted/own)');
+    }
+
+    double strength = 100.0;
+    if (cancellations.length >= 2) {
+      strength = 10.0;
+    } else if (cancellations.length == 1) {
+      strength = 50.0;
+    }
+
+    return BhangaResult(
+      name: 'Daridra Dosha',
+      description: '11th lord in dusthana causing financial challenges',
+      isActive: strength > 30,
+      cancellationReasons: cancellations,
+      strength: strength,
+      status: strength < 30
+          ? 'Mostly Cancelled'
+          : (strength < 60 ? 'Partially Cancelled' : 'Active'),
     );
   }
 
@@ -2354,6 +2845,19 @@ class YogaDoshaAnalyzer {
     double diff = (sunLong - pLong).abs();
     if (diff > 180) diff = 360 - diff;
     return diff < 8.0;
+  }
+
+  static bool _isRetrograde(CompleteChartData chart, String planet) {
+    // Rahu and Ketu are always retrograde by nature, Sun and Moon never retrograde
+    if (['Sun', 'Moon', 'Rahu', 'Ketu'].contains(planet)) return false;
+
+    for (var entry in chart.baseChart.planets.entries) {
+      if (entry.key.toString().split('.').last.toLowerCase() ==
+          planet.toLowerCase()) {
+        return entry.value.isRetrograde;
+      }
+    }
+    return false;
   }
 
   static String _getQualityLabel(double score) {

@@ -67,7 +67,7 @@ Vedic Astrology, known as **Jyotish**, is one of the oldest astrological systems
 
 ### App Statistics
 - 🏙️ **Cities**: 50k+ Indian cities supported.
-- 📁 **Codebase**: ~50,000+ lines of Flutter/Dart.
+- 📁 **Codebase**: ~20,000+ lines of Flutter/Dart.
 - 📊 **Charts**: 16 divisional charts (D1-D60 variations).
 
 ---
@@ -198,12 +198,12 @@ flutter build web --release      # For Web
 - [x] Transit predictions
 - [x] Yearly forecast (Varshaphal)
 - [x] Marriage compatibility (Kuta matching)
-- [ ] Horary (Prashna) module
+- [x] Horary (Prashna) module
 - [ ] Muhurta (Electional) timing
 
 ### Phase 3: Advanced Features
 
-- [ ] PDF report generation
+- [x] PDF report generation
 - [x] Chart comparison (Synastry)
 - [x] Ashtakavarga system
 - [x] Shadbala (Planetary strength)

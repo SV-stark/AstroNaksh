@@ -17,14 +17,26 @@ class AshtakavargaSystem {
     return result;
   }
 
+  /// Calculate complete Shodhya Pinda analysis
+  /// Includes Trikona Shodhana, Ekadhipati Shodhana, and Pinda results.
+  static ShodhyaPindaResult calculateShodhyaPinda(VedicChart chart) {
+    _service ??= AshtakavargaService();
+    final av = _service!.calculateAshtakavarga(chart);
+    return _service!.calculateShodhyaPinda(av);
+  }
+
+  /// Calculate Pinda strength for all 12 houses.
+  /// Sums bindus from all planets in each house with sign-specific multipliers.
+  static Map<int, double> calculateAllHousesPinda(VedicChart chart) {
+    _service ??= AshtakavargaService();
+    final av = _service!.calculateAshtakavarga(chart);
+    return _service!.calculateAllHousesPinda(av);
+  }
+
   /// Calculate Sarvashtakavarga with Sodhana (Reduction) applied
   static Map<int, int> calculateSarvashtakavargaWithSodhana(VedicChart chart) {
-    _service ??= AshtakavargaService();
-    var av = _service!.calculateAshtakavarga(chart);
-
-    // Use library's native reduction logic
-    av = _service!.applyTrikonaShodhana(av);
-    av = _service!.applyEkadhipatiShodhana(av);
+    final shodhya = calculateShodhyaPinda(chart);
+    final av = shodhya.ekadhipatiReducedAshtakavarga;
 
     final result = <int, int>{};
     for (int i = 0; i < 12; i++) {

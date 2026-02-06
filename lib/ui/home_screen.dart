@@ -402,9 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
           _isLoading
-              ? const SliverFillRemaining(
-                  child: Center(child: ProgressRing()),
-                )
+              ? const SliverFillRemaining(child: Center(child: ProgressRing()))
               : _filteredCharts.isEmpty
               ? SliverFillRemaining(
                   hasScrollBody: false,
@@ -503,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuickAction({
-    required Key key,
+    Key? key,
     required IconData icon,
     required String title,
     required String subtitle,

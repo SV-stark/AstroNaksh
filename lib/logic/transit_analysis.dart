@@ -1,4 +1,5 @@
 import 'package:jyotish/jyotish.dart' as j;
+import 'package:jyotish/src/services/gochara_vedha_service.dart';
 import '../data/models.dart';
 import '../core/ephemeris_manager.dart';
 
@@ -6,6 +7,7 @@ import '../core/ephemeris_manager.dart';
 /// Analyzes current planetary positions relative to natal chart
 class TransitAnalysis {
   final j.Jyotish _jyotish = EphemerisManager.jyotish;
+  final GocharaVedhaService _vedhaService = GocharaVedhaService();
 
   /// Calculate transit chart for a specific date
   Future<TransitChart> calculateTransitChart(
@@ -73,7 +75,107 @@ class TransitAnalysis {
     );
   }
 
-  /// Map library aspects to local model
+  /// Analyze Gochara Vedha (transit obstructions) for all transits
+  /// Returns analysis of which transits are being obstructed by other planets
+  VedhaAnalysis analyzeVedha({
+    required int moonNakshatra,
+    required Map<j.Planet, int> gocharaPositions,
+  }) {
+    // Use library's batch calculation
+    final libraryResults = _vedhaService.calculateMultipleVedha(
+      transits: gocharaPositions,
+      moonNakshatra: moonNakshatra,
+    );
+
+    final affectedTransits = <j.Planet>[];
+
+    for (final result in libraryResults) {
+      if (result.isObstructed) {
+        affectedTransits.add(result.transitPlanet);
+      }
+    }
+
+    return VedhaAnalysis(
+      results: libraryResults,
+      affectedTransits: affectedTransits,
+      summary: _generateVedhaSummary(libraryResults, affectedTransits),
+    );
+  }
+
+  /// Find favorable transit periods when specific planets are not obstructed
+  Future<List<LocalFavorablePeriod>> findFavorableTransitPeriods({
+    required CompleteChartData natalChart,
+    required j.Planet targetPlanet,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final periods = <LocalFavorablePeriod>[];
+    var currentDate = startDate;
+    LocalFavorablePeriod? currentPeriod;
+
+    while (currentDate.isBefore(endDate)) {
+      final transitChart = await calculateTransitChart(natalChart, currentDate);
+      final moonNakshatra =
+          natalChart
+              .baseChart
+              .planets[j.Planet.moon]
+              ?.position
+              .nakshatraIndex ??
+          0;
+
+      final vedha = analyzeVedha(
+        moonNakshatra: moonNakshatra + 1, // Library uses 1-indexed
+        gocharaPositions: transitChart.gochara.positions,
+      );
+
+      final isUnobstructed = !vedha.affectedTransits.contains(targetPlanet);
+      final isFavorableHouse = transitChart.gochara.isFavorable(targetPlanet);
+
+      if (isUnobstructed && isFavorableHouse) {
+        if (currentPeriod == null) {
+          currentPeriod = LocalFavorablePeriod(
+            planet: targetPlanet,
+            startDate: currentDate,
+            endDate: currentDate,
+            reason: 'Unobstructed favorable transit',
+          );
+        } else {
+          currentPeriod = LocalFavorablePeriod(
+            planet: targetPlanet,
+            startDate: currentPeriod.startDate,
+            endDate: currentDate,
+            reason: currentPeriod.reason,
+          );
+        }
+      } else if (currentPeriod != null) {
+        periods.add(currentPeriod);
+        currentPeriod = null;
+      }
+
+      currentDate = currentDate.add(const Duration(days: 1));
+    }
+
+    if (currentPeriod != null) {
+      periods.add(currentPeriod);
+    }
+
+    return periods;
+  }
+
+  String _generateVedhaSummary(
+    List<VedhaResult> results,
+    List<j.Planet> affected,
+  ) {
+    if (affected.isEmpty) {
+      return 'No transits are currently obstructed. All Gochara effects active.';
+    }
+
+    final buffer = StringBuffer();
+    buffer.write('${affected.length} transit(s) obstructed: ');
+    buffer.write(affected.map((p) => p.displayName).join(', '));
+    return buffer.toString();
+  }
+
   List<TransitAspect> _mapLibraryAspects(
     CompleteChartData natalChart,
     Map<j.Planet, j.TransitInfo> transitInfoMap,
@@ -567,4 +669,57 @@ class RahuKetuTransitAnalysis {
     required this.effects,
     required this.recommendations,
   });
+}
+
+/// Analysis result for Gochara Vedha calculations
+class VedhaAnalysis {
+  final List<VedhaResult> results;
+  final List<j.Planet> affectedTransits;
+  final String summary;
+
+  VedhaAnalysis({
+    required this.results,
+    required this.affectedTransits,
+    required this.summary,
+  });
+
+  /// Get vedha result for a specific planet
+  VedhaResult? getResult(j.Planet planet) {
+    for (final result in results) {
+      if (result.transitPlanet == planet) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  /// Count of unobstructed favorable transits
+  int get unobstructedCount =>
+      results.where((r) => r.isFavorablePosition && !r.isObstructed).length;
+}
+
+/// Local favorable period model for date range tracking
+class LocalFavorablePeriod {
+  final j.Planet planet;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String reason;
+
+  LocalFavorablePeriod({
+    required this.planet,
+    required this.startDate,
+    required this.endDate,
+    required this.reason,
+  });
+
+  /// Duration of the favorable period
+  Duration get duration => endDate.difference(startDate);
+
+  /// Number of days in the favorable period
+  int get days => duration.inDays + 1;
+
+  @override
+  String toString() {
+    return '${planet.displayName}: ${startDate.day}/${startDate.month} - ${endDate.day}/${endDate.month} ($days days)';
+  }
 }

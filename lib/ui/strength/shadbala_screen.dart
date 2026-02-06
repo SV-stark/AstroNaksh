@@ -11,88 +11,97 @@ class ShadbalaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    late Map<String, double> shadbalaData;
-    try {
-      shadbalaData = ShadbalaCalculator.calculateShadbala(chartData);
-    } catch (e) {
-      shadbalaData = {};
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          displayInfoBar(
-            context,
-            builder: (context, close) => InfoBar(
-              title: const Text('Calculation Error'),
-              content: Text('Failed to calculate Shadbala: $e'),
-              severity: InfoBarSeverity.error,
-              onClose: close,
+    return FutureBuilder<Map<String, double>>(
+      future: ShadbalaCalculator.calculateShadbala(chartData),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const ScaffoldPage(
+            header: PageHeader(title: Text('Shadbala Analysis')),
+            content: Center(child: ProgressRing()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return ScaffoldPage(
+            header: PageHeader(title: const Text('Shadbala Analysis')),
+            content: Center(
+              child: InfoBar(
+                title: const Text('Calculation Error'),
+                content: Text(
+                  'Failed to calculate Shadbala: ${snapshot.error}',
+                ),
+                severity: InfoBarSeverity.error,
+              ),
             ),
           );
         }
-      });
-    }
 
-    return ScaffoldPage(
-      header: PageHeader(
-        title: const Text('Shadbala Analysis'),
-        leading: IconButton(
-          icon: const Icon(FluentIcons.back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      content: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        children: [
-          // Educational info
-          Card(
-            backgroundColor: Colors.orange.withValues(alpha: 0.1),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+        final shadbalaData = snapshot.data ?? {};
+
+        return ScaffoldPage(
+          header: PageHeader(
+            title: const Text('Shadbala Analysis'),
+            leading: IconButton(
+              icon: const Icon(FluentIcons.back),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          content: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            children: [
+              // Educational info
+              Card(
+                backgroundColor: Colors.orange.withValues(alpha: 0.1),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(FluentIcons.info, color: Colors.orange),
-                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Icon(FluentIcons.info, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'About Shadbala',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       const Text(
-                        'About Shadbala',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        'Shadbala (Six-Fold Strength) measures planetary power through 6 components: '
+                        'Positional, Directional, Temporal, Motional, Natural, and Aspectual strength. '
+                        'Higher values indicate stronger planets capable of delivering better results.',
+                        style: TextStyle(fontSize: 14),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Shadbala (Six-Fold Strength) measures planetary power through 6 components: '
-                    'Positional, Directional, Temporal, Motional, Natural, and Aspectual strength. '
-                    'Higher values indicate stronger planets capable of delivering better results.',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ],
+                ),
               ),
-            ),
+
+              const SizedBox(height: 16),
+
+              // Overall strength ranking
+              _buildStrengthRanking(context, shadbalaData),
+
+              const SizedBox(height: 16),
+
+              // Comparative radar chart
+              _buildRadarChart(context, shadbalaData),
+
+              const SizedBox(height: 16),
+
+              // Individual planet cards
+              ..._buildPlanetCards(context, shadbalaData),
+
+              const SizedBox(height: 32),
+            ],
           ),
-
-          const SizedBox(height: 16),
-
-          // Overall strength ranking
-          _buildStrengthRanking(context, shadbalaData),
-
-          const SizedBox(height: 16),
-
-          // Comparative radar chart
-          _buildRadarChart(context, shadbalaData),
-
-          const SizedBox(height: 16),
-
-          // Individual planet cards
-          ..._buildPlanetCards(context, shadbalaData),
-
-          const SizedBox(height: 32),
-        ],
-      ),
+        );
+      },
     );
   }
 

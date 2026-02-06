@@ -106,7 +106,7 @@ class _InputScreenState extends State<InputScreen> {
     }
   }
 
-  void _generateChart() {
+  Future<void> _generateChart() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedCity == null) {
         displayInfoBar(
@@ -171,6 +171,8 @@ class _InputScreenState extends State<InputScreen> {
         place: _selectedCity!.displayName,
         timezone: _selectedCity!.timezone,
       );
+
+      if (!mounted) return;
 
       // Navigate to Chart Screen
       Navigator.pushNamed(context, '/chart', arguments: birthData);

@@ -1,139 +1,130 @@
+import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/src/services/strength_analysis_service.dart';
 import '../data/models.dart';
+import 'shadbala.dart';
 
 /// Bhava Bala (House Strength) Calculation
-/// Completes the strength analysis trilogy (Shadbala, Ashtakavarga, Bhava Bala)
+/// Uses the jyotish library's StrengthAnalysisService for accurate calculations
 class BhavaBala {
-  /// Calculate strength of all 12 houses
-  static Map<int, BhavaStrength> calculateBhavaBala(CompleteChartData chart) {
-    final Map<int, BhavaStrength> bhavaStrengths = {};
+  static StrengthAnalysisService? _strengthService;
 
+  /// Calculate strength of all 12 houses using library's native implementation
+  static Future<Map<int, BhavaStrength>> calculateBhavaBala(
+    CompleteChartData chart,
+  ) async {
+    _strengthService ??= StrengthAnalysisService();
+
+    // Get Shadbala results (required by library's Bhava Bala calculation)
+    final shadbalaResults = await ShadbalaCalculator.calculateDetailedShadbala(
+      chart.baseChart,
+    );
+
+    // Convert ShadbalaResult to double values for library API
+    final shadbalaMap = <Planet, double>{};
+    shadbalaResults.forEach((planet, result) {
+      shadbalaMap[planet] = result.totalBala;
+    });
+
+    // Use library's native Bhava Bala calculation
+    // Returns Map<int, double> where key is house number (1-12), value is strength (0-100)
+    final libraryResults = _strengthService!.getBhavaBala(
+      chart: chart.baseChart,
+      shadbalaResults: shadbalaMap,
+    );
+
+    // Map library results to local BhavaStrength model
+    final Map<int, BhavaStrength> bhavaStrengths = {};
     for (int house = 1; house <= 12; house++) {
-      bhavaStrengths[house] = _calculateHouseStrength(chart, house);
+      final strength = libraryResults[house] ?? 50.0;
+      bhavaStrengths[house] = BhavaStrength(
+        house: house,
+        totalStrength: strength,
+        components: {'Total': strength},
+        interpretation: _interpretStrength(house, strength),
+      );
     }
 
     return bhavaStrengths;
   }
 
-  /// Calculate strength of a specific house
-  static BhavaStrength _calculateHouseStrength(
+  /// Calculate Ishtaphala (auspicious fruit) for a planet
+  /// Uses library's StrengthAnalysisService
+  static Future<double> calculateIshtaphala(
     CompleteChartData chart,
-    int house,
-  ) {
-    double total = 0.0;
-    final components = <String, double>{};
+    Planet planet,
+  ) async {
+    _strengthService ??= StrengthAnalysisService();
 
-    // 1. Bhava Adhipati Bala (Lord's Strength)
-    final lordBala = _calculateLordBala(chart, house);
-    components['Lord Strength'] = lordBala;
-    total += lordBala;
+    final shadbalaResults = await ShadbalaCalculator.calculateDetailedShadbala(
+      chart.baseChart,
+    );
 
-    // 2. Bhava Dig Bala (Directional Strength)
-    final digBala = _calculateBhavaDigBala(house);
-    components['Directional'] = digBala;
-    total += digBala;
+    final shadbalaStrength = shadbalaResults[planet]?.totalBala ?? 60.0;
 
-    // 3. Bhava Drishti Bala (Aspectual Strength)
-    final drishti = _calculateBhavaDrishti(chart, house);
-    components['Aspects'] = drishti;
-    total += drishti;
-
-    // 4. Occupant Strength
-    final occupants = _calculateOccupantStrength(chart, house);
-    components['Occupants'] = occupants;
-    total += occupants;
-
-    return BhavaStrength(
-      house: house,
-      totalStrength: total,
-      components: components,
-      interpretation: _interpretStrength(house, total),
+    return _strengthService!.getIshtaphala(
+      planet: planet,
+      chart: chart.baseChart,
+      shadbalaStrength: shadbalaStrength,
     );
   }
 
-  /// Calculate house lord's strength
-  static double _calculateLordBala(CompleteChartData chart, int house) {
-    final houseSign = _getHouseSign(chart, house);
-    final lord = _getSignLord(houseSign);
+  /// Calculate Kashtaphala (inauspicious fruit) for a planet
+  /// Uses library's StrengthAnalysisService
+  static Future<double> calculateKashtaphala(
+    CompleteChartData chart,
+    Planet planet,
+  ) async {
+    _strengthService ??= StrengthAnalysisService();
 
-    // Get lord's Shadbala if available, otherwise use position
-    // Simplified: Check if lord is in good dignity
-    final lordSign = _getPlanetSign(chart, lord);
+    final shadbalaResults = await ShadbalaCalculator.calculateDetailedShadbala(
+      chart.baseChart,
+    );
 
-    double strength = 30.0; // Base
+    final shadbalaStrength = shadbalaResults[planet]?.totalBala ?? 60.0;
 
-    // Own sign
-    if (_isOwnSign(lord, lordSign)) strength += 20.0;
-
-    // Exaltation
-    if (_isExalted(lord, lordSign)) strength += 20.0;
-
-    // Debilitation
-    if (_isDebilitated(lord, lordSign)) strength -= 15.0;
-
-    return strength;
+    return _strengthService!.getKashtaphala(
+      planet: planet,
+      chart: chart.baseChart,
+      shadbalaStrength: shadbalaStrength,
+    );
   }
 
-  /// Calculate directional strength for house
-  static double _calculateBhavaDigBala(int house) {
-    // Houses gain strength based on their natural significations
-    // Kendra houses (1,4,7,10) = strong, Trikona (1,5,9) = strong
-    if ([1, 4, 7, 10].contains(house)) return 60.0; // Kendras
-    if ([5, 9].contains(house)) return 45.0; // Trikonas (excluding 1st)
-    if ([2, 11].contains(house)) return 30.0; // Wealth houses
-    if ([3, 6].contains(house)) return 15.0; // Upachayas (growth)
-    return 10.0; // Dusthanas
+  /// Calculate Vimshopak Bala (20-fold strength) for a planet
+  /// Uses library's StrengthAnalysisService
+  static VimshopakBala calculateVimshopakBala(
+    CompleteChartData chart,
+    Planet planet,
+  ) {
+    _strengthService ??= StrengthAnalysisService();
+
+    return _strengthService!.getVimshopakBala(
+      chart: chart.baseChart,
+      planet: planet,
+    );
   }
 
-  /// Calculate aspectual strength on house
-  static double _calculateBhavaDrishti(CompleteChartData chart, int house) {
-    double strength = 0.0;
-    final houseSign = _getHouseSign(chart, house);
+  /// Calculate Vimshopak Bala for all planets
+  static Map<Planet, VimshopakBala> calculateAllVimshopakBala(
+    CompleteChartData chart,
+  ) {
+    _strengthService ??= StrengthAnalysisService();
 
-    // Check beneficial aspects from Jupiter and Venus
-    final jupiterSign = _getPlanetSign(chart, 'Jupiter');
-    final venusSign = _getPlanetSign(chart, 'Venus');
-
-    if (_isAspecting(jupiterSign, houseSign)) strength += 20.0;
-    if (_isAspecting(venusSign, houseSign)) strength += 15.0;
-
-    // Check malefic aspects from Mars and Saturn
-    final marsSign = _getPlanetSign(chart, 'Mars');
-    final saturnSign = _getPlanetSign(chart, 'Saturn');
-
-    if (_isAspecting(marsSign, houseSign)) strength -= 10.0;
-    if (_isAspecting(saturnSign, houseSign)) strength -= 10.0;
-
-    return strength;
+    return _strengthService!.getAllPlanetsVimshopakBala(chart.baseChart);
   }
 
-  /// Calculate strength from planets occupying the house
-  static double _calculateOccupantStrength(CompleteChartData chart, int house) {
-    double strength = 0.0;
-    final houseSign = _getHouseSign(chart, house);
+  /// Calculate Ishtaphala and Kashtaphala for all planets
+  static Future<Map<Planet, ({double ishtaphala, double kashtaphala})>>
+  calculateAllPlanetFruits(CompleteChartData chart) async {
+    final results = <Planet, ({double ishtaphala, double kashtaphala})>{};
 
-    for (var planet in [
-      'Sun',
-      'Moon',
-      'Mars',
-      'Mercury',
-      'Jupiter',
-      'Venus',
-      'Saturn',
-    ]) {
-      final planetSign = _getPlanetSign(chart, planet);
-      if (planetSign == houseSign) {
-        // Planet in house
-        if (['Jupiter', 'Venus', 'Mercury'].contains(planet)) {
-          strength += 15.0; // Benefics
-        } else if (['Sun', 'Moon'].contains(planet)) {
-          strength += 10.0; // Luminaries
-        } else {
-          strength += 5.0; // Malefics (still add some strength)
-        }
-      }
+    for (final planet in Planet.traditionalPlanets) {
+      results[planet] = (
+        ishtaphala: await calculateIshtaphala(chart, planet),
+        kashtaphala: await calculateKashtaphala(chart, planet),
+      );
     }
 
-    return strength;
+    return results;
   }
 
   /// Interpret house strength
@@ -156,79 +147,6 @@ class BhavaBala {
     return '$houseName is $quality (${strength.toStringAsFixed(1)} units)';
   }
 
-  // Helper methods
-  static int _getHouseSign(CompleteChartData chart, int house) {
-    try {
-      final cuspLong = chart.baseChart.houses.cusps[house - 1];
-      return (cuspLong / 30).floor();
-    } catch (e) {
-      return (house - 1) % 12;
-    }
-  }
-
-  static int _getPlanetSign(CompleteChartData chart, String planetName) {
-    for (final entry in chart.baseChart.planets.entries) {
-      if (entry.key.toString().split('.').last == planetName) {
-        return (entry.value.longitude / 30).floor();
-      }
-    }
-    return 0;
-  }
-
-  static String _getSignLord(int sign) {
-    const lords = [
-      'Mars',
-      'Venus',
-      'Mercury',
-      'Moon',
-      'Sun',
-      'Mercury',
-      'Venus',
-      'Mars',
-      'Jupiter',
-      'Saturn',
-      'Saturn',
-      'Jupiter',
-    ];
-    return lords[sign % 12];
-  }
-
-  static bool _isOwnSign(String planet, int sign) {
-    final lord = _getSignLord(sign);
-    return lord == planet;
-  }
-
-  static bool _isExalted(String planet, int sign) {
-    const exaltations = {
-      'Sun': 0, // Aries
-      'Moon': 1, // Taurus
-      'Mars': 9, // Capricorn
-      'Mercury': 5, // Virgo
-      'Jupiter': 3, // Cancer
-      'Venus': 11, // Pisces
-      'Saturn': 6, // Libra
-    };
-    return exaltations[planet] == sign;
-  }
-
-  static bool _isDebilitated(String planet, int sign) {
-    const debilitations = {
-      'Sun': 6, // Libra
-      'Moon': 7, // Scorpio
-      'Mars': 3, // Cancer
-      'Mercury': 11, // Pisces
-      'Jupiter': 9, // Capricorn
-      'Venus': 5, // Virgo
-      'Saturn': 0, // Aries
-    };
-    return debilitations[planet] == sign;
-  }
-
-  static bool _isAspecting(int fromSign, int toSign) {
-    final diff = ((toSign - fromSign + 12) % 12);
-    return diff == 6; // 7th house aspect (opposition)
-  }
-
   static String _getHouseName(int house) {
     const names = [
       '1st House (Self)',
@@ -248,7 +166,7 @@ class BhavaBala {
   }
 }
 
-/// Bhava Strength data class
+/// Bhava Strength data class (preserved for backward compatibility)
 class BhavaStrength {
   final int house;
   final double totalStrength;

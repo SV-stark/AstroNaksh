@@ -16,109 +16,123 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    late Map<int, BhavaStrength> bhavaBalaData;
-    try {
-      bhavaBalaData = BhavaBala.calculateBhavaBala(widget.chartData);
-    } catch (e) {
-      bhavaBalaData = {};
-      if (context.mounted) {
-        displayInfoBar(
-          context,
-          builder: (context, close) => InfoBar(
-            title: const Text('Calculation Error'),
-            content: Text('Failed to calculate Bhava Bala: $e'),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          ),
-        );
-      }
-    }
+    return FutureBuilder<Map<int, BhavaStrength>>(
+      future: BhavaBala.calculateBhavaBala(widget.chartData),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const ScaffoldPage(
+            header: PageHeader(title: Text('Bhava Bala (House Strength)')),
+            content: Center(child: ProgressRing()),
+          );
+        }
 
-    // Convert to list for sorting
-    List<MapEntry<int, BhavaStrength>> houses = bhavaBalaData.entries.toList();
-
-    if (_sortByStrength) {
-      houses.sort(
-        (a, b) => b.value.totalStrength.compareTo(a.value.totalStrength),
-      );
-    } else {
-      houses.sort((a, b) => a.key.compareTo(b.key));
-    }
-
-    return ScaffoldPage(
-      header: PageHeader(
-        title: const Text('Bhava Bala (House Strength)'),
-        leading: IconButton(
-          icon: const Icon(FluentIcons.back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        commandBar: CommandBar(
-          primaryItems: [
-            CommandBarButton(
-              icon: Icon(
-                _sortByStrength ? FluentIcons.sort : FluentIcons.sort_lines,
-              ),
-              label: Text(
-                _sortByStrength ? 'Sort by Number' : 'Sort by Strength',
-              ),
-              onPressed: () {
-                setState(() {
-                  _sortByStrength = !_sortByStrength;
-                });
-              },
+        if (snapshot.hasError) {
+          return ScaffoldPage(
+            header: PageHeader(
+              title: const Text('Bhava Bala (House Strength)'),
             ),
-          ],
-        ),
-      ),
-      content: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        children: [
-          // Educational info
-          Card(
-            backgroundColor: Colors.teal.withValues(alpha: 0.1),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            content: Center(
+              child: InfoBar(
+                title: const Text('Calculation Error'),
+                content: Text(
+                  'Failed to calculate Bhava Bala: ${snapshot.error}',
+                ),
+                severity: InfoBarSeverity.error,
+              ),
+            ),
+          );
+        }
+
+        final bhavaBalaData = snapshot.data ?? {};
+
+        // Convert to list for sorting
+        List<MapEntry<int, BhavaStrength>> houses = bhavaBalaData.entries
+            .toList();
+
+        if (_sortByStrength) {
+          houses.sort(
+            (a, b) => b.value.totalStrength.compareTo(a.value.totalStrength),
+          );
+        } else {
+          houses.sort((a, b) => a.key.compareTo(b.key));
+        }
+
+        return ScaffoldPage(
+          header: PageHeader(
+            title: const Text('Bhava Bala (House Strength)'),
+            leading: IconButton(
+              icon: const Icon(FluentIcons.back),
+              onPressed: () => Navigator.pop(context),
+            ),
+            commandBar: CommandBar(
+              primaryItems: [
+                CommandBarButton(
+                  icon: Icon(
+                    _sortByStrength ? FluentIcons.sort : FluentIcons.sort_lines,
+                  ),
+                  label: Text(
+                    _sortByStrength ? 'Sort by Number' : 'Sort by Strength',
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _sortByStrength = !_sortByStrength;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          content: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            children: [
+              // Educational info
+              Card(
+                backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(FluentIcons.info, color: Colors.teal),
-                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Icon(FluentIcons.info, color: Colors.teal),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'About Bhava Bala',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       const Text(
-                        'About Bhava Bala',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        'Bhava Bala measures house strength based on lord strength, directional power, '
+                        'aspects received, and occupying planets. Stronger houses deliver better results '
+                        'in their areas of life.',
+                        style: TextStyle(fontSize: 14),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Bhava Bala measures house strength based on lord strength, directional power, '
-                    'aspects received, and occupying planets. Stronger houses deliver better results '
-                    'in their areas of life.',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ],
+                ),
               ),
-            ),
+
+              const SizedBox(height: 16),
+
+              // House strength grid
+              _buildHouseGrid(houses),
+
+              const SizedBox(height: 16),
+
+              // Detailed house cards
+              ...houses.map((entry) => _buildHouseCard(entry.key, entry.value)),
+
+              const SizedBox(height: 32),
+            ],
           ),
-
-          const SizedBox(height: 16),
-
-          // House strength grid
-          _buildHouseGrid(houses),
-
-          const SizedBox(height: 16),
-
-          // Detailed house cards
-          ...houses.map((entry) => _buildHouseCard(entry.key, entry.value)),
-
-          const SizedBox(height: 32),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -1,10 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:astronaksh/logic/panchang_service.dart';
 import 'package:astronaksh/data/models.dart';
 import 'package:astronaksh/core/ephemeris_manager.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestWidgetsFlutterBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+          return '.'; // Return current directory for all path requests in tests
+        });
+  });
+
   test('PanchangService should include rise/set times', () async {
     final service = PanchangService();
     final date = DateTime(2024, 1, 1, 12, 0);

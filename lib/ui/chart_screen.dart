@@ -217,10 +217,10 @@ class _ChartScreenState extends State<ChartScreen> {
 
   void _saveCurrentChart() async {
     if (_birthData == null) return;
-    
+
     // Save to both SharedPreferences and Database for compatibility
     await SavedChartsHelper.saveChart(_birthData!);
-    
+
     final dbHelper = DatabaseHelper();
     await dbHelper.insertChart({
       'name': _birthData!.name,
@@ -228,9 +228,9 @@ class _ChartScreenState extends State<ChartScreen> {
       'latitude': _birthData!.location.latitude,
       'longitude': _birthData!.location.longitude,
       'locationName': _birthData!.place,
-      'timezone': _birthData!.timezone ?? 'UTC',
+      'timezone': _birthData!.timezone.isEmpty ? 'UTC' : _birthData!.timezone,
     });
-    
+
     if (!mounted) return;
     displayInfoBar(
       context,

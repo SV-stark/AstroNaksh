@@ -1,5 +1,6 @@
 import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
+import '../core/ephemeris_manager.dart';
 
 /// Shadbala (Six-Fold Strength) Calculator
 /// Wraps the library's native ShadbalaService
@@ -7,11 +8,15 @@ class ShadbalaCalculator {
   static ShadbalaService? _service;
 
   /// Calculate complete Shadbala for all planets
-  static Map<String, double> calculateShadbala(CompleteChartData chartData) {
-    _service ??= ShadbalaService();
+  static Future<Map<String, double>> calculateShadbala(
+    CompleteChartData chartData,
+  ) async {
+    _service ??= ShadbalaService(EphemerisManager.service);
 
     // Use the native library service
-    final nativeResults = _service!.calculateShadbala(chartData.baseChart);
+    final nativeResults = await _service!.calculateShadbala(
+      chartData.baseChart,
+    );
 
     final Map<String, double> shadbala = {};
 
@@ -27,10 +32,10 @@ class ShadbalaCalculator {
   }
 
   /// Get detailed Shadbala results if needed
-  static Map<Planet, ShadbalaResult> calculateDetailedShadbala(
+  static Future<Map<Planet, ShadbalaResult>> calculateDetailedShadbala(
     VedicChart chart,
-  ) {
-    _service ??= ShadbalaService();
-    return _service!.calculateShadbala(chart);
+  ) async {
+    _service ??= ShadbalaService(EphemerisManager.service);
+    return await _service!.calculateShadbala(chart);
   }
 }

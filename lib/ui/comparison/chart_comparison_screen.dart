@@ -39,7 +39,13 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   Widget build(BuildContext context) {
     if (_selectedChart1 == null || _selectedChart2 == null) {
       return ScaffoldPage(
-        header: const PageHeader(title: Text('Chart Comparison')),
+        header: PageHeader(
+          title: const Text('Chart Comparison'),
+          leading: IconButton(
+            icon: const Icon(FluentIcons.back),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
         content: _buildChartSelector(),
       );
     }

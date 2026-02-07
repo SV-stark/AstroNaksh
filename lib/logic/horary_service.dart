@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:jyotish/jyotish.dart';
 
 import 'custom_chart_service.dart';
-import '../core/ayanamsa_calculator.dart';
 
 class HoraryService {
   final CustomChartService _chartService = CustomChartService();
@@ -52,15 +51,10 @@ class HoraryService {
 
     // 2. Find "Fictional Time" that produces this Ascendant at the given location
     // We use the configured Ayanamsa (KP) for this matching.
-    SiderealMode ayanamsaMode = SiderealMode.lahiri;
-    double? overrideAyanamsa;
-
-    // For Horary, typically KP New or KP Straight is used.
-    // We'll stick to a standard KP estimation or allow override.
-    // Let's assume standard KP for now for the loop.
-    if (ayanamsaName == 'KP') {
-      overrideAyanamsa = AyanamsaCalculator.calculateNewKPAyanamsa(dateTime);
-    }
+    // For Horary, typically KP New (Krishnamurti VP291) is used.
+    final ayanamsaMode = ayanamsaName == 'KP'
+        ? SiderealMode.krishnamurtiVP291
+        : SiderealMode.lahiri;
 
     // Perform search
     final fixedTime = await _findTimeForAscendant(
@@ -68,7 +62,6 @@ class HoraryService {
       approxTime: dateTime,
       location: location,
       ayanamsaMode: ayanamsaMode,
-      overrideAyanamsa: overrideAyanamsa,
     );
     debugPrint('Horary: Fixed Time found: $fixedTime');
 
@@ -78,7 +71,6 @@ class HoraryService {
       dateTime: fixedTime,
       location: location,
       ayanamsaMode: ayanamsaMode,
-      overrideAyanamsa: overrideAyanamsa,
       houseSystem: 'P', // Placidus for KP
     );
 
@@ -87,7 +79,6 @@ class HoraryService {
       dateTime: dateTime,
       location: location,
       ayanamsaMode: ayanamsaMode,
-      overrideAyanamsa: overrideAyanamsa,
     );
 
     // 5. Merge: Houses from houseChart, Planets from planetChart
@@ -103,60 +94,69 @@ class HoraryService {
     );
   }
 
-  /// Binary search to find time T such that Ascendant(T) ~= Target
+  /// Binary/Newton search to find time T such that Ascendant(T) ~= Target
   Future<DateTime> _findTimeForAscendant({
     required double targetAscendant,
     required DateTime approxTime,
     required GeographicLocation location,
     required SiderealMode ayanamsaMode,
-    double? overrideAyanamsa,
   }) async {
-    // Search window: +/- 24 hours. The ascendant covers 360 degrees in ~24h.
-    // However, we want the *nearest* occurrence.
-    // Ideally, we start at approxTime and scan.
-
-    // We can use the service to get current ascendant, see difference, estimate delta t.
-    // 1 degree ascendant ~= 4 minutes time.
+    // We want to find T such that Ascendant(T) = targetAscendant.
+    // Ascendant moves ~360 degrees in ~24 hours (1440 mins).
+    // Speed varies by sign (short/long ascension).
 
     DateTime currentTime = approxTime;
 
-    // Max iterations to prevent infinite loops
-    for (int i = 0; i < 10; i++) {
-      final chart = await _chartService.calculateChart(
+    // Increased max iterations for better convergence
+    for (int i = 0; i < 30; i++) {
+      // 1. Calculate Ascendant at current time T
+      final chartT = await _chartService.calculateChart(
         dateTime: currentTime,
         location: location,
         ayanamsaMode: ayanamsaMode,
-        overrideAyanamsa: overrideAyanamsa,
       );
+      double currentAsc = chartT.houses.ascendant;
 
-      double currentAsc = chart.houses.ascendant;
+      // 2. Calculate Ascendant at T + delta (e.g. 1 minute) to find rate of change
+      final deltaSeconds = 60;
+      final chartTPlus = await _chartService.calculateChart(
+        dateTime: currentTime.add(Duration(seconds: deltaSeconds)),
+        location: location,
+        ayanamsaMode: ayanamsaMode,
+      );
+      double nextAsc = chartTPlus.houses.ascendant;
+
+      // Handle 360/0 crossing for rate calculation
+      double ascDiff = nextAsc - currentAsc;
+      if (ascDiff < -180) ascDiff += 360;
+      if (ascDiff > 180) ascDiff -= 360;
+
+      // Rate: Degrees per second
+      double rate = ascDiff / deltaSeconds;
+
+      if (rate.abs() < 1e-6) {
+        // Avoiding division by zero if rate is suspiciously low
+        rate = 1.0 / 240.0; // Fallback to approx 1 deg per 4 mins (240s)
+      }
+
+      // 3. Calculate Difference from Target
       double diff = targetAscendant - currentAsc;
 
-      // Normalize diff to -180 to 180
-      while (diff > 180) {
-        diff -= 360;
-      }
-      while (diff < -180) {
-        diff += 360;
-      }
+      // Normalize diff to -180 to 180 (Shortest path)
+      while (diff > 180) diff -= 360;
+      while (diff < -180) diff += 360;
 
-      if (diff.abs() < 0.001) {
-        // Precision threshold
+      // Check for convergence
+      if (diff.abs() < 0.0001) {
         return currentTime;
       }
 
-      // Adjustment: 1 degree ~ 4 minutes (240 seconds)
-      // Rate varies, so we dampen/accelerate slightly? Linear approx is usually fine for convergence.
-      // Ascendant moves 360 degrees in 24 hours = 1440 mins.
-      // 1 degree = 4 mins.
-      double correctionMinutes = diff * 4;
-
-      // If huge difference, we might jump too far/wrong direction if we crossed 0/360 boundary incorrectly
-      // The normalization handles strict arithmetic, but ascendant speed varies by sign (short/long ascension).
-      // Let's rely on the loop to converge.
+      // 4. Estimate time correction
+      // diff (deg) / rate (deg/sec) = seconds needed
+      double correctionSeconds = diff / rate;
 
       currentTime = currentTime.add(
-        Duration(seconds: (correctionMinutes * 60).round()),
+        Duration(milliseconds: (correctionSeconds * 1000).round()),
       );
     }
 

@@ -99,57 +99,115 @@ class RashiphalRules {
 
   /// Get simple Muhurta timings (Abhijit etc)
   /// Returns a list of strings describing favorable times
+  /// Get simple Muhurta timings (Abhijit etc)
+  /// Returns a list of strings describing favorable times
+  /// [sunrise] and [sunset] are required for accurate Rahu Kaalam and Abhijit
   static List<String> getMuhurtaTimings(
     DateTime date, {
     bool isAbhijit = true,
+    DateTime? sunrise,
+    DateTime? sunset,
   }) {
-    // Ideally this requires sunrise/sunset. approximated here.
-    // Abhijit is typically mid-day.
     final timings = <String>[];
-    if (isAbhijit) {
+    final timeFormat = (DateTime d) =>
+        '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+    // Abhijit Muhurta
+    // 8th Muhurta of the day (out of 15). Roughly mid-day.
+    // Exact: Midpoint of Sunrise-Sunset. Span is (Sunset-Sunrise)/15.
+    if (isAbhijit && sunrise != null && sunset != null) {
+      final dayDuration = sunset.difference(sunrise);
+      final muhurtaDuration = dayDuration ~/ 15;
+
+      // Abhijit is the 8th muhurta (index 7 if 0-based)
+      // Actually spans 24 mins before and after Local Noon (approx)
+      // Standard definition: The 8th muhurta.
+      final start = sunrise.add(muhurtaDuration * 7);
+      final end = start.add(muhurtaDuration);
+
+      timings.add(
+        'Abhijit Muhurta: ${timeFormat(start)} - ${timeFormat(end)} (Excellent for most activities)',
+      );
+    } else if (isAbhijit) {
+      // Fallback if no sunrise/set provided
       final midDay = DateTime(date.year, date.month, date.day, 12, 0);
       final start = midDay.subtract(const Duration(minutes: 24));
-      final end = midDay.add(
-        const Duration(minutes: 24),
-      ); // 11:36 - 12:24 roughly
-
-      // Formatting
-      String formatTime(DateTime d) =>
-          '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+      final end = midDay.add(const Duration(minutes: 24));
       timings.add(
-        'Abhijit Muhurta: ${formatTime(start)} - ${formatTime(end)} (Excellent for most activities)',
+        'Abhijit Muhurta: ${timeFormat(start)} - ${timeFormat(end)} (Approximate)',
       );
     }
 
-    // Rahu Kaalam (Rough approximation based on weekday)
-    // Mon: 7:30-9, Tue: 3-4:30, Wed: 12-1:30, Thu: 1:30-3, Fri: 10:30-12, Sat: 9-10:30, Sun: 4:30-6
-    // Using simple static map for now as placeholder for full calc
-    final weekday = date.weekday; // 1=Mon, 7=Sun
-    String rahuKal = '';
-    switch (weekday) {
-      case 1:
-        rahuKal = '07:30 - 09:00';
-        break;
-      case 2:
-        rahuKal = '15:00 - 16:30';
-        break;
-      case 3:
-        rahuKal = '12:00 - 13:30';
-        break;
-      case 4:
-        rahuKal = '13:30 - 15:00';
-        break;
-      case 5:
-        rahuKal = '10:30 - 12:00';
-        break;
-      case 6:
-        rahuKal = '09:00 - 10:30';
-        break;
-      case 7:
-        rahuKal = '16:30 - 18:00';
-        break;
+    // Rahu Kaalam Calculation
+    // Day is divided into 8 equal parts.
+    // Rahu Kaalam periods:
+    // Mon: 2nd, Tue: 7th, Wed: 5th, Thu: 6th, Fri: 4th, Sat: 3rd, Sun: 8th
+    if (sunrise != null && sunset != null) {
+      final dayDuration = sunset.difference(sunrise);
+      final partDuration = dayDuration ~/ 8;
+
+      int partIndex; // 1-based index (1 to 8)
+      switch (date.weekday) {
+        case 1:
+          partIndex = 2;
+          break; // Mon
+        case 2:
+          partIndex = 7;
+          break; // Tue
+        case 3:
+          partIndex = 5;
+          break; // Wed
+        case 4:
+          partIndex = 6;
+          break; // Thu
+        case 5:
+          partIndex = 4;
+          break; // Fri
+        case 6:
+          partIndex = 3;
+          break; // Sat
+        case 7:
+          partIndex = 8;
+          break; // Sun
+        default:
+          partIndex = 1;
+      }
+
+      final start = sunrise.add(partDuration * (partIndex - 1));
+      final end = start.add(partDuration);
+
+      timings.add(
+        'Rahu Kalam (Avoid): ${timeFormat(start)} - ${timeFormat(end)}',
+      );
+    } else {
+      // Fallback to static map if no sunrise/set
+      final weekday = date.weekday; // 1=Mon, 7=Sun
+      String rahuKal = '';
+      switch (weekday) {
+        case 1:
+          rahuKal = '07:30 - 09:00';
+          break;
+        case 2:
+          rahuKal = '15:00 - 16:30';
+          break;
+        case 3:
+          rahuKal = '12:00 - 13:30';
+          break;
+        case 4:
+          rahuKal = '13:30 - 15:00';
+          break;
+        case 5:
+          rahuKal = '10:30 - 12:00';
+          break;
+        case 6:
+          rahuKal = '09:00 - 10:30';
+          break;
+        case 7:
+          rahuKal = '16:30 - 18:00';
+          break;
+      }
+      timings.add('Rahu Kalam (Avoid): $rahuKal (Approximate)');
     }
-    timings.add('Rahu Kalam (Avoid): $rahuKal');
 
     return timings;
   }

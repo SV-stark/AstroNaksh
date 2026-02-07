@@ -51,15 +51,10 @@ void main() {
       }
     });
 
-    test('New KP Calculation should be accurate at J2000', () {
-      // J2000 value is 23° 33' 03"
-      final j2000 = DateTime.utc(2000, 1, 1, 12, 0, 0);
-      final ayanamsa = AyanamsaCalculator.calculateNewKPAyanamsa(j2000);
-
-      final expectedWithoutSeconds = 23 + (33 / 60);
-      final expected = expectedWithoutSeconds + (3 / 3600);
-
-      expect(ayanamsa, closeTo(expected, 0.0001));
+    test('New KP System should resolve to krishnamurtiVP291', () {
+      final system = AyanamsaCalculator.getSystem('newKP');
+      expect(system, isNotNull);
+      expect(system!.mode, equals(SiderealMode.krishnamurtiVP291));
     });
   });
 }

@@ -44,7 +44,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     if (_selectedChart1 == null || _selectedChart2 == null) {
       return ScaffoldPage(
         header: PageHeader(
-          title: const Text('Detailed Kundali Matching'),
+          title: const Text('Kundali Matching'),
           leading: IconButton(
             icon: const Icon(FluentIcons.back),
             onPressed: () => Navigator.pop(context),
@@ -59,7 +59,6 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       _selectedChart2!,
     );
 
-    // Also run synastry for extra tabs using existing logic
     final synastry = ChartComparison.analyzeCompatibility(
       _selectedChart1!,
       _selectedChart2!,
@@ -67,7 +66,13 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
 
     return NavigationView(
       appBar: NavigationAppBar(
-        title: Text('Compatibility: ${compatibilityReport.overallConclusion}'),
+        title: Row(
+          children: [
+            Icon(FluentIcons.heart_fill, color: compatibilityReport.overallColor, size: 20),
+            const SizedBox(width: 12),
+            Text(compatibilityReport.overallConclusion),
+          ],
+        ),
         actions: CommandBar(
           overflowBehavior: CommandBarOverflowBehavior.noWrap,
           primaryItems: [
@@ -78,11 +83,11 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.side_panel_mirrored),
-              label: const Text('View Charts'),
+              label: const Text('Charts'),
               onPressed: () => _showSideBySideView(),
             ),
             CommandBarButton(
-              icon: const Icon(FluentIcons.edit),
+              icon: const Icon(FluentIcons.add_friend),
               label: const Text('New Pair'),
               onPressed: () {
                 setState(() {
@@ -92,7 +97,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.pdf),
-              label: const Text('Export PDF'),
+              label: const Text('Export'),
               onPressed: _exportPdf,
             ),
           ],
@@ -101,33 +106,34 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
+        displayMode: PaneDisplayMode.open,
         items: [
           PaneItem(
             icon: Icon(
               FluentIcons.heart_fill,
               color: compatibilityReport.overallColor,
             ),
-            title: const Text('Matching Overview'),
+            title: const Text('Overview'),
             body: _buildOverviewTab(compatibilityReport),
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.list),
-            title: const Text('Ashtakoota Details'),
+            icon: const Icon(FluentIcons.view_dashboard),
+            title: const Text('Ashtakoota'),
             body: _buildAshtakootaTab(compatibilityReport),
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.warning),
-            title: const Text('Manglik & Doshas'),
+            icon: const Icon(FluentIcons.shield_alert),
+            title: const Text('Doshas'),
             body: _buildDoshaTab(compatibilityReport),
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.favorite_star),
-            title: const Text('Planetary Synastry'),
+            icon: const Icon(FluentIcons.starburst),
+            title: const Text('Synastry'),
             body: _buildSynastryTab(synastry),
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.group),
-            title: const Text('House Overlays'),
+            icon: const Icon(FluentIcons.home_group),
+            title: const Text('Houses'),
             body: _buildHouseOverlaysTab(synastry),
           ),
         ],
@@ -137,81 +143,331 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
 
   Widget _buildOverviewTab(MatchingReport report) {
     return ScaffoldPage(
-      content: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Score Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  Text(
-                    '${report.ashtakootaScore.toStringAsFixed(1)} / 36',
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: report.overallColor,
+      content: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Main Score Card
+            Card(
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  children: [
+                    // Score Circle
+                    Container(
+                      width: 180,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            report.overallColor.withOpacity(0.3),
+                            report.overallColor.withOpacity(0.1),
+                          ],
+                        ),
+                        border: Border.all(
+                          color: report.overallColor,
+                          width: 4,
+                        ),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              report.ashtakootaScore.toStringAsFixed(1),
+                              style: TextStyle(
+                                fontSize: 56,
+                                fontWeight: FontWeight.bold,
+                                color: report.overallColor,
+                              ),
+                            ),
+                            Text(
+                              '/ 36',
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: report.overallColor.withOpacity(0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  Text(
-                    report.overallConclusion,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: report.overallColor,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: report.overallColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        report.overallConclusion,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: report.overallColor,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Key Highlights
-                  _buildHighlightRow(
-                    'Ashtakoota Score',
-                    '${report.ashtakootaScore} points',
-                    report.ashtakootaScore >= 18 ? Colors.green : Colors.red,
-                  ),
-                  _buildHighlightRow(
-                    'Mangal Dosha',
-                    report.manglikMatch.description,
-                    report.manglikMatch.isMatch ? Colors.green : Colors.red,
-                  ),
-                  if (report.extraChecks.isNotEmpty)
-                    _buildHighlightRow(
-                      'Mahendra Koota',
-                      report.extraChecks
-                          .firstWhere((e) => e.name == 'Mahendra')
-                          .description,
-                      report.extraChecks
-                              .firstWhere((e) => e.name == 'Mahendra')
-                              .isFavorable
-                          ? Colors.green
-                          : Colors.orange,
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
+            const SizedBox(height: 20),
+            // Partner Info Cards
+            Row(
+              children: [
+                Expanded(
+                  child: _buildPartnerCard(
+                    'Groom',
+                    _selectedChart1!,
+                    Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildPartnerCard(
+                    'Bride',
+                    _selectedChart2!,
+                    Colors.purple,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Key Highlights
+            Text(
+              'Compatibility Highlights',
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _buildHighlightChip(
+                  'Ashtakoota',
+                  '${report.ashtakootaScore.toStringAsFixed(1)}/36',
+                  report.ashtakootaScore >= 18 ? Colors.green : Colors.red,
+                  FluentIcons.heart,
+                ),
+                _buildHighlightChip(
+                  'Mangal Dosha',
+                  report.manglikMatch.isMatch ? 'Compatible' : 'Check Required',
+                  report.manglikMatch.isMatch ? Colors.green : Colors.orange,
+                  FluentIcons.shield,
+                ),
+                if (report.extraChecks.isNotEmpty)
+                  _buildHighlightChip(
+                    'Mahendra',
+                    report.extraChecks.firstWhere((e) => e.name == 'Mahendra').isFavorable
+                        ? 'Favorable'
+                        : 'Neutral',
+                    report.extraChecks.firstWhere((e) => e.name == 'Mahendra').isFavorable
+                        ? Colors.green
+                        : Colors.orange,
+                    FluentIcons.starburst,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPartnerCard(String label, CompleteChartData chart, Color color) {
+    return Card(
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(color: color, width: 4),
           ),
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(FluentIcons.contact, color: color, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              chart.birthData.name,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${chart.birthData.dateTime.day}/${chart.birthData.dateTime.month}/${chart.birthData.dateTime.year}',
+              style: FluentTheme.of(context).typography.caption,
+            ),
+            Text(
+              chart.birthData.place,
+              style: FluentTheme.of(context).typography.caption,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHighlightChip(String label, String value, Color color, IconData icon) {
+    return Card(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: FluentTheme.of(context).typography.caption,
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildAshtakootaTab(MatchingReport report) {
     return ScaffoldPage(
-      content: ListView.builder(
+      content: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ashtakoota Analysis',
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Detailed breakdown of the 8 compatibility factors (Kootas)',
+              style: FluentTheme.of(context).typography.caption,
+            ),
+            const SizedBox(height: 16),
+            // Total Progress
+            Card(
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total Score',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '${report.ashtakootaScore.toStringAsFixed(1)} / 36',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: report.overallColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        height: 12,
+                        child: ProgressBar(
+                          value: report.ashtakootaScore / 36 * 100,
+                          backgroundColor: Colors.grey.withOpacity(0.2),
+                          activeColor: report.overallColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Individual Kootas
+            ...report.kootaResults.map((koota) => _buildKootaCard(koota)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKootaCard(KootaResult koota) {
+    final percentage = koota.score / koota.maxScore;
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
         padding: const EdgeInsets.all(16),
-        itemCount: report.kootaResults.length,
-        itemBuilder: (context, index) {
-          final koota = report.kootaResults[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: koota.color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${koota.score.toInt()}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: koota.color,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         koota.name,
@@ -220,235 +476,414 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                           fontSize: 16,
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: koota.color.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: koota.color),
-                        ),
-                        child: Text(
-                          '${koota.score} / ${koota.maxScore}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: koota.color,
-                          ),
-                        ),
+                      Text(
+                        koota.description,
+                        style: FluentTheme.of(context).typography.caption,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    koota.description,
-                    style: const TextStyle(fontStyle: FontStyle.italic),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: koota.color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: koota.color.withOpacity(0.3)),
                   ),
-                  const SizedBox(height: 8),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Text(koota.detailedReason),
+                  child: Text(
+                    '${koota.score.toInt()}/${koota.maxScore.toInt()}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: koota.color,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: SizedBox(
+                height: 6,
+                child: ProgressBar(
+                  value: percentage * 100,
+                  backgroundColor: Colors.grey.withOpacity(0.2),
+                  activeColor: koota.color,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(FluentIcons.info, size: 16, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      koota.detailedReason,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.withOpacity(0.8),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildDoshaTab(MatchingReport report) {
     return ScaffoldPage(
-      content: ListView(
-        padding: const EdgeInsets.all(16),
+      content: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Dosha Analysis',
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Mangal Dosha and other compatibility checks',
+              style: FluentTheme.of(context).typography.caption,
+            ),
+            const SizedBox(height: 16),
+            // Mangal Dosha Card
+            Card(
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: report.manglikMatch.isMatch 
+                                ? Colors.green.withOpacity(0.1) 
+                                : Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            report.manglikMatch.isMatch 
+                                ? FluentIcons.check_mark 
+                                : FluentIcons.warning,
+                            color: report.manglikMatch.isMatch ? Colors.green : Colors.orange,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Mangal Dosha Analysis',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                report.manglikMatch.description,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: report.manglikMatch.isMatch 
+                                      ? Colors.green 
+                                      : Colors.orange,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDoshaStatusCard(
+                            'Groom',
+                            report.manglikMatch.maleManglik,
+                            Colors.blue,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildDoshaStatusCard(
+                            'Bride',
+                            report.manglikMatch.femaleManglik,
+                            Colors.purple,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Additional Checks
+            Text(
+              'Additional Checks',
+              style: FluentTheme.of(context).typography.bodyLarge,
+            ),
+            const SizedBox(height: 12),
+            ...report.extraChecks.map((check) => _buildExtraCheckCard(check)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDoshaStatusCard(String label, bool isManglik, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isManglik 
+            ? Colors.orange.withOpacity(0.1) 
+            : Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isManglik ? Colors.orange.withOpacity(0.3) : Colors.green.withOpacity(0.3),
+        ),
+      ),
+      child: Column(
         children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Icon(
+            isManglik ? FluentIcons.warning : FluentIcons.check_mark,
+            color: isManglik ? Colors.orange : Colors.green,
+            size: 24,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            isManglik ? 'Manglik' : 'Non-Manglik',
+            style: TextStyle(
+              color: isManglik ? Colors.orange : Colors.green,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExtraCheckCard(ExtraMatchingCheck check) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      borderRadius: BorderRadius.circular(10),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: check.isFavorable 
+                ? Colors.green.withOpacity(0.1) 
+                : Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            check.isFavorable ? FluentIcons.check_mark : FluentIcons.info,
+            color: check.isFavorable ? Colors.green : Colors.orange,
+          ),
+        ),
+        title: Text(
+          check.name,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(check.description),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: check.isFavorable 
+                ? Colors.green.withOpacity(0.1) 
+                : Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            check.isFavorable ? 'Good' : 'Caution',
+            style: TextStyle(
+              color: check.isFavorable ? Colors.green : Colors.orange,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChartSelector() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Card
           Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    FluentTheme.of(context).accentColor.withOpacity(0.15),
+                    FluentTheme.of(context).accentColor.withOpacity(0.05),
+                  ],
+                ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Mangal Dosha Analysis',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: FluentTheme.of(context).accentColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          FluentIcons.heart_fill,
+                          color: FluentTheme.of(context).accentColor,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Kundali Matching',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Analyze horoscope compatibility using Vedic Astrology principles',
+                              style: FluentTheme.of(context).typography.body,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  _buildStatusRow(
-                    'Groom Status',
-                    report.manglikMatch.maleManglik ? "Manglik" : "Non-Manglik",
-                    report.manglikMatch.maleManglik
-                        ? Colors.orange
-                        : Colors.green,
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          // Chart Selection
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildChartSelection(
+                      'Groom',
+                      _selectedChart1,
+                      (chart) => setState(() => _selectedChart1 = chart),
+                      Colors.blue,
+                      FluentIcons.user_followed,
+                    ),
                   ),
-                  _buildStatusRow(
-                    'Bride Status',
-                    report.manglikMatch.femaleManglik
-                        ? "Manglik"
-                        : "Non-Manglik",
-                    report.manglikMatch.femaleManglik
-                        ? Colors.orange
-                        : Colors.green,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue.withOpacity(0.2),
+                            Colors.purple.withOpacity(0.2),
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: FluentTheme.of(context).accentColor.withOpacity(0.3),
+                          width: 2,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          FluentIcons.heart_fill,
+                          color: FluentTheme.of(context).accentColor,
+                          size: 28,
+                        ),
+                      ),
+                    ),
                   ),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Conclusion: ${report.manglikMatch.description}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: report.manglikMatch.isMatch
-                          ? Colors.green
-                          : Colors.red,
+                  Expanded(
+                    child: _buildChartSelection(
+                      'Bride',
+                      _selectedChart2,
+                      (chart) => setState(() => _selectedChart2 = chart),
+                      Colors.purple,
+                      FluentIcons.user_followed,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'Additional Checks',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          ...report.extraChecks.map(
-            (check) => ListTile(
-              leading: Icon(
-                check.isFavorable
-                    ? FluentIcons.check_mark
-                    : FluentIcons.warning,
-                color: check.isFavorable ? Colors.green : Colors.orange,
-              ),
-              title: Text(check.name),
-              subtitle: Text(check.description),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHighlightRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 16)),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(child: Text(label)),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              value,
-              style: TextStyle(color: color, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChartSelector() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Card(
-          backgroundColor: Colors.blue.withValues(alpha: 0.1),
-          child: const Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Compatibility Check',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Analyze horoscope compatibility based on Vedic Astrology including Ashtakoota, Mangal Dosha, and planetary factors.',
-                  style: TextStyle(fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Expanded(
-              child: _buildChartSelection(
-                'Groom (Boy)',
-                _selectedChart1,
-                (chart) => setState(() => _selectedChart1 = chart),
-                Colors.blue,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: FluentTheme.of(
-                  context,
-                ).accentColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                FluentIcons.heart_fill,
-                color: FluentTheme.of(context).accentColor,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildChartSelection(
-                'Bride (Girl)',
-                _selectedChart2,
-                (chart) => setState(() => _selectedChart2 = chart),
-                Colors.purple,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-        if (_selectedChart1 != null && _selectedChart2 != null)
-          Center(
-            child: FilledButton(
-              onPressed: () => setState(() {}),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FluentIcons.heart),
-                    SizedBox(width: 8),
-                    Text('Check Compatibility', style: TextStyle(fontSize: 16)),
-                  ],
+          const SizedBox(height: 40),
+          // Action Button
+          if (_selectedChart1 != null && _selectedChart2 != null)
+            Center(
+              child: FilledButton(
+                onPressed: () => setState(() {}),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(FluentIcons.heart_fill, size: 20),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Analyze Compatibility',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -457,79 +892,109 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     CompleteChartData? selected,
     Function(CompleteChartData?) onSelect,
     Color accentColor,
+    IconData icon,
   ) {
     return Card(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: accentColor, width: 4)),
+          border: Border(
+            top: BorderSide(color: accentColor, width: 4),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
-                Icon(FluentIcons.contact, color: accentColor),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: accentColor, size: 22),
+                ),
+                const SizedBox(width: 12),
                 Text(
                   label,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 18,
                     color: accentColor,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             if (selected != null) ...[
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: accentColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: accentColor.withOpacity(0.2)),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(FluentIcons.check_mark),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            selected.birthData.name,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                            overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                selected.birthData.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${selected.birthData.dateTime.day}/${selected.birthData.dateTime.month}/${selected.birthData.dateTime.year}',
+                                style: FluentTheme.of(context).typography.caption,
+                              ),
+                              Text(
+                                selected.birthData.place,
+                                style: FluentTheme.of(context).typography.caption,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          Text(
-                            '${selected.birthData.dateTime.day}/${selected.birthData.dateTime.month}/${selected.birthData.dateTime.year}',
-                            style: FluentTheme.of(context).typography.caption,
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(FluentIcons.delete),
-                      onPressed: () => onSelect(null),
+                        ),
+                        IconButton(
+                          icon: Icon(FluentIcons.delete, color: Colors.red.withOpacity(0.7)),
+                          onPressed: () => onSelect(null),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ] else ...[
-              FilledButton(
-                onPressed: () async {
-                  final chart = await _showChartPicker();
-                  if (chart != null) onSelect(chart);
-                },
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FluentIcons.add),
-                    SizedBox(width: 8),
-                    Text('Select Chart'),
-                  ],
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () async {
+                    final chart = await _showChartPicker();
+                    if (chart != null) onSelect(chart);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FluentIcons.add, size: 18),
+                        const SizedBox(width: 8),
+                        Text('Select Chart'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -549,14 +1014,24 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       builder: (context) {
         return ContentDialog(
           title: const Text('Select Chart'),
+          constraints: const BoxConstraints(maxWidth: 400),
           content: SizedBox(
             width: 350,
-            height: 450,
+            height: 500,
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: FilledButton(
+                Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(FluentIcons.add, color: FluentTheme.of(context).accentColor),
+                    ),
+                    title: const Text('Create New Profile'),
                     onPressed: () async {
                       final result = await Navigator.push<BirthData>(
                         context,
@@ -592,54 +1067,72 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                         }
                       }
                     },
-                    child: const SizedBox(
-                      width: double.infinity,
-                      child: Center(child: Text('+ Create New Profile')),
-                    ),
                   ),
                 ),
                 Expanded(
                   child: charts.isEmpty
-                      ? const Center(child: Text('No saved charts found.'))
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(FluentIcons.chart, size: 48, color: Colors.grey.withOpacity(0.5)),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No saved charts found',
+                                style: FluentTheme.of(context).typography.body,
+                              ),
+                            ],
+                          ),
+                        )
                       : ListView.builder(
-                          shrinkWrap: true,
                           itemCount: charts.length,
                           itemBuilder: (context, index) {
                             final chart = charts[index];
-                            return ListTile.selectable(
-                              title: Text(chart['name'] ?? 'Unknown'),
-                              subtitle: Text(chart['dateTime'] ?? ''),
-                              onPressed: () async {
-                                if (chart['dateTime'] == null ||
-                                    chart['latitude'] == null ||
-                                    chart['longitude'] == null) {
-                                  return;
-                                }
-                                try {
-                                  final birthData = BirthData(
-                                    dateTime: DateTime.parse(
-                                      chart['dateTime'] as String,
-                                    ),
-                                    location: Location(
-                                      latitude: (chart['latitude'] as num)
-                                          .toDouble(),
-                                      longitude: (chart['longitude'] as num)
-                                          .toDouble(),
-                                    ),
-                                    name: chart['name'] ?? '',
-                                    place: chart['locationName'] ?? '',
-                                  );
-                                  // Instantiate service locally to be safe
-                                  final service = KPChartService();
-                                  final completeData = await service
-                                      .generateCompleteChart(birthData);
-                                  if (context.mounted) {
-                                    Navigator.pop(context, completeData);
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              child: ListTile.selectable(
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(FluentIcons.contact, color: FluentTheme.of(context).accentColor),
+                                ),
+                                title: Text(chart['name'] ?? 'Unknown'),
+                                subtitle: Text(chart['dateTime'] ?? ''),
+                                onPressed: () async {
+                                  if (chart['dateTime'] == null ||
+                                      chart['latitude'] == null ||
+                                      chart['longitude'] == null) {
+                                    return;
                                   }
-                                } catch (e) {
-                                  // Handle error
-                                }
-                              },
+                                  try {
+                                    final birthData = BirthData(
+                                      dateTime: DateTime.parse(
+                                        chart['dateTime'] as String,
+                                      ),
+                                      location: Location(
+                                        latitude: (chart['latitude'] as num)
+                                            .toDouble(),
+                                        longitude: (chart['longitude'] as num)
+                                            .toDouble(),
+                                      ),
+                                      name: chart['name'] ?? '',
+                                      place: chart['locationName'] ?? '',
+                                    );
+                                    final service = KPChartService();
+                                    final completeData = await service
+                                        .generateCompleteChart(birthData);
+                                    if (context.mounted) {
+                                      Navigator.pop(context, completeData);
+                                    }
+                                  } catch (e) {
+                                    // Handle error
+                                  }
+                                },
+                              ),
                             );
                           },
                         ),
@@ -662,34 +1155,78 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     showDialog(
       context: context,
       builder: (context) => ContentDialog(
-        title: const Text('Charts Side by Side'),
-        constraints: const BoxConstraints(maxWidth: 900),
+        title: const Text('Charts Comparison'),
+        constraints: const BoxConstraints(maxWidth: 1000),
         content: SizedBox(
-          height: 500,
+          height: 520,
           child: Row(
             children: [
               Expanded(
                 child: Card(
+                  borderRadius: BorderRadius.circular(12),
                   child: Column(
                     children: [
-                      Text(_selectedChart1!.birthData.name),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(FluentIcons.contact, color: Colors.blue),
+                            const SizedBox(width: 8),
+                            Text(
+                              _selectedChart1!.birthData.name,
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                            ),
+                          ],
+                        ),
+                      ),
                       Expanded(child: _buildMiniChart(_selectedChart1!)),
                     ],
                   ),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'VS',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    'VS',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: FluentTheme.of(context).accentColor,
+                    ),
+                  ),
                 ),
               ),
               Expanded(
                 child: Card(
+                  borderRadius: BorderRadius.circular(12),
                   child: Column(
                     children: [
-                      Text(_selectedChart2!.birthData.name),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.withOpacity(0.1),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(FluentIcons.contact, color: Colors.purple),
+                            const SizedBox(width: 8),
+                            Text(
+                              _selectedChart2!.birthData.name,
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+                            ),
+                          ],
+                        ),
+                      ),
                       Expanded(child: _buildMiniChart(_selectedChart2!)),
                     ],
                   ),
@@ -734,79 +1271,243 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   }
 
   Widget _buildSynastryTab(SynastryAnalysis compatibility) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: compatibility.aspects.length,
-      itemBuilder: (context, index) {
-        final aspect = compatibility.aspects[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: _getAspectIcon(aspect.effect),
-            title: Text(aspect.description),
-            subtitle: Text(
-              '${aspect.effect.toString().split('.').last} (Orb: ${aspect.orb.toStringAsFixed(1)}°)',
+    return ScaffoldPage(
+      content: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Planetary Synastry',
+              style: FluentTheme.of(context).typography.subtitle,
             ),
-            trailing: Text(
-              _getAspectSymbol(aspect.aspectType),
-              style: const TextStyle(fontSize: 20),
+            const SizedBox(height: 8),
+            Text(
+              'Planetary aspects between the two charts',
+              style: FluentTheme.of(context).typography.caption,
+            ),
+            const SizedBox(height: 16),
+            ...compatibility.aspects.map((aspect) => _buildAspectCard(aspect)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAspectCard(SynastryAspect aspect) {
+    Color effectColor;
+    IconData effectIcon;
+    
+    switch (aspect.effect) {
+      case AspectEffect.veryPositive:
+        effectColor = Colors.green;
+        effectIcon = FluentIcons.favorite_star_fill;
+        break;
+      case AspectEffect.positive:
+        effectColor = Colors.green;
+        effectIcon = FluentIcons.check_mark;
+        break;
+      case AspectEffect.challenging:
+        effectColor = Colors.orange;
+        effectIcon = FluentIcons.warning;
+        break;
+      case AspectEffect.veryChallenging:
+        effectColor = Colors.red;
+        effectIcon = FluentIcons.error_badge;
+        break;
+      default:
+        effectColor = Colors.grey;
+        effectIcon = FluentIcons.info;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      borderRadius: BorderRadius.circular(12),
+      child: ListTile(
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: effectColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(effectIcon, color: effectColor),
+        ),
+        title: Text(
+          aspect.description,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        subtitle: Text(
+          '${aspect.effect.toString().split('.').last} • Orb: ${aspect.orb.toStringAsFixed(1)}°',
+          style: FluentTheme.of(context).typography.caption,
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: effectColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            _getAspectSymbol(aspect.aspectType),
+            style: TextStyle(
+              fontSize: 20,
+              color: effectColor,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildHouseOverlaysTab(SynastryAnalysis compatibility) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        const Text(
-          'Chart 1 Planets in Chart 2 Houses',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    return ScaffoldPage(
+      content: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'House Overlays',
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'How planets from one chart activate houses in the other',
+              style: FluentTheme.of(context).typography.caption,
+            ),
+            const SizedBox(height: 16),
+            // Chart 1 in Chart 2
+            Card(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(color: Colors.blue, width: 4),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(FluentIcons.contact, color: Colors.blue),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${_selectedChart1!.birthData.name}\'s Planets',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        Text(
+                          ' in ',
+                          style: FluentTheme.of(context).typography.body,
+                        ),
+                        Text(
+                          '${_selectedChart2!.birthData.name}\'s Houses',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...compatibility.houseOverlays
+                .where((o) => o.chart == 1)
+                .map((o) => _buildOverlayItem(o)),
+            const SizedBox(height: 24),
+            // Chart 2 in Chart 1
+            Card(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(color: Colors.purple, width: 4),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(FluentIcons.contact, color: Colors.purple),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${_selectedChart2!.birthData.name}\'s Planets',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                        ),
+                        Text(
+                          ' in ',
+                          style: FluentTheme.of(context).typography.body,
+                        ),
+                        Text(
+                          '${_selectedChart1!.birthData.name}\'s Houses',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...compatibility.houseOverlays
+                .where((o) => o.chart == 2)
+                .map((o) => _buildOverlayItem(o)),
+          ],
         ),
-        const SizedBox(height: 8),
-        ...compatibility.houseOverlays
-            .where((o) => o.chart == 1)
-            .map((o) => _buildOverlayItem(o)),
-        const SizedBox(height: 24),
-        const Text(
-          'Chart 2 Planets in Chart 1 Houses',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        const SizedBox(height: 8),
-        ...compatibility.houseOverlays
-            .where((o) => o.chart == 2)
-            .map((o) => _buildOverlayItem(o)),
-      ],
+      ),
     );
   }
 
   Widget _buildOverlayItem(HouseOverlay overlay) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
+      borderRadius: BorderRadius.circular(10),
       child: ListTile(
-        title: Text(
-          '${overlay.planet.toString().split('.').last} in ${overlay.house}th House',
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Text(
+              '${overlay.house}H',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: FluentTheme.of(context).accentColor,
+              ),
+            ),
+          ),
         ),
-        subtitle: Text('Impacts: ${overlay.significance}'),
+        title: Text(
+          '${overlay.planet.toString().split('.').last} in House ${overlay.house}',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          overlay.significance,
+          style: FluentTheme.of(context).typography.caption,
+        ),
       ),
     );
-  }
-
-  Widget _getAspectIcon(AspectEffect effect) {
-    switch (effect) {
-      case AspectEffect.veryPositive:
-        return Icon(FluentIcons.favorite_star_fill, color: Colors.green);
-      case AspectEffect.positive:
-        return Icon(FluentIcons.check_mark, color: Colors.green);
-      case AspectEffect.challenging:
-        return Icon(FluentIcons.warning, color: Colors.orange);
-      case AspectEffect.veryChallenging:
-        return Icon(FluentIcons.error_badge, color: Colors.red);
-      default:
-        return Icon(FluentIcons.info);
-    }
   }
 
   String _getAspectSymbol(AspectType type) {
@@ -830,41 +1531,35 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     }
 
     try {
-      // Show loading indicator
       showDialog(
         context: context,
-        builder: (context) => const ContentDialog(
-          title: Text('Exporting PDF'),
+        builder: (context) => ContentDialog(
+          title: const Text('Exporting PDF'),
           content: Row(
             children: [
-              ProgressRing(),
-              SizedBox(width: 20),
-              Text('Generating comprehensive report...'),
+              const ProgressRing(),
+              const SizedBox(width: 20),
+              Text('Generating report...'),
             ],
           ),
         ),
       );
 
-      // Recalculate report for export
       final report = MatchingService.analyzeCompatibility(
         _selectedChart1!,
         _selectedChart2!,
       );
 
-      // Generate PDF
       final file = await PDFReportService.generateMatchingReport(
         _selectedChart1!,
         _selectedChart2!,
         report,
       );
 
-      // Close loading dialog
       if (mounted) Navigator.pop(context);
 
-      // Open/Share PDF
       await PDFReportService.printReport(file);
     } catch (e) {
-      // Close loading dialog if open
       if (mounted) Navigator.pop(context);
 
       if (mounted) {

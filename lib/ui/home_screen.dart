@@ -331,9 +331,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 1.5,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 2.2,
                     children: [
                       _buildQuickAction(
                         key: _newChartKey,
@@ -529,20 +529,20 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, states) {
         return Card(
           key: key,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           backgroundColor: states.isHovered ? color.withAlpha(25) : null,
           child: Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: color.withAlpha(25),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(icon, color: color, size: 20),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -552,12 +552,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       title,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                     ),
                     Text(
                       subtitle,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[100]),
+                      style: TextStyle(fontSize: 11, color: Colors.grey[100]),
                     ),
                   ],
                 ),

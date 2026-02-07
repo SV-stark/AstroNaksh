@@ -67,7 +67,11 @@ class EphemerisManager {
     await _copyBundledAssets(ephemerisPath);
 
     // Verify swisseph.dll existence (Windows only)
-    if (Platform.isWindows) {
+    if (Platform.isAndroid) {
+      AppEnvironment.log(
+        'EphemerisManager: Running on Android. Expecting libswisseph.so from JNI.',
+      );
+    } else if (Platform.isWindows) {
       if (AppEnvironment.isPortable) {
         final dllPath =
             '${p.dirname(Platform.resolvedExecutable)}\\swisseph.dll';

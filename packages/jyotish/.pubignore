@@ -1,0 +1,31 @@
+# Exclude large Swiss Ephemeris files from pub.dev package
+native/swisseph/master.zip
+native/swisseph/swisseph-master/ephe/
+native/swisseph/swisseph-master/contrib/
+native/swisseph/swisseph-master/doc/
+native/swisseph/swisseph-master/setest/
+native/swisseph/swisseph-master/windows/
+native/swisseph/swisseph-master/bin/
+native/swisseph/swisseph-master/lib/
+native/swisseph/swisseph-master/*.c
+native/swisseph/swisseph-master/*.h
+native/swisseph/swisseph-master/*.txt
+native/swisseph/swisseph-master/*.jpg
+native/swisseph/swisseph-master/*.pdf
+
+# Exclude build artifacts
+build/
+example/build/
+.dart_tool/
+.DS_Store
+
+# Exclude development scripts
+build_app.sh
+prepare_package.sh
+
+# Exclude documentation that's not needed for pub.dev
+MOBILE_APP_QUICKSTART.md
+PROJECT_SUMMARY.md
+PUBLISHING_GUIDE.md
+SETUP.md
+CONTRIBUTING.md

@@ -133,8 +133,12 @@ class HoraryService {
       double diff = targetAscendant - currentAsc;
 
       // Normalize diff to -180 to 180
-      while (diff > 180) diff -= 360;
-      while (diff < -180) diff += 360;
+      while (diff > 180) {
+        diff -= 360;
+      }
+      while (diff < -180) {
+        diff += 360;
+      }
 
       if (diff.abs() < 0.001) {
         // Precision threshold

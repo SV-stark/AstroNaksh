@@ -23,20 +23,9 @@ class KPChartService {
     // Get current Ayanamsa setting
     final ayanamsaName = SettingsManager().chartSettings.ayanamsaSystem;
 
-    SiderealMode mode;
-    double? overrideAyanamsa;
-
-    if (ayanamsaName == 'newKP') {
-      mode =
-          SiderealMode.lahiri; // Placeholder, ignored when override is present
-      overrideAyanamsa = AyanamsaCalculator.calculateNewKPAyanamsa(
-        birthData.dateTime,
-      );
-    } else {
-      final ayanamsaSystem = AyanamsaCalculator.getSystem(ayanamsaName);
-      // Default to Lahiri if not found or if mode is null (shouldn't happen for standard systems)
-      mode = ayanamsaSystem?.mode ?? SiderealMode.lahiri;
-    }
+    // Use library's ayanamsa implementation for all systems including 'newKP'
+    final ayanamsaSystem = AyanamsaCalculator.getSystem(ayanamsaName);
+    final SiderealMode mode = ayanamsaSystem?.mode ?? SiderealMode.lahiri;
 
     // Use custom service for base calculations with selected Ayanamsa
     final chart = await _chartService.calculateChart(
@@ -47,7 +36,6 @@ class KPChartService {
         altitude: 0,
       ),
       ayanamsaMode: mode,
-      overrideAyanamsa: overrideAyanamsa,
       timezone: birthData.timezone,
     );
 

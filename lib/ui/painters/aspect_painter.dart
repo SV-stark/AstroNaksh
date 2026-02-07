@@ -62,7 +62,10 @@ class AspectPainter extends CustomPainter {
             // Offset planets slightly so they don't all overlap
             final offsetX = (i % 3 - 1) * width / 15;
             final offsetY = (i ~/ 3 - 0.5) * height / 20;
-            planetPositions[planet] = Offset(center.dx + offsetX, center.dy + offsetY);
+            planetPositions[planet] = Offset(
+              center.dx + offsetX,
+              center.dy + offsetY,
+            );
           }
         }
       }
@@ -75,7 +78,10 @@ class AspectPainter extends CustomPainter {
 
       if (startPos != null && endPos != null) {
         final paint = Paint()
-          ..color = PlanetaryAspectService.getAspectColor(aspect.type, opacity: lineOpacity)
+          ..color = PlanetaryAspectService.getAspectColor(
+            aspect.type,
+            opacity: lineOpacity,
+          )
           ..strokeWidth = _getAspectLineWidth(aspect.type)
           ..style = PaintingStyle.stroke;
 
@@ -83,7 +89,10 @@ class AspectPainter extends CustomPainter {
         canvas.drawLine(startPos, endPos, paint);
 
         // Draw small indicator at midpoint showing aspect symbol
-        final midPoint = Offset((startPos.dx + endPos.dx) / 2, (startPos.dy + endPos.dy) / 2);
+        final midPoint = Offset(
+          (startPos.dx + endPos.dx) / 2,
+          (startPos.dy + endPos.dy) / 2,
+        );
         _drawAspectIndicator(canvas, midPoint, aspect.type);
       }
     }
@@ -116,7 +125,10 @@ class AspectPainter extends CustomPainter {
     textPainter.layout();
     textPainter.paint(
       canvas,
-      Offset(position.dx - textPainter.width / 2, position.dy - textPainter.height / 2),
+      Offset(
+        position.dx - textPainter.width / 2,
+        position.dy - textPainter.height / 2,
+      ),
     );
   }
 
@@ -138,30 +150,39 @@ class AspectPainter extends CustomPainter {
 
   j.Planet? _getPlanetFromName(String name) {
     // Handle common planet name variations
-    final normalized = name.toLowerCase().trim();
+    // Remove (R) which indicates retrograde
+    final cleanName = name.replaceAll('(R)', '').replaceAll('(r)', '').trim();
+    final normalized = cleanName.toLowerCase();
 
     switch (normalized) {
       case 'sun':
       case 'surya':
+      case 'su':
         return j.Planet.sun;
       case 'moon':
       case 'chandra':
+      case 'mo':
         return j.Planet.moon;
       case 'mars':
       case 'mangal':
+      case 'ma':
         return j.Planet.mars;
       case 'mercury':
       case 'budha':
+      case 'me':
         return j.Planet.mercury;
       case 'jupiter':
       case 'guru':
       case 'brihaspati':
+      case 'ju':
         return j.Planet.jupiter;
       case 'venus':
       case 'shukra':
+      case 've':
         return j.Planet.venus;
       case 'saturn':
       case 'shani':
+      case 'sa':
         return j.Planet.saturn;
       default:
         return null;

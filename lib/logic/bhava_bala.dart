@@ -1,5 +1,5 @@
 import 'package:jyotish/jyotish.dart';
-import 'package:jyotish/src/services/strength_analysis_service.dart';
+
 import '../data/models.dart';
 import 'shadbala.dart';
 

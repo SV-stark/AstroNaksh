@@ -1,4 +1,3 @@
-import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
 import '../data/life_prediction_models.dart';
 import 'shadbala.dart';

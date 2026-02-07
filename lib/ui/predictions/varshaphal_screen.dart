@@ -16,7 +16,6 @@ class VarshaphalScreen extends StatefulWidget {
 
 class _VarshaphalScreenState extends State<VarshaphalScreen> {
   late int _selectedYear;
-  int _expandedPeriodIndex = 0;
 
   @override
   void initState() {
@@ -108,7 +107,9 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
 
   Widget _buildHeaderCard(VarshaphalChart chart) {
     return Card(
-      backgroundColor: FluentTheme.of(context).accentColor.withOpacity(0.1),
+      backgroundColor: FluentTheme.of(
+        context,
+      ).accentColor.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -232,7 +233,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
           ),
           const SizedBox(height: 8),
           Table(
-            border: TableBorder.all(color: Colors.grey.withOpacity(0.3)),
+            border: TableBorder.all(color: Colors.grey.withValues(alpha: 0.3)),
             columnWidths: const {
               0: FlexColumnWidth(2),
               1: FlexColumnWidth(1),
@@ -372,7 +373,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                           child: Container(
                             height: 8,
                             decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.3),
+                              color: Colors.grey.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: FractionallySizedBox(

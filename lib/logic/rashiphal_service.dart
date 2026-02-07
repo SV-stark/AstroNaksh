@@ -54,7 +54,8 @@ class RashiphalService {
     // Ideally, the app should ask for *current* location, but usually birth location or
     // a stored "current location" setting is used.
     // For MVP, we'll use the chart's location assuming the user is there or it's a proxy.
-    // TODO: Pass actual current user location if available in future updates.
+    // Note: Using birth location as current location context for now.
+    // Future update: Add parameter for current user location.
     final panchang = await _panchangService.getPanchang(
       date,
       chartData.birthData.location,

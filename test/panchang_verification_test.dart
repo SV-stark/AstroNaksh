@@ -23,11 +23,11 @@ void main() {
     await EphemerisManager.ensureEphemerisData();
     final result = await service.getPanchang(date, location);
 
-    print('Date: ${result.date}');
-    print('Sunrise: ${result.sunrise}');
-    print('Sunset: ${result.sunset}');
-    print('Moonrise: ${result.moonrise}');
-    print('Moonset: ${result.moonset}');
+    // print('Date: ${result.date}');
+    // print('Sunrise: ${result.sunrise}');
+    // print('Sunset: ${result.sunset}');
+    // print('Moonrise: ${result.moonrise}');
+    // print('Moonset: ${result.moonset}');
 
     expect(result.sunrise, isNot('--:--'));
     expect(result.sunset, isNot('--:--'));

@@ -1,5 +1,5 @@
-/// Life Predictions Data Models
-/// Models for life aspect predictions based on Vedic astrology
+// Life Predictions Data Models
+// Models for life aspect predictions based on Vedic astrology
 
 /// Represents a planet's influence on a life aspect
 class PlanetaryInfluence {
@@ -23,7 +23,8 @@ class PlanetaryInfluence {
 /// Represents a life aspect category (family, career, health, etc.)
 class LifeAspectPrediction {
   final String aspectName; // e.g., "Career", "Family", "Health"
-  final String aspectDescription; // Brief description of what this aspect covers
+  final String
+  aspectDescription; // Brief description of what this aspect covers
   final String iconName; // FluentIcon name
   final int score; // 40-95 range
   final String prediction; // Detailed prediction text
@@ -66,11 +67,13 @@ class LifePredictionsResult {
   });
 
   /// Calculate overall score from aspect scores
-  factory LifePredictionsResult.fromAspects(List<LifeAspectPrediction> aspects) {
+  factory LifePredictionsResult.fromAspects(
+    List<LifeAspectPrediction> aspects,
+  ) {
     final avgScore = aspects.isEmpty
         ? 65
         : (aspects.map((a) => a.score).reduce((a, b) => a + b) / aspects.length)
-            .round();
+              .round();
 
     String summary;
     if (avgScore >= 80) {

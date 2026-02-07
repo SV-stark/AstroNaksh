@@ -46,7 +46,7 @@ class _ChartScreenState extends State<ChartScreen> {
   int _dashaTabIndex = 0; // 0 = Vimshottari, 1 = Yogini, 2 = Chara
   bool _showAspects = false; // Toggle for planetary aspects (drishti)
   final GlobalKey _d1ChartKey = GlobalKey();
-  
+
   // Timeline state variables
   DateTime _timelineCurrentDate = DateTime.now();
   bool _isTimelinePlaying = false;
@@ -272,15 +272,24 @@ class _ChartScreenState extends State<ChartScreen> {
     setState(() {
       _isTimelinePlaying = true;
     });
-    _timelineTimer = Timer.periodic(Duration(milliseconds: (100 / _timelineSpeed).round()), (timer) {
-      setState(() {
-        _timelineCurrentDate = _timelineCurrentDate.add(const Duration(days: 1));
-        if (_timelineCurrentDate.isAfter(DateTime.now().add(const Duration(days: 365)))) {
-          _timelineCurrentDate = DateTime.now().add(const Duration(days: 365));
-          _onTimelinePause();
-        }
-      });
-    });
+    _timelineTimer = Timer.periodic(
+      Duration(milliseconds: (100 / _timelineSpeed).round()),
+      (timer) {
+        setState(() {
+          _timelineCurrentDate = _timelineCurrentDate.add(
+            const Duration(days: 1),
+          );
+          if (_timelineCurrentDate.isAfter(
+            DateTime.now().add(const Duration(days: 365)),
+          )) {
+            _timelineCurrentDate = DateTime.now().add(
+              const Duration(days: 365),
+            );
+            _onTimelinePause();
+          }
+        });
+      },
+    );
   }
 
   void _onTimelinePause() {
@@ -785,15 +794,18 @@ class _ChartScreenState extends State<ChartScreen> {
                       const Spacer(),
                       Text(
                         'Drag to see planetary motion',
-                        style: FluentTheme.of(context).typography.caption?.copyWith(
-                          color: FluentTheme.of(context).inactiveColor,
-                        ),
+                        style: FluentTheme.of(context).typography.caption
+                            ?.copyWith(
+                              color: FluentTheme.of(context).inactiveColor,
+                            ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   PlanetaryTimeline(
-                    startDate: DateTime.now().subtract(const Duration(days: 365)),
+                    startDate: DateTime.now().subtract(
+                      const Duration(days: 365),
+                    ),
                     endDate: DateTime.now().add(const Duration(days: 365)),
                     currentDate: _timelineCurrentDate,
                     onDateChanged: _onTimelineDateChanged,
@@ -808,7 +820,9 @@ class _ChartScreenState extends State<ChartScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+                      color: FluentTheme.of(
+                        context,
+                      ).accentColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -827,11 +841,12 @@ class _ChartScreenState extends State<ChartScreen> {
                         ),
                         Text(
                           _isTimelinePlaying ? 'Playing' : 'Paused',
-                          style: FluentTheme.of(context).typography.caption?.copyWith(
-                            color: _isTimelinePlaying 
-                                ? Colors.green 
-                                : FluentTheme.of(context).inactiveColor,
-                          ),
+                          style: FluentTheme.of(context).typography.caption
+                              ?.copyWith(
+                                color: _isTimelinePlaying
+                                    ? Colors.green
+                                    : FluentTheme.of(context).inactiveColor,
+                              ),
                         ),
                       ],
                     ),
@@ -2614,6 +2629,12 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   int _getAscendantSignInt(VedicChart chart) {
+    if (chart.ascendantSign != null) {
+      final index = AstrologyConstants.signNames.indexOf(chart.ascendantSign!);
+      if (index != -1) {
+        return index + 1;
+      }
+    }
     try {
       final houses = chart.houses;
       if (houses.cusps.isNotEmpty) {
@@ -2628,6 +2649,9 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   String _getAscendantSign(VedicChart chart) {
+    if (chart.ascendantSign != null) {
+      return chart.ascendantSign!;
+    }
     try {
       final houses = chart.houses;
       if (houses.cusps.isNotEmpty) {

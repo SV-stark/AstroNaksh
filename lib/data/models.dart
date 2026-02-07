@@ -348,16 +348,45 @@ class CharaDashaPeriod {
   });
 }
 
+/// Narayana Dasha data class
+class NarayanaDasha {
+  final int startSign;
+  final List<NarayanaDashaPeriod> periods;
+
+  NarayanaDasha({required this.startSign, required this.periods});
+}
+
+/// Narayana Dasha Period data class
+class NarayanaDashaPeriod {
+  final int sign;
+  final String signName;
+  final String lord;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
+
+  NarayanaDashaPeriod({
+    required this.sign,
+    required this.signName,
+    required this.lord,
+    required this.startDate,
+    required this.endDate,
+    required this.periodYears,
+  });
+}
+
 /// Combined Dasha data
 class DashaData {
   final VimshottariDasha vimshottari;
   final YoginiDasha yogini;
   final CharaDasha chara;
+  final NarayanaDasha narayana;
 
   DashaData({
     required this.vimshottari,
     required this.yogini,
     required this.chara,
+    required this.narayana,
   });
 }
 

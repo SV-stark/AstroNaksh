@@ -11,6 +11,8 @@ class PanchangResult {
   final int nakshatraNumber;
   final String yoga;
   final int yogaNumber;
+  final String? yogaNature;
+  final String? yogaRecommendations;
   final String karana;
   final String vara;
   final String? sunrise;
@@ -26,6 +28,8 @@ class PanchangResult {
     required this.nakshatraNumber,
     required this.yoga,
     required this.yogaNumber,
+    this.yogaNature,
+    this.yogaRecommendations,
     required this.karana,
     required this.vara,
     this.sunrise,
@@ -94,6 +98,8 @@ class PanchangService {
       nakshatraNumber: moon.position.nakshatraIndex + 1,
       yoga: panchanga.yoga.name,
       yogaNumber: panchanga.yoga.number,
+      yogaNature: panchanga.yoga.nature.name,
+      // yogaRecommendations: panchanga.yoga.recommendations, // TODO: Find correct API for recommendations
       karana: panchanga.karana.name,
       vara: panchanga.vara.name,
       sunrise: sr != null ? timeFormat.format(sr.toLocal()) : '--:--',

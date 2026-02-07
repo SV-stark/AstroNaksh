@@ -178,7 +178,8 @@ class TestChartBuilder {
         mahadashas: [],
       ),
       yogini: YoginiDasha(startYogini: 'Mangala', mahadashas: []),
-      chara: CharaDasha(startSign: 1, periods: []),
+      chara: CharaDasha(startSign: 0, periods: []),
+      narayana: NarayanaDasha(startSign: 0, periods: []),
     );
 
     final kpData = KPData(subLords: [], significators: [], rulingPlanets: []);

@@ -44,7 +44,7 @@ class KPChartService {
 
     // Calculate all systems
     final kpData = _mapNativeKPData(nativeKPData, chart);
-    final dashaData = _calculateDashaSystems(chart);
+    final dashaData = await _calculateDashaSystems(chart);
     final divisionalCharts = DivisionalCharts.calculateAllCharts(chart);
     final significatorTable = _generateSignificatorTable(nativeKPData, chart);
 
@@ -233,11 +233,18 @@ class KPChartService {
     }
   }
 
-  DashaData _calculateDashaSystems(VedicChart chart) {
+  Future<DashaData> _calculateDashaSystems(VedicChart chart) async {
+    // Dasha System (Async mappings)
+    final vimshottari = DashaSystem.calculateVimshottariDasha(chart);
+    final yogini = DashaSystem.calculateYoginiDasha(chart);
+    final chara = await DashaSystem.calculateCharaDasha(chart);
+    final narayana = await DashaSystem.calculateNarayanaDasha(chart);
+
     return DashaData(
-      vimshottari: DashaSystem.calculateVimshottariDasha(chart),
-      yogini: DashaSystem.calculateYoginiDasha(chart),
-      chara: DashaSystem.calculateCharaDasha(chart),
+      vimshottari: vimshottari,
+      yogini: yogini,
+      chara: chara,
+      narayana: narayana,
     );
   }
 

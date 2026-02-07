@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
+import '../core/responsive_helper.dart';
 import 'widgets/chart_widget.dart';
 import 'widgets/planetary_timeline.dart';
 import '../../data/models.dart';
@@ -326,7 +327,9 @@ class _ChartScreenState extends State<ChartScreen> {
         ),
         title: const Text("Vedic Chart"),
         actions: CommandBar(
-          overflowBehavior: CommandBarOverflowBehavior.noWrap,
+          overflowBehavior: ResponsiveHelper.useMobileLayout(context)
+              ? CommandBarOverflowBehavior.dynamicOverflow
+              : CommandBarOverflowBehavior.noWrap,
           mainAxisAlignment: MainAxisAlignment.end,
           primaryItems: [
             // 1. Info Button (New)
@@ -575,8 +578,13 @@ class _ChartScreenState extends State<ChartScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: PaneDisplayMode.open,
-        size: const NavigationPaneSize(openWidth: 200),
+        displayMode: ResponsiveHelper.useMobileLayout(context) 
+            ? PaneDisplayMode.compact 
+            : PaneDisplayMode.open,
+        size: NavigationPaneSize(
+          openWidth: 200,
+          compactWidth: ResponsiveHelper.useMobileLayout(context) ? 56 : 48,
+        ),
         header: Container(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -745,9 +753,10 @@ class _ChartScreenState extends State<ChartScreen> {
     final planetsMap = _getPlanetsMap(data.baseChart);
     final ascSign = _getAscendantSignInt(data.baseChart);
     final aspects = PlanetaryAspectService.calculateAspects(data.baseChart);
+    final chartSize = ResponsiveHelper.getChartSize(context);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: ResponsiveHelper.getResponsivePadding(context),
       child: Column(
         children: [
           Text(
@@ -766,7 +775,7 @@ class _ChartScreenState extends State<ChartScreen> {
               planetsBySign: planetsMap,
               ascendantSign: ascSign,
               style: _style,
-              size: 350,
+              size: chartSize,
               aspects: aspects,
               showAspects: _showAspects,
             ),
@@ -864,7 +873,7 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Widget _buildVargasTab(CompleteChartData data) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: ResponsiveHelper.getResponsivePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -923,6 +932,8 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Widget _buildDivisionalChartDisplay(CompleteChartData data, String code) {
     final chart = data.divisionalCharts[code];
+    final chartSize = ResponsiveHelper.getChartSize(context);
+    
     if (chart == null) {
       return const Card(
         child: Padding(
@@ -959,7 +970,7 @@ class _ChartScreenState extends State<ChartScreen> {
               planetsBySign: _getDivisionalPlanetsMap(chart),
               ascendantSign: (chart.ascendantSign ?? 0) + 1,
               style: _style,
-              size: 350,
+              size: chartSize,
             ),
             const SizedBox(height: 16),
             _buildDivisionalPlanetPositionsTable(chart),
@@ -1115,7 +1126,7 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Widget _buildKPTab(CompleteChartData data) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: ResponsiveHelper.getResponsivePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2108,7 +2119,7 @@ class _ChartScreenState extends State<ChartScreen> {
     final navamsa = data.divisionalCharts['D-9'];
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: ResponsiveHelper.getResponsivePadding(context),
       child: Column(
         children: [
           Card(

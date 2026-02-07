@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
+import '../core/responsive_helper.dart';
 import '../../data/models.dart';
 import '../../data/city_database.dart';
 import '../../core/database_helper.dart';
@@ -246,7 +247,7 @@ class _InputScreenState extends State<InputScreen> {
       header: const PageHeader(title: Text("New Chart")),
       content: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: ResponsiveHelper.getResponsivePadding(context),
           child: Form(
             key: _formKey,
             child: Column(
@@ -304,31 +305,53 @@ class _InputScreenState extends State<InputScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: InfoLabel(
-                              label: "Date",
-                              child: DatePicker(
-                                selected: _selectedDate,
-                                onChanged: (v) =>
-                                    setState(() => _selectedDate = v),
+                      ResponsiveHelper.useMobileLayout(context)
+                        ? Column(
+                            children: [
+                              InfoLabel(
+                                label: "Date",
+                                child: DatePicker(
+                                  selected: _selectedDate,
+                                  onChanged: (v) =>
+                                      setState(() => _selectedDate = v),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: InfoLabel(
-                              label: "Time",
-                              child: TimePicker(
-                                selected: _selectedTime,
-                                onChanged: (v) =>
-                                    setState(() => _selectedTime = v),
+                              const SizedBox(height: 16),
+                              InfoLabel(
+                                label: "Time",
+                                child: TimePicker(
+                                  selected: _selectedTime,
+                                  onChanged: (v) =>
+                                      setState(() => _selectedTime = v),
+                                ),
                               ),
-                            ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: InfoLabel(
+                                  label: "Date",
+                                  child: DatePicker(
+                                    selected: _selectedDate,
+                                    onChanged: (v) =>
+                                        setState(() => _selectedDate = v),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: InfoLabel(
+                                  label: "Time",
+                                  child: TimePicker(
+                                    selected: _selectedTime,
+                                    onChanged: (v) =>
+                                        setState(() => _selectedTime = v),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -367,71 +390,133 @@ class _InputScreenState extends State<InputScreen> {
                       ),
                       const SizedBox(height: 16),
                       if (_useManualCoordinates)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: InfoLabel(
-                                label: "Latitude (-90 to 90)",
-                                child: TextFormBox(
-                                  controller: _latitudeController,
-                                  placeholder: "e.g., 28.6139",
-                                  prefix: const Padding(
-                                    padding: EdgeInsets.only(left: 8.0),
-                                    child: Icon(FluentIcons.globe),
+                        ResponsiveHelper.useMobileLayout(context)
+                          ? Column(
+                              children: [
+                                InfoLabel(
+                                  label: "Latitude (-90 to 90)",
+                                  child: TextFormBox(
+                                    controller: _latitudeController,
+                                    placeholder: "e.g., 28.6139",
+                                    prefix: const Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: Icon(FluentIcons.globe),
+                                    ),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                          signed: true,
+                                        ),
+                                    validator: (value) {
+                                      if (!_useManualCoordinates) return null;
+                                      if (value == null || value.isEmpty) {
+                                        return "Required";
+                                      }
+                                      final lat = double.tryParse(value);
+                                      if (lat == null) return "Invalid number";
+                                      if (lat < -90 || lat > 90) {
+                                        return "Must be -90 to 90";
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                        signed: true,
-                                      ),
-                                  validator: (value) {
-                                    if (!_useManualCoordinates) return null;
-                                    if (value == null || value.isEmpty) {
-                                      return "Required";
-                                    }
-                                    final lat = double.tryParse(value);
-                                    if (lat == null) return "Invalid number";
-                                    if (lat < -90 || lat > 90) {
-                                      return "Must be -90 to 90";
-                                    }
-                                    return null;
-                                  },
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: InfoLabel(
-                                label: "Longitude (-180 to 180)",
-                                child: TextFormBox(
-                                  controller: _longitudeController,
-                                  placeholder: "e.g., 77.2090",
-                                  prefix: const Padding(
-                                    padding: EdgeInsets.only(left: 8.0),
-                                    child: Icon(FluentIcons.globe),
+                                const SizedBox(height: 16),
+                                InfoLabel(
+                                  label: "Longitude (-180 to 180)",
+                                  child: TextFormBox(
+                                    controller: _longitudeController,
+                                    placeholder: "e.g., 77.2090",
+                                    prefix: const Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: Icon(FluentIcons.globe),
+                                    ),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                          signed: true,
+                                        ),
+                                    validator: (value) {
+                                      if (!_useManualCoordinates) return null;
+                                      if (value == null || value.isEmpty) {
+                                        return "Required";
+                                      }
+                                      final long = double.tryParse(value);
+                                      if (long == null) return "Invalid number";
+                                      if (long < -180 || long > 180) {
+                                        return "Must be -180 to 180";
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                        signed: true,
-                                      ),
-                                  validator: (value) {
-                                    if (!_useManualCoordinates) return null;
-                                    if (value == null || value.isEmpty) {
-                                      return "Required";
-                                    }
-                                    final long = double.tryParse(value);
-                                    if (long == null) return "Invalid number";
-                                    if (long < -180 || long > 180) {
-                                      return "Must be -180 to 180";
-                                    }
-                                    return null;
-                                  },
                                 ),
-                              ),
-                            ),
-                          ],
-                        )
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Expanded(
+                                  child: InfoLabel(
+                                    label: "Latitude (-90 to 90)",
+                                    child: TextFormBox(
+                                      controller: _latitudeController,
+                                      placeholder: "e.g., 28.6139",
+                                      prefix: const Padding(
+                                        padding: EdgeInsets.only(left: 8.0),
+                                        child: Icon(FluentIcons.globe),
+                                      ),
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                            decimal: true,
+                                            signed: true,
+                                          ),
+                                      validator: (value) {
+                                        if (!_useManualCoordinates) return null;
+                                        if (value == null || value.isEmpty) {
+                                          return "Required";
+                                        }
+                                        final lat = double.tryParse(value);
+                                        if (lat == null) return "Invalid number";
+                                        if (lat < -90 || lat > 90) {
+                                          return "Must be -90 to 90";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: InfoLabel(
+                                    label: "Longitude (-180 to 180)",
+                                    child: TextFormBox(
+                                      controller: _longitudeController,
+                                      placeholder: "e.g., 77.2090",
+                                      prefix: const Padding(
+                                        padding: EdgeInsets.only(left: 8.0),
+                                        child: Icon(FluentIcons.globe),
+                                      ),
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                            decimal: true,
+                                            signed: true,
+                                          ),
+                                      validator: (value) {
+                                        if (!_useManualCoordinates) return null;
+                                        if (value == null || value.isEmpty) {
+                                          return "Required";
+                                        }
+                                        final long = double.tryParse(value);
+                                        if (long == null) return "Invalid number";
+                                        if (long < -180 || long > 180) {
+                                          return "Must be -180 to 180";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
                       else
                         Row(
                           children: [

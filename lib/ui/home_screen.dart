@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import '../core/responsive_helper.dart';
 import 'styles.dart';
 import '../core/database_helper.dart';
 import '../data/models.dart';
@@ -314,10 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
         slivers: [
           // Dashboard Quick Actions
           SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 16.0,
-            ),
+            padding: ResponsiveHelper.getResponsivePadding(context),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,10 +328,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
+                    crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(context),
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: 2.2,
+                    childAspectRatio: ResponsiveHelper.getGridChildAspectRatio(context),
                     children: [
                       _buildQuickAction(
                         key: _newChartKey,
@@ -389,7 +387,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Search & History Header
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveHelper.useMobileLayout(context) ? 12.0 : 24.0,
+            ),
             sliver: SliverToBoxAdapter(
               child: Row(
                 children: [
@@ -399,11 +399,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const Spacer(),
                   SizedBox(
-                    width: 250,
+                    width: ResponsiveHelper.useMobileLayout(context) ? 180 : 250,
                     child: TextBox(
                       key: _searchKey,
                       controller: _searchController,
-                      placeholder: "Search charts...",
+                      placeholder: "Search...",
                       prefix: const Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(FluentIcons.search),
@@ -461,7 +461,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 )
               : SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveHelper.useMobileLayout(context) ? 12.0 : 24.0,
+                  ),
                   sliver: SliverList.builder(
                     itemCount: _filteredCharts.length,
                     itemBuilder: (context, index) {

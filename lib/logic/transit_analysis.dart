@@ -508,6 +508,32 @@ class TransitAnalysis {
     buffer.write(moonTransit.recommendations.join(' '));
     return buffer.toString();
   }
+
+  /// Get remedies for obstructed transits
+  Future<List<String>> getRemediesForTransit(
+    CompleteChartData natalChart,
+    DateTime transitDate,
+  ) async {
+    final transitChart = await calculateTransitChart(natalChart, transitDate);
+    final moonNakshatra =
+        natalChart.baseChart.planets[j.Planet.moon]?.position.nakshatraIndex ??
+        0;
+
+    final vedha = analyzeVedha(
+      moonNakshatra: moonNakshatra + 1, // Library uses 1-indexed
+      gocharaPositions: transitChart.gochara.positions,
+    );
+
+    final allRemedies = <String>[];
+    for (final result in vedha.results) {
+      if (result.isObstructed) {
+        final remedies = _vedhaService.getVedhaRemedies(result);
+        allRemedies.addAll(remedies);
+      }
+    }
+
+    return allRemedies.toSet().toList(); // Remove duplicates
+  }
 }
 
 /// Transit Chart data class

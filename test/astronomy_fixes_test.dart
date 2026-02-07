@@ -53,7 +53,8 @@ void main() {
           mahadashas: [],
         ),
         yogini: YoginiDasha(startYogini: 'Mangala', mahadashas: []),
-        chara: CharaDasha(startSign: 1, periods: []),
+        chara: CharaDasha(startSign: 0, periods: []),
+        narayana: NarayanaDasha(startSign: 0, periods: []),
       );
 
       // 2. Construct VedicChart with Rahu=0, Ketu=180, and others in between

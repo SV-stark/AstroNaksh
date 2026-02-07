@@ -91,118 +91,65 @@ class DashaSystem {
     return yoginiPlanet?.displayName ?? '--';
   }
 
-  /// Convert years to Duration (preserves fractional days as hours)
-  static Duration _yearsToDuration(double years) {
-    final totalDays = years * 365.25;
-    final wholeDays = totalDays.floor();
-    final fractionalHours = ((totalDays - wholeDays) * 24).round();
-    return Duration(days: wholeDays, hours: fractionalHours);
+  /// Calculate Chara Dasha (Jaimini System) using native library
+  static Future<CharaDasha> calculateCharaDasha(VedicChart chart) async {
+    _service ??= DashaService();
+    // Library returns CharaDashaResult
+    final result = await _service!.calculateCharaDasha(chart, levels: 2);
+    return _mapToCharaDasha(result);
   }
 
-  /// Calculate Chara Dasha (Jaimini System)
-  /// Sign-based dasha system
-  static CharaDasha calculateCharaDasha(VedicChart chart) {
-    // Determine starting sign based on lagna and its nature
-    final ascendantSign = _getAscendantSign(chart);
-    final isOdd = ascendantSign % 2 == 0; // 0-indexed
+  /// Calculate Narayana Dasha (Jaimini System)
+  static Future<NarayanaDasha> calculateNarayanaDasha(VedicChart chart) async {
+    _service ??= DashaService();
+    // Library returns NarayanaDashaResult
+    final result = await _service!.getNarayanaDasha(chart, levels: 2);
+    return _mapToNarayanaDasha(result);
+  }
 
-    // Order: Odd signs go forward, even signs go backward
-    final dashaOrder = isOdd
-        ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] // Aries to Pisces
-        : [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]; // Pisces to Aries
-
-    // Find starting position
-    final startIndex = dashaOrder.indexOf(ascendantSign);
-
-    final periods = <CharaDashaPeriod>[];
-    var currentDate = chart.dateTime;
-
-    for (int i = 0; i < 12; i++) {
-      final signIndex = dashaOrder[(startIndex + i) % 12];
-      final period = _calculateCharaPeriod(chart, signIndex);
-      final endDate = currentDate.add(_yearsToDuration(period));
-
-      periods.add(
-        CharaDashaPeriod(
+  static CharaDasha _mapToCharaDasha(DashaResult result) {
+    return CharaDasha(
+      startSign:
+          result.allMahadashas.isNotEmpty &&
+              result.allMahadashas.first.rashi != null
+          ? result.allMahadashas.first.rashi!.number
+          : 0,
+      periods: result.allMahadashas.map((p) {
+        final signIndex = p.rashi?.number ?? 0;
+        return CharaDashaPeriod(
           sign: signIndex,
-          signName: AstrologyConstants.getSignName(signIndex),
+          signName: p.rashi?.name ?? '',
           lord: AstrologyConstants.getSignLord(signIndex),
-          startDate: currentDate,
-          endDate: endDate,
-          periodYears: period,
-        ),
-      );
-
-      currentDate = endDate;
-    }
-
-    return CharaDasha(startSign: ascendantSign, periods: periods);
+          startDate: p.startDate,
+          endDate: p.endDate,
+          periodYears: p.durationYears,
+        );
+      }).toList(),
+    );
   }
 
-  /// Calculate Chara Dasha period for a sign using Jaimini rules
-  /// Period = distance from sign to its lord's position (or to Aquarius/Leo)
-  static double _calculateCharaPeriod(VedicChart chart, int sign) {
-    // Get the lord of this sign
-    final signLord = AstrologyConstants.getSignLord(sign);
-
-    // Find the sign where the lord is placed
-    int lordSign = sign; // Default to same sign
-    for (final entry in chart.planets.entries) {
-      final planetName = entry.key.toString().split('.').last;
-      if (planetName.toLowerCase() == signLord.toLowerCase()) {
-        lordSign = (entry.value.longitude / 30).floor();
-        break;
-      }
-    }
-
-    // Calculate period based on Jaimini rules:
-    // - Count from sign to lord's position
-    // - If sign is odd (Aries, Gemini, Leo...), count forward
-    // - If sign is even (Taurus, Cancer, Virgo...), count backward
-    int distance;
-    if (sign % 2 == 0) {
-      // Odd sign (0-indexed even): count forward
-      distance = ((lordSign - sign + 12) % 12) + 1;
-    } else {
-      // Even sign (0-indexed odd): count backward
-      distance = ((sign - lordSign + 12) % 12) + 1;
-    }
-
-    // Special rule: if lord is in same sign, use the alternate calculation
-    // Count to Aquarius for odd signs, Leo for even signs
-    if (distance == 1 && lordSign == sign) {
-      if (sign % 2 == 0) {
-        // Count to Aquarius (sign 10)
-        distance = ((10 - sign + 12) % 12) + 1;
-      } else {
-        // Count to Leo (sign 4)
-        distance = ((sign - 4 + 12) % 12) + 1;
-      }
-    }
-
-    // Period in years (max 12)
-    return distance.toDouble().clamp(1.0, 12.0);
+  static NarayanaDasha _mapToNarayanaDasha(DashaResult result) {
+    return NarayanaDasha(
+      startSign:
+          result.allMahadashas.isNotEmpty &&
+              result.allMahadashas.first.rashi != null
+          ? result.allMahadashas.first.rashi!.number
+          : 0,
+      periods: result.allMahadashas.map((p) {
+        final signIndex = p.rashi?.number ?? 0;
+        return NarayanaDashaPeriod(
+          sign: signIndex,
+          signName: p.rashi?.name ?? '',
+          lord: AstrologyConstants.getSignLord(signIndex),
+          startDate: p.startDate,
+          endDate: p.endDate,
+          periodYears: p.durationYears,
+        );
+      }).toList(),
+    );
   }
 
-  /// Get ascendant sign
-  static int _getAscendantSign(VedicChart chart) {
-    try {
-      final houses = chart.houses;
-      // Fixed: Use cusps list directly
-      if (houses.cusps.isNotEmpty) {
-        final long = houses.cusps[0];
-        return (long / 30).floor();
-      }
-      return 0;
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  /// Get sign lord
-  static String getSignLord(int sign) => AstrologyConstants.getSignLord(sign);
-
-  /// Get current running dasha for a date
+  /// Get current running dasha for a date (Vimshottari)
   static Map<String, dynamic> getCurrentDasha(
     VimshottariDasha dasha,
     DateTime date,

@@ -100,6 +100,7 @@ class _HoraryResultScreenState extends State<HoraryResultScreen> {
         ),
         yogini: YoginiDasha(startYogini: '', mahadashas: []),
         chara: CharaDasha(startSign: 1, periods: []),
+        narayana: NarayanaDasha(startSign: 0, periods: []),
       ),
       divisionalCharts: {},
       significatorTable: {},

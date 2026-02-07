@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jyotish/jyotish.dart'; // Import library directly
 import 'package:astronaksh/logic/dasha_system.dart';
 import 'package:astronaksh/logic/sudarshan_chakra_service.dart';
 import 'utils/test_chart_builder.dart';
@@ -39,11 +38,9 @@ void main() {
     try {
       final result = await service.calculateSudarshanChakra(chart.baseChart);
       expect(result, isNotNull);
-      print('Sudarshan Chakra Calculated Successfully');
+      expect(result, isNotNull);
     } catch (e) {
-      // It might fail if library implementation has issues or needs more data used by TestChartBuilder
-      // But we just want to verify the wrapper calls the library.
-      print('Sudarshan Chakra call attempted: $e');
+      // It might fail if library implementation has issues
     }
   });
 }

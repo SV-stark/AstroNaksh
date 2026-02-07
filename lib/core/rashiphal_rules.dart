@@ -109,7 +109,7 @@ class RashiphalRules {
     DateTime? sunset,
   }) {
     final timings = <String>[];
-    final timeFormat = (DateTime d) =>
+    String timeFormat(DateTime d) =>
         '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
     // Abhijit Muhurta

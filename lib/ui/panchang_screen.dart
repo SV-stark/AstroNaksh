@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:jyotish/jyotish.dart';
 import '../logic/panchang_service.dart';
 import '../data/models.dart';
 import '../data/city_database.dart';
@@ -15,11 +16,16 @@ class _PanchangScreenState extends State<PanchangScreen> {
   DateTime _selectedDate = DateTime.now();
   final PanchangService _panchangService = PanchangService();
   PanchangResult? _result;
+  List<PanchangInauspicious> _inauspicious = [];
+  List<PanchangHora> _horas = [];
+  List<PanchangChoghadiya> _choghadiya = [];
+  AbhijitMuhurta? _abhijit;
+  BrahmaMuhurta? _brahma;
   bool _isLoading = false;
-  
+
   // Tab state
   int _selectedTabIndex = 0;
-  
+
   // Location state
   City? _selectedCity;
   final TextEditingController _citySearchController = TextEditingController();
@@ -52,8 +58,36 @@ class _PanchangScreenState extends State<PanchangScreen> {
         _selectedDate,
         location,
       );
+
+      final inauspicious = await _panchangService.getInauspicious(
+        _selectedDate,
+        location,
+      );
+
+      final horas = await _panchangService.getHoras(_selectedDate, location);
+
+      final choghadiya = await _panchangService.getChoghadiya(
+        _selectedDate,
+        location,
+      );
+
+      final abhijit = await _panchangService.getAbhijitMuhurta(
+        _selectedDate,
+        location,
+      );
+
+      final brahma = await _panchangService.getBrahmaMuhurta(
+        _selectedDate,
+        location,
+      );
+
       setState(() {
         _result = result;
+        _inauspicious = inauspicious;
+        _horas = horas;
+        _choghadiya = choghadiya;
+        _abhijit = abhijit;
+        _brahma = brahma;
         _isLoading = false;
       });
     } catch (e) {
@@ -214,7 +248,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 SliverToBoxAdapter(
                   child: Container(
                     margin: const EdgeInsets.all(16.0),
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 20.0,
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -226,7 +263,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
                       ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: FluentTheme.of(context).accentColor.withAlpha(50),
+                        color: FluentTheme.of(
+                          context,
+                        ).accentColor.withAlpha(50),
                         width: 1,
                       ),
                     ),
@@ -245,17 +284,23 @@ class _PanchangScreenState extends State<PanchangScreen> {
                                 children: [
                                   Text(
                                     DateFormat('EEEE').format(_selectedDate),
-                                    style: FluentTheme.of(context).typography.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: FluentTheme.of(context).accentColor,
-                                    ),
+                                    style: FluentTheme.of(context)
+                                        .typography
+                                        .bodyLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: FluentTheme.of(
+                                            context,
+                                          ).accentColor,
+                                        ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     _result!.date,
-                                    style: FluentTheme.of(context).typography.title?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: FluentTheme.of(context)
+                                        .typography
+                                        .title
+                                        ?.copyWith(fontWeight: FontWeight.bold),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
@@ -279,10 +324,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              _selectedCity?.displayName ?? 'New Delhi, Delhi, India',
-                              style: FluentTheme.of(context).typography.caption?.copyWith(
-                                color: Colors.grey,
-                              ),
+                              _selectedCity?.displayName ??
+                                  'New Delhi, Delhi, India',
+                              style: FluentTheme.of(context).typography.caption
+                                  ?.copyWith(color: Colors.grey),
                             ),
                             const SizedBox(width: 8),
                             IconButton(
@@ -314,7 +359,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
                         color: Colors.grey.withAlpha(20),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: FluentTheme.of(context).accentColor.withAlpha(30),
+                          color: FluentTheme.of(
+                            context,
+                          ).accentColor.withAlpha(30),
                         ),
                       ),
                       child: Column(
@@ -330,9 +377,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
                               const SizedBox(width: 8),
                               Text(
                                 'Change Location',
-                                style: FluentTheme.of(context).typography.body?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: FluentTheme.of(context).typography.body
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -358,9 +404,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
                           const SizedBox(height: 8),
                           Text(
                             'Type at least 2 characters to search cities. Click the globe icon to use your current location.',
-                            style: FluentTheme.of(context).typography.caption?.copyWith(
-                              color: Colors.grey,
-                            ),
+                            style: FluentTheme.of(
+                              context,
+                            ).typography.caption?.copyWith(color: Colors.grey),
                           ),
                         ],
                       ),
@@ -370,7 +416,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 // Tab Navigation
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -378,16 +427,50 @@ class _PanchangScreenState extends State<PanchangScreen> {
                           children: [
                             _buildTabButton(
                               icon: FluentIcons.calendar_day,
-                              label: 'Panchang Elements',
+                              label: 'Panchang',
                               isSelected: _selectedTabIndex == 0,
-                              onTap: () => setState(() => _selectedTabIndex = 0),
+                              onTap: () =>
+                                  setState(() => _selectedTabIndex = 0),
                             ),
                             const SizedBox(width: 8),
                             _buildTabButton(
                               icon: FluentIcons.sunny,
-                              label: 'Sun & Moon Times',
+                              label: 'Sun & Moon',
                               isSelected: _selectedTabIndex == 1,
-                              onTap: () => setState(() => _selectedTabIndex = 1),
+                              onTap: () =>
+                                  setState(() => _selectedTabIndex = 1),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildTabButton(
+                              icon: FluentIcons.warning,
+                              label: 'Inauspicious',
+                              isSelected: _selectedTabIndex == 2,
+                              onTap: () =>
+                                  setState(() => _selectedTabIndex = 2),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildTabButton(
+                              icon: FluentIcons.diamond,
+                              label: 'Muhurta',
+                              isSelected: _selectedTabIndex == 3,
+                              onTap: () =>
+                                  setState(() => _selectedTabIndex = 3),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildTabButton(
+                              icon: FluentIcons.clock,
+                              label: 'Hora',
+                              isSelected: _selectedTabIndex == 4,
+                              onTap: () =>
+                                  setState(() => _selectedTabIndex = 4),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildTabButton(
+                              icon: FluentIcons.grid_view_medium,
+                              label: 'Choghadiya',
+                              isSelected: _selectedTabIndex == 5,
+                              onTap: () =>
+                                  setState(() => _selectedTabIndex = 5),
                             ),
                           ],
                         ),
@@ -400,8 +483,16 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 // Tab Content
                 if (_selectedTabIndex == 0)
                   _buildPanchangElementsTab()
-                else
-                  _buildSunMoonTimesTab(),
+                else if (_selectedTabIndex == 1)
+                  _buildSunMoonTimesTab()
+                else if (_selectedTabIndex == 2)
+                  _buildInauspiciousTab()
+                else if (_selectedTabIndex == 3)
+                  _buildMuhurtaTab()
+                else if (_selectedTabIndex == 4)
+                  _buildHoraTab()
+                else if (_selectedTabIndex == 5)
+                  _buildChoghadiyaTab(),
 
                 // Information Section
                 SliverToBoxAdapter(
@@ -425,9 +516,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
                             const SizedBox(width: 8),
                             Text(
                               'About Panchang',
-                              style: FluentTheme.of(context).typography.body?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: FluentTheme.of(context).typography.body
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -446,6 +536,222 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             ),
+    );
+  }
+
+  Widget _buildInauspiciousTab() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          _buildSectionHeading('Inauspicious Periods'),
+          const SizedBox(height: 16),
+          ..._inauspicious.map(
+            (p) => Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Expander(
+                header: Row(
+                  children: [
+                    Icon(FluentIcons.warning, color: Colors.red, size: 16),
+                    const SizedBox(width: 12),
+                    Text(p.name, style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    Text(
+                      '${p.startTime} - ${p.endTime}',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+                content: Text(
+                  'During ${p.name}, it is generally advised to avoid starting new ventures or important activities.',
+                ),
+              ),
+            ),
+          ),
+          if (_inauspicious.isEmpty)
+            const Center(
+              child: Text('No inauspicious periods calculated for today.'),
+            ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildMuhurtaTab() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          _buildSectionHeading('Auspicious Muhurtas'),
+          const SizedBox(height: 16),
+          if (_abhijit != null)
+            _buildMuhurtaCard(
+              'Abhijit Muhurta',
+              (_abhijit as dynamic).start,
+              (_abhijit as dynamic).end,
+              FluentIcons.sunny,
+              Colors.orange,
+              'Abhijit Muhurta is the most auspicious time of the day to start any work.',
+            ),
+          if (_brahma != null) ...[
+            const SizedBox(height: 12),
+            _buildMuhurtaCard(
+              'Brahma Muhurta',
+              (_brahma as dynamic).start,
+              (_brahma as dynamic).end,
+              FluentIcons.diamond,
+              Colors.blue,
+              'Brahma Muhurta is ideal for meditation, spiritual practices, and study.',
+            ),
+          ],
+          const SizedBox(height: 12),
+          const InfoBar(
+            title: Text('More Muhurtas'),
+            content: Text(
+              'Additional muhurtas like Amrit Kaalam are coming soon. Brahma Muhurta values vary based on local sunrise.',
+            ),
+            severity: InfoBarSeverity.info,
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildHoraTab() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          _buildSectionHeading('Hora (Planetary Hours)'),
+          const SizedBox(height: 16),
+          ..._horas.map(
+            (h) => ListTile(
+              leading: Icon(
+                h.isDay ? FluentIcons.sunny : FluentIcons.clear_night,
+                color: h.isDay ? Colors.orange : Colors.purple,
+              ),
+              title: Text('${h.planet} Hora'),
+              subtitle: Text('${h.startTime} - ${h.endTime}'),
+              trailing: h.isDay ? Text('Day') : Text('Night'),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildChoghadiyaTab() {
+    final dayChoghadiya = _choghadiya.where((c) => c.isDay).toList();
+    final nightChoghadiya = _choghadiya.where((c) => !c.isDay).toList();
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          _buildSectionHeading('Day Choghadiya'),
+          const SizedBox(height: 8),
+          _buildChoghadiyaList(dayChoghadiya),
+          const SizedBox(height: 24),
+          _buildSectionHeading('Night Choghadiya'),
+          const SizedBox(height: 8),
+          _buildChoghadiyaList(nightChoghadiya),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeading(String title) {
+    return Text(
+      title,
+      style: FluentTheme.of(
+        context,
+      ).typography.subtitle?.copyWith(fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _buildChoghadiyaList(List<PanchangChoghadiya> list) {
+    return Column(
+      children: list.map((c) {
+        Color color;
+        IconData icon;
+        switch (c.type.toLowerCase()) {
+          case 'good':
+          case 'shubh':
+          case 'amrit':
+          case 'labh':
+            color = Colors.green;
+            icon = FluentIcons.completed;
+            break;
+          case 'bad':
+          case 'rog':
+          case 'kaal':
+          case 'udveg':
+            color = Colors.red;
+            icon = FluentIcons.error;
+            break;
+          default:
+            color = Colors.orange;
+            icon = FluentIcons.info;
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 4.0),
+          child: Card(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 16),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        c.name,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        c.type,
+                        style: TextStyle(color: color, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${c.startTime} - ${c.endTime}',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildMuhurtaCard(
+    String title,
+    DateTime start,
+    DateTime end,
+    IconData icon,
+    Color color,
+    String desc,
+  ) {
+    final format = DateFormat('HH:mm');
+    return Expander(
+      header: Row(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 12),
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+          const Spacer(),
+          Text(
+            '${format.format(start.toLocal())} - ${format.format(end.toLocal())}',
+            style: TextStyle(color: color, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+      content: Text(desc),
     );
   }
 
@@ -551,9 +857,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
         delegate: SliverChildListDelegate([
           Text(
             'Sun & Moon Rise/Set Times',
-            style: FluentTheme.of(context).typography.subtitle?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: FluentTheme.of(
+              context,
+            ).typography.subtitle?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
@@ -564,7 +870,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   time: _result!.sunrise ?? '--:--',
                   icon: FluentIcons.sunny,
                   color: Colors.orange,
-                  description: 'The moment when the upper limb of the sun appears above the horizon',
+                  description:
+                      'The moment when the upper limb of the sun appears above the horizon',
                 ),
               ),
               const SizedBox(width: 12),
@@ -574,7 +881,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   time: _result!.sunset ?? '--:--',
                   icon: FluentIcons.clear_night,
                   color: Colors.orange,
-                  description: 'The moment when the upper limb of the sun disappears below the horizon',
+                  description:
+                      'The moment when the upper limb of the sun disappears below the horizon',
                 ),
               ),
             ],
@@ -588,7 +896,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   time: _result!.moonrise ?? '--:--',
                   icon: FluentIcons.up,
                   color: Colors.purple,
-                  description: 'The moment when the upper limb of the moon appears above the horizon',
+                  description:
+                      'The moment when the upper limb of the moon appears above the horizon',
                 ),
               ),
               const SizedBox(width: 12),
@@ -598,7 +907,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   time: _result!.moonset ?? '--:--',
                   icon: FluentIcons.down,
                   color: Colors.purple,
-                  description: 'The moment when the upper limb of the moon disappears below the horizon',
+                  description:
+                      'The moment when the upper limb of the moon disappears below the horizon',
                 ),
               ),
             ],
@@ -609,9 +919,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
             decoration: BoxDecoration(
               color: Colors.blue.withAlpha(20),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Colors.blue.withAlpha(50),
-              ),
+              border: Border.all(color: Colors.blue.withAlpha(50)),
             ),
             child: Row(
               children: [
@@ -620,9 +928,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 Expanded(
                   child: Text(
                     'Times are calculated for ${_selectedCity?.displayName ?? 'the selected location'} and shown in local time.',
-                    style: FluentTheme.of(context).typography.caption?.copyWith(
-                      color: Colors.grey,
-                    ),
+                    style: FluentTheme.of(
+                      context,
+                    ).typography.caption?.copyWith(color: Colors.grey),
                   ),
                 ),
               ],
@@ -658,9 +966,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
               children: [
                 Text(
                   time,
-                  style: FluentTheme.of(context).typography.title?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: FluentTheme.of(
+                    context,
+                  ).typography.title?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 Text(description),
@@ -689,11 +997,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   color: color.withAlpha(25),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  icon,
-                  size: 24,
-                  color: color,
-                ),
+                child: Icon(icon, size: 24, color: color),
               ),
               const SizedBox(height: 12),
               Text(
@@ -707,10 +1011,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
               const SizedBox(height: 4),
               Text(
                 time,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
             ],
           ),
@@ -745,17 +1046,14 @@ class _PanchangScreenState extends State<PanchangScreen> {
               children: [
                 Text(
                   value,
-                  style: FluentTheme.of(context).typography.title?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: FluentTheme.of(
+                    context,
+                  ).typography.title?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 16),
                 Text(description),
@@ -787,11 +1085,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                       color: color.withAlpha(25),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Icon(
-                      icon,
-                      size: 14,
-                      color: color,
-                    ),
+                    child: Icon(icon, size: 14, color: color),
                   ),
                   const SizedBox(width: 6),
                   Expanded(
@@ -822,10 +1116,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
               const SizedBox(height: 4),
               Text(
                 value,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

@@ -143,8 +143,12 @@ class HoraryService {
       double diff = targetAscendant - currentAsc;
 
       // Normalize diff to -180 to 180 (Shortest path)
-      while (diff > 180) diff -= 360;
-      while (diff < -180) diff += 360;
+      while (diff > 180) {
+        diff -= 360;
+      }
+      while (diff < -180) {
+        diff += 360;
+      }
 
       // Check for convergence
       if (diff.abs() < 0.0001) {

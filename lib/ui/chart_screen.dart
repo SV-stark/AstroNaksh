@@ -2629,40 +2629,15 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   int _getAscendantSignInt(VedicChart chart) {
-    if (chart.ascendantSign != null) {
-      final index = AstrologyConstants.signNames.indexOf(chart.ascendantSign!);
-      if (index != -1) {
-        return index + 1;
-      }
+    final index = AstrologyConstants.signNames.indexOf(chart.ascendantSign);
+    if (index != -1) {
+      return index + 1;
     }
-    try {
-      final houses = chart.houses;
-      if (houses.cusps.isNotEmpty) {
-        final long = houses.cusps[0];
-        final sign = (long / 30).floor(); // 0-11
-        return sign + 1; // 1-12
-      }
-      return 1; // Default Aries
-    } catch (e) {
-      return 1;
-    }
+    return 1; // Default Aries
   }
 
   String _getAscendantSign(VedicChart chart) {
-    if (chart.ascendantSign != null) {
-      return chart.ascendantSign!;
-    }
-    try {
-      final houses = chart.houses;
-      if (houses.cusps.isNotEmpty) {
-        final long = houses.cusps[0];
-        final sign = (long / 30).floor();
-        return _getSignName(sign + 1);
-      }
-      return "Unknown";
-    } catch (e) {
-      return "Unknown";
-    }
+    return chart.ascendantSign;
   }
 
   String _formatDate(DateTime dt) {

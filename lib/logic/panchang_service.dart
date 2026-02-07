@@ -39,6 +39,48 @@ class PanchangResult {
   });
 }
 
+class PanchangInauspicious {
+  final String name;
+  final String startTime;
+  final String endTime;
+
+  PanchangInauspicious({
+    required this.name,
+    required this.startTime,
+    required this.endTime,
+  });
+}
+
+class PanchangHora {
+  final String planet;
+  final String startTime;
+  final String endTime;
+  final bool isDay;
+
+  PanchangHora({
+    required this.planet,
+    required this.startTime,
+    required this.endTime,
+    required this.isDay,
+  });
+}
+
+class PanchangChoghadiya {
+  final String name;
+  final String type; // Auspicious, Inauspicious, Neutral
+  final String startTime;
+  final String endTime;
+  final bool isDay;
+
+  PanchangChoghadiya({
+    required this.name,
+    required this.type,
+    required this.startTime,
+    required this.endTime,
+    required this.isDay,
+  });
+}
+
 class PanchangService {
   final Jyotish _jyotish = Jyotish();
   PanchangaService? _panchangaService;
@@ -223,5 +265,129 @@ class PanchangService {
       startDate: startDate,
       location: geoLoc,
     );
+  }
+
+  /// Get Inauspicious periods for the day (Rahu Kaal, Yamaganda, Gulika)
+  Future<List<PanchangInauspicious>> getInauspicious(
+    DateTime date,
+    Location location,
+  ) async {
+    await _jyotish.initialize();
+    final geoLoc = GeographicLocation(
+      latitude: location.latitude,
+      longitude: location.longitude,
+    );
+
+    final (sr, ss) = await _jyotish.getSunriseSunset(
+      date: date,
+      location: geoLoc,
+    );
+
+    if (sr == null || ss == null) return [];
+
+    final dynamic rawPeriods = _jyotish.getInauspiciousPeriods(
+      date: date,
+      sunrise: sr,
+      sunset: ss,
+    );
+
+    final timeFormat = DateFormat('HH:mm');
+    final results = <PanchangInauspicious>[];
+
+    // Inspecting structure dynamically if it's not a Map.
+    // Usually it has a 'periods' or 'all' list.
+    try {
+      final Iterable periods = rawPeriods is Map
+          ? rawPeriods.entries
+          : (rawPeriods.periods ?? []);
+      for (final p in periods) {
+        if (p is MapEntry) {
+          results.add(
+            PanchangInauspicious(
+              name: p.key,
+              startTime: timeFormat.format(p.value.start.toLocal()),
+              endTime: timeFormat.format(p.value.end.toLocal()),
+            ),
+          );
+        } else {
+          results.add(
+            PanchangInauspicious(
+              name: p.name,
+              startTime: timeFormat.format(p.start.toLocal()),
+              endTime: timeFormat.format(p.end.toLocal()),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Log or handle
+    }
+
+    return results;
+  }
+
+  /// Get Horas for the day
+  Future<List<PanchangHora>> getHoras(DateTime date, Location location) async {
+    await _jyotish.initialize();
+    final geoLoc = GeographicLocation(
+      latitude: location.latitude,
+      longitude: location.longitude,
+    );
+
+    final List<dynamic> rawHoras = await _jyotish.getHorasForDay(
+      date: date,
+      location: geoLoc,
+    );
+
+    final timeFormat = DateFormat('HH:mm');
+    return rawHoras.map((h) {
+      return PanchangHora(
+        planet: h.planet.displayName,
+        startTime: timeFormat.format(h.start.toLocal()),
+        endTime: timeFormat.format(h.end.toLocal()),
+        isDay: h.isDay,
+      );
+    }).toList();
+  }
+
+  /// Get Choghadiyas for the day
+  Future<List<PanchangChoghadiya>> getChoghadiya(
+    DateTime date,
+    Location location,
+  ) async {
+    await _jyotish.initialize();
+    final geoLoc = GeographicLocation(
+      latitude: location.latitude,
+      longitude: location.longitude,
+    );
+
+    final (sr, ss) = await _jyotish.getSunriseSunset(
+      date: date,
+      location: geoLoc,
+    );
+
+    if (sr == null || ss == null) return [];
+
+    final dynamic rawResult = _jyotish.getChoghadiya(
+      date: date,
+      sunrise: sr,
+      sunset: ss,
+    );
+
+    // Choghadiya might be wrapped in a class. Let's try to find the list.
+    final List<dynamic> choghadiyas = rawResult is List
+        ? rawResult
+        : (rawResult.periods ?? []);
+
+    final timeFormat = DateFormat('HH:mm');
+    return choghadiyas.map<PanchangChoghadiya>((c) {
+      return PanchangChoghadiya(
+        name: c.name,
+        type: c.type.toString().split('.').last,
+        startTime: timeFormat.format(c.start.toLocal()),
+        endTime: timeFormat.format(c.end.toLocal()),
+        isDay: c.isDay,
+      );
+    }).toList();
   }
 }

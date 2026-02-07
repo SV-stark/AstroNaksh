@@ -95,7 +95,7 @@ class DashaSystem {
   static Future<CharaDasha> calculateCharaDasha(VedicChart chart) async {
     _service ??= DashaService();
     // Library returns CharaDashaResult
-    final result = await _service!.calculateCharaDasha(chart, levels: 2);
+    final result = _service!.calculateCharaDasha(chart, levels: 2);
     return _mapToCharaDasha(result);
   }
 
@@ -103,7 +103,7 @@ class DashaSystem {
   static Future<NarayanaDasha> calculateNarayanaDasha(VedicChart chart) async {
     _service ??= DashaService();
     // Library returns NarayanaDashaResult
-    final result = await _service!.getNarayanaDasha(chart, levels: 2);
+    final result = _service!.getNarayanaDasha(chart, levels: 2);
     return _mapToNarayanaDasha(result);
   }
 

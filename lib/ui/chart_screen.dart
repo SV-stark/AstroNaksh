@@ -826,7 +826,7 @@ class _ChartScreenState extends State<ChartScreen> {
     final positions = chart.positions;
     final nakshatras = AppConstants.nakshatras;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Card(
         backgroundColor: FluentTheme.of(context).accentColor.withAlpha(10),
@@ -956,7 +956,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         ),
                       ],
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ],
@@ -1509,7 +1509,7 @@ class _ChartScreenState extends State<ChartScreen> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        '${antar.lord}',
+                                        antar.lord,
                                         style: TextStyle(
                                           fontWeight: isCurrentAntar
                                               ? FontWeight.bold

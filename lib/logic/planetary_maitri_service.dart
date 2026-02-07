@@ -68,8 +68,9 @@ class PlanetaryMaitriService {
     Planet planet1,
     Planet planet2,
   ) {
-    if (planet1 == planet2)
+    if (planet1 == planet2) {
       return RelationshipType.friend; // Same planet is friend
+    }
     return _naturalFriendship[planet1]?[planet2] ?? RelationshipType.neutral;
   }
 

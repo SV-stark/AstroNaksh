@@ -4,7 +4,7 @@ import '../../data/models.dart';
 import 'horary_result_screen.dart';
 
 class HoraryInputScreen extends StatefulWidget {
-  const HoraryInputScreen({Key? key}) : super(key: key);
+  const HoraryInputScreen({super.key});
 
   @override
   State<HoraryInputScreen> createState() => _HoraryInputScreenState();

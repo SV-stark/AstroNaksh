@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart' as material;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -7,6 +8,7 @@ import 'package:printing/printing.dart';
 import '../data/models.dart';
 import '../logic/divisional_charts.dart';
 import '../logic/yoga_dosha_analyzer.dart';
+import '../logic/matching/matching_models.dart';
 import 'ayanamsa_calculator.dart';
 
 /// PDF Report Generation Service
@@ -919,7 +921,7 @@ class PDFReportService {
             children: [
               _buildSectionHeader('Yoga & Dosha Analysis'),
               pw.SizedBox(height: 20),
-              
+
               // Overall Score
               pw.Container(
                 padding: const pw.EdgeInsets.all(12),
@@ -959,9 +961,9 @@ class PDFReportService {
                   ],
                 ),
               ),
-              
+
               pw.SizedBox(height: 20),
-              
+
               // Detected Yogas
               pw.Text(
                 'Detected Yogas (${analysis.yogas.length})',
@@ -972,11 +974,11 @@ class PDFReportService {
                 ),
               ),
               pw.SizedBox(height: 10),
-              
+
               ...yogaWidgets,
-              
+
               pw.SizedBox(height: 20),
-              
+
               // Detected Doshas
               pw.Text(
                 'Detected Doshas (${analysis.doshas.length})',
@@ -987,7 +989,7 @@ class PDFReportService {
                 ),
               ),
               pw.SizedBox(height: 10),
-              
+
               ...doshaWidgets,
             ],
           );
@@ -997,7 +999,10 @@ class PDFReportService {
   }
 
   /// Build a card for yoga or dosha display
-  static pw.Widget _buildYogaDoshaCard(BhangaResult item, {required bool isYoga}) {
+  static pw.Widget _buildYogaDoshaCard(
+    BhangaResult item, {
+    required bool isYoga,
+  }) {
     final activeColor = isYoga ? PdfColors.green50 : PdfColors.red50;
     final inactiveColor = PdfColors.grey100;
     final activeBorderColor = isYoga ? PdfColors.green200 : PdfColors.red200;
@@ -1009,10 +1014,7 @@ class PDFReportService {
     if (item.description.isNotEmpty) {
       descriptionWidgets.add(pw.SizedBox(height: 4));
       descriptionWidgets.add(
-        pw.Text(
-          item.description,
-          style: const pw.TextStyle(fontSize: 9),
-        ),
+        pw.Text(item.description, style: const pw.TextStyle(fontSize: 9)),
       );
     }
 
@@ -1078,10 +1080,7 @@ class PDFReportService {
             children: [
               pw.Text(
                 'Strength: ',
-                style: pw.TextStyle(
-                  fontSize: 8,
-                  color: PdfColors.grey700,
-                ),
+                style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
               ),
               pw.Container(
                 width: 100,
@@ -1105,10 +1104,7 @@ class PDFReportService {
               pw.SizedBox(width: 4),
               pw.Text(
                 '${item.strength.toStringAsFixed(0)}%',
-                style: pw.TextStyle(
-                  fontSize: 8,
-                  color: PdfColors.grey700,
-                ),
+                style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
               ),
             ],
           ),
@@ -1360,6 +1356,300 @@ class PDFReportService {
   /// Print PDF directly
   static Future<void> printReport(File file) async {
     final bytes = await file.readAsBytes();
-    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => bytes);
+    await Printing.layoutPdf(onLayout: (PdfPageFormat format) => bytes);
+  }
+
+  // --- Matching Report Generation ---
+
+  /// Generate a matching report PDF
+  static Future<File> generateMatchingReport(
+    CompleteChartData groom,
+    CompleteChartData bride,
+    MatchingReport report,
+  ) async {
+    final pdf = pw.Document();
+
+    // Title Page
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Center(
+                  child: pw.Text(
+                    'Vedic Match Compatibility Report',
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.deepPurple,
+                    ),
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              // Side by Side Bio
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Expanded(child: _buildProfileBox('Groom', groom)),
+                  pw.SizedBox(width: 20),
+                  pw.Expanded(child: _buildProfileBox('Bride', bride)),
+                ],
+              ),
+              pw.SizedBox(height: 30),
+              // Score Overview
+              pw.Container(
+                padding: const pw.EdgeInsets.all(20),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey),
+                  borderRadius: pw.BorderRadius.circular(10),
+                  color: PdfColors.grey100,
+                ),
+                child: pw.Column(
+                  children: [
+                    pw.Text(
+                      'Overall Compatibility Score',
+                      style: const pw.TextStyle(fontSize: 18),
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Text(
+                      '${report.ashtakootaScore.toStringAsFixed(1)} / 36',
+                      style: pw.TextStyle(
+                        fontSize: 40,
+                        fontWeight: pw.FontWeight.bold,
+                        color: _getPdfColor(report.overallColor),
+                      ),
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Text(
+                      report.overallConclusion,
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(
+                        fontSize: 16,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Generated on ${_formatDateTime(DateTime.now())}',
+                style: const pw.TextStyle(color: PdfColors.grey),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Ashtakoota Detail Page
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader('Ashtakoota Analysis (36 Points)'),
+              pw.SizedBox(height: 10),
+              pw.Table(
+                border: pw.TableBorder.all(),
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey300,
+                    ),
+                    children: [
+                      _buildTableCell('Koota', isHeader: true),
+                      _buildTableCell('Score', isHeader: true),
+                      _buildTableCell('Description', isHeader: true),
+                    ],
+                  ),
+                  ...report.kootaResults.map((k) {
+                    return pw.TableRow(
+                      children: [
+                        _buildTableCell(k.name),
+                        _buildTableCell('${k.score} / ${k.maxScore}'),
+                        _buildTableCell(k.description),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              _buildSectionHeader('Manglik Dosha Analysis'),
+              pw.SizedBox(height: 10),
+              pw.Container(
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(
+                    color: report.manglikMatch.isMatch
+                        ? PdfColors.green
+                        : PdfColors.red,
+                  ),
+                  color: report.manglikMatch.isMatch
+                      ? PdfColors.green50
+                      : PdfColors.red50,
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'Manglik Status: ${report.manglikMatch.isMatch ? "MATCH" : "MISMATCH"}',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.SizedBox(height: 5),
+                    pw.Text(report.manglikMatch.description),
+                    if (report.manglikMatch.cancellationReason != null)
+                      pw.Text(
+                        'Cancellation: ${report.manglikMatch.cancellationReason}',
+                        style: pw.TextStyle(fontStyle: pw.FontStyle.italic),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Advanced Analysis Page (Dosha/Dasha/Extras)
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader('Advanced Compatibility Checks'),
+              pw.SizedBox(height: 10),
+              if (report.doshaSamyam != null) ...[
+                pw.Text(
+                  'Dosha Samyam (Malefic Balance)',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
+                pw.Text(report.doshaSamyam!.description),
+                pw.SizedBox(height: 10),
+              ],
+              if (report.dashaSandhi != null) ...[
+                pw.Text(
+                  'Dasha Sandhi (Timing Check)',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
+                pw.Text(report.dashaSandhi!.description),
+                pw.SizedBox(height: 10),
+              ],
+              pw.Divider(),
+              pw.SizedBox(height: 10),
+              _buildSectionHeader('Extra Compatibility Factors'),
+              pw.SizedBox(height: 10),
+              pw.Column(
+                children: report.extraChecks.map((check) {
+                  return pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 5),
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Expanded(
+                          flex: 1,
+                          child: pw.Text(
+                            check.name,
+                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                          ),
+                        ),
+                        pw.Expanded(flex: 2, child: pw.Text(check.description)),
+                        pw.Container(
+                          padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: pw.BoxDecoration(
+                            color: check.isFavorable
+                                ? PdfColors.green100
+                                : PdfColors.red100,
+                            borderRadius: pw.BorderRadius.circular(4),
+                          ),
+                          child: pw.Text(
+                            check.isFavorable ? 'Good' : 'Concern',
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Save PDF
+    Directory? output;
+    try {
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        output = await getDownloadsDirectory();
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    output ??= await getTemporaryDirectory();
+
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final filename =
+        'Match_${groom.birthData.name}_${bride.birthData.name}_$timestamp.pdf';
+    final filePath = '${output.path}${Platform.pathSeparator}$filename';
+
+    final file = File(filePath);
+    await file.writeAsBytes(await pdf.save());
+
+    return file;
+  }
+
+  static pw.Widget _buildProfileBox(String label, CompleteChartData chart) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.deepPurple),
+        borderRadius: pw.BorderRadius.circular(5),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            label,
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.deepPurple,
+              fontSize: 16,
+            ),
+          ),
+          pw.Divider(),
+          pw.Text('Name: ${chart.birthData.name}'),
+          pw.Text('Date: ${_formatDate(chart.birthData.dateTime)}'),
+          pw.Text('Time: ${_formatTime(chart.birthData.dateTime)}'),
+          pw.Text('Place: ${chart.birthData.place}'),
+        ],
+      ),
+    );
+  }
+
+  static PdfColor _getPdfColor(material.Color color) {
+    // Simple mapping from Material Color to PDF Color
+    if (color == material.Colors.green) return PdfColors.green;
+    if (color == material.Colors.lightGreen) return PdfColors.lightGreen;
+    if (color == material.Colors.red) return PdfColors.red;
+    if (color == material.Colors.orange) return PdfColors.orange;
+    if (color == material.Colors.yellow) return PdfColors.yellow;
+    if (color == material.Colors.yellow[700]) return PdfColors.amber;
+    return PdfColors.black;
   }
 }

@@ -144,8 +144,12 @@ class VarshaphalSystem {
 
       // Calculate difference accounting for 360 wrap
       double diff = testSunLong - natalSunLong;
-      while (diff > 180) diff -= 360;
-      while (diff < -180) diff += 360;
+      while (diff > 180) {
+        diff -= 360;
+      }
+      while (diff < -180) {
+        diff += 360;
+      }
 
       if (diff.abs() < 0.0001) {
         // Extremely high precision
@@ -824,8 +828,9 @@ class VarshaphalSystem {
         break;
       case 'Saturn':
         themes.addAll(['Hard work', 'Karma', 'Discipline', 'Longevity']);
-        if ([10, 11].contains(houseNum))
+        if ([10, 11].contains(houseNum)) {
           themes.add('Career stability through effort');
+        }
         cautions.add('Delays possible');
         if (dignity == 'Debilitated') cautions.add('Obstacles & setbacks');
         break;

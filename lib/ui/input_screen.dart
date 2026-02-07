@@ -5,7 +5,8 @@ import '../../data/city_database.dart';
 import '../../core/database_helper.dart';
 
 class InputScreen extends StatefulWidget {
-  const InputScreen({super.key});
+  final bool onSelectionMode;
+  const InputScreen({super.key, this.onSelectionMode = false});
 
   @override
   State<InputScreen> createState() => _InputScreenState();
@@ -221,8 +222,12 @@ class _InputScreenState extends State<InputScreen> {
 
       if (!mounted) return;
 
-      // Navigate to Chart Screen
-      Navigator.pushNamed(context, '/chart', arguments: birthData);
+      if (widget.onSelectionMode) {
+        Navigator.pop(context, birthData);
+      } else {
+        // Navigate to Chart Screen
+        Navigator.pushNamed(context, '/chart', arguments: birthData);
+      }
     }
   }
 
@@ -381,12 +386,14 @@ class _InputScreenState extends State<InputScreen> {
                                       ),
                                   validator: (value) {
                                     if (!_useManualCoordinates) return null;
-                                    if (value == null || value.isEmpty)
+                                    if (value == null || value.isEmpty) {
                                       return "Required";
+                                    }
                                     final lat = double.tryParse(value);
                                     if (lat == null) return "Invalid number";
-                                    if (lat < -90 || lat > 90)
+                                    if (lat < -90 || lat > 90) {
                                       return "Must be -90 to 90";
+                                    }
                                     return null;
                                   },
                                 ),
@@ -410,12 +417,14 @@ class _InputScreenState extends State<InputScreen> {
                                       ),
                                   validator: (value) {
                                     if (!_useManualCoordinates) return null;
-                                    if (value == null || value.isEmpty)
+                                    if (value == null || value.isEmpty) {
                                       return "Required";
+                                    }
                                     final long = double.tryParse(value);
                                     if (long == null) return "Invalid number";
-                                    if (long < -180 || long > 180)
+                                    if (long < -180 || long > 180) {
                                       return "Must be -180 to 180";
+                                    }
                                     return null;
                                   },
                                 ),

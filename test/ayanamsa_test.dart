@@ -6,7 +6,10 @@ void main() {
   group('Ayanamsa Support Tests', () {
     test('AyanamsaCalculator should have 49 systems', () {
       final systems = AyanamsaCalculator.systems;
-      expect(systems.length, 49); // 48 SiderealModes + New KP
+      expect(
+        systems.length,
+        48,
+      ); // 48 SiderealModes exactly (KP New is one of them)
     });
 
     test('Default Ayanamsa should be New KP', () {
@@ -24,8 +27,8 @@ void main() {
       final system = AyanamsaCalculator.getSystem('newKP');
       expect(system, isNotNull);
       expect(system!.name, equals('newKP'));
-      expect(system.description, equals('New KP'));
-      expect(system.mode, isNull);
+      expect(system.description, equals('KP New'));
+      expect(system.mode, equals(SiderealMode.krishnamurtiVP291));
     });
 
     test('Old KP should be renamed', () {

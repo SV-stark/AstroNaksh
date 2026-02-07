@@ -12,12 +12,12 @@ class HoraryResultScreen extends StatefulWidget {
   final String locationName;
 
   const HoraryResultScreen({
-    Key? key,
+    super.key,
     required this.seedNumber,
     required this.dateTime,
     required this.location,
     required this.locationName,
-  }) : super(key: key);
+  });
 
   @override
   State<HoraryResultScreen> createState() => _HoraryResultScreenState();
@@ -83,8 +83,8 @@ class _HoraryResultScreenState extends State<HoraryResultScreen> {
 
     final kpData = KPData(
       subLords: subLords,
-      significators: [], // TODO: Populate if needed
-      rulingPlanets: [], // TODO: Populate
+      significators: [], // Future: Populate with real significators
+      rulingPlanets: [], // Future: Populate with real ruling planets
     );
 
     // For now returning a partial object just to display minimal data

@@ -218,14 +218,14 @@ class _HomeScreenState extends State<HomeScreen> {
       // Ensure database is initialized
       await _dbHelper.database;
       final charts = await _dbHelper.getCharts();
-      print('DEBUG: Loaded ${charts.length} charts from database');
+      debugPrint('DEBUG: Loaded ${charts.length} charts from database');
       setState(() {
         _charts = charts;
         _filteredCharts = charts;
         _isLoading = false;
       });
     } catch (e) {
-      print('DEBUG ERROR loading charts: $e');
+      debugPrint('DEBUG ERROR loading charts: $e');
       setState(() {
         _charts = [];
         _filteredCharts = [];

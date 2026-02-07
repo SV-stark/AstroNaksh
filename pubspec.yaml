@@ -40,9 +40,7 @@ dependencies:
   tutorial_coach_mark: ^1.2.10
   geolocator: ^14.0.2
   jyotish:
-    git:
-      url: https://github.com/SV-stark/jyotish-flutter-library-fork.git
-      ref: main
+    path: packages/jyotish
   fluent_ui: ^4.13.0
   math_expressions: ^2.6.0
   flutter_acrylic: ^1.1.4

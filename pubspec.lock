@@ -328,11 +328,9 @@ packages:
   jyotish:
     dependency: "direct main"
     description:
-      path: "."
-      ref: main
-      resolved-ref: e636481fe24fe2d159cab2c1e69de738db156cd8
-      url: "https://github.com/SV-stark/jyotish-flutter-library-fork.git"
-    source: git
+      path: "packages/jyotish"
+      relative: true
+    source: path
     version: "1.0.1"
   leak_tracker:
     dependency: transitive

@@ -90,8 +90,11 @@ class YogaDoshaAnalyzer {
     final ketu = _getPlanetLongitude(chart, 'Ketu');
 
     // Check if all other 7 planets are within one side of the axis
-    // Axis 1: Rahu to Ketu (approx 180 deg)
+    // Axis 1: Rahu to Ketu (180 deg)
     // Axis 2: Ketu to Rahu
+
+    // Note: Ketu is exactly 180 degrees from Rahu.
+    // We check if all planets lie within the arc Rahu->Ketu or Ketu->Rahu.
 
     bool side1 = true;
     bool side2 = true;
@@ -1417,25 +1420,12 @@ class YogaDoshaAnalyzer {
     final l10 = _getHouseLord(chart, 10);
     final l11 = _getHouseLord(chart, 11);
 
-    // Check if Jup/Ven is in Kendra from Lagna (approximation for strength)
-    // Detailed rule: Jup/Ven in Kendra from Lord of 4/10/11 is distinct.
-    // Simplifying to: Jup/Ven in Kendra AND related to 4/10/11 lords
-    if (_isPlanetInKendra(chart, 'Jupiter') ||
-        _isPlanetInKendra(chart, 'Venus')) {
-      // Logic for exact Brahma Yoga is complex (different from Jataka Parijata vs Phaladeepika)
-      // Implementation: Jup in Kendra from 9th lord? No, user says "Jup/Ven in Kendra to lords of 4/10/11".
-      // We'll skip complex relative Kendra check and use a strong placement proxy.
-      // User description: "Spirituality, creation"
-      // We will check if Jup/Ven are in Kendra and 4/10/11 lords are strong.
-      final l4Sign = _getPlanetSign(chart, l4);
-      final l10Sign = _getPlanetSign(chart, l10);
-      final l11Sign = _getPlanetSign(chart, l11);
-
-      bool l4Strong = _isPlanetInKendra(chart, l4) || _isExalted(l4, l4Sign);
-      bool l10Strong =
-          _isPlanetInKendra(chart, l10) || _isExalted(l10, l10Sign);
-      bool l11Strong =
-          _isPlanetInKendra(chart, l11) || _isExalted(l11, l11Sign);
+    // Using _isStrong to check for Exalted / Own Sign / Kendra
+    if (_isStrong(chart, 'Jupiter') || _isStrong(chart, 'Venus')) {
+      // Check strength of 4, 10, 11 lords
+      bool l4Strong = _isStrong(chart, l4);
+      bool l10Strong = _isStrong(chart, l10);
+      bool l11Strong = _isStrong(chart, l11);
 
       if (l4Strong && l10Strong && l11Strong) {
         yogas.add('Brahma Yoga (Strong benefic influence on 4/10/11)');

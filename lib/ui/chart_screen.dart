@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'widgets/chart_widget.dart';
+import 'widgets/planetary_timeline.dart';
 import '../../data/models.dart';
 import '../../logic/kp_chart_service.dart';
 
@@ -44,6 +46,12 @@ class _ChartScreenState extends State<ChartScreen> {
   int _dashaTabIndex = 0; // 0 = Vimshottari, 1 = Yogini, 2 = Chara
   bool _showAspects = false; // Toggle for planetary aspects (drishti)
   final GlobalKey _d1ChartKey = GlobalKey();
+  
+  // Timeline state variables
+  DateTime _timelineCurrentDate = DateTime.now();
+  bool _isTimelinePlaying = false;
+  double _timelineSpeed = 1.0;
+  Timer? _timelineTimer;
 
   @override
   void didChangeDependencies() {
@@ -251,6 +259,52 @@ class _ChartScreenState extends State<ChartScreen> {
         );
       },
     );
+  }
+
+  // Timeline methods
+  void _onTimelineDateChanged(DateTime date) {
+    setState(() {
+      _timelineCurrentDate = date;
+    });
+  }
+
+  void _onTimelinePlay() {
+    setState(() {
+      _isTimelinePlaying = true;
+    });
+    _timelineTimer = Timer.periodic(Duration(milliseconds: (100 / _timelineSpeed).round()), (timer) {
+      setState(() {
+        _timelineCurrentDate = _timelineCurrentDate.add(const Duration(days: 1));
+        if (_timelineCurrentDate.isAfter(DateTime.now().add(const Duration(days: 365)))) {
+          _timelineCurrentDate = DateTime.now().add(const Duration(days: 365));
+          _onTimelinePause();
+        }
+      });
+    });
+  }
+
+  void _onTimelinePause() {
+    setState(() {
+      _isTimelinePlaying = false;
+    });
+    _timelineTimer?.cancel();
+    _timelineTimer = null;
+  }
+
+  void _onTimelineSpeedChanged(double speed) {
+    setState(() {
+      _timelineSpeed = speed;
+      if (_isTimelinePlaying) {
+        _onTimelinePause();
+        _onTimelinePlay();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timelineTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -706,6 +760,84 @@ class _ChartScreenState extends State<ChartScreen> {
               size: 350,
               aspects: aspects,
               showAspects: _showAspects,
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Timeline for planetary animation
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        FluentIcons.timeline_progress,
+                        size: 20,
+                        color: FluentTheme.of(context).accentColor,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Planetary Timeline',
+                        style: FluentTheme.of(context).typography.subtitle,
+                      ),
+                      const Spacer(),
+                      Text(
+                        'Drag to see planetary motion',
+                        style: FluentTheme.of(context).typography.caption?.copyWith(
+                          color: FluentTheme.of(context).inactiveColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  PlanetaryTimeline(
+                    startDate: DateTime.now().subtract(const Duration(days: 365)),
+                    endDate: DateTime.now().add(const Duration(days: 365)),
+                    currentDate: _timelineCurrentDate,
+                    onDateChanged: _onTimelineDateChanged,
+                    onPlayPressed: _onTimelinePlay,
+                    onPausePressed: _onTimelinePause,
+                    isPlaying: _isTimelinePlaying,
+                    playbackSpeed: _timelineSpeed,
+                    onSpeedChanged: _onTimelineSpeedChanged,
+                  ),
+                  const SizedBox(height: 12),
+                  // Show current date info
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          FluentIcons.calendar,
+                          size: 16,
+                          color: FluentTheme.of(context).accentColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Viewing: ${_timelineCurrentDate.day}/${_timelineCurrentDate.month}/${_timelineCurrentDate.year}',
+                            style: FluentTheme.of(context).typography.body,
+                          ),
+                        ),
+                        Text(
+                          _isTimelinePlaying ? 'Playing' : 'Paused',
+                          style: FluentTheme.of(context).typography.caption?.copyWith(
+                            color: _isTimelinePlaying 
+                                ? Colors.green 
+                                : FluentTheme.of(context).inactiveColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),

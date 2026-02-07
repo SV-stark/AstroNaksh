@@ -197,7 +197,7 @@ class ChartCustomization {
 enum ChartStyle { northIndian, southIndian, eastIndian, western }
 
 /// Color Scheme Options
-enum ColorScheme { classic, modern, vedic, print, night }
+enum ColorScheme { classic, modern, vedic, print, night, oled }
 
 /// Planet Size Options
 enum PlanetSize { small, medium, large }
@@ -268,6 +268,18 @@ extension ColorSchemeColors on ColorScheme {
           beneficPlanet: Color(0xFF81C784),
           maleficPlanet: Color(0xFFE57373),
           neutralPlanet: Color(0xFF64B5F6),
+        );
+      case ColorScheme.oled:
+        return const ChartColors(
+          background: Color(0xFF000000),
+          houseBorder: Color(0xFFBB86FC),
+          houseFill: Color(0xFF0D0D0D),
+          planetText: Color(0xFFFFFFFF),
+          retrogradeIndicator: Color(0xFFFF4081),
+          ascendantMarker: Color(0xFF00E5FF),
+          beneficPlanet: Color(0xFF00E676),
+          maleficPlanet: Color(0xFFFF5252),
+          neutralPlanet: Color(0xFF448AFF),
         );
     }
   }

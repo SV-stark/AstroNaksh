@@ -63,7 +63,8 @@ Vedic Astrology, known as **Jyotish**, is one of the oldest astrological systems
 - 📊 **Dasha Systems**: Vimshottari, Yogini, and Chara dasha calculations.
 - 🏠 **12 Houses & 27 Nakshatras**: Detailed analysis of house and lunar mansion influences.
 - 🎴 **Yoga & Dosha Detection**: Identify 100+ auspicious and challenging combinations.
-- 🔮 **Horary & Compatibility**: Prashna module and Kuta matching (Marriage Compatibility).
+- 🔮 **Horary & Compatibility**: Professional matchmaking with Ashtakoota, Manglik cancellation, and Dosha Samyam.
+- 📅 **Enhanced Varshaphal**: Advanced Tajik system with Panchavargiya Bala, Varshesh selection, and 7+ Sahams.
 
 ### App Statistics
 - 🏙️ **Cities**: 50k+ Indian cities supported.
@@ -196,8 +197,8 @@ flutter build web --release      # For Web
 
 - [x] Daily prediction engine
 - [x] Transit predictions
-- [x] Yearly forecast (Varshaphal)
-- [x] Marriage compatibility (Kuta matching)
+- [x] Yearly forecast (Varshaphal) - **Enhanced with Tajik Neelakantha rules**
+- [x] Marriage compatibility (Kuta matching) - **Enhanced with Manglik Cancellation & Dosha Samyam**
 - [x] Horary (Prashna) module
 - [ ] Muhurta (Electional) timing
 

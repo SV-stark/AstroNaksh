@@ -202,19 +202,19 @@ class VarshaphalSystem {
 
       // 1. Kshetra Bala (Residential Strength)
       // Based on relationship with house lord (Friend/Enemy/Own)
-      double kshetra = calculateKshetraBala(pEnum, pSign);
+      double kshetra = calculateKshetraBala(pEnum, pSign, chart);
 
       // 2. Uchcha Bala (Exaltation Strength)
       double uchcha = calculateUchchaBala(pEnum, pLong);
 
       // 3. Hadda (Term) Bala
-      double hadda = calculateHaddaBala(pEnum, pLong);
+      double hadda = calculateHaddaBala(pEnum, pLong, chart);
 
       // 4. Drekkana Bala
-      double drekkana = calculateDrekkanaBala(pEnum, pLong);
+      double drekkana = calculateDrekkanaBala(pEnum, pLong, chart);
 
       // 5. Navamas Bala
-      double navamas = calculateNavamsaBala(pEnum, pLong);
+      double navamas = calculateNavamsaBala(pEnum, pLong, chart);
 
       strengths[planet] = PanchavargiyaStrength(
         kshetra: kshetra,
@@ -449,16 +449,130 @@ class VarshaphalSystem {
 
   // --- Strength Calculation Helpers ---
 
-  static double calculateKshetraBala(Planet planet, int sign) {
-    // Simplified Panchadha Maitri check for now
-    // Ideally needs full chart calculation
-    // Return default 15.0 for neutral
-    // Friends: 30, Neutral: 15, Enemy: 7.5
-    // For now: Own sign = 30, Friend = 22.5, Enemy = 7.5
-    final lord = getSignLord(sign);
-    if (lord == planet.toString().split('.').last) return 30.0;
-    // ... Implement logic or simplified map
-    return 15.0; // Placeholder until full maitri
+  static double calculateKshetraBala(
+    Planet planet,
+    int sign,
+    VedicChart chart,
+  ) {
+    final lordName = getSignLord(sign);
+    final lord = getPlanetFromString(lordName);
+
+    // 1. Own Sign Check
+    if (lord == planet) return 30.0;
+
+    // 2. Panchadha Maitri
+    final relationship = _calculatePanchadhaMaitri(planet, lord, chart);
+
+    // 3. Score
+    switch (relationship) {
+      case 'Great Friend':
+        return 22.5;
+      case 'Friend':
+        return 15.0;
+      case 'Neutral':
+        return 7.5;
+      case 'Enemy':
+        return 3.75;
+      case 'Great Enemy':
+        return 1.875;
+      default:
+        return 7.5;
+    }
+  }
+
+  static String _calculatePanchadhaMaitri(
+    Planet p1,
+    Planet p2,
+    VedicChart chart,
+  ) {
+    // 1. Natural Relationship
+    final natural = _getNaturalRelationship(p1, p2); // 1, 0, -1
+
+    // 2. Temporary Relationship
+    // Planets in 2, 3, 4, 10, 11, 12 from each other are friends
+    final p1Long = getPlanetLongitude(chart, p1);
+    final p2Long = getPlanetLongitude(chart, p2);
+    final houseDiff = getHouseNumber(
+      p1Long,
+      p2Long,
+    ); // House of p2 relative to p1
+
+    bool isTempFriend = [2, 3, 4, 10, 11, 12].contains(houseDiff);
+    int tempScore = isTempFriend ? 1 : -1;
+
+    // 3. Combined
+    int total = natural + tempScore;
+
+    if (total == 2) return 'Great Friend';
+    if (total == 1) return 'Friend';
+    if (total == 0) return 'Neutral';
+    if (total == -1) return 'Enemy';
+    if (total == -2) return 'Great Enemy';
+    return 'Neutral';
+  }
+
+  static int _getNaturalRelationship(Planet p1, Planet p2) {
+    // 1 = Friend, 0 = Neutral, -1 = Enemy
+    // Standard table
+    final rels = {
+      Planet.sun: {
+        Planet.moon: 1,
+        Planet.mars: 1,
+        Planet.jupiter: 1,
+        Planet.mercury: 0,
+        Planet.venus: -1,
+        Planet.saturn: -1,
+      },
+      Planet.moon: {
+        Planet.sun: 1,
+        Planet.mercury: 1,
+        Planet.mars: 0,
+        Planet.jupiter: 0,
+        Planet.venus: 0,
+        Planet.saturn: 0,
+      },
+      Planet.mars: {
+        Planet.sun: 1,
+        Planet.moon: 1,
+        Planet.jupiter: 1,
+        Planet.venus: 0,
+        Planet.saturn: 0,
+        Planet.mercury: -1,
+      },
+      Planet.mercury: {
+        Planet.sun: 1,
+        Planet.venus: 1,
+        Planet.mars: 0,
+        Planet.jupiter: 0,
+        Planet.saturn: 0,
+        Planet.moon: -1,
+      },
+      Planet.jupiter: {
+        Planet.sun: 1,
+        Planet.moon: 1,
+        Planet.mars: 1,
+        Planet.saturn: 0,
+        Planet.mercury: -1,
+        Planet.venus: -1,
+      },
+      Planet.venus: {
+        Planet.mercury: 1,
+        Planet.saturn: 1,
+        Planet.mars: 0,
+        Planet.jupiter: 0,
+        Planet.sun: -1,
+        Planet.moon: -1,
+      },
+      Planet.saturn: {
+        Planet.mercury: 1,
+        Planet.venus: 1,
+        Planet.jupiter: 0,
+        Planet.sun: -1,
+        Planet.moon: -1,
+        Planet.mars: -1,
+      },
+    };
+    return rels[p1]?[p2] ?? 0;
   }
 
   static double calculateUchchaBala(Planet planet, double longitude) {
@@ -481,7 +595,11 @@ class VarshaphalSystem {
     return (180 - diff) / 9.0;
   }
 
-  static double calculateHaddaBala(Planet planet, double long) {
+  static double calculateHaddaBala(
+    Planet planet,
+    double long,
+    VedicChart chart,
+  ) {
     // Egyptian Terms (Standard for Tajik)
     // Structure: Sign Index -> List of Term(Planet, Degrees)
     // Example: Aries(0) -> Jup(6), Ven(6), Mer(8), Mar(5), Sat(5)
@@ -504,20 +622,31 @@ class VarshaphalSystem {
     }
 
     // Check if planet is the term lord
-    // Own Term: 15.0, Friend: 11.25, Neutral: 7.5, Enemy: 3.75
-    // For now, if Own Term = 15, Else 7.5 (Neutral default)
-    // Ideally needs detailed Maitri again.
+    final termLordPlanet = getPlanetFromString(termLord);
 
-    // Convert planet enum to string name
-    final pName = planet.toString().split('.').last;
+    // Own Term
+    if (termLordPlanet == planet) return 15.0;
 
-    // Check match
-    // Note: Mars/Sun/Moon/etc naming must match string
-    if (termLord.toLowerCase() == pName.toLowerCase()) {
-      return 15.0; // Own Value
+    // Use Maitri
+    final relationship = _calculatePanchadhaMaitri(
+      planet,
+      termLordPlanet,
+      chart,
+    );
+    switch (relationship) {
+      case 'Great Friend':
+        return 11.25;
+      case 'Friend':
+        return 7.5;
+      case 'Neutral':
+        return 3.75;
+      case 'Enemy':
+        return 1.875;
+      case 'Great Enemy':
+        return 0.9375;
+      default:
+        return 3.75;
     }
-
-    return 7.5; // Neutral Value (Placeholder for Maitri)
   }
 
   static List<_Term> _getEgyptianTerms(int sign) {
@@ -626,12 +755,94 @@ class VarshaphalSystem {
 
   static _Term _t(String name, double deg) => _Term(name, deg);
 
-  static double calculateDrekkanaBala(Planet planet, double long) {
-    return 5.0; // Placeholder
+  static double calculateDrekkanaBala(
+    Planet planet,
+    double long,
+    VedicChart chart,
+  ) {
+    // Drekkana (D3): Each sign is divided into 3 parts of 10 degrees
+    // 1st Drekkana (0-10): Same sign
+    // 2nd Drekkana (10-20): 5th sign from it
+    // 3rd Drekkana (20-30): 9th sign from it
+    final signIndex = (long / 30).floor();
+    final degreeInSign = long % 30;
+    final part = (degreeInSign / 10).floor(); // 0, 1, 2
+
+    int drekkanaSign;
+    if (part == 0) {
+      drekkanaSign = signIndex;
+    } else if (part == 1) {
+      drekkanaSign = (signIndex + 4) % 12;
+    } else {
+      drekkanaSign = (signIndex + 8) % 12;
+    }
+
+    final lordName = getSignLord(drekkanaSign);
+    final lord = getPlanetFromString(lordName);
+
+    // Own Drekkana
+    if (lord == planet) return 10.0;
+
+    // Use Maitri
+    final relationship = _calculatePanchadhaMaitri(planet, lord, chart);
+    switch (relationship) {
+      case 'Great Friend':
+        return 7.5;
+      case 'Friend':
+        return 5.0;
+      case 'Neutral':
+        return 2.5;
+      case 'Enemy':
+        return 1.25;
+      case 'Great Enemy':
+        return 0.625;
+      default:
+        return 2.5;
+    }
   }
 
-  static double calculateNavamsaBala(Planet planet, double long) {
-    return 2.5; // Placeholder
+  static double calculateNavamsaBala(
+    Planet planet,
+    double long,
+    VedicChart chart,
+  ) {
+    // Navamsa (D9): Each sign is divided into 9 parts of 3.33 degrees
+    // Starting sign depends on the element of the Rashi sign:
+    // Fire (Aries, Leo, Sag): Start from Aries
+    // Earth (Tau, Vir, Cap): Start from Capricorn
+    // Air (Gem, Lib, Aqu): Start from Libra
+    // Water (Can, Sco, Pis): Start from Cancer
+    final signIndex = (long / 30).floor();
+    final degreeInSign = long % 30;
+    final part = (degreeInSign / (30 / 9)).floor(); // 0-8
+
+    final element = signIndex % 4; // 0=Fire, 1=Earth, 2=Air, 3=Water
+    final startMap = {0: 0, 1: 9, 2: 6, 3: 3}; // Aries, Cap, Libra, Cancer
+    final startSignIndex = startMap[element]!;
+    final navamsaSign = (startSignIndex + part) % 12;
+
+    final lordName = getSignLord(navamsaSign);
+    final lord = getPlanetFromString(lordName);
+
+    // Own Navamsa
+    if (lord == planet) return 5.0;
+
+    // Use Maitri
+    final relationship = _calculatePanchadhaMaitri(planet, lord, chart);
+    switch (relationship) {
+      case 'Great Friend':
+        return 3.75;
+      case 'Friend':
+        return 2.5;
+      case 'Neutral':
+        return 1.25;
+      case 'Enemy':
+        return 0.625;
+      case 'Great Enemy':
+        return 0.3125;
+      default:
+        return 1.25;
+    }
   }
 
   static String getTriRashiLord(int sign, bool isDay) {
@@ -688,11 +899,76 @@ class VarshaphalSystem {
       interpretation: 'Wealth, success, and fulfillment of desires.',
     );
 
-    // 2. Guru Saham (Education/Wisdom)
+    final jupiter = getPlanetLongitude(chart, Planet.jupiter);
+    final mars = getPlanetLongitude(chart, Planet.mars);
+    final saturn = getPlanetLongitude(chart, Planet.saturn);
+    final mercury = getPlanetLongitude(chart, Planet.mercury);
+
+    // 2. Vidya Saham (Education/Knowledge)
     // Day: Asc + Sun - Jupiter
     // Night: Asc + Jupiter - Sun
-    // (Standard varies, using common Tajik rule)
-    // ...
+    double vidyaLong = isDay ? (asc + sun - jupiter) : (asc + jupiter - sun);
+    vidyaLong = (vidyaLong + 360) % 360;
+    sahams['Vidya (Education)'] = SahamPoint(
+      name: 'Vidya Saham',
+      longitude: vidyaLong,
+      interpretation: 'Education, learning, and intellectual pursuits.',
+    );
+
+    // 3. Yasha Saham (Fame/Success)
+    // Day: Asc + Jupiter - Sun
+    // Night: Asc + Sun - Jupiter
+    double yashaLong = isDay ? (asc + jupiter - sun) : (asc + sun - jupiter);
+    yashaLong = (yashaLong + 360) % 360;
+    sahams['Yasha (Fame)'] = SahamPoint(
+      name: 'Yasha Saham',
+      longitude: yashaLong,
+      interpretation: 'Fame, reputation, and public recognition.',
+    );
+
+    // 4. Raja Saham (Authority/Power)
+    // Day: Asc + Saturn - Sun
+    // Night: Asc + Sun - Saturn
+    double rajaLong = isDay ? (asc + saturn - sun) : (asc + sun - saturn);
+    rajaLong = (rajaLong + 360) % 360;
+    sahams['Raja (Authority)'] = SahamPoint(
+      name: 'Raja Saham',
+      longitude: rajaLong,
+      interpretation: 'Authority, government favor, and power.',
+    );
+
+    // 5. Putra Saham (Children)
+    // Day: Asc + Jupiter - Moon
+    // Night: Asc + Moon - Jupiter
+    double putraLong = isDay ? (asc + jupiter - moon) : (asc + moon - jupiter);
+    putraLong = (putraLong + 360) % 360;
+    sahams['Putra (Children)'] = SahamPoint(
+      name: 'Putra Saham',
+      longitude: putraLong,
+      interpretation: 'Children, creativity, and progeny matters.',
+    );
+
+    // 6. Mitra Saham (Friends)
+    // Day: Asc + Mercury - Moon
+    // Night: Asc + Moon - Mercury
+    double mitraLong = isDay ? (asc + mercury - moon) : (asc + moon - mercury);
+    mitraLong = (mitraLong + 360) % 360;
+    sahams['Mitra (Friends)'] = SahamPoint(
+      name: 'Mitra Saham',
+      longitude: mitraLong,
+      interpretation: 'Friendships, alliances, and social connections.',
+    );
+
+    // 7. Karma Saham (Career)
+    // Day: Asc + Mars - Sun
+    // Night: Asc + Sun - Mars
+    double karmaLong = isDay ? (asc + mars - sun) : (asc + sun - mars);
+    karmaLong = (karmaLong + 360) % 360;
+    sahams['Karma (Career)'] = SahamPoint(
+      name: 'Karma Saham',
+      longitude: karmaLong,
+      interpretation: 'Career, profession, and life purpose.',
+    );
 
     return sahams;
   }

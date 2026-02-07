@@ -207,7 +207,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                     crossAxisCount: 3,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
-                    childAspectRatio: 1.2,
+                    childAspectRatio: 1.5,
                     children: [
                       _buildPanchangCard(
                         title: 'Tithi',
@@ -353,7 +353,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
       builder: (context, states) {
         return Card(
           borderRadius: BorderRadius.circular(8),
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(8.0),
           backgroundColor: states.isHovered ? color.withAlpha(15) : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,18 +362,18 @@ class _PanchangScreenState extends State<PanchangScreen> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: color.withAlpha(25),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
                       icon,
-                      size: 16,
+                      size: 14,
                       color: color,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,13 +383,13 @@ class _PanchangScreenState extends State<PanchangScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: Colors.grey,
-                            fontSize: 11,
+                            fontSize: 10,
                           ),
                         ),
                         Text(
                           subtitle,
                           style: TextStyle(
-                            fontSize: 9,
+                            fontSize: 8,
                             color: color,
                             fontWeight: FontWeight.w500,
                           ),
@@ -399,7 +399,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 value,
                 style: TextStyle(

@@ -101,17 +101,6 @@ class AyanamsaCalculator {
     }
   }
 
-  /// DEPRECATED: Use SiderealMode.krishnamurtiVP291 instead.
-  /// Formula: 23° 33' 03" + (Rate * (Year - 2000))
-  static double calculateNewKPAyanamsa(DateTime date) {
-    final j2000 = DateTime.utc(2000, 1, 1, 12, 0, 0);
-    final diff = date.difference(j2000);
-    final yearsFromJ2000 = diff.inSeconds / (365.25 * 24 * 3600);
-    const double initialValue = 23.0 + (33.0 / 60.0) + (03.0 / 3600.0);
-    const double ratePerYear = 50.2388475 / 3600.0;
-    return initialValue + (yearsFromJ2000 * ratePerYear);
-  }
-
   /// Convert tropical longitude to sidereal using ayanamsa
   static double tropicalToSidereal(double tropicalLongitude, double ayanamsa) {
     return _normalizeAngle(tropicalLongitude - ayanamsa);

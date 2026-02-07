@@ -1,4 +1,4 @@
-name: Nightly Windows Release
+name: Nightly Build
 
 on:
   push:
@@ -9,35 +9,65 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build & Release
-    runs-on: windows-latest
-
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build and Package
-        # Default shell on Windows is PowerShell
-        run: .\build_portable.ps1
-
-      - name: Upload Nightly Release
-        uses: ncipollo/release-action@v1
+      - run: flutter pub get
+      - run: flutter build apk --release --no-shrink
+      # Rename APK to be more descriptive before upload
+      - run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/AstroNaksh-Android.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          artifacts: "AstroNaksh_Portable.zip"
-          tag: nightly
-          name: Nightly Windows Release
-          body: "This is an automated nightly release from the latest push. Build: ${{ github.run_number }}"
-          allowUpdates: true
-          removeArtifacts: true
-          replacesArtifacts: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          name: android-apk
+          path: build/app/outputs/flutter-apk/AstroNaksh-Android.apk
+
+  build-windows:
+    name: Build Windows App
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+      - run: flutter pub get
+      - run: .\build_portable.ps1
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-app
+          path: AstroNaksh_Portable.zip
+
+  release:
+    name: Create Nightly Release
+    needs: [build-android, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+
+      - name: Update Nightly Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "nightly"
+          prerelease: true
+          title: "Nightly Build"
+          files: |
+            artifacts/android-apk/AstroNaksh-Android.apk
+            artifacts/windows-app/AstroNaksh_Portable.zip

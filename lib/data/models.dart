@@ -311,6 +311,7 @@ class YoginiMahadasha {
   final DateTime startDate;
   final DateTime endDate;
   final double periodYears;
+  final List<YoginiAntardasha> antardashas;
 
   YoginiMahadasha({
     required this.name,
@@ -318,6 +319,37 @@ class YoginiMahadasha {
     required this.startDate,
     required this.endDate,
     required this.periodYears,
+    this.antardashas = const [],
+  });
+}
+
+class YoginiAntardasha {
+  final String name;
+  final String lord;
+  final DateTime startDate;
+  final DateTime endDate;
+  final List<YoginiPratyantardasha> pratyantardashas;
+
+  YoginiAntardasha({
+    required this.name,
+    required this.lord,
+    required this.startDate,
+    required this.endDate,
+    this.pratyantardashas = const [],
+  });
+}
+
+class YoginiPratyantardasha {
+  final String name;
+  final String lord;
+  final DateTime startDate;
+  final DateTime endDate;
+
+  YoginiPratyantardasha({
+    required this.name,
+    required this.lord,
+    required this.startDate,
+    required this.endDate,
   });
 }
 

@@ -321,7 +321,7 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
       case 9:
         return FluentIcons.compass_n_w; // Long journeys/Dharma
       case 10:
-        return FluentIcons.calendar; // Placeholder for Career
+        return FluentIcons.toolbox; // Career & Status
       case 11:
         return FluentIcons.savings;
       case 12:

@@ -68,19 +68,39 @@ class DashaSystem {
     final result = _service!.calculateYoginiDasha(
       moonLongitude: chart.getPlanet(Planet.moon)?.longitude ?? 0,
       birthDateTime: chart.dateTime,
-      levels: 1, // local model only supports Mahadashas for Yogini
+      levels: 3, // Enable Antar and Pratyantar
     );
 
     return YoginiDasha(
-      startYogini: result.allMahadashas.first.lord?.displayName ?? '--',
+      startYogini: result.allMahadashas.first.lordName ?? '--',
       mahadashas: result.allMahadashas
           .map(
             (m) => YoginiMahadasha(
-              name: m.lord?.displayName ?? '--',
+              name: m.lordName ?? m.lord?.displayName ?? '--',
               lord: _getYoginiPlanetLord(m.lord),
               startDate: m.startDate,
               endDate: m.endDate,
               periodYears: m.durationYears,
+              antardashas: m.subPeriods
+                  .map(
+                    (a) => YoginiAntardasha(
+                      name: a.lordName ?? a.lord?.displayName ?? '--',
+                      lord: _getYoginiPlanetLord(a.lord),
+                      startDate: a.startDate,
+                      endDate: a.endDate,
+                      pratyantardashas: a.subPeriods
+                          .map(
+                            (p) => YoginiPratyantardasha(
+                              name: p.lordName ?? p.lord?.displayName ?? '--',
+                              lord: _getYoginiPlanetLord(p.lord),
+                              startDate: p.startDate,
+                              endDate: p.endDate,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  )
+                  .toList(),
             ),
           )
           .toList(),

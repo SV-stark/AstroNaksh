@@ -6,11 +6,11 @@ import '../../core/chart_customization.dart';
 
 /// Available social media themes
 enum SocialTheme {
-  cosmicNebula,    // Deep space purple/blue nebula
-  goldenHour,      // Warm sunset golds and oranges  
+  cosmicNebula, // Deep space purple/blue nebula
+  goldenHour, // Warm sunset golds and oranges
   minimalistWhite, // Clean Instagram-style white
-  mysticAurora,    // Green/purple aurora borealis
-  cosmicDark,      // True black OLED optimized
+  mysticAurora, // Green/purple aurora borealis
+  cosmicDark, // True black OLED optimized
 }
 
 /// Extension to get social theme configuration
@@ -107,11 +107,7 @@ extension SocialThemeExtension on SocialTheme {
         return const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFFFFF),
-            Color(0xFFF5F5F5),
-            Color(0xFFFAFAFA),
-          ],
+          colors: [Color(0xFFFFFFFF), Color(0xFFF5F5F5), Color(0xFFFAFAFA)],
         );
       case SocialTheme.mysticAurora:
         return const LinearGradient(
@@ -129,11 +125,7 @@ extension SocialThemeExtension on SocialTheme {
         return const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF000000),
-            Color(0xFF0D0D0D),
-            Color(0xFF1A1A1A),
-          ],
+          colors: [Color(0xFF000000), Color(0xFF0D0D0D), Color(0xFF1A1A1A)],
         );
     }
   }
@@ -241,7 +233,7 @@ extension SocialThemeExtension on SocialTheme {
           gradient: backgroundGradient,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFFE1BEE7).withOpacity(0.3),
+            color: const Color(0xFFE1BEE7).withValues(alpha: 0.3),
             width: 1,
           ),
         );
@@ -251,7 +243,7 @@ extension SocialThemeExtension on SocialTheme {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFFA726).withOpacity(0.3),
+              color: const Color(0xFFFFA726).withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -261,13 +253,10 @@ extension SocialThemeExtension on SocialTheme {
         return BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFFE0E0E0),
-            width: 1,
-          ),
+          border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -278,7 +267,7 @@ extension SocialThemeExtension on SocialTheme {
           gradient: backgroundGradient,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFF00E676).withOpacity(0.3),
+            color: const Color(0xFF00E676).withValues(alpha: 0.3),
             width: 1,
           ),
         );
@@ -287,7 +276,7 @@ extension SocialThemeExtension on SocialTheme {
           color: Colors.black,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFFBB86FC).withOpacity(0.3),
+            color: const Color(0xFFBB86FC).withValues(alpha: 0.3),
             width: 1,
           ),
         );
@@ -299,7 +288,7 @@ extension SocialThemeExtension on SocialTheme {
     switch (this) {
       case SocialTheme.cosmicNebula:
         return TextStyle(
-          color: Colors.white.withOpacity(0.54),
+          color: Colors.white.withValues(alpha: 0.54),
           fontSize: 10,
           fontWeight: FontWeight.w300,
           letterSpacing: 1.5,
@@ -313,21 +302,21 @@ extension SocialThemeExtension on SocialTheme {
         );
       case SocialTheme.minimalistWhite:
         return TextStyle(
-          color: Colors.black.withOpacity(0.38),
+          color: Colors.black.withValues(alpha: 0.38),
           fontSize: 10,
           fontWeight: FontWeight.w300,
           letterSpacing: 1.5,
         );
       case SocialTheme.mysticAurora:
         return TextStyle(
-          color: Colors.white.withOpacity(0.54),
+          color: Colors.white.withValues(alpha: 0.54),
           fontSize: 10,
           fontWeight: FontWeight.w300,
           letterSpacing: 1.5,
         );
       case SocialTheme.cosmicDark:
         return TextStyle(
-          color: Colors.white.withOpacity(0.38),
+          color: Colors.white.withValues(alpha: 0.38),
           fontSize: 10,
           fontWeight: FontWeight.w300,
           letterSpacing: 1.5,
@@ -339,15 +328,15 @@ extension SocialThemeExtension on SocialTheme {
   Color get aspectLineColor {
     switch (this) {
       case SocialTheme.cosmicNebula:
-        return const Color(0xFFE1BEE7).withOpacity(0.4);
+        return const Color(0xFFE1BEE7).withValues(alpha: 0.4);
       case SocialTheme.goldenHour:
-        return const Color(0xFF8D6E63).withOpacity(0.3);
+        return const Color(0xFF8D6E63).withValues(alpha: 0.3);
       case SocialTheme.minimalistWhite:
-        return const Color(0xFFBDBDBD).withOpacity(0.4).withValues(alpha: 0.4);
+        return const Color(0xFFBDBDBD).withValues(alpha: 0.4);
       case SocialTheme.mysticAurora:
-        return const Color(0xFF00E676).withOpacity(0.3);
+        return const Color(0xFF00E676).withValues(alpha: 0.3);
       case SocialTheme.cosmicDark:
-        return const Color(0xFFBB86FC).withOpacity(0.4);
+        return const Color(0xFFBB86FC).withValues(alpha: 0.4);
     }
   }
 
@@ -356,13 +345,13 @@ extension SocialThemeExtension on SocialTheme {
     switch (this) {
       case SocialTheme.cosmicNebula:
         return BoxShadow(
-          color: const Color(0xFF9C27B0).withOpacity(0.5),
+          color: const Color(0xFF9C27B0).withValues(alpha: 0.5),
           blurRadius: 8,
           spreadRadius: 2,
         );
       case SocialTheme.mysticAurora:
         return BoxShadow(
-          color: const Color(0xFF00E676).withOpacity(0.4),
+          color: const Color(0xFF00E676).withValues(alpha: 0.4),
           blurRadius: 8,
           spreadRadius: 2,
         );
@@ -402,24 +391,51 @@ extension SocialThemeExtension on SocialTheme {
   List<String> get hashtags {
     switch (this) {
       case SocialTheme.cosmicNebula:
-        return ['#CosmicNebula', '#SpaceVibes', '#Astrology', '#NatalChart', '#AstroNaksh'];
+        return [
+          '#CosmicNebula',
+          '#SpaceVibes',
+          '#Astrology',
+          '#NatalChart',
+          '#AstroNaksh',
+        ];
       case SocialTheme.goldenHour:
-        return ['#GoldenHour', '#SunsetVibes', '#Astrology', '#NatalChart', '#AstroNaksh'];
+        return [
+          '#GoldenHour',
+          '#SunsetVibes',
+          '#Astrology',
+          '#NatalChart',
+          '#AstroNaksh',
+        ];
       case SocialTheme.minimalistWhite:
-        return ['#Minimalist', '#CleanDesign', '#Astrology', '#NatalChart', '#AstroNaksh'];
+        return [
+          '#Minimalist',
+          '#CleanDesign',
+          '#Astrology',
+          '#NatalChart',
+          '#AstroNaksh',
+        ];
       case SocialTheme.mysticAurora:
-        return ['#Aurora', '#Mystic', '#Astrology', '#NatalChart', '#AstroNaksh'];
+        return [
+          '#Aurora',
+          '#Mystic',
+          '#Astrology',
+          '#NatalChart',
+          '#AstroNaksh',
+        ];
       case SocialTheme.cosmicDark:
-        return ['#DarkMode', '#OLED', '#Astrology', '#NatalChart', '#AstroNaksh'];
+        return [
+          '#DarkMode',
+          '#OLED',
+          '#Astrology',
+          '#NatalChart',
+          '#AstroNaksh',
+        ];
     }
   }
 }
 
 /// Export format options
-enum ExportFormat {
-  png,
-  jpg,
-}
+enum ExportFormat { png, jpg }
 
 /// Social media theme manager
 class SocialThemeManager {
@@ -430,7 +446,7 @@ class SocialThemeManager {
   SocialTheme _currentTheme = SocialTheme.cosmicNebula;
 
   SocialTheme get currentTheme => _currentTheme;
-  
+
   set currentTheme(SocialTheme theme) {
     _currentTheme = theme;
   }
@@ -445,7 +461,8 @@ class SocialThemeManager {
   ) {
     final themed = ChartCustomization()
       ..chartStyle = customization.chartStyle
-      ..colorScheme = ColorScheme.classic // We'll override colors manually
+      ..colorScheme = ColorScheme
+          .classic // We'll override colors manually
       ..showHouses = customization.showHouses
       ..showSigns = customization.showSigns
       ..showDegrees = customization.showDegrees
@@ -453,7 +470,8 @@ class SocialThemeManager {
       ..showRetrograde = customization.showRetrograde
       ..showCombust = customization.showCombust
       ..showExaltedDebilitated = customization.showExaltedDebilitated
-      ..planetSize = PlanetSize.large // Larger for social media
+      ..planetSize = PlanetSize
+          .large // Larger for social media
       ..houseSystem = customization.houseSystem
       ..showHouseCusps = customization.showHouseCusps
       ..showHouseNumbers = customization.showHouseNumbers

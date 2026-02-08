@@ -50,7 +50,9 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
 
   void _updateSliderValue() {
     final totalDuration = widget.endDate.difference(widget.startDate).inSeconds;
-    final currentDuration = widget.currentDate.difference(widget.startDate).inSeconds;
+    final currentDuration = widget.currentDate
+        .difference(widget.startDate)
+        .inSeconds;
     _sliderValue = totalDuration > 0 ? currentDuration / totalDuration : 0.0;
   }
 
@@ -75,7 +77,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -89,16 +91,23 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
             children: [
               // Play/Pause button
               IconButton(
-                icon: Icon(widget.isPlaying ? FluentIcons.pause : FluentIcons.play),
-                onPressed: widget.isPlaying ? widget.onPausePressed : widget.onPlayPressed,
+                icon: Icon(
+                  widget.isPlaying ? FluentIcons.pause : FluentIcons.play,
+                ),
+                onPressed: widget.isPlaying
+                    ? widget.onPausePressed
+                    : widget.onPlayPressed,
               ),
               const SizedBox(width: 12),
               // Date display
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: theme.accentColor.withOpacity(0.1),
+                    color: theme.accentColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -113,8 +122,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
               ),
               const SizedBox(width: 12),
               // Speed control
-              if (widget.onSpeedChanged != null)
-                _buildSpeedDropdown(),
+              if (widget.onSpeedChanged != null) _buildSpeedDropdown(),
             ],
           ),
           const SizedBox(height: 12),
@@ -132,15 +140,22 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
               // Timeline track
               Expanded(
                 child: GestureDetector(
-                  onHorizontalDragStart: (_) => setState(() => _isDragging = true),
-                  onHorizontalDragEnd: (_) => setState(() => _isDragging = false),
+                  onHorizontalDragStart: (_) =>
+                      setState(() => _isDragging = true),
+                  onHorizontalDragEnd: (_) =>
+                      setState(() => _isDragging = false),
                   onHorizontalDragUpdate: (details) {
                     final box = context.findRenderObject() as RenderBox;
-                    final localPosition = box.globalToLocal(details.globalPosition);
+                    final localPosition = box.globalToLocal(
+                      details.globalPosition,
+                    );
                     final width = box.size.width - 100; // Account for labels
-                    final newValue = (localPosition.dx - 50).clamp(0.0, width) / width;
+                    final newValue =
+                        (localPosition.dx - 50).clamp(0.0, width) / width;
                     setState(() => _sliderValue = newValue.clamp(0.0, 1.0));
-                    widget.onDateChanged(_calculateDateFromSlider(_sliderValue));
+                    widget.onDateChanged(
+                      _calculateDateFromSlider(_sliderValue),
+                    );
                   },
                   child: Container(
                     height: 40,
@@ -163,7 +178,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
                           widthFactor: _sliderValue,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: theme.accentColor.withOpacity(0.3),
+                              color: theme.accentColor.withValues(alpha: 0.3),
                               borderRadius: const BorderRadius.horizontal(
                                 left: Radius.circular(4),
                               ),
@@ -172,8 +187,15 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
                         ),
                         // Slider thumb
                         AnimatedPositioned(
-                          duration: _isDragging ? Duration.zero : const Duration(milliseconds: 100),
-                          left: _isDragging ? null : (_sliderValue * MediaQuery.of(context).size.width * 0.7) - 10,
+                          duration: _isDragging
+                              ? Duration.zero
+                              : const Duration(milliseconds: 100),
+                          left: _isDragging
+                              ? null
+                              : (_sliderValue *
+                                        MediaQuery.of(context).size.width *
+                                        0.7) -
+                                    10,
                           top: 8,
                           bottom: 8,
                           child: Container(
@@ -181,13 +203,10 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
                             decoration: BoxDecoration(
                               color: theme.accentColor,
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 2,
-                              ),
+                              border: Border.all(color: Colors.white, width: 2),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -226,10 +245,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
                 onPressed: () => _adjustDate(const Duration(hours: -1)),
               ),
               const SizedBox(width: 16),
-              Text(
-                'Navigate',
-                style: theme.typography.caption,
-              ),
+              Text('Navigate', style: theme.typography.caption),
               const SizedBox(width: 16),
               _buildQuickNavButton(
                 icon: FluentIcons.forward,
@@ -250,7 +266,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
 
   Widget _buildSpeedDropdown() {
     final speeds = [0.5, 1.0, 2.0, 5.0, 10.0];
-    
+
     return DropDownButton(
       title: Text('${widget.playbackSpeed}x'),
       items: speeds.map((speed) {
@@ -269,10 +285,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
   }) {
     return Tooltip(
       message: tooltip,
-      child: IconButton(
-        icon: Icon(icon, size: 16),
-        onPressed: onPressed,
-      ),
+      child: IconButton(icon: Icon(icon, size: 16), onPressed: onPressed),
     );
   }
 
@@ -285,7 +298,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} '
-           '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   String _formatShortDate(DateTime date) {

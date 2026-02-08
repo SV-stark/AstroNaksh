@@ -327,24 +327,160 @@ class _ChartScreenState extends State<ChartScreen> {
         ),
         title: const Text("Vedic Chart"),
         actions: CommandBar(
-          overflowBehavior: ResponsiveHelper.useMobileLayout(context)
-              ? CommandBarOverflowBehavior.dynamicOverflow
-              : CommandBarOverflowBehavior.noWrap,
+          overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
           mainAxisAlignment: MainAxisAlignment.end,
           primaryItems: [
-            // 1. Info Button (New)
-            CommandBarButton(
-              icon: const Icon(FluentIcons.info),
-              label: const Text('Info'),
-              onPressed: _showBirthDetails,
-            ),
-            // 2. Save Button (New)
+            // --- View & Calculation Options (Left/Start) ---
+            if (!ResponsiveHelper.useMobileLayout(context)) ...[
+              CommandBarButton(
+                icon: Icon(
+                  _style == ChartStyle.northIndian
+                      ? FluentIcons.grid_view_small
+                      : FluentIcons.diamond,
+                ),
+                label: const Text('Style'),
+                onPressed: () {
+                  setState(() {
+                    _style = _style == ChartStyle.northIndian
+                        ? ChartStyle.southIndian
+                        : ChartStyle.northIndian;
+                  });
+                },
+              ),
+              CommandBarButton(
+                icon: Icon(_showAspects ? FluentIcons.view : FluentIcons.hide),
+                label: Text(_showAspects ? 'Aspects On' : 'Aspects Off'),
+                onPressed: () {
+                  setState(() {
+                    _showAspects = !_showAspects;
+                  });
+                },
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.globe),
+                label: const Text('Ayanamsa'),
+                onPressed: _openAyanamsaSelection,
+              ),
+            ],
+
+            // --- Analysis & Tools ---
+            if (!ResponsiveHelper.useMobileLayout(context))
+              CommandBarBuilderItem(
+                builder: (context, mode, w) {
+                  return DropDownButton(
+                    title: const Text('Analysis'),
+                    leading: const Icon(FluentIcons.analytics_view),
+                    items: [
+                      MenuFlyoutSubItem(
+                        text: const Text('Strength'),
+                        leading: const Icon(FluentIcons.favorite_star),
+                        items: (context) => [
+                          MenuFlyoutItem(
+                            text: const Text('Shadbala'),
+                            leading: const Icon(FluentIcons.favorite_star),
+                            onPressed: () => _navigateTo('shadbala'),
+                          ),
+                          MenuFlyoutItem(
+                            text: const Text('Ashtakavarga'),
+                            leading: const Icon(FluentIcons.grid_view_small),
+                            onPressed: () => _navigateTo('ashtakavarga'),
+                          ),
+                          MenuFlyoutItem(
+                            text: const Text('Bhava Bala'),
+                            leading: const Icon(FluentIcons.home),
+                            onPressed: () => _navigateTo('bhava_bala'),
+                          ),
+                        ],
+                      ),
+                      MenuFlyoutSubItem(
+                        text: const Text('Predictions'),
+                        leading: const Icon(FluentIcons.calendar),
+                        items: (context) => [
+                          MenuFlyoutItem(
+                            text: const Text('Transit'),
+                            leading: const Icon(FluentIcons.history),
+                            onPressed: () => _navigateTo('transit'),
+                          ),
+                          MenuFlyoutItem(
+                            text: const Text('Varshaphal'),
+                            leading: const Icon(FluentIcons.calendar),
+                            onPressed: () => _navigateTo('varshaphal'),
+                          ),
+                        ],
+                      ),
+                      MenuFlyoutSubItem(
+                        text: const Text('Special'),
+                        leading: const Icon(FluentIcons.lightbulb),
+                        items: (context) => [
+                          MenuFlyoutItem(
+                            text: const Text('Yoga & Dosha'),
+                            leading: const Icon(FluentIcons.scale_volume),
+                            onPressed: () => _navigateTo('yoga_dosha'),
+                          ),
+                          MenuFlyoutItem(
+                            text: const Text('Planetary Maitri'),
+                            leading: const Icon(FluentIcons.people),
+                            onPressed: () => _navigateTo('planetary_maitri'),
+                          ),
+                          MenuFlyoutItem(
+                            text: const Text('Retrograde'),
+                            leading: const Icon(FluentIcons.repeat_one),
+                            onPressed: () => _navigateTo('retrograde'),
+                          ),
+                          MenuFlyoutItem(
+                            text: const Text('Comparison'),
+                            leading: const Icon(FluentIcons.compare),
+                            onPressed: () => _navigateTo('comparison'),
+                          ),
+                        ],
+                      ),
+                      const MenuFlyoutSeparator(),
+                      MenuFlyoutItem(
+                        text: const Text('PDF Report'),
+                        leading: const Icon(FluentIcons.pdf),
+                        onPressed: () => _navigateTo('pdf_report'),
+                      ),
+                    ],
+                  );
+                },
+                wrappedItem: CommandBarButton(
+                  icon: const Icon(FluentIcons.analytics_view),
+                  label: const Text('Analysis'),
+                  onPressed: () {},
+                ),
+              ),
+
+            if (!ResponsiveHelper.useMobileLayout(context))
+              CommandBarButton(
+                icon: const Icon(FluentIcons.build),
+                label: const Text('Rectify'),
+                onPressed: () async {
+                  // ... (Logic)
+                  if (_birthData == null) return;
+                  final newData = await Navigator.push(
+                    context,
+                    FluentPageRoute(
+                      builder: (context) => const BirthTimeRectifierScreen(),
+                      settings: RouteSettings(arguments: _birthData),
+                    ),
+                  );
+
+                  if (newData != null && newData is BirthData) {
+                    setState(() {
+                      _birthData = newData;
+                      _loadChartData();
+                    });
+                  }
+                },
+              ),
+
+            // --- Primary Actions (End) ---
+            const CommandBarSeparator(),
             CommandBarButton(
               icon: const Icon(FluentIcons.save),
               label: const Text('Save'),
               onPressed: _saveCurrentChart,
             ),
-            // 3. Share/Export Button (New)
             CommandBarButton(
               icon: const Icon(FluentIcons.share),
               label: const Text('Share'),
@@ -423,164 +559,180 @@ class _ChartScreenState extends State<ChartScreen> {
                 );
               },
             ),
-            const CommandBarSeparator(),
-            // 3. Settings
-            CommandBarButton(
-              icon: const Icon(FluentIcons.settings),
-              label: const Text('Settings'),
-              onPressed: () {
-                Navigator.pushNamed(context, '/settings');
-              },
-            ),
-            // 4. Analysis DropDown (Existing, made prominent)
-            CommandBarBuilderItem(
-              builder: (context, mode, w) {
-                return DropDownButton(
-                  title: const Text('Analysis'),
-                  leading: const Icon(FluentIcons.analytics_view),
-                  items: [
-                    MenuFlyoutSubItem(
-                      text: const Text('Strength'),
-                      leading: const Icon(FluentIcons.favorite_star),
-                      items: (context) => [
-                        MenuFlyoutItem(
-                          text: const Text('Shadbala'),
-                          leading: const Icon(FluentIcons.favorite_star),
-                          onPressed: () => _navigateTo('shadbala'),
-                        ),
-                        MenuFlyoutItem(
-                          text: const Text('Ashtakavarga'),
-                          leading: const Icon(FluentIcons.grid_view_small),
-                          onPressed: () => _navigateTo('ashtakavarga'),
-                        ),
-                        MenuFlyoutItem(
-                          text: const Text('Bhava Bala'),
-                          leading: const Icon(FluentIcons.home),
-                          onPressed: () => _navigateTo('bhava_bala'),
-                        ),
-                      ],
-                    ),
-                    MenuFlyoutSubItem(
-                      text: const Text('Predictions'),
-                      leading: const Icon(FluentIcons.calendar),
-                      items: (context) => [
-                        MenuFlyoutItem(
-                          text: const Text('Transit'),
-                          leading: const Icon(FluentIcons.history),
-                          onPressed: () => _navigateTo('transit'),
-                        ),
-                        MenuFlyoutItem(
-                          text: const Text('Varshaphal'),
-                          leading: const Icon(FluentIcons.calendar),
-                          onPressed: () => _navigateTo('varshaphal'),
-                        ),
-                      ],
-                    ),
-                    MenuFlyoutSubItem(
-                      text: const Text('Special'),
-                      leading: const Icon(FluentIcons.lightbulb),
-                      items: (context) => [
-                        MenuFlyoutItem(
-                          text: const Text('Yoga & Dosha'),
-                          leading: const Icon(FluentIcons.scale_volume),
-                          onPressed: () => _navigateTo('yoga_dosha'),
-                        ),
-                        MenuFlyoutItem(
-                          text: const Text('Planetary Maitri'),
-                          leading: const Icon(FluentIcons.people),
-                          onPressed: () => _navigateTo('planetary_maitri'),
-                        ),
-                        MenuFlyoutItem(
-                          text: const Text('Retrograde'),
-                          leading: const Icon(FluentIcons.repeat_one),
-                          onPressed: () => _navigateTo('retrograde'),
-                        ),
-                        MenuFlyoutItem(
-                          text: const Text('Comparison'),
-                          leading: const Icon(FluentIcons.compare),
-                          onPressed: () => _navigateTo('comparison'),
-                        ),
-                      ],
-                    ),
-                    const MenuFlyoutSeparator(),
-                    MenuFlyoutItem(
-                      text: const Text('PDF Report'),
-                      leading: const Icon(FluentIcons.pdf),
-                      onPressed: () => _navigateTo('pdf_report'),
-                    ),
-                  ],
-                );
-              },
-              wrappedItem: CommandBarButton(
-                icon: const Icon(FluentIcons.analytics_view),
-                label: const Text('Analysis'),
-                onPressed: () {},
-              ),
-            ),
-            const CommandBarSeparator(),
-            // 5. Ayanamsa
-            CommandBarButton(
-              icon: const Icon(FluentIcons.globe),
-              label: const Text('Ayanamsa'),
-              onPressed: _openAyanamsaSelection,
-            ),
-            // 6. Style
-            CommandBarButton(
-              icon: Icon(
-                _style == ChartStyle.northIndian
-                    ? FluentIcons.grid_view_small
-                    : FluentIcons.diamond,
-              ),
-              label: const Text('Style'),
-              onPressed: () {
-                setState(() {
-                  _style = _style == ChartStyle.northIndian
-                      ? ChartStyle.southIndian
-                      : ChartStyle.northIndian;
-                });
-              },
-            ),
-            // 7. Aspects (Drishti) Toggle
-            CommandBarButton(
-              icon: Icon(_showAspects ? FluentIcons.view : FluentIcons.hide),
-              label: Text(_showAspects ? 'Aspects On' : 'Aspects Off'),
-              onPressed: () {
-                setState(() {
-                  _showAspects = !_showAspects;
-                });
-              },
-            ),
-            // 8. Rectify
-            CommandBarButton(
-              icon: const Icon(FluentIcons.build),
-              label: const Text('Rectify'),
-              onPressed: () async {
-                if (_birthData == null) return;
-                final newData = await Navigator.push(
-                  context,
-                  FluentPageRoute(
-                    builder: (context) => const BirthTimeRectifierScreen(),
-                    settings: RouteSettings(arguments: _birthData),
-                  ),
-                );
 
-                if (newData != null && newData is BirthData) {
+            if (!ResponsiveHelper.useMobileLayout(context)) ...[
+              const CommandBarSeparator(),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.info),
+                label: const Text('Info'),
+                onPressed: _showBirthDetails,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.settings),
+                label: const Text('Settings'),
+                onPressed: () => Navigator.pushNamed(context, '/settings'),
+              ),
+            ],
+          ],
+          secondaryItems: [
+            // --- Secondary Actions (Overflow Menu) ---
+            // Force these into overflow on mobile for better touch targets
+            if (ResponsiveHelper.useMobileLayout(context)) ...[
+              CommandBarButton(
+                icon: Icon(
+                  _style == ChartStyle.northIndian
+                      ? FluentIcons.grid_view_small
+                      : FluentIcons.diamond,
+                ),
+                label: Text(
+                  'Style: ${_style == ChartStyle.northIndian ? 'North Indian' : 'South Indian'}',
+                ),
+                onPressed: () {
                   setState(() {
-                    _birthData = newData;
-                    _loadChartData();
+                    _style = _style == ChartStyle.northIndian
+                        ? ChartStyle.southIndian
+                        : ChartStyle.northIndian;
                   });
-                }
-              },
-            ),
+                },
+              ),
+              CommandBarButton(
+                icon: Icon(_showAspects ? FluentIcons.view : FluentIcons.hide),
+                label: Text(_showAspects ? 'Hide Aspects' : 'Show Aspects'),
+                onPressed: () {
+                  setState(() {
+                    _showAspects = !_showAspects;
+                  });
+                },
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.globe),
+                label: const Text('Select Ayanamsa'),
+                onPressed: _openAyanamsaSelection,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.analytics_view),
+                label: const Text('Analysis Tools'),
+                onPressed: () {
+                  // Show a dialog or bottom sheet for analysis tools because
+                  // a nested dropdown in a command bar menu might be weird.
+                  // Or we can just navigate to a "Menu" or show the same Dropdown logic.
+                  // Let's use a simple dialog for now to match the desktop dropdown content.
+                  showDialog(
+                    context: context,
+                    builder: (context) => ContentDialog(
+                      title: const Text('Analysis Tools'),
+                      content: SizedBox(
+                        height: 300,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _buildMobileAnalysisLink(
+                                'Shadbala',
+                                'shadbala',
+                                FluentIcons.favorite_star,
+                              ),
+                              _buildMobileAnalysisLink(
+                                'Ashtakavarga',
+                                'ashtakavarga',
+                                FluentIcons.grid_view_small,
+                              ),
+                              _buildMobileAnalysisLink(
+                                'Bhava Bala',
+                                'bhava_bala',
+                                FluentIcons.home,
+                              ),
+                              const Divider(),
+                              _buildMobileAnalysisLink(
+                                'Transit',
+                                'transit',
+                                FluentIcons.history,
+                              ),
+                              _buildMobileAnalysisLink(
+                                'Varshaphal',
+                                'varshaphal',
+                                FluentIcons.calendar,
+                              ),
+                              const Divider(),
+                              _buildMobileAnalysisLink(
+                                'Yoga & Dosha',
+                                'yoga_dosha',
+                                FluentIcons.scale_volume,
+                              ),
+                              _buildMobileAnalysisLink(
+                                'Planetary Maitri',
+                                'planetary_maitri',
+                                FluentIcons.people,
+                              ),
+                              _buildMobileAnalysisLink(
+                                'Retrograde',
+                                'retrograde',
+                                FluentIcons.repeat_one,
+                              ),
+                              _buildMobileAnalysisLink(
+                                'Comparison',
+                                'comparison',
+                                FluentIcons.compare,
+                              ),
+                              const Divider(),
+                              _buildMobileAnalysisLink(
+                                'PDF Report',
+                                'pdf_report',
+                                FluentIcons.pdf,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        Button(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.build),
+                label: const Text('Birth Time Rectification'),
+                onPressed: () async {
+                  if (_birthData == null) return;
+                  final newData = await Navigator.push(
+                    context,
+                    FluentPageRoute(
+                      builder: (context) => const BirthTimeRectifierScreen(),
+                      settings: RouteSettings(arguments: _birthData),
+                    ),
+                  );
+
+                  if (newData != null && newData is BirthData) {
+                    setState(() {
+                      _birthData = newData;
+                      _loadChartData();
+                    });
+                  }
+                },
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.info),
+                label: const Text('Birth Details'),
+                onPressed: _showBirthDetails,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.settings),
+                label: const Text('Settings'),
+                onPressed: () => Navigator.pushNamed(context, '/settings'),
+              ),
+            ],
           ],
         ),
       ),
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: ResponsiveHelper.useMobileLayout(context) 
-            ? PaneDisplayMode.compact 
-            : PaneDisplayMode.open,
+        displayMode: ResponsiveHelper.getNavigationPaneDisplayMode(context),
         size: NavigationPaneSize(
           openWidth: 200,
           compactWidth: ResponsiveHelper.useMobileLayout(context) ? 56 : 48,
@@ -646,6 +798,26 @@ class _ChartScreenState extends State<ChartScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMobileAnalysisLink(String title, String navKey, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Button(
+        onPressed: () {
+          Navigator.pop(context); // Close dialog
+          _navigateTo(navKey);
+        },
+        child: Row(
+          children: [
+            Icon(icon, size: 18),
+            const SizedBox(width: 12),
+            Expanded(child: Text(title)),
+            const Icon(FluentIcons.chevron_right, size: 12),
+          ],
+        ),
       ),
     );
   }
@@ -831,7 +1003,7 @@ class _ChartScreenState extends State<ChartScreen> {
                     decoration: BoxDecoration(
                       color: FluentTheme.of(
                         context,
-                      ).accentColor.withOpacity(0.1),
+                      ).accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -933,7 +1105,7 @@ class _ChartScreenState extends State<ChartScreen> {
   Widget _buildDivisionalChartDisplay(CompleteChartData data, String code) {
     final chart = data.divisionalCharts[code];
     final chartSize = ResponsiveHelper.getChartSize(context);
-    
+
     if (chart == null) {
       return const Card(
         child: Padding(
@@ -1832,63 +2004,184 @@ class _ChartScreenState extends State<ChartScreen> {
                               )
                             : null,
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Row(
-                              children: [
-                                if (isCurrent)
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    margin: const EdgeInsets.only(right: 8),
-                                    decoration: BoxDecoration(
-                                      color: FluentTheme.of(
-                                        context,
-                                      ).accentColor,
-                                      shape: BoxShape.circle,
+                      child: Expander(
+                        initiallyExpanded: isCurrent,
+                        header: Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Row(
+                                children: [
+                                  if (isCurrent)
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      margin: const EdgeInsets.only(right: 8),
+                                      decoration: BoxDecoration(
+                                        color: FluentTheme.of(
+                                          context,
+                                        ).accentColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  Text(
+                                    maha.name,
+                                    style: TextStyle(
+                                      fontWeight: isCurrent
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                      color: isCurrent
+                                          ? FluentTheme.of(context).accentColor
+                                          : null,
                                     ),
                                   ),
-                                Text(
-                                  maha.name,
-                                  style: TextStyle(
-                                    fontWeight: isCurrent
-                                        ? FontWeight.bold
-                                        : FontWeight.w500,
-                                    color: isCurrent
-                                        ? FluentTheme.of(context).accentColor
-                                        : null,
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                maha.lord,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                '${_formatDate(maha.startDate)} - ${_formatDate(maha.endDate)}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                '${maha.periodYears}y',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.right,
+                              ),
+                            ),
+                          ],
+                        ),
+                        content: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Divider(),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                'Antardashas (Sub-periods):',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            ...maha.antardashas.map((antar) {
+                              final isCurrentAntar =
+                                  now.isAfter(antar.startDate) &&
+                                  now.isBefore(antar.endDate);
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 4),
+                                decoration: BoxDecoration(
+                                  color: isCurrentAntar
+                                      ? FluentTheme.of(
+                                          context,
+                                        ).accentColor.withAlpha(20)
+                                      : null,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Expander(
+                                  initiallyExpanded: isCurrentAntar,
+                                  header: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          antar.name,
+                                          style: TextStyle(
+                                            fontWeight: isCurrentAntar
+                                                ? FontWeight.bold
+                                                : FontWeight.w500,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          '${_formatDate(antar.startDate)} - ${_formatDate(antar.endDate)}',
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  content: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.only(bottom: 4),
+                                        child: Text(
+                                          'Pratyantardashas (Sub-sub-periods):',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ),
+                                      ...antar.pratyantardashas.map((pratyan) {
+                                        final isCurrentPratyan =
+                                            now.isAfter(pratyan.startDate) &&
+                                            now.isBefore(pratyan.endDate);
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 2,
+                                            horizontal: 4,
+                                          ),
+                                          color: isCurrentPratyan
+                                              ? FluentTheme.of(
+                                                  context,
+                                                ).accentColor.withAlpha(10)
+                                              : null,
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  '  - ${pratyan.name}',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: isCurrentPratyan
+                                                        ? FontWeight.bold
+                                                        : FontWeight.normal,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 3,
+                                                child: Text(
+                                                  '${_formatDate(pratyan.startDate)} - ${_formatDate(pratyan.endDate)}',
+                                                  style: const TextStyle(
+                                                    fontSize: 10,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              maha.lord,
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              '${_formatDate(maha.startDate)} - ${_formatDate(maha.endDate)}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Text(
-                              '${maha.periodYears.toInt()}y',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        ],
+                              );
+                            }),
+                          ],
+                        ),
                       ),
                     );
                   }),

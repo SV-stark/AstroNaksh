@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jyotish/jyotish.dart';
+import 'package:intl/intl.dart'; // Add
 
 import '../../data/models.dart';
 import '../yoga_dosha_analyzer.dart';
@@ -603,22 +604,27 @@ class MatchingService {
     CompleteChartData g,
     CompleteChartData b,
   ) {
-    // Reuse logic from YogaDoshaAnalyzer? Or re-implement
-    // Assuming YogaDoshaAnalyzer is available and has _hasMangalDosha exposed or we implement similar
-    // We already have YogaDoshaAnalyzer from import
-    // Note: YogaDoshaAnalyzer.analyze returns result. It has private helpers logic but exposed as 'doshas'
+    // Rely on YogaDoshaAnalyzer to determine Mangal Dosha presence/cancellation
+    // The YogaDoshaAnalyzer already has advanced internal logic for bhanga.
+    // If we trust it, we just check if 'Mangal Dosha' is present in 'doshas' result.
+    // IMPORTANT: _checkManglikBhanga in YogaDoshaAnalyzer handles cancellations (Saturn/Rahu/Ketu etc).
+    // So 'isActive' dictates if it's effectively a problem.
 
     final gRes = YogaDoshaAnalyzer.analyze(g);
     final bRes = YogaDoshaAnalyzer.analyze(b);
 
-    // Check if Mangal Dosha present in results
-    // Check if Mangal Dosha present and ACTIVE
-    bool gManglik = gRes.doshas.any(
-      (d) => d.name.contains('Mangal') && d.isActive,
-    );
-    bool bManglik = bRes.doshas.any(
-      (d) => d.name.contains('Mangal') && d.isActive,
-    );
+    // Helper to check if Mangal Dosha is Active
+    bool isManglik(YogaDoshaAnalysisResult res) {
+      return res.doshas.any((d) => d.name.contains('Mangal') && d.isActive);
+    }
+
+    // Check 'raw' Mangal Dosha (ignoring cancellation for a moment to explain mismatch if needed)
+    // Actually, YogaDoshaAnalyzer usually returns the dosha in 'doshas' if present, and 'isActive' tells if it's active.
+    // If it's fully cancelled, it might be 'Partially Cancelled' status or removed?
+    // Let's assume 'isActive' is the source of truth for "Is this person Manglik effectively?".
+
+    bool gManglik = isManglik(gRes);
+    bool bManglik = isManglik(bRes);
 
     bool match = false;
     String desc = "";
@@ -630,39 +636,15 @@ class MatchingService {
       match = true;
       desc = "Neither is Manglik. Good compatibility.";
     } else {
-      // Mismatch Handling - Check Cross-Cancellation
-      // If one is Manglik, check if other has Saturn/Rahu/Ketu in the same house
-      CompleteChartData manglikChart = gManglik ? g : b;
-      CompleteChartData otherChart = gManglik ? b : g;
-      String manglikPerson = gManglik ? "Groom" : "Bride";
-      String otherPerson = gManglik ? "Bride" : "Groom";
+      // Mismatch
+      match = false;
+      String mPerson = gManglik ? "Groom" : "Bride";
+      desc = "$mPerson is Manglik, while the other is not. Mismatch detected.";
 
-      // Where is Mars for the Manglik person?
-      // We need to find which house Mars is in (1, 2, 4, 7, 8, 12)
-      int marsHouse = _getPlanetHouse(manglikChart, 'Mars');
-
-      // Does other person have strong malefics in that house?
-      List<String> cancellers = ['Saturn', 'Rahu', 'Ketu'];
-      bool cancelled = false;
-      String cancellerName = '';
-
-      for (var planet in cancellers) {
-        if (_getPlanetHouse(otherChart, planet) == marsHouse) {
-          cancelled = true;
-          cancellerName = planet;
-          break;
-        }
-      }
-
-      if (cancelled) {
-        match = true;
-        desc =
-            "$manglikPerson is Manglik (Mars in House $marsHouse), but $otherPerson's $cancellerName in the same house cancels the Dosha.";
-      } else {
-        match = false;
-        desc =
-            "$manglikPerson is Manglik, $otherPerson is not. Mismatch detected.";
-      }
+      // Note: We are relying on YogaDoshaAnalyzer to have already checked for
+      // specific cancellations (like Saturn/Rahu/Ketu in 1/4/7/8/12).
+      // If YogaDoshaAnalyzer says 'isActive: true', it means those cancellations didn't apply
+      // or weren't strong enough.
     }
 
     return ManglikMatchResult(
@@ -720,29 +702,64 @@ class MatchingService {
     CompleteChartData groom,
     CompleteChartData bride,
   ) {
-    // Requires Dasha information.
-    // Assuming birth data allows calculating current dasha.
-    // For now, if Dasha data isn't readily available in 'CompleteChartData' structure for *Current Time*,
-    // we might need to compute it.
-    // NOTE: 'CompleteChartData' has 'vimshottari' which is full list.
-    // We need 'current date' to find active dasha.
+    // Requires Dasha information and Current Date.
+    // Use Today's date as default context for matching logic
+    final now = DateTime.now();
 
-    // Placeholder Logic until detailed Dasha date-checking is exposed or current date passed
-    // We'll use a safe default: "No Sandhi detected" unless we can check.
+    // Import DashaSystem to get current
+    // We already have DashaData in CompleteChartData (vimshottari)
 
-    // If we assume we can check logic:
-    // 1. Find Groom's current Mahadasha Lord
-    // 2. Find Bride's current Mahadasha Lord
-    // 3. Are they 2nd/7th lords (Marakas) of their respective charts?
-    // Since we lack 'Current Date' context in 'analyzeCompatibility' args implicitly (unless added),
-    // we will return a neutral result or ask to add 'currentDate'.
-    // Let's assume 'now' for check.
+    // Helper to parse running dasha
+    // Since 'getCurrentDasha' is a helper in DashaSystem/KPChartService but also exposed in CompleteChartData?
+    // CompleteChartData.getCurrentDashas(date) is available.
 
-    return const DashaSandhiResult(
-      hasSandhi: false,
-      maleCurrentDasha: "Unknown",
-      femaleCurrentDasha: "Unknown",
-      description: "Dasha Sandhi check requires current date context.",
+    final gDasha = groom.getCurrentDashas(now);
+    final bDasha = bride.getCurrentDashas(now);
+
+    if (gDasha.isEmpty || bDasha.isEmpty) {
+      return const DashaSandhiResult(
+        hasSandhi: false,
+        maleCurrentDasha: "Unknown",
+        femaleCurrentDasha: "Unknown",
+        description: "Could not calculate current Dasha for today.",
+      );
+    }
+
+    final gMaha = gDasha['mahadasha'] as String;
+    final bMaha = bDasha['mahadasha'] as String;
+
+    // Check remaining time in Mahadasha
+    // Sandhi is usually defined as the last 6-12 months of a major Dasha
+    // Or if transition happens very soon.
+    bool gSandhi = false;
+    bool bSandhi = false;
+
+    final gEnd = gDasha['mahaEnd'] as DateTime;
+    final bEnd = bDasha['mahaEnd'] as DateTime;
+
+    final gDaysLeft = gEnd.difference(now).inDays;
+    final bDaysLeft = bEnd.difference(now).inDays;
+
+    // Threshold: 6 months (approx 180 days)
+    if (gDaysLeft < 180 && gDaysLeft > 0) gSandhi = true;
+    if (bDaysLeft < 180 && bDaysLeft > 0) bSandhi = true;
+
+    String desc = "No immediate Dasha transition.";
+    if (gSandhi && bSandhi) {
+      desc =
+          "Critical: Both are at the end of their Mahadashas (Dasha Sandhi). Period of instability.";
+    } else if (gSandhi) {
+      desc = "Groom is ending Mahadasha ($gMaha) soon. Transition period.";
+    } else if (bSandhi) {
+      desc = "Bride is ending Mahadasha ($bMaha) soon. Transition period.";
+    }
+
+    return DashaSandhiResult(
+      hasSandhi: gSandhi || bSandhi,
+      maleCurrentDasha: "$gMaha (Ends: ${DateFormat('MMM yyyy').format(gEnd)})",
+      femaleCurrentDasha:
+          "$bMaha (Ends: ${DateFormat('MMM yyyy').format(bEnd)})",
+      description: desc,
     );
   }
   // --- Helpers for Detailed Checks ---

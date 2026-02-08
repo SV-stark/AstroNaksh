@@ -208,14 +208,14 @@ class SpecialTransitService {
 
     // Start with approximate date (Saturn spends ~2.5 years per sign)
     var searchDate = startDate.add(const Duration(days: 900));
-    
+
     // Binary search for exact sign exit
     var earlyBound = startDate;
     var lateBound = startDate.add(const Duration(days: 1100)); // Max ~3 years
-    
+
     const maxIterations = 50;
     const accuracyThreshold = Duration(hours: 1); // 1 hour precision
-    
+
     for (var i = 0; i < maxIterations; i++) {
       if (lateBound.difference(earlyBound) <= accuracyThreshold) {
         break;
@@ -260,20 +260,21 @@ class SpecialTransitService {
     required CalculationFlags flags,
   }) async {
     final moonSign = (natalMoonLongitude / 30).floor();
-    
+
     // Determine which house Saturn should have entered
     final targetHouse = switch (phase) {
       SadeSatiPhase.rising => 12, // 12th from Moon
-      SadeSatiPhase.peak => 1,    // 1st from Moon
+      SadeSatiPhase.peak => 1, // 1st from Moon
       SadeSatiPhase.setting => 2, // 2nd from Moon
     };
-    
+
     // Calculate target sign based on house from Moon
     final targetSign = ((moonSign + targetHouse - 1) % 12);
 
     // Search backwards to find when Saturn entered this sign
     var searchDate = checkDate.subtract(const Duration(days: 900));
-    var earlyBound = checkDate.subtract(const Duration(days: 2700)); // ~7.5 years max
+    var earlyBound =
+        checkDate.subtract(const Duration(days: 2700)); // ~7.5 years max
     var lateBound = checkDate;
 
     const maxIterations = 50;
@@ -298,7 +299,7 @@ class SpecialTransitService {
       );
 
       final saturnSign = (saturnPos.longitude / 30).floor();
-      
+
       // Normalize sign to 0-11 range for comparison
       final normalizedSaturnSign = saturnSign % 12;
 
@@ -326,7 +327,7 @@ class SpecialTransitService {
     // Saturn moves slower in certain parts of its orbit
     final signModulation = switch (signIndex % 12) {
       9 || 10 => -30, // Capricorn/Aquarius - slightly faster
-      3 || 4 => 30,   // Cancer/Leo - slightly slower
+      3 || 4 => 30, // Cancer/Leo - slightly slower
       _ => 0,
     };
 
@@ -472,12 +473,13 @@ class SpecialTransitService {
       final degreesRemaining =
           60.0 - degreesPassed; // 60° total span (300° to 360°)
 
-      // Moon takes about 1 day per 13.33 degrees
-      daysRemaining = (degreesRemaining / 13.33).ceil();
+      // Moon takes about 1 day per 13.176 degrees (360 / 27.32 days)
+      const moonDailyMotion = 13.176;
+      daysRemaining = (degreesRemaining / moonDailyMotion).ceil();
 
       endDate = checkDate.add(Duration(days: daysRemaining));
       startDate = checkDate.subtract(
-        Duration(days: (degreesPassed / 13.33).floor()),
+        Duration(days: (degreesPassed / moonDailyMotion).floor()),
       );
     }
 

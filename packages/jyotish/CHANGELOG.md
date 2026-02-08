@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-02-05
+## [2.0.0] - 2026-02-08
 
 ### Added
 
@@ -44,39 +44,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `applyEkadhipatiShodhana()` - Reduction for same sign ownership
   - `calculatePinda()` - Final planetary strength (Rupas calculation)
 
-### Fixed
-
-- **Planetary Friendship Calculations**
-  - Now properly calculates friend, enemy, and neutral relationships
-  - Added `greatFriend` (Adhi-Mitra) and `greatEnemy` (Adhi-Shatru) dignities
-  - Affects dignity calculations in both Rashi and all D-Charts
-
-- **D-Chart Dignity Calculations**
-  - All divisional charts (D1-D60) now calculate dignities correctly
-  - Dignities no longer default to "neutral" in D-Charts
-
-- **Sade Sati Date Estimation**
-  - Replaced constant `daysPerSign` with variable Saturn speed calculation
-  - Now accounts for retrograde motion and sign-specific variations
-  - More accurate start/end date predictions
-
-- **Rahu/Ketu Distinguishability**
-  - Added `lordName` field to `DashaPeriod` to properly distinguish Rahu from Ketu
-  - Both planets display correctly in dasha output (e.g., "Rahu-Mercury-Venus")
-
-- **KP Ayanamsa Calculation**
-  - Now uses precise time-varying formula from Swiss Ephemeris
-  - Uses `SiderealMode.krishnamurtiVP291` instead of hardcoded offset
-
-### Breaking Changes
-
-- **`calculateKPData()` is now async** - Returns `Future<KPCalculations>` instead of `KPCalculations`
-  - Migration: Add `await` before the call: `final kpData = await jyotish.calculateKPData(chart)`
-
-## [1.2.0] - 2026-02-05
-
-### Added
-
 - **Panchanga Module**
   - Tithi, Yoga, Karana, and Vara calculations
   - High-precision sunrise and sunset times using Swiss Ephemeris
@@ -98,15 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Inauspicious periods: Rahukalam, Gulikalam, and Yamagandam
   - Activity-based Muhurta filtering
 
-### Improved
-
-- **Ephemeris Service**: Enhanced support for rise/set transitions and topocentric corrections.
-- **Vedic Chart**: Improved planet data model to support extended Vedic properties.
-
-## [1.1.0] - 2026-02-04
-
-### Added
-
 - **Vedic Aspect Calculations (Graha Drishti)**
   - All planets aspect 7th house (opposition)
   - Mars special aspects (4th, 8th houses)
@@ -127,6 +85,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Mahadasha, Antardasha, Pratyantardasha levels
   - Current period calculation
   - Birth time precision warnings
+
+- **Yogini Dasha Antardashas**
+  - Added support for sub-periods (Antardasha) in Yogini Dasha
+  - Added support for sub-sub-periods (Pratyantardasha) in Yogini Dasha
+  - Correctly displaying Yogini names (e.g., Mangala, Pingala) instead of planet names
+
 
 ### New API Methods
 
@@ -151,6 +115,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `DashaResult` - Complete dasha calculation result
 - `DashaType` - Enum of dasha systems
 - `Yogini` - Enum of Yogini dasha lords
+
+### Improved
+
+- **Precision**: Updated Panchak calculation to use precise Mean Daily Motion of Moon (13.176°) instead of approximation.
+- **Ephemeris Service**: Enhanced support for rise/set transitions and topocentric corrections.
+- **Vedic Chart**: Improved planet data model to support extended Vedic properties.
+
+### Fixed
+
+- **Planetary Friendship Calculations**
+  - Now properly calculates friend, enemy, and neutral relationships
+  - Added `greatFriend` (Adhi-Mitra) and `greatEnemy` (Adhi-Shatru) dignities
+  - Affects dignity calculations in both Rashi and all D-Charts
+
+- **D-Chart Dignity Calculations**
+  - All divisional charts (D1-D60) now calculate dignities correctly
+  - Dignities no longer default to "neutral" in D-Charts
+
+- **Sade Sati Date Estimation**
+  - Replaced constant `daysPerSign` with variable Saturn speed calculation
+  - Now accounts for retrograde motion and sign-specific variations
+  - More accurate start/end date predictions
+
+- **Rahu/Ketu Distinguishability**
+  - Added `lordName` field to `DashaPeriod` to properly distinguish Rahu from Ketu
+  - Both planets display correctly in dasha output (e.g., "Rahu-Mercury-Venus")
+
+- **KP Ayanamsa Calculation**
+  - Now uses precise time-varying formula from Swiss Ephemeris
+  - Uses `SiderealMode.krishnamurtiVP291` instead of hardcoded offset
+
+- **Extended Dasha Support**
+  - Added **Chara Dasha** (Jaimini sign-based dasha)
+  - Added **Narayana Dasha**
+  - Added **Ashtottari Dasha** (108-year cycle)
+  - Added **Kalachakra Dasha**
+  - `getDashaPeriods()` now supports all these systems
+
+- **Jaimini Astrology Support**
+  - **Atmakaraka** calculation (planet with highest degree)
+  - **Karakamsa** (Atmakaraka in Navamsa) analysis
+  - **Rashi Drishti** (Sign Aspects) per Jaimini rules
+
+- **Sudarshan Chakra**
+  - Complete analysis of Sun, Moon, and Ascendant charts combined
+  - Visualizing planetary positions across all three reference points
+
+- **Gochara Vedha (Transit Obstruction)**
+  - Analysis of Vedha (obstruction) points for transiting planets
+  - Determines if a transit's effect is blocked or modified by other planets
+
+### Breaking Changes
+
+- **`calculateKPData()` is now async** - Returns `Future<KPCalculations>` instead of `KPCalculations`
+  - Migration: Add `await` before the call: `final kpData = await jyotish.calculateKPData(chart)`
 
 ## [1.0.1] - 2025-11-25
 

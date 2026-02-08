@@ -1,24 +1,44 @@
+group 'com.jyotish'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '2.2.20'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:8.11.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
 android {
-  compileSdkVersion 33
+    namespace "com.jyotish"
+    compileSdk 34
 
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 
-  kotlinOptions {
-    jvmTarget = '1.8'
-  }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 
-  sourceSets {
-    main.java.srcDirs += 'src/main/kotlin'
-  }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
 
-  defaultConfig {
-    minSdkVersion 21
-  }
+    defaultConfig {
+        minSdkVersion 21
+    }
 
-  dependencies {
-    testImplementation 'junit:junit:4.13.2'
-  }
+    dependencies {
+        testImplementation 'junit:junit:4.13.2'
+    }
 }

@@ -245,14 +245,24 @@ class DashaService {
             (cycle == 0 && i == 0) ? balanceDays : yogini.years * 365.25;
         final endDate = currentDate.add(Duration(days: durationDays.round()));
 
+        List<DashaPeriod> subPeriods = [];
+        if (levels >= 2) {
+          subPeriods = _calculateYoginiAntardashas(
+            mahadashaStart: currentDate,
+            mahadashaDays: durationDays,
+            startingYoginiIndex: idx,
+            levels: levels,
+          );
+        }
+
         mahadashas.add(DashaPeriod(
-          lord: yogini.planet,
-          lordName: yogini.name,
-          startDate: currentDate,
-          endDate: endDate,
-          duration: Duration(days: durationDays.round()),
-          level: 0,
-        ));
+            lord: yogini.planet,
+            lordName: yogini.name,
+            startDate: currentDate,
+            endDate: endDate,
+            duration: Duration(days: durationDays.round()),
+            level: 0,
+            subPeriods: subPeriods));
         currentDate = endDate;
       }
     }
@@ -266,6 +276,79 @@ class DashaService {
       balanceOfFirstDasha: balanceDays,
       allMahadashas: mahadashas,
     );
+  }
+
+  List<DashaPeriod> _calculateYoginiAntardashas({
+    required DateTime mahadashaStart,
+    required double mahadashaDays,
+    required int startingYoginiIndex,
+    required int levels,
+  }) {
+    final antardashas = <DashaPeriod>[];
+    var currentDate = mahadashaStart;
+
+    // In Yogini Dasha, the order of Antardashas always starts from the Mahadasha lord
+    // and follows the standard sequence: Mangala, Pingala, Dhanya, Bhramari, Bhadrika, Ulka, Siddha, Sankata
+    for (var i = 0; i < 8; i++) {
+      final idx = (startingYoginiIndex + i) % 8;
+      final yogini = Yogini.values[idx];
+
+      // Proportional duration:
+      // Antardasha years = (Mahadasha Lord Years * Antardasha Lord Years) / 36
+      // Since we work in days:
+      // Sub-period Days = Total Period Days * (Sub-period Lord Years / 36)
+      final durationDays = mahadashaDays * (yogini.years / 36.0);
+      final endDate = currentDate.add(Duration(days: durationDays.round()));
+
+      List<DashaPeriod> subPeriods = [];
+      if (levels >= 3) {
+        subPeriods = _calculateYoginiPratyantardashas(
+          antardashaStart: currentDate,
+          antardashaDays: durationDays,
+          startingYoginiIndex: idx,
+        );
+      }
+
+      antardashas.add(DashaPeriod(
+        lord: yogini.planet,
+        lordName: yogini.name,
+        startDate: currentDate,
+        endDate: endDate,
+        duration: Duration(days: durationDays.round()),
+        level: 1,
+        subPeriods: subPeriods,
+      ));
+      currentDate = endDate;
+    }
+    return antardashas;
+  }
+
+  List<DashaPeriod> _calculateYoginiPratyantardashas({
+    required DateTime antardashaStart,
+    required double antardashaDays,
+    required int startingYoginiIndex,
+  }) {
+    final pratyantardashas = <DashaPeriod>[];
+    var currentDate = antardashaStart;
+
+    for (var i = 0; i < 8; i++) {
+      final idx = (startingYoginiIndex + i) % 8;
+      final yogini = Yogini.values[idx];
+      final durationDays = antardashaDays * (yogini.years / 36.0);
+      final endDate = currentDate.add(Duration(days: durationDays.round()));
+
+      pratyantardashas.add(DashaPeriod(
+        lord: yogini.planet,
+        lordName: yogini.name,
+        startDate: currentDate,
+        endDate: endDate,
+        duration: Duration(days: durationDays.round()),
+        level: 2,
+        subPeriods: const [],
+      ));
+      currentDate = endDate;
+    }
+    return pratyantardashas;
   }
 
   /// Calculates Chara Dasha (Jaimini system).

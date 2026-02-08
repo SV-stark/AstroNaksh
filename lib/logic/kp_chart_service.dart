@@ -42,11 +42,37 @@ class KPChartService {
     // Use library's native KP calculation
     final nativeKPData = await EphemerisManager.jyotish.calculateKPData(chart);
 
+    // Calculate correct Day Lord (Sunrise based)
+    // We need to fetch sunrise for the location
+    final (sunrise, _) = await EphemerisManager.jyotish.getSunriseSunset(
+      date: birthData.dateTime,
+      location: GeographicLocation(
+        latitude: birthData.location.latitude,
+        longitude: birthData.location.longitude,
+      ),
+    );
+
+    Planet? dayLord;
+    if (sunrise != null) {
+      // If birth time is before sunrise, it belongs to previous day
+      // Note: birthData.dateTime and sunrise should be in same timezone context
+      // Assuming straightforward comparison
+      DateTime effectiveDate = birthData.dateTime;
+      if (birthData.dateTime.isBefore(sunrise)) {
+        effectiveDate = birthData.dateTime.subtract(const Duration(days: 1));
+      }
+      dayLord = KPChartService._getDayLord(effectiveDate.weekday);
+    }
+
     // Calculate all systems
-    final kpData = _mapNativeKPData(nativeKPData, chart);
+    final kpData = mapNativeKPData(
+      nativeKPData,
+      chart,
+      dayLord: dayLord,
+    ); // Use static
     final dashaData = await _calculateDashaSystems(chart);
     final divisionalCharts = DivisionalCharts.calculateAllCharts(chart);
-    final significatorTable = _generateSignificatorTable(nativeKPData, chart);
+    final significatorTable = generateSignificatorTable(nativeKPData, chart);
 
     return CompleteChartData(
       baseChart: chart,
@@ -66,7 +92,11 @@ class KPChartService {
     );
   }
 
-  KPData _mapNativeKPData(KPCalculations nativeKPData, VedicChart chart) {
+  static KPData mapNativeKPData(
+    KPCalculations nativeKPData,
+    VedicChart chart, {
+    Planet? dayLord,
+  }) {
     // Map planetary data to our KPSubLord model
     final List<KPSubLord> subLords = [];
 
@@ -100,14 +130,9 @@ class KPChartService {
     final rulingPlanets = <String>[];
 
     // 1. Day Lord
-    // Jyotish doesn't expose calculating Vara directly from a chart, but we can compute it from DateTime
-    // Using existing utility if available, or simple calculation
-    // Since we don't have a direct Vara calculator in scope, let's look at Panchanga if needed.
-    // However, easiest way is using DateTime.weekday for now.
-    // Note: Vedic day starts at Sunrise, so this is an approximation if birth is before sunrise.
-    // For now, let's use the standard weekday mapping.
-    final dayLord = _getDayLord(chart.dateTime.weekday);
-    rulingPlanets.add('${dayLord.displayName} (Day Lord)');
+    // Use provided Day Lord or calculate based on weekday
+    final finalDayLord = dayLord ?? _getDayLord(chart.dateTime.weekday);
+    rulingPlanets.add('${finalDayLord.displayName} (Day Lord)');
 
     // 2. Moon Sign Lord
     final moonInfo = chart.getPlanet(Planet.moon);
@@ -143,7 +168,7 @@ class KPChartService {
     );
   }
 
-  Map<String, Map<String, dynamic>> _generateSignificatorTable(
+  static Map<String, Map<String, dynamic>> generateSignificatorTable(
     KPCalculations nativeKPData,
     VedicChart chart,
   ) {
@@ -176,7 +201,7 @@ class KPChartService {
   }
 
   // Helper to get Sign Lord name
-  String _getSignLord(String signName) {
+  static String _getSignLord(String signName) {
     // Basic mapping, or use a helper class if available
     switch (signName) {
       case 'Aries':
@@ -209,7 +234,7 @@ class KPChartService {
   }
 
   // Helper to get Day Lord
-  Planet _getDayLord(int weekday) {
+  static Planet _getDayLord(int weekday) {
     // DateTime.weekday: 1 = Mon, 7 = Sun
     // Vedic: Sun (0/7)=Sun, 1=Mon...
     // Let's map standard DateTime to Planets

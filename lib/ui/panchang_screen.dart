@@ -231,6 +231,15 @@ class _PanchangScreenState extends State<PanchangScreen> {
               ),
             ),
             CommandBarButton(
+              icon: const Icon(FluentIcons.location),
+              label: const Text('Location'),
+              onPressed: () {
+                setState(() {
+                  _showLocationEditor = !_showLocationEditor;
+                });
+              },
+            ),
+            CommandBarButton(
               icon: const Icon(FluentIcons.refresh),
               label: const Text('Refresh'),
               onPressed: _calculatePanchang,

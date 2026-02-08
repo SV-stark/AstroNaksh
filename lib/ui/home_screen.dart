@@ -239,6 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: const Text('Error Loading Charts'),
             content: Text('Failed to load saved charts: $e'),
             severity: InfoBarSeverity.error,
+            onClose: close, // Added onClose callback
           ),
         );
       }
@@ -298,7 +299,20 @@ class _HomeScreenState extends State<HomeScreen> {
       header: PageHeader(
         title: const Text("AstroNaksh"),
         commandBar: CommandBar(
-          primaryItems: [],
+          overflowBehavior: ResponsiveHelper.useMobileLayout(context)
+              ? CommandBarOverflowBehavior.dynamicOverflow
+              : CommandBarOverflowBehavior.noWrap,
+          primaryItems: [
+            CommandBarButton(
+              key: _newChartKey,
+              icon: const Icon(FluentIcons.add),
+              label: const Text('New Chart'),
+              onPressed: () async {
+                await Navigator.pushNamed(context, '/input');
+                _loadCharts();
+              },
+            ),
+          ],
           secondaryItems: [
             CommandBarButton(
               key: _settingsKey,
@@ -328,10 +342,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(context),
+                    crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(
+                      context,
+                    ),
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: ResponsiveHelper.getGridChildAspectRatio(context),
+                    childAspectRatio: ResponsiveHelper.getGridChildAspectRatio(
+                      context,
+                    ),
                     children: [
                       _buildQuickAction(
                         key: _newChartKey,
@@ -388,7 +406,9 @@ class _HomeScreenState extends State<HomeScreen> {
           // Search & History Header
           SliverPadding(
             padding: EdgeInsets.symmetric(
-              horizontal: ResponsiveHelper.useMobileLayout(context) ? 12.0 : 24.0,
+              horizontal: ResponsiveHelper.useMobileLayout(context)
+                  ? 16.0
+                  : 24.0, // Increased mobile padding
             ),
             sliver: SliverToBoxAdapter(
               child: Row(
@@ -399,7 +419,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const Spacer(),
                   SizedBox(
-                    width: ResponsiveHelper.useMobileLayout(context) ? 180 : 250,
+                    width: ResponsiveHelper.useMobileLayout(context)
+                        ? 180
+                        : 250,
                     child: TextBox(
                       key: _searchKey,
                       controller: _searchController,
@@ -462,14 +484,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
               : SliverPadding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: ResponsiveHelper.useMobileLayout(context) ? 12.0 : 24.0,
+                    horizontal: ResponsiveHelper.useMobileLayout(context)
+                        ? 16.0
+                        : 24.0, // Increased mobile padding
                   ),
                   sliver: SliverList.builder(
                     itemCount: _filteredCharts.length,
                     itemBuilder: (context, index) {
                       final chart = _filteredCharts[index];
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                          vertical: ResponsiveHelper.useMobileLayout(context)
+                              ? 6
+                              : 4, // Larger vertical detail
+                        ),
                         child: Card(
                           padding: EdgeInsets.zero,
                           child: ListTile.selectable(

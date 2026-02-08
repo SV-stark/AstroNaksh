@@ -85,6 +85,37 @@ class PanchangService {
   final Jyotish _jyotish = Jyotish();
   PanchangaService? _panchangaService;
 
+  // Helper map for Yoga recommendations
+  static const Map<String, String> _yogaRecommendationsMap = {
+    'Vishkumbha': 'Avoid travel and auspicious works. Prevails over enemies.',
+    'Priti': 'Good for love, friendship, and romance.',
+    'Ayushman': 'Promotes longevity and health. Good for medical treatments.',
+    'Saubhagya': 'Brings good luck and prosperity. Good for new ventures.',
+    'Sobhana': 'Splendid and glorious. Good for creative arts.',
+    'Atiganda': 'Avoid major undertakings. Possibility of obstacles.',
+    'Sukarma': 'Good for righteous deeds and religious work.',
+    'Dhriti': 'Good for foundation laying and long-term projects.',
+    'Sula': 'Painful or piercing. Avoid conflicts and medical surgeries.',
+    'Ganda': 'Knot or obstacle. Avoid starting new things.',
+    'Vriddhi': 'Growth and expansion. Good for investments.',
+    'Dhruva': 'Fixed and stable. Good for construction and marriage.',
+    'Vyaghata': 'Beating or striking. Danger of injury. Be careful.',
+    'Harshana': 'Joyous and delightful. Good for celebrations.',
+    'Vajra': 'Diamond or thunderbolt. Strong but can be harsh. Avoid travel.',
+    'Siddhi': 'Accomplishment and success. Good for all works.',
+    'Vyatipata': 'Great calamity. Strictly avoid auspicious events.',
+    'Variyan': 'Superior and excellent. Good for commerce and trade.',
+    'Parigha': 'Obstruction or bar. Potential delays.',
+    'Siva': 'Auspicious/Benign. Good for spiritual activities.',
+    'Siddha': 'Proven or perfected. Success in endeavors.',
+    'Sadhya': 'Possible to achieve. Good for planning and negotiation.',
+    'Subha': 'Auspcicious. Good for marriage and ceremonies.',
+    'Sukla': 'Bright and pure. Good for learning and clarity.',
+    'Brahma': 'Priestly or divine. Good for wisdom and teaching.',
+    'Indra': 'Chief or ruler. Good for leadership and government work.',
+    'Vaidhriti': 'Poor support or divisiveness. Avoid teamwork.',
+  };
+
   Future<PanchangResult> getPanchang(
     DateTime dateTime,
     Location location,
@@ -141,7 +172,9 @@ class PanchangService {
       yoga: panchanga.yoga.name,
       yogaNumber: panchanga.yoga.number,
       yogaNature: panchanga.yoga.nature.name,
-      // yogaRecommendations: panchanga.yoga.recommendations, // TODO: Find correct API for recommendations
+      yogaRecommendations:
+          _yogaRecommendationsMap[panchanga.yoga.name] ??
+          'General good conduct recommended.',
       karana: panchanga.karana.name,
       vara: panchanga.vara.name,
       sunrise: sr != null ? timeFormat.format(sr.toLocal()) : '--:--',

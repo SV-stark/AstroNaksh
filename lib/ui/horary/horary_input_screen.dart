@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
-import '../../data/models.dart';
+
+import '../../data/city_database.dart';
 import 'horary_result_screen.dart';
 
 class HoraryInputScreen extends StatefulWidget {
@@ -14,57 +15,154 @@ class _HoraryInputScreenState extends State<HoraryInputScreen> {
   // Form State
   int _seedNumber = 0;
   DateTime _selectedDate = DateTime.now();
-  String _locationName = 'Loading...';
-  Location? _selectedLocation;
+
+  // Location State
+  City? _selectedCity;
+  List<AutoSuggestBoxItem<City>> _cityItems = [];
+  bool _isLoadingLocation = false;
+  bool _useManualCoordinates = false;
 
   // Controllers
   final TextEditingController _seedController = TextEditingController();
+  final TextEditingController _citySearchController = TextEditingController();
+  final TextEditingController _latitudeController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _useCurrentLocation();
+    // Optional: Try to get current location on load or let user choose
+    // _useCurrentLocation();
+  }
+
+  @override
+  void dispose() {
+    _seedController.dispose();
+    _citySearchController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    super.dispose();
+  }
+
+  void _onCitySearch(String text) {
+    if (text.length < 2) {
+      if (_cityItems.isNotEmpty) setState(() => _cityItems = []);
+      return;
+    }
+
+    final results = CityDatabase.searchCities(text).take(10);
+    setState(() {
+      _cityItems = results.map((city) {
+        return AutoSuggestBoxItem<City>(
+          value: city,
+          label: '${city.name}, ${city.country}',
+          onSelected: () {
+            setState(() {
+              _selectedCity = city;
+            });
+          },
+        );
+      }).toList();
+    });
   }
 
   Future<void> _useCurrentLocation() async {
-    // Rough mock or reuse logic from InputScreen
-    // Ideally we extract this to a LocationService logic class, but for now:
+    setState(() {
+      _isLoadingLocation = true;
+    });
+
     try {
-      // Mock default for development if geolocator failing or permission issues
-      // In real app, call Geolocator
-      // For now, let's default to a known location or try to fetch
-      // Assuming InputScreen logic availability:
-      // For safety in this prompt context, I will default to New Delhi
-      _selectedLocation = Location(latitude: 28.6139, longitude: 77.2090);
-      _locationName = "New Delhi, India (Default)";
+      final city = await CityDatabase.getCurrentLocation();
+      if (city != null && mounted) {
+        setState(() {
+          _selectedCity = city;
+          _citySearchController.text = city.displayName;
+        });
+        _showInfo('Location Found', city.displayName);
+      } else if (mounted) {
+        _showInfo(
+          'Location Error',
+          'Could not detect location.',
+          severity: InfoBarSeverity.warning,
+        );
+      }
     } catch (e) {
-      _locationName = "Error: $e";
+      if (mounted) {
+        _showInfo(
+          'Permission Error',
+          'Location permission denied.',
+          severity: InfoBarSeverity.error,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+      }
     }
   }
 
+  void _showInfo(
+    String title,
+    String content, {
+    InfoBarSeverity severity = InfoBarSeverity.info,
+  }) {
+    displayInfoBar(
+      context,
+      builder: (context, close) {
+        return InfoBar(
+          title: Text(title),
+          content: Text(content),
+          severity: severity,
+          onClose: close,
+        );
+      },
+    );
+  }
+
   void _onGenerate() {
-    // Validate
+    // Validate Seed
     final seed = int.tryParse(_seedController.text);
     if (seed == null || seed < 1 || seed > 249) {
-      showDialog(
-        context: context,
-        builder: (context) => ContentDialog(
-          title: const Text('Invalid Number'),
-          content: const Text('Please enter a number between 1 and 249.'),
-          actions: [
-            Button(
-              child: const Text('OK'),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
+      _showInfo(
+        'Invalid Number',
+        'Please enter a number between 1 and 249.',
+        severity: InfoBarSeverity.warning,
       );
       return;
     }
 
-    if (_selectedLocation == null) {
-      // Show error
+    // Validate Location
+    if (!_useManualCoordinates && _selectedCity == null) {
+      _showInfo(
+        'Missing Location',
+        'Please select a city or enter coordinates.',
+        severity: InfoBarSeverity.warning,
+      );
       return;
+    }
+
+    double lat, long;
+    String locName;
+
+    if (_useManualCoordinates) {
+      lat = double.tryParse(_latitudeController.text) ?? 0;
+      long = double.tryParse(_longitudeController.text) ?? 0;
+
+      if (lat < -90 || lat > 90 || long < -180 || long > 180) {
+        _showInfo(
+          'Invalid Coordinates',
+          'Lat: -90 to 90, Long: -180 to 180.',
+          severity: InfoBarSeverity.warning,
+        );
+        return;
+      }
+      locName = "Custom: ${lat.toStringAsFixed(2)}, ${long.toStringAsFixed(2)}";
+    } else {
+      lat = _selectedCity!.latitude;
+      long = _selectedCity!.longitude;
+      locName = _selectedCity!.displayName;
     }
 
     Navigator.push(
@@ -74,11 +172,11 @@ class _HoraryInputScreenState extends State<HoraryInputScreen> {
           seedNumber: seed,
           dateTime: _selectedDate,
           location: GeographicLocation(
-            latitude: _selectedLocation!.latitude,
-            longitude: _selectedLocation!.longitude,
+            latitude: lat,
+            longitude: long,
             altitude: 0,
           ),
-          locationName: _locationName,
+          locationName: locName,
         ),
       ),
     );
@@ -137,16 +235,78 @@ class _HoraryInputScreenState extends State<HoraryInputScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Location Display (Simplified for now)
+            // Location Input
             InfoLabel(
               label: 'Location',
-              child: TextBox(
-                readOnly: true,
-                placeholder: _locationName,
-                suffix: IconButton(
-                  icon: const Icon(FluentIcons.location),
-                  onPressed: _useCurrentLocation,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    checked: _useManualCoordinates,
+                    onChanged: (v) {
+                      setState(() {
+                        _useManualCoordinates = v ?? false;
+                        if (!_useManualCoordinates) {
+                          _latitudeController.clear();
+                          _longitudeController.clear();
+                        }
+                      });
+                    },
+                    content: const Text('Enter coordinates manually'),
+                  ),
+                  const SizedBox(height: 10),
+                  if (_useManualCoordinates)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormBox(
+                            controller: _latitudeController,
+                            placeholder: 'Lat (-90 to 90)',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormBox(
+                            controller: _longitudeController,
+                            placeholder: 'Long (-180 to 180)',
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AutoSuggestBox<City>(
+                            controller: _citySearchController,
+                            items: _cityItems,
+                            onChanged: (text, reason) => _onCitySearch(text),
+                            onSelected: (item) {
+                              setState(() => _selectedCity = item.value);
+                            },
+                            placeholder: 'Search City...',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: _isLoadingLocation
+                              ? const ProgressRing(strokeWidth: 2.5)
+                              : const Icon(FluentIcons.location),
+                          onPressed: _isLoadingLocation
+                              ? null
+                              : _useCurrentLocation,
+                        ),
+                      ],
+                    ),
+                  if (!_useManualCoordinates && _selectedCity != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        'Selected: ${_selectedCity!.displayName}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ),
+                ],
               ),
             ),
 

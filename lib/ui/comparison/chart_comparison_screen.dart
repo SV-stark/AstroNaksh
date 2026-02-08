@@ -68,7 +68,11 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       appBar: NavigationAppBar(
         title: Row(
           children: [
-            Icon(FluentIcons.heart_fill, color: compatibilityReport.overallColor, size: 20),
+            Icon(
+              FluentIcons.heart_fill,
+              color: compatibilityReport.overallColor,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Text(compatibilityReport.overallConclusion),
           ],
@@ -76,6 +80,15 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
         actions: CommandBar(
           overflowBehavior: CommandBarOverflowBehavior.noWrap,
           primaryItems: [
+            CommandBarButton(
+              icon: const Icon(FluentIcons.add_friend),
+              label: const Text('New Pair'),
+              onPressed: () {
+                setState(() {
+                  _selectedChart2 = null;
+                });
+              },
+            ),
             CommandBarButton(
               icon: const Icon(FluentIcons.switch_widget),
               label: const Text('Swap'),
@@ -85,15 +98,6 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               icon: const Icon(FluentIcons.side_panel_mirrored),
               label: const Text('Charts'),
               onPressed: () => _showSideBySideView(),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.add_friend),
-              label: const Text('New Pair'),
-              onPressed: () {
-                setState(() {
-                  _selectedChart2 = null;
-                });
-              },
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.pdf),
@@ -166,8 +170,8 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            report.overallColor.withOpacity(0.3),
-                            report.overallColor.withOpacity(0.1),
+                            report.overallColor.withValues(alpha: 0.3),
+                            report.overallColor.withValues(alpha: 0.1),
                           ],
                         ),
                         border: Border.all(
@@ -191,7 +195,9 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                               '/ 36',
                               style: TextStyle(
                                 fontSize: 20,
-                                color: report.overallColor.withOpacity(0.7),
+                                color: report.overallColor.withValues(
+                                  alpha: 0.7,
+                                ),
                               ),
                             ),
                           ],
@@ -200,9 +206,12 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                     ),
                     const SizedBox(height: 24),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: report.overallColor.withOpacity(0.1),
+                        color: report.overallColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -265,10 +274,14 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                 if (report.extraChecks.isNotEmpty)
                   _buildHighlightChip(
                     'Mahendra',
-                    report.extraChecks.firstWhere((e) => e.name == 'Mahendra').isFavorable
+                    report.extraChecks
+                            .firstWhere((e) => e.name == 'Mahendra')
+                            .isFavorable
                         ? 'Favorable'
                         : 'Neutral',
-                    report.extraChecks.firstWhere((e) => e.name == 'Mahendra').isFavorable
+                    report.extraChecks
+                            .firstWhere((e) => e.name == 'Mahendra')
+                            .isFavorable
                         ? Colors.green
                         : Colors.orange,
                     FluentIcons.starburst,
@@ -287,9 +300,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(color: color, width: 4),
-          ),
+          border: Border(left: BorderSide(color: color, width: 4)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,10 +322,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             const SizedBox(height: 12),
             Text(
               chart.birthData.name,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
@@ -333,7 +341,12 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     );
   }
 
-  Widget _buildHighlightChip(String label, String value, Color color, IconData icon) {
+  Widget _buildHighlightChip(
+    String label,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Card(
       borderRadius: BorderRadius.circular(8),
       child: Container(
@@ -347,10 +360,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  label,
-                  style: FluentTheme.of(context).typography.caption,
-                ),
+                Text(label, style: FluentTheme.of(context).typography.caption),
                 Text(
                   value,
                   style: TextStyle(
@@ -415,7 +425,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                         height: 12,
                         child: ProgressBar(
                           value: report.ashtakootaScore / 36 * 100,
-                          backgroundColor: Colors.grey.withOpacity(0.2),
+                          backgroundColor: Colors.grey.withValues(alpha: 0.2),
                           activeColor: report.overallColor,
                         ),
                       ),
@@ -435,7 +445,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
 
   Widget _buildKootaCard(KootaResult koota) {
     final percentage = koota.score / koota.maxScore;
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       borderRadius: BorderRadius.circular(12),
@@ -450,7 +460,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: koota.color.withOpacity(0.1),
+                    color: koota.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
@@ -484,11 +494,16 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: koota.color.withOpacity(0.1),
+                    color: koota.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: koota.color.withOpacity(0.3)),
+                    border: Border.all(
+                      color: koota.color.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     '${koota.score.toInt()}/${koota.maxScore.toInt()}',
@@ -507,7 +522,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                 height: 6,
                 child: ProgressBar(
                   value: percentage * 100,
-                  backgroundColor: Colors.grey.withOpacity(0.2),
+                  backgroundColor: Colors.grey.withValues(alpha: 0.2),
                   activeColor: koota.color,
                 ),
               ),
@@ -516,7 +531,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.05),
+                color: Colors.grey.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -529,7 +544,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                       koota.detailedReason,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.withOpacity(0.8),
+                        color: Colors.grey.withValues(alpha: 0.8),
                       ),
                     ),
                   ),
@@ -572,16 +587,18 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: report.manglikMatch.isMatch 
-                                ? Colors.green.withOpacity(0.1) 
-                                : Colors.orange.withOpacity(0.1),
+                            color: report.manglikMatch.isMatch
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Colors.orange.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            report.manglikMatch.isMatch 
-                                ? FluentIcons.check_mark 
+                            report.manglikMatch.isMatch
+                                ? FluentIcons.check_mark
                                 : FluentIcons.warning,
-                            color: report.manglikMatch.isMatch ? Colors.green : Colors.orange,
+                            color: report.manglikMatch.isMatch
+                                ? Colors.green
+                                : Colors.orange,
                             size: 28,
                           ),
                         ),
@@ -602,8 +619,8 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                                 report.manglikMatch.description,
                                 style: TextStyle(
                                   fontSize: 15,
-                                  color: report.manglikMatch.isMatch 
-                                      ? Colors.green 
+                                  color: report.manglikMatch.isMatch
+                                      ? Colors.green
                                       : Colors.orange,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -657,12 +674,14 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isManglik 
-            ? Colors.orange.withOpacity(0.1) 
-            : Colors.green.withOpacity(0.1),
+        color: isManglik
+            ? Colors.orange.withValues(alpha: 0.1)
+            : Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isManglik ? Colors.orange.withOpacity(0.3) : Colors.green.withOpacity(0.3),
+          color: isManglik
+              ? Colors.orange.withValues(alpha: 0.3)
+              : Colors.green.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -703,9 +722,9 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: check.isFavorable 
-                ? Colors.green.withOpacity(0.1) 
-                : Colors.orange.withOpacity(0.1),
+            color: check.isFavorable
+                ? Colors.green.withValues(alpha: 0.1)
+                : Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -721,9 +740,9 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: check.isFavorable 
-                ? Colors.green.withOpacity(0.1) 
-                : Colors.orange.withOpacity(0.1),
+            color: check.isFavorable
+                ? Colors.green.withValues(alpha: 0.1)
+                : Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -756,8 +775,8 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    FluentTheme.of(context).accentColor.withOpacity(0.15),
-                    FluentTheme.of(context).accentColor.withOpacity(0.05),
+                    FluentTheme.of(context).accentColor.withValues(alpha: 0.15),
+                    FluentTheme.of(context).accentColor.withValues(alpha: 0.05),
                   ],
                 ),
               ),
@@ -769,7 +788,9 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: FluentTheme.of(context).accentColor.withOpacity(0.2),
+                          color: FluentTheme.of(
+                            context,
+                          ).accentColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -834,7 +855,9 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                         ),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: FluentTheme.of(context).accentColor.withOpacity(0.3),
+                          color: FluentTheme.of(
+                            context,
+                          ).accentColor.withOpacity(0.3),
                           width: 2,
                         ),
                       ),
@@ -867,7 +890,10 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               child: FilledButton(
                 onPressed: () => setState(() {}),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 48,
+                    vertical: 16,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -875,7 +901,10 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                       const SizedBox(width: 12),
                       Text(
                         'Analyze Compatibility',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -899,9 +928,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(color: accentColor, width: 4),
-          ),
+          border: Border(top: BorderSide(color: accentColor, width: 4)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -957,18 +984,25 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 '${selected.birthData.dateTime.day}/${selected.birthData.dateTime.month}/${selected.birthData.dateTime.year}',
-                                style: FluentTheme.of(context).typography.caption,
+                                style: FluentTheme.of(
+                                  context,
+                                ).typography.caption,
                               ),
                               Text(
                                 selected.birthData.place,
-                                style: FluentTheme.of(context).typography.caption,
+                                style: FluentTheme.of(
+                                  context,
+                                ).typography.caption,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
                         ),
                         IconButton(
-                          icon: Icon(FluentIcons.delete, color: Colors.red.withOpacity(0.7)),
+                          icon: Icon(
+                            FluentIcons.delete,
+                            color: Colors.red.withOpacity(0.7),
+                          ),
                           onPressed: () => onSelect(null),
                         ),
                       ],
@@ -1026,10 +1060,15 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+                        color: FluentTheme.of(
+                          context,
+                        ).accentColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(FluentIcons.add, color: FluentTheme.of(context).accentColor),
+                      child: Icon(
+                        FluentIcons.add,
+                        color: FluentTheme.of(context).accentColor,
+                      ),
                     ),
                     title: const Text('Create New Profile'),
                     onPressed: () async {
@@ -1075,7 +1114,11 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(FluentIcons.chart, size: 48, color: Colors.grey.withOpacity(0.5)),
+                              Icon(
+                                FluentIcons.chart,
+                                size: 48,
+                                color: Colors.grey.withOpacity(0.5),
+                              ),
                               const SizedBox(height: 16),
                               Text(
                                 'No saved charts found',
@@ -1095,10 +1138,15 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+                                    color: FluentTheme.of(
+                                      context,
+                                    ).accentColor.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(FluentIcons.contact, color: FluentTheme.of(context).accentColor),
+                                  child: Icon(
+                                    FluentIcons.contact,
+                                    color: FluentTheme.of(context).accentColor,
+                                  ),
                                 ),
                                 title: Text(chart['name'] ?? 'Unknown'),
                                 subtitle: Text(chart['dateTime'] ?? ''),
@@ -1170,7 +1218,9 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(0.1),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -1178,7 +1228,10 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                             const SizedBox(width: 8),
                             Text(
                               _selectedChart1!.birthData.name,
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
                             ),
                           ],
                         ),
@@ -1214,7 +1267,9 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.purple.withOpacity(0.1),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -1222,7 +1277,10 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                             const SizedBox(width: 8),
                             Text(
                               _selectedChart2!.birthData.name,
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.purple,
+                              ),
                             ),
                           ],
                         ),
@@ -1297,7 +1355,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   Widget _buildAspectCard(SynastryAspect aspect) {
     Color effectColor;
     IconData effectIcon;
-    
+
     switch (aspect.effect) {
       case AspectEffect.veryPositive:
         effectColor = Colors.green;

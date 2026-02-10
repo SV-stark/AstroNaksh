@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/ashtakavarga.dart';
+import '../../core/responsive_helper.dart';
 
 class AshtakavargaScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -76,7 +77,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (index) => setState(() => _currentIndex = index),
-        displayMode: PaneDisplayMode.top,
+        displayMode: context.topPaneDisplayMode,
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.table),
@@ -96,10 +97,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
   Widget _buildBody(Widget content) {
     return ScaffoldPage(
       content: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-          child: content,
-        ),
+        child: Padding(padding: context.responsiveBodyPadding, child: content),
       ),
     );
   }

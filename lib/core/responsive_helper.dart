@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:fluent_ui/fluent_ui.dart'
     hide Colors; // Hide material Colors to avoid conflict
 import 'dart:io';
@@ -72,6 +71,20 @@ class ResponsiveHelper {
     }
     return PaneDisplayMode.open; // Full side pane on desktop
   }
+
+  /// Get appropriate PaneDisplayMode for top navigation
+  static PaneDisplayMode getTopPaneDisplayMode(BuildContext context) {
+    // Top mode works well on both mobile and desktop for tabbed interfaces
+    return PaneDisplayMode.top;
+  }
+
+  /// Get responsive body padding
+  static EdgeInsets getResponsiveBodyPadding(BuildContext context) {
+    if (useMobileLayout(context)) {
+      return const EdgeInsets.all(12.0);
+    }
+    return const EdgeInsets.all(16.0);
+  }
 }
 
 /// Extension for BuildContext to easily access responsive helpers
@@ -79,7 +92,13 @@ extension ResponsiveContextExtension on BuildContext {
   bool get isMobile => ResponsiveHelper.useMobileLayout(this);
   EdgeInsets get responsivePadding =>
       ResponsiveHelper.getResponsivePadding(this);
+  EdgeInsets get responsiveBodyPadding =>
+      ResponsiveHelper.getResponsiveBodyPadding(this);
   double get chartSize => ResponsiveHelper.getChartSize(this);
   int get gridCrossAxisCount => ResponsiveHelper.getGridCrossAxisCount(this);
   double get gridAspectRatio => ResponsiveHelper.getGridChildAspectRatio(this);
+  PaneDisplayMode get paneDisplayMode =>
+      ResponsiveHelper.getNavigationPaneDisplayMode(this);
+  PaneDisplayMode get topPaneDisplayMode =>
+      ResponsiveHelper.getTopPaneDisplayMode(this);
 }

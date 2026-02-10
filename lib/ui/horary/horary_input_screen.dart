@@ -3,6 +3,7 @@ import 'package:jyotish/jyotish.dart';
 
 import '../../data/city_database.dart';
 import 'horary_result_screen.dart';
+import '../../core/responsive_helper.dart';
 
 class HoraryInputScreen extends StatefulWidget {
   const HoraryInputScreen({super.key});
@@ -193,7 +194,7 @@ class _HoraryInputScreenState extends State<HoraryInputScreen> {
         ),
       ),
       content: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: context.responsiveBodyPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min, // Compact layout

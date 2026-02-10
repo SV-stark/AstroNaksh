@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/transit_analysis.dart';
+import '../../core/responsive_helper.dart';
 
 class TransitScreen extends StatefulWidget {
   final CompleteChartData natalChart;
@@ -50,7 +51,7 @@ class _TransitScreenState extends State<TransitScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (index) => setState(() => _currentIndex = index),
-        displayMode: PaneDisplayMode.top,
+        displayMode: context.topPaneDisplayMode,
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.clock),
@@ -85,13 +86,29 @@ class _TransitScreenState extends State<TransitScreen> {
       header: PageHeader(title: _buildDateSelector()),
       content: Padding(
         // Add padding around the content
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: context.responsiveBodyPadding,
         child: builder(),
       ),
     );
   }
 
   Widget _buildDateSelector() {
+    if (context.isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          DatePicker(
+            selected: _selectedDate,
+            onChanged: (date) {
+              setState(() => _selectedDate = date);
+              _loadTransits();
+            },
+          ),
+        ],
+      );
+    }
     return Row(
       children: [
         const Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),

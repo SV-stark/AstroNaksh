@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../core/birth_time_rectifier.dart';
 import 'package:intl/intl.dart';
+import '../../core/responsive_helper.dart';
 
 class BirthTimeRectifierScreen extends StatefulWidget {
   const BirthTimeRectifierScreen({super.key});
@@ -36,7 +37,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
 
   Future<void> _calculate() async {
     if (_originalData == null) return;
-    
+
     setState(() => _isLoading = true);
     try {
       final data = await _rectifier.calculateForTime(
@@ -93,7 +94,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.check_mark),
-            onPressed: () {
+              onPressed: () {
                 // Return new BirthData to previous screen
                 final newData = BirthData(
                   name: originalData.name,
@@ -109,7 +110,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
         ),
       ),
       content: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: context.responsiveBodyPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -157,8 +158,11 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    const SizedBox(height: 24),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      runSpacing: 16,
+                      spacing: 24,
                       children: [
                         // Negative Controls
                         _buildGroup([

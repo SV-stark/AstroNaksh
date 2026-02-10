@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../data/life_prediction_models.dart';
 import '../../logic/life_prediction_service.dart';
+import '../../core/responsive_helper.dart';
 
 /// Life Predictions Screen
 /// Displays comprehensive life predictions based on Vedic astrology
@@ -61,7 +62,7 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
           final result = snapshot.data!;
 
           return ListView(
-            padding: const EdgeInsets.all(16.0),
+            padding: context.responsiveBodyPadding,
             children: [
               // Overall Score Card
               _buildOverallScoreCard(context, result),

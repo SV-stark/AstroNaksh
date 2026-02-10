@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../core/chart_customization.dart';
 import '../core/ayanamsa_calculator.dart';
 import '../core/settings_manager.dart';
+import '../core/responsive_helper.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -54,7 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: PaneDisplayMode.open,
+        displayMode: context.paneDisplayMode,
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.brush),

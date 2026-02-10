@@ -461,58 +461,59 @@ class _PanchangScreenState extends State<PanchangScreen> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 12.0),
                               child: Row(
-                            children: [
-                              _buildTabButton(
-                                icon: FluentIcons.calendar_day,
-                                label: 'Panchang',
-                                isSelected: _selectedTabIndex == 0,
-                                onTap: () =>
-                                    setState(() => _selectedTabIndex = 0),
+                                children: [
+                                  _buildTabButton(
+                                    icon: FluentIcons.calendar_day,
+                                    label: 'Panchang',
+                                    isSelected: _selectedTabIndex == 0,
+                                    onTap: () =>
+                                        setState(() => _selectedTabIndex = 0),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildTabButton(
+                                    icon: FluentIcons.sunny,
+                                    label: 'Sun & Moon',
+                                    isSelected: _selectedTabIndex == 1,
+                                    onTap: () =>
+                                        setState(() => _selectedTabIndex = 1),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildTabButton(
+                                    icon: FluentIcons.warning,
+                                    label: 'Inauspicious',
+                                    isSelected: _selectedTabIndex == 2,
+                                    onTap: () =>
+                                        setState(() => _selectedTabIndex = 2),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildTabButton(
+                                    icon: FluentIcons.diamond,
+                                    label: 'Muhurta',
+                                    isSelected: _selectedTabIndex == 3,
+                                    onTap: () =>
+                                        setState(() => _selectedTabIndex = 3),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildTabButton(
+                                    icon: FluentIcons.clock,
+                                    label: 'Hora',
+                                    isSelected: _selectedTabIndex == 4,
+                                    onTap: () =>
+                                        setState(() => _selectedTabIndex = 4),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildTabButton(
+                                    icon: FluentIcons.grid_view_medium,
+                                    label: 'Choghadiya',
+                                    isSelected: _selectedTabIndex == 5,
+                                    onTap: () =>
+                                        setState(() => _selectedTabIndex = 5),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              _buildTabButton(
-                                icon: FluentIcons.sunny,
-                                label: 'Sun & Moon',
-                                isSelected: _selectedTabIndex == 1,
-                                onTap: () =>
-                                    setState(() => _selectedTabIndex = 1),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildTabButton(
-                                icon: FluentIcons.warning,
-                                label: 'Inauspicious',
-                                isSelected: _selectedTabIndex == 2,
-                                onTap: () =>
-                                    setState(() => _selectedTabIndex = 2),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildTabButton(
-                                icon: FluentIcons.diamond,
-                                label: 'Muhurta',
-                                isSelected: _selectedTabIndex == 3,
-                                onTap: () =>
-                                    setState(() => _selectedTabIndex = 3),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildTabButton(
-                                icon: FluentIcons.clock,
-                                label: 'Hora',
-                                isSelected: _selectedTabIndex == 4,
-                                onTap: () =>
-                                    setState(() => _selectedTabIndex = 4),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildTabButton(
-                                icon: FluentIcons.grid_view_medium,
-                                label: 'Choghadiya',
-                                isSelected: _selectedTabIndex == 5,
-                                onTap: () =>
-                                    setState(() => _selectedTabIndex = 5),
-                              ),
-                            ],
-                          ),
-                          ),
-                        ),
+                            ),
+                          ), // SingleChild
+                        ), // Scrollbar
                         const SizedBox(height: 16),
                       ],
                     ),

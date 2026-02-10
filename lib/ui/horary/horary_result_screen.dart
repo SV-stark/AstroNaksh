@@ -186,8 +186,7 @@ class _HoraryResultScreenState extends State<HoraryResultScreen> {
           final ascSign = _getAscendantSign(chart.baseChart);
           final ascSignName = _getSignName(ascSign);
           final style =
-              SettingsManager().chartSettings.chartStyle ==
-                  ChartStyle.northIndian
+              SettingsManager().chartSettings.chartStyle.name == 'northIndian'
               ? ChartStyle.northIndian
               : ChartStyle.southIndian;
 
@@ -646,7 +645,7 @@ class _HoraryResultScreenState extends State<HoraryResultScreen> {
             runSpacing: 8,
             children: List.generate(12, (i) {
               final houseNum = i + 1;
-              final cusp = chart.houses.cusps[houseNum] ?? 0.0;
+              final cusp = chart.houses.cusps[houseNum];
               final sign = (cusp / 30).floor() + 1;
               final degree = cusp % 30;
               return SizedBox(

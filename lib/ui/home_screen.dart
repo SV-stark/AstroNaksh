@@ -382,8 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       _buildQuickAction(
-                        icon: FluentIcons
-                            .health, // Using Health icon as placeholder for Prasha/Question
+                        icon: FluentIcons.chat,
                         title: "Horary (Prashna)",
                         subtitle: "Ask a question",
                         color: Colors.teal,

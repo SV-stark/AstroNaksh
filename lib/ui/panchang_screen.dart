@@ -4,6 +4,7 @@ import '../logic/panchang_service.dart';
 import '../data/models.dart';
 import '../data/city_database.dart';
 import 'package:intl/intl.dart';
+import '../core/responsive_helper.dart';
 
 class PanchangScreen extends StatefulWidget {
   const PanchangScreen({super.key});
@@ -227,7 +228,28 @@ class _PanchangScreenState extends State<PanchangScreen> {
               wrappedItem: CommandBarButton(
                 icon: const Icon(FluentIcons.calendar),
                 label: const Text('Date'),
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => ContentDialog(
+                      title: const Text('Select Date'),
+                      content: DatePicker(
+                        selected: _selectedDate,
+                        onChanged: (date) {
+                          setState(() => _selectedDate = date);
+                          _calculatePanchang();
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                      actions: [
+                        Button(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Cancel'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             CommandBarButton(
@@ -432,9 +454,13 @@ class _PanchangScreenState extends State<PanchangScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
+                        Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 12.0),
+                              child: Row(
                             children: [
                               _buildTabButton(
                                 icon: FluentIcons.calendar_day,
@@ -484,6 +510,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                                     setState(() => _selectedTabIndex = 5),
                               ),
                             ],
+                          ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -620,7 +647,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
           const InfoBar(
             title: Text('More Muhurtas'),
             content: Text(
-              'Additional muhurtas like Amrit Kaalam are coming soon. Brahma Muhurta values vary based on local sunrise.',
+              'Additional muhurtas are coming soon. Brahma Muhurta values vary based on local sunrise.',
             ),
             severity: InfoBarSeverity.info,
           ),
@@ -812,10 +839,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       sliver: SliverGrid.count(
-        crossAxisCount: 3,
+        crossAxisCount: ResponsiveHelper.useMobileLayout(context) ? 1 : 3,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
-        childAspectRatio: 1.5,
+        childAspectRatio: ResponsiveHelper.useMobileLayout(context) ? 3.0 : 1.5,
         children: [
           _buildPanchangCard(
             title: 'Tithi',

@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../data/models.dart';
 import '../../logic/shadbala.dart';
 import '../widgets/strength_meter.dart';
+import '../../core/responsive_helper.dart';
 
 class ShadbalaScreen extends StatelessWidget {
   final CompleteChartData chartData;
@@ -47,7 +48,7 @@ class ShadbalaScreen extends StatelessWidget {
             ),
           ),
           content: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: context.responsiveBodyPadding,
             children: [
               // Educational info
               Card(

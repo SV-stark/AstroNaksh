@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart' hide RelationshipType;
 import '../../data/models.dart';
 import '../../logic/planetary_maitri_service.dart';
+import '../../core/responsive_helper.dart';
 
 class PlanetaryMaitriScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -39,15 +40,34 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
           // Tab selector
           Container(
             padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(child: _buildTabButton('Natural\n(Naisargika)', 0)),
-                const SizedBox(width: 8),
-                Expanded(child: _buildTabButton('Temporary\n(Tatkalika)', 1)),
-                const SizedBox(width: 8),
-                Expanded(child: _buildTabButton('Compound\n(Panchadha)', 2)),
-              ],
-            ),
+            child: context.isMobile
+                ? SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildTabButton('Natural\n(Naisargika)', 0),
+                        const SizedBox(width: 8),
+                        _buildTabButton('Temporary\n(Tatkalika)', 1),
+                        const SizedBox(width: 8),
+                        _buildTabButton('Compound\n(Panchadha)', 2),
+                      ],
+                    ),
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: _buildTabButton('Natural\n(Naisargika)', 0),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildTabButton('Temporary\n(Tatkalika)', 1),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildTabButton('Compound\n(Panchadha)', 2),
+                      ),
+                    ],
+                  ),
           ),
           const Divider(),
           // Content
@@ -99,7 +119,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
 
   Widget _buildNaturalMaitriTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: context.responsiveBodyPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -118,7 +138,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
 
   Widget _buildTemporaryMaitriTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: context.responsiveBodyPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -137,7 +157,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
 
   Widget _buildCompoundMaitriTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: context.responsiveBodyPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

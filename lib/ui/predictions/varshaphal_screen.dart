@@ -4,6 +4,7 @@ import '../../data/models.dart';
 import '../../logic/varshaphal_system.dart';
 import '../widgets/chart_widget.dart';
 import 'package:jyotish/jyotish.dart';
+import '../../core/responsive_helper.dart';
 
 class VarshaphalScreen extends StatefulWidget {
   final BirthData birthData;
@@ -60,7 +61,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
           final chart = snapshot.data!;
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: context.responsiveBodyPadding,
             children: [
               _buildYearSelector(),
               const SizedBox(height: 16),
@@ -114,50 +115,98 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Solar Return (Varsha Pravesh)',
-                      style: FluentTheme.of(context).typography.subtitle,
-                    ),
-                    Text(
-                      DateFormat(
-                        'MMM dd, yyyy HH:mm:ss',
-                      ).format(chart.solarReturnTime),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      chart.isDayBirth ? 'Day Chart' : 'Night Chart',
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: chart.isDayBirth ? Colors.orange : Colors.blue,
+            context.isMobile
+                ? Column(
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            'Solar Return (Varsha Pravesh)',
+                            style: FluentTheme.of(context).typography.subtitle,
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            DateFormat(
+                              'MMM dd, yyyy HH:mm:ss',
+                            ).format(chart.solarReturnTime),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            chart.isDayBirth ? 'Day Chart' : 'Night Chart',
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: chart.isDayBirth
+                                  ? Colors.orange
+                                  : Colors.blue,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Varshesh',
-                      style: FluentTheme.of(context).typography.subtitle,
-                    ),
-                    Text(
-                      chart.yearLord,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: _getPlanetColor(chart.yearLord),
+                      const SizedBox(height: 16),
+                      Column(
+                        children: [
+                          Text(
+                            'Varshesh',
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                          Text(
+                            chart.yearLord,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: _getPlanetColor(chart.yearLord),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Solar Return (Varsha Pravesh)',
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                          Text(
+                            DateFormat(
+                              'MMM dd, yyyy HH:mm:ss',
+                            ).format(chart.solarReturnTime),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            chart.isDayBirth ? 'Day Chart' : 'Night Chart',
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: chart.isDayBirth
+                                  ? Colors.orange
+                                  : Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Varshesh',
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                          Text(
+                            chart.yearLord,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: _getPlanetColor(chart.yearLord),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
             const Divider(
               style: DividerThemeData(
                 verticalMargin: EdgeInsets.symmetric(vertical: 12),

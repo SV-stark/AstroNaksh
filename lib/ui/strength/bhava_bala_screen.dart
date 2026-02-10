@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/bhava_bala.dart';
+import '../../core/responsive_helper.dart';
 
 class BhavaBalaScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -83,7 +84,7 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
             ),
           ),
           content: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: context.responsiveBodyPadding,
             children: [
               // Educational info
               Card(

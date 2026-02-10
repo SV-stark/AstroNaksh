@@ -9,6 +9,7 @@ import '../../logic/matching/matching_models.dart';
 import '../../core/database_helper.dart';
 import '../widgets/chart_widget.dart';
 import '../input_screen.dart';
+import '../../core/responsive_helper.dart';
 
 class ChartComparisonScreen extends StatefulWidget {
   final CompleteChartData? chart1;
@@ -110,7 +111,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: PaneDisplayMode.open,
+        displayMode: context.topPaneDisplayMode,
         items: [
           PaneItem(
             icon: Icon(
@@ -148,7 +149,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   Widget _buildOverviewTab(MatchingReport report) {
     return ScaffoldPage(
       content: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: context.responsiveBodyPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -229,25 +230,37 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             ),
             const SizedBox(height: 20),
             // Partner Info Cards
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPartnerCard(
-                    'Groom',
-                    _selectedChart1!,
-                    Colors.blue,
+            context.isMobile
+                ? Column(
+                    children: [
+                      _buildPartnerCard('Groom', _selectedChart1!, Colors.blue),
+                      const SizedBox(height: 16),
+                      _buildPartnerCard(
+                        'Bride',
+                        _selectedChart2!,
+                        Colors.purple,
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: _buildPartnerCard(
+                          'Groom',
+                          _selectedChart1!,
+                          Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildPartnerCard(
+                          'Bride',
+                          _selectedChart2!,
+                          Colors.purple,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildPartnerCard(
-                    'Bride',
-                    _selectedChart2!,
-                    Colors.purple,
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 20),
             // Key Highlights
             Text(
@@ -380,7 +393,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   Widget _buildAshtakootaTab(MatchingReport report) {
     return ScaffoldPage(
       content: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: context.responsiveBodyPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -560,7 +573,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   Widget _buildDoshaTab(MatchingReport report) {
     return ScaffoldPage(
       content: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: context.responsiveBodyPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -633,25 +646,41 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildDoshaStatusCard(
-                            'Groom',
-                            report.manglikMatch.maleManglik,
-                            Colors.blue,
+                    context.isMobile
+                        ? Column(
+                            children: [
+                              _buildDoshaStatusCard(
+                                'Groom',
+                                report.manglikMatch.maleManglik,
+                                Colors.blue,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildDoshaStatusCard(
+                                'Bride',
+                                report.manglikMatch.femaleManglik,
+                                Colors.purple,
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: _buildDoshaStatusCard(
+                                  'Groom',
+                                  report.manglikMatch.maleManglik,
+                                  Colors.blue,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _buildDoshaStatusCard(
+                                  'Bride',
+                                  report.manglikMatch.femaleManglik,
+                                  Colors.purple,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildDoshaStatusCard(
-                            'Bride',
-                            report.manglikMatch.femaleManglik,
-                            Colors.purple,
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -830,57 +859,105 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
           Center(
             child: Container(
               constraints: const BoxConstraints(maxWidth: 800),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildChartSelection(
-                      'Groom',
-                      _selectedChart1,
-                      (chart) => setState(() => _selectedChart1 = chart),
-                      Colors.blue,
-                      FluentIcons.user_followed,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.blue.withOpacity(0.2),
-                            Colors.purple.withOpacity(0.2),
-                          ],
+              child: context.isMobile
+                  ? Column(
+                      children: [
+                        _buildChartSelection(
+                          'Groom',
+                          _selectedChart1,
+                          (chart) => setState(() => _selectedChart1 = chart),
+                          Colors.blue,
+                          FluentIcons.user_followed,
                         ),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: FluentTheme.of(
-                            context,
-                          ).accentColor.withOpacity(0.3),
-                          width: 2,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue.withValues(alpha: 0.2),
+                                  Colors.purple.withValues(alpha: 0.2),
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: FluentTheme.of(
+                                  context,
+                                ).accentColor.withValues(alpha: 0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                FluentIcons.heart_fill,
+                                color: FluentTheme.of(context).accentColor,
+                                size: 28,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          FluentIcons.heart_fill,
-                          color: FluentTheme.of(context).accentColor,
-                          size: 28,
+                        _buildChartSelection(
+                          'Bride',
+                          _selectedChart2,
+                          (chart) => setState(() => _selectedChart2 = chart),
+                          Colors.purple,
+                          FluentIcons.user_followed,
                         ),
-                      ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: _buildChartSelection(
+                            'Groom',
+                            _selectedChart1,
+                            (chart) => setState(() => _selectedChart1 = chart),
+                            Colors.blue,
+                            FluentIcons.user_followed,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue.withValues(alpha: 0.2),
+                                  Colors.purple.withValues(alpha: 0.2),
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: FluentTheme.of(
+                                  context,
+                                ).accentColor.withValues(alpha: 0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                FluentIcons.heart_fill,
+                                color: FluentTheme.of(context).accentColor,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildChartSelection(
+                            'Bride',
+                            _selectedChart2,
+                            (chart) => setState(() => _selectedChart2 = chart),
+                            Colors.purple,
+                            FluentIcons.user_followed,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Expanded(
-                    child: _buildChartSelection(
-                      'Bride',
-                      _selectedChart2,
-                      (chart) => setState(() => _selectedChart2 = chart),
-                      Colors.purple,
-                      FluentIcons.user_followed,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
           const SizedBox(height: 40),
@@ -939,7 +1016,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.1),
+                    color: accentColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: accentColor, size: 22),
@@ -960,9 +1037,9 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.08),
+                  color: accentColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: accentColor.withOpacity(0.2)),
+                  border: Border.all(color: accentColor.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1001,7 +1078,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                         IconButton(
                           icon: Icon(
                             FluentIcons.delete,
-                            color: Colors.red.withOpacity(0.7),
+                            color: Colors.red.withValues(alpha: 0.7),
                           ),
                           onPressed: () => onSelect(null),
                         ),
@@ -1062,7 +1139,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                       decoration: BoxDecoration(
                         color: FluentTheme.of(
                           context,
-                        ).accentColor.withOpacity(0.1),
+                        ).accentColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -1117,7 +1194,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                               Icon(
                                 FluentIcons.chart,
                                 size: 48,
-                                color: Colors.grey.withOpacity(0.5),
+                                color: Colors.grey.withValues(alpha: 0.5),
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -1140,7 +1217,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                                   decoration: BoxDecoration(
                                     color: FluentTheme.of(
                                       context,
-                                    ).accentColor.withOpacity(0.1),
+                                    ).accentColor.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
@@ -1207,91 +1284,191 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
         constraints: const BoxConstraints(maxWidth: 1000),
         content: SizedBox(
           height: 520,
-          child: Row(
-            children: [
-              Expanded(
-                child: Card(
-                  borderRadius: BorderRadius.circular(12),
+          child: context.isMobile
+              ? SingleChildScrollView(
                   child: Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(12),
-                          ),
-                        ),
-                        child: Row(
+                      Card(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Column(
                           children: [
-                            Icon(FluentIcons.contact, color: Colors.blue),
-                            const SizedBox(width: 8),
-                            Text(
-                              _selectedChart1!.birthData.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.1),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
                               ),
+                              child: Row(
+                                children: [
+                                  Icon(FluentIcons.contact, color: Colors.blue),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _selectedChart1!.birthData.name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 300,
+                              child: _buildMiniChart(_selectedChart1!),
                             ),
                           ],
                         ),
                       ),
-                      Expanded(child: _buildMiniChart(_selectedChart1!)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: FluentTheme.of(
+                              context,
+                            ).accentColor.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            'VS',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: FluentTheme.of(context).accentColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Card(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.purple.withValues(alpha: 0.1),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    FluentIcons.contact,
+                                    color: Colors.purple,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _selectedChart2!.birthData.name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.purple,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 300,
+                              child: _buildMiniChart(_selectedChart2!),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: FluentTheme.of(context).accentColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    'VS',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: FluentTheme.of(context).accentColor,
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: Card(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.1),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(FluentIcons.contact, color: Colors.blue),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _selectedChart1!.birthData.name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(child: _buildMiniChart(_selectedChart1!)),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Card(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Column(
-                    children: [
-                      Container(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.purple.withOpacity(0.1),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(12),
+                          color: FluentTheme.of(
+                            context,
+                          ).accentColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          'VS',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: FluentTheme.of(context).accentColor,
                           ),
                         ),
-                        child: Row(
+                      ),
+                    ),
+                    Expanded(
+                      child: Card(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Column(
                           children: [
-                            Icon(FluentIcons.contact, color: Colors.purple),
-                            const SizedBox(width: 8),
-                            Text(
-                              _selectedChart2!.birthData.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.purple,
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.purple.withValues(alpha: 0.1),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    FluentIcons.contact,
+                                    color: Colors.purple,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _selectedChart2!.birthData.name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.purple,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+                            Expanded(child: _buildMiniChart(_selectedChart2!)),
                           ],
                         ),
                       ),
-                      Expanded(child: _buildMiniChart(_selectedChart2!)),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
         actions: [
           Button(
@@ -1331,7 +1508,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   Widget _buildSynastryTab(SynastryAnalysis compatibility) {
     return ScaffoldPage(
       content: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: context.responsiveBodyPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1386,7 +1563,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: effectColor.withOpacity(0.1),
+            color: effectColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(effectIcon, color: effectColor),
@@ -1402,7 +1579,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
         trailing: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: effectColor.withOpacity(0.1),
+            color: effectColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -1421,7 +1598,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   Widget _buildHouseOverlaysTab(SynastryAnalysis compatibility) {
     return ScaffoldPage(
       content: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: context.responsiveBodyPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1543,7 +1720,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+            color: FluentTheme.of(context).accentColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(

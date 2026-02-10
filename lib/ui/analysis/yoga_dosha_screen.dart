@@ -3,6 +3,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/yoga_dosha_analyzer.dart';
 import '../widgets/strength_meter.dart';
+import '../../core/responsive_helper.dart';
 
 class YogaDoshaScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -95,9 +96,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
     }
 
     if (_analysis == null) {
-      return const ScaffoldPage(
-        content: Center(child: ProgressRing()),
-      );
+      return const ScaffoldPage(content: Center(child: ProgressRing()));
     }
 
     final analysis = _analysis!;
@@ -119,7 +118,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         pane: NavigationPane(
           selected: _currentIndex,
           onChanged: (index) => setState(() => _currentIndex = index),
-          displayMode: PaneDisplayMode.top,
+          displayMode: context.topPaneDisplayMode,
           items: [
             PaneItem(
               icon: const Icon(FluentIcons.report_document),
@@ -144,10 +143,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
 
   Widget _buildBody(Widget content) {
     return ScaffoldPage(
-      content: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: content,
-      ),
+      content: Padding(padding: context.responsiveBodyPadding, child: content),
     );
   }
 
@@ -663,18 +659,18 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                     ),
                 ],
               ),
-               const SizedBox(height: 4),
-               ProgressBar(
-                 value: dosha.strength,
-                 backgroundColor: Colors.grey.withValues(alpha: 0.1),
-                 activeColor: dosha.strength >= 80
-                     ? Colors.green
-                     : dosha.strength >= 60
-                         ? Colors.teal
-                         : dosha.strength >= 40
-                             ? Colors.orange
-                             : Colors.red,
-               ),
+              const SizedBox(height: 4),
+              ProgressBar(
+                value: dosha.strength,
+                backgroundColor: Colors.grey.withValues(alpha: 0.1),
+                activeColor: dosha.strength >= 80
+                    ? Colors.green
+                    : dosha.strength >= 60
+                    ? Colors.teal
+                    : dosha.strength >= 40
+                    ? Colors.orange
+                    : Colors.red,
+              ),
               const SizedBox(height: 12),
             ],
 

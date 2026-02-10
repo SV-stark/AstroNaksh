@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/retrograde_analysis.dart';
+import '../../core/responsive_helper.dart';
 
 class RetrogradeScreen extends StatelessWidget {
   final CompleteChartData chartData;
@@ -27,7 +28,7 @@ class RetrogradeScreen extends StatelessWidget {
           ),
         ),
         content: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: context.responsiveBodyPadding,
           children: [
             Card(
               backgroundColor: Colors.purple.withValues(alpha: 0.1),

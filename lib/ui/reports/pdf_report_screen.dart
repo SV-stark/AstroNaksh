@@ -31,6 +31,8 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
     'Yogas & Doshas': true,
     'Transit Analysis': false,
     'KP System': true,
+    'Life Predictions': false,
+    'Varshaphal (Annual)': false,
   };
 
   @override
@@ -227,6 +229,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
             'Shadbala',
             'Bhava Bala',
             'Transit Analysis',
+            'Varshaphal (Annual)',
           ].contains(key),
         );
         break;
@@ -294,6 +297,11 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
         includeDivisional: _reportType == 'comprehensive',
         includeYogaDosha: _sections['Yogas & Doshas'] ?? true,
         includeAshtakavarga: _sections['Ashtakavarga'] ?? false,
+        includeShadbala: _sections['Shadbala'] ?? false,
+        includeBhavaBala: _sections['Bhava Bala'] ?? false,
+        includeTransit: _sections['Transit Analysis'] ?? false,
+        includeLifePredictions: _sections['Life Predictions'] ?? false,
+        includeVarshaphal: _sections['Varshaphal (Annual)'] ?? false,
       );
 
       // Copy to requested location

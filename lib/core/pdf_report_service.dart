@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart' as material;
+import 'package:jyotish/jyotish.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -9,7 +10,14 @@ import '../data/models.dart';
 import '../logic/divisional_charts.dart';
 import '../logic/yoga_dosha_analyzer.dart';
 import '../logic/matching/matching_models.dart';
+import '../logic/shadbala.dart'; // Import calculators
+
+import '../logic/bhava_bala.dart';
+import '../logic/transit_analysis.dart';
+import '../logic/life_prediction_service.dart';
+import '../logic/varshaphal_system.dart';
 import 'ayanamsa_calculator.dart';
+import 'pdf_report_charts.dart'; // Import charts helper
 
 /// PDF Report Generation Service
 /// Creates comprehensive Vedic astrology reports
@@ -25,18 +33,23 @@ class PDFReportService {
     bool includeDivisional = false,
     bool includeYogaDosha = true,
     bool includeAshtakavarga = false,
+    bool includeShadbala = false,
+    bool includeBhavaBala = false,
+    bool includeTransit = false,
+    bool includeLifePredictions = false,
+    bool includeVarshaphal = false,
   }) async {
     final pdf = pw.Document();
     final title = reportTitle ?? 'Vedic Astrology Chart Report';
 
-    // Calculate ayanamsa value
-    final ayanamsaValue = await AyanamsaCalculator.calculate(
+    // calculate ayanamsa once
+    final ayanamsaVal = await AyanamsaCalculator.calculate(
       AyanamsaCalculator.defaultAyanamsa,
       chartData.birthData.dateTime,
     );
 
     // Add all sections
-    _addTitlePage(pdf, chartData, title, ayanamsaValue);
+    _addTitlePage(pdf, chartData, title, ayanamsaVal);
 
     if (includeD1) {
       _addD1Section(pdf, chartData);
@@ -64,6 +77,26 @@ class PDFReportService {
 
     if (includeAshtakavarga) {
       _addAshtakavargaSection(pdf, chartData);
+    }
+
+    if (includeShadbala) {
+      await _addShadbalaSection(pdf, chartData);
+    }
+
+    if (includeBhavaBala) {
+      await _addBhavaBalaSection(pdf, chartData);
+    }
+
+    if (includeTransit) {
+      await _addTransitSection(pdf, chartData);
+    }
+
+    if (includeLifePredictions) {
+      await _addLifePredictionsSection(pdf, chartData);
+    }
+
+    if (includeVarshaphal) {
+      await _addVarshaphalSection(pdf, chartData);
     }
 
     _addClosingPage(pdf, chartData);
@@ -187,7 +220,20 @@ class PDFReportService {
             children: [
               _buildSectionHeader('Rashi Chart (D-1)'),
               pw.SizedBox(height: 20),
-              _buildPlanetTable(chartData.significatorTable),
+              pw.SizedBox(height: 10),
+              pw.Center(
+                child: PdfReportCharts.buildChartWithTextOverlay(
+                  chartData.significatorTable,
+                  // Convert sign name to index (0-11)
+                  AstrologyConstants.signNames.indexOf(
+                    chartData.baseChart.ascendantSign,
+                  ),
+                  width: 300,
+                  height: 300,
+                ),
+              ),
+              pw.SizedBox(height: 30),
+              _buildPlanetTable(chartData.baseChart.planets),
               pw.SizedBox(height: 20),
               _buildHouseTable(chartData),
             ],
@@ -197,11 +243,9 @@ class PDFReportService {
     );
   }
 
-  /// Build planet positions table
-  static pw.Widget _buildPlanetTable(
-    Map<String, Map<String, dynamic>> significators,
-  ) {
-    if (significators.isEmpty) {
+  /// Build planet positions table with enhanced details
+  static pw.Widget _buildPlanetTable(Map<Planet, dynamic> planets) {
+    if (planets.isEmpty) {
       return pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
@@ -256,25 +300,32 @@ class PDFReportService {
                 _buildTableCell('Degree', isHeader: true),
                 _buildTableCell('House', isHeader: true),
                 _buildTableCell('Nakshatra', isHeader: true),
+                _buildTableCell('Status', isHeader: true),
               ],
             ),
             // Data rows
-            ...significators.entries.map((entry) {
+            ...planets.entries.map((entry) {
               final planet = entry.key;
               final info = entry.value;
-              final position = info['position'] as double? ?? 0;
+              final position = info.position.longitude;
               final sign = (position / 30).floor();
               final degree = position % 30;
-              final house = info['house'] as int? ?? 0;
-              final nakshatra = info['nakshatra'] as String? ?? '';
+              final house = info.houseIndex + 1; // 1-12
+              final nakshatra = info.position.nakshatra;
+
+              String status = info.dignity.name;
+              if (info.isRetrograde) {
+                status += ' (R)';
+              }
 
               return pw.TableRow(
                 children: [
-                  _buildTableCell(planet),
+                  _buildTableCell(planet.displayName),
                   _buildTableCell(DivisionalCharts.getSignName(sign)),
                   _buildTableCell('${degree.toStringAsFixed(2)}°'),
                   _buildTableCell('House $house'),
                   _buildTableCell(nakshatra),
+                  _buildTableCell(status),
                 ],
               );
             }),
@@ -385,20 +436,39 @@ class PDFReportService {
               _buildSectionHeader('Navamsa Chart (D-9) - Spouse & Dharma'),
               pw.SizedBox(height: 20),
               pw.Text(
-                'Navamsa is the most important divisional chart after Rashi. It indicates:',
+                'Navamsa is the most important divisional chart after Rashi.',
                 style: pw.TextStyle(fontSize: 12),
               ),
-              pw.Bullet(text: 'Marriage and marital happiness'),
-              pw.Bullet(text: 'General fortune and luck'),
-              pw.Bullet(text: 'Dharma and righteousness'),
-              pw.Bullet(text: 'Second half of life'),
               pw.SizedBox(height: 20),
+              pw.Center(
+                child: PdfReportCharts.buildChartWithTextOverlay(
+                  _convertDivisionalToSignificators(navamsa),
+                  navamsa.ascendantSign ?? 0,
+                  width: 300,
+                  height: 300,
+                ),
+              ),
+              pw.SizedBox(height: 30),
               _buildDivisionalTable(navamsa),
             ],
           );
         },
       ),
     );
+  }
+
+  // Helper to convert DivisionalChartData to format expected by chart painter
+  static Map<String, Map<String, dynamic>> _convertDivisionalToSignificators(
+    DivisionalChartData data,
+  ) {
+    final map = <String, Map<String, dynamic>>{};
+    data.positions.forEach((planet, longitude) {
+      map[planet] = {
+        'position': longitude,
+        'house': 0,
+      }; // House not strictly needed for painter
+    });
+    return map;
   }
 
   /// Build divisional chart table
@@ -800,6 +870,183 @@ class PDFReportService {
         },
       ),
     );
+  }
+
+  static Future<void> _addShadbalaSection(
+    pw.Document pdf,
+    CompleteChartData chartData,
+  ) async {
+    try {
+      final shadbala = await ShadbalaCalculator.calculateShadbala(chartData);
+
+      pdf.addPage(
+        pw.Page(
+          build: (context) {
+            final sorted = shadbala.entries.toList()
+              ..sort((a, b) => b.value.compareTo(a.value));
+
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader('Shadbala (Six-Fold Strength)'),
+                pw.SizedBox(height: 20),
+                pw.Text('Shadbala measures the raw strength of planets.'),
+                pw.SizedBox(height: 20),
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  children: [
+                    pw.TableRow(
+                      decoration: const pw.BoxDecoration(
+                        color: PdfColors.grey300,
+                      ),
+                      children: [
+                        _buildTableCell('Rank', isHeader: true),
+                        _buildTableCell('Planet', isHeader: true),
+                        _buildTableCell('Strength (Rupas)', isHeader: true),
+                        _buildTableCell('Status', isHeader: true),
+                      ],
+                    ),
+                    ...sorted.asMap().entries.map((e) {
+                      final rank = e.key + 1;
+                      final planet = e.value.key;
+                      final score = e.value.value;
+                      // Often measured in Rupas (1 Rupa = 60 Shashtiamsas) or just raw
+                      // The app uses raw units mostly, let's use raw from screen
+                      String status = 'Weak';
+                      if (score >= 400)
+                        status = 'Very Strong';
+                      else if (score >= 300)
+                        status = 'Strong';
+                      else if (score >= 200)
+                        status = 'Moderate';
+
+                      return pw.TableRow(
+                        children: [
+                          _buildTableCell('$rank'),
+                          _buildTableCell(planet),
+                          _buildTableCell('${score.toStringAsFixed(1)}'),
+                          _buildTableCell(status),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+
+  static Future<void> _addBhavaBalaSection(
+    pw.Document pdf,
+    CompleteChartData chartData,
+  ) async {
+    try {
+      final bhavaBala = await BhavaBala.calculateBhavaBala(chartData);
+      pdf.addPage(
+        pw.Page(
+          build: (context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader('Bhava Bala (House Strength)'),
+                pw.SizedBox(height: 20),
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  children: [
+                    pw.TableRow(
+                      decoration: const pw.BoxDecoration(
+                        color: PdfColors.grey300,
+                      ),
+                      children: [
+                        _buildTableCell('House', isHeader: true),
+                        _buildTableCell('Strength', isHeader: true),
+                      ],
+                    ),
+                    ...bhavaBala.entries.map((e) {
+                      return pw.TableRow(
+                        children: [
+                          _buildTableCell('House ${e.key}'),
+                          _buildTableCell(
+                            '${e.value.totalStrength.toStringAsFixed(1)}',
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    } catch (e) {}
+  }
+
+  static Future<void> _addTransitSection(
+    pw.Document pdf,
+    CompleteChartData chartData,
+  ) async {
+    // Transit requires date. Defaults to now.
+    try {
+      final now = DateTime.now();
+      final transitChart = await TransitAnalysis().calculateTransitChart(
+        chartData,
+        now,
+      );
+      final transitData = transitChart.transitPositions.planets;
+
+      pdf.addPage(
+        pw.Page(
+          build: (context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader('Transit Analysis (Gochar)'),
+                pw.SizedBox(height: 10),
+                pw.Text('Planetary positions for ${_formatDate(now)}'),
+                pw.SizedBox(height: 20),
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  children: [
+                    pw.TableRow(
+                      decoration: const pw.BoxDecoration(
+                        color: PdfColors.grey300,
+                      ),
+                      children: [
+                        _buildTableCell('Planet', isHeader: true),
+                        _buildTableCell('Current Sign', isHeader: true),
+                        _buildTableCell('Degree', isHeader: true),
+                      ],
+                    ),
+                    ...transitData.entries.map((e) {
+                      final planet = e.key.displayName;
+                      final info = e.value;
+                      final pos = info.position.longitude;
+                      final sign = (pos / 30).floor();
+                      final signName = DivisionalCharts.getSignName(sign);
+                      final deg = pos % 30;
+
+                      return pw.TableRow(
+                        children: [
+                          _buildTableCell(planet),
+                          _buildTableCell(signName),
+                          _buildTableCell('${deg.toStringAsFixed(2)}°'),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    } catch (e) {}
   }
 
   /// Build vargas summary table
@@ -1447,6 +1694,71 @@ class PDFReportService {
       ),
     );
 
+    // Page 2: Charts & Planetary Details
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader('Birth Charts (Lagna)'),
+              pw.SizedBox(height: 20),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+                children: [
+                  pw.Column(
+                    children: [
+                      pw.Text(
+                        'Groom',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.deepPurple,
+                        ),
+                      ),
+                      pw.SizedBox(height: 10),
+                      PdfReportCharts.buildChartWithTextOverlay(
+                        _getPlanetSignificators(groom),
+                        AstrologyConstants.signNames.indexOf(
+                          groom.baseChart.ascendantSign,
+                        ),
+                        width: 200,
+                        height: 200,
+                      ),
+                    ],
+                  ),
+                  pw.Column(
+                    children: [
+                      pw.Text(
+                        'Bride',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.deepPurple,
+                        ),
+                      ),
+                      pw.SizedBox(height: 10),
+                      PdfReportCharts.buildChartWithTextOverlay(
+                        _getPlanetSignificators(bride),
+                        AstrologyConstants.signNames.indexOf(
+                          bride.baseChart.ascendantSign,
+                        ),
+                        width: 200,
+                        height: 200,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 30),
+              _buildSectionHeader('Planetary Comparison'),
+              pw.SizedBox(height: 10),
+              _buildPlanetaryComparisonTable(groom, bride),
+            ],
+          );
+        },
+      ),
+    );
+
     // Ashtakoota Detail Page
     pdf.addPage(
       pw.Page(
@@ -1634,10 +1946,240 @@ class PDFReportService {
           ),
           pw.Divider(),
           pw.Text('Name: ${chart.birthData.name}'),
-          pw.Text('Date: ${_formatDate(chart.birthData.dateTime)}'),
-          pw.Text('Time: ${_formatTime(chart.birthData.dateTime)}'),
-          pw.Text('Place: ${chart.birthData.place}'),
         ],
+      ),
+    );
+  }
+
+  /// Add Life Predictions section
+  static Future<void> _addLifePredictionsSection(
+    pw.Document pdf,
+    CompleteChartData chartData,
+  ) async {
+    final service = LifePredictionService();
+    final predictions = await service.generateLifePredictions(chartData);
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader(
+                'Life Predictions for ${chartData.birthData.name}',
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Comprehensive analysis of various aspects of life based on planetary positions and house strengths.',
+                style: pw.TextStyle(
+                  fontSize: 12,
+                  color: PdfColors.grey700,
+                  fontStyle: pw.FontStyle.italic,
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              ...predictions.aspects.map((aspect) {
+                return pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 20),
+                  padding: const pw.EdgeInsets.all(15),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                    borderRadius: pw.BorderRadius.circular(8),
+                    color: PdfColors.grey50,
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            aspect.aspectName,
+                            style: pw.TextStyle(
+                              fontSize: 16,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.deepPurple,
+                            ),
+                          ),
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: pw.BoxDecoration(
+                              color: _getScoreColor(aspect.score),
+                              borderRadius: pw.BorderRadius.circular(12),
+                            ),
+                            child: pw.Text(
+                              'Score: ${aspect.score}%',
+                              style: pw.TextStyle(
+                                color: PdfColors.white,
+                                fontSize: 10,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 10),
+                      pw.Text(
+                        aspect.prediction,
+                        style: const pw.TextStyle(fontSize: 10),
+                        textAlign: pw.TextAlign.justify,
+                      ),
+                      pw.SizedBox(height: 10),
+                      pw.Text(
+                        'Advice: ${aspect.advice}',
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.blue800,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  static PdfColor _getScoreColor(int score) {
+    if (score >= 75) return PdfColors.green600;
+    if (score >= 50) return PdfColors.orange600;
+    return PdfColors.red600;
+  }
+
+  /// Add Varshaphal (Annual Horoscope) section
+  static Future<void> _addVarshaphalSection(
+    pw.Document pdf,
+    CompleteChartData chartData,
+  ) async {
+    // Determine the relevant year (current or upcoming)
+    final now = DateTime.now();
+    final birthDate = chartData.birthData.dateTime;
+
+    // Check if the solar return for current year has happened
+    DateTime currentYearReturn = DateTime(
+      now.year,
+      birthDate.month,
+      birthDate.day,
+    );
+    int targetYear = now.year;
+
+    // If we haven't reached the birthday yet, the current active varshaphal started last year
+    if (now.isBefore(currentYearReturn)) {
+      targetYear = now.year - 1;
+    }
+
+    // Ensure we don't go back before birth
+    if (targetYear < birthDate.year) {
+      targetYear = birthDate.year;
+    }
+
+    final varshaphal = await VarshaphalSystem.calculateVarshaphal(
+      chartData.birthData,
+      targetYear,
+    );
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader(
+                'Annual Horoscope (Varshaphal) for ${chartData.birthData.name} - $targetYear-${targetYear + 1}',
+              ),
+              pw.SizedBox(height: 20),
+
+              // Key Info Box
+              pw.Container(
+                padding: const pw.EdgeInsets.all(15),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.purple50,
+                  border: pw.Border.all(color: PdfColors.purple200),
+                  borderRadius: pw.BorderRadius.circular(8),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow('Year Lord (Varshesh):', varshaphal.yearLord),
+                    _buildInfoRow(
+                      'Muntha Sign:',
+                      AstrologyConstants.getSignName(varshaphal.muntha),
+                    ),
+                    _buildInfoRow('Muntha Lord:', varshaphal.munthaLord),
+                    _buildInfoRow(
+                      'Solar Return Date:',
+                      _formatDateTime(varshaphal.solarReturnTime),
+                    ),
+                  ],
+                ),
+              ),
+
+              pw.SizedBox(height: 20),
+
+              // Interpretation
+              pw.Text(
+                'Yearly Overview',
+                style: pw.TextStyle(
+                  fontSize: 14,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.deepPurple,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Text(
+                varshaphal.interpretation,
+                style: const pw.TextStyle(fontSize: 11),
+              ),
+
+              pw.SizedBox(height: 20),
+
+              // Mudda Dasha Table
+              pw.Text(
+                'Mudda Dasha (Annual Periods)',
+                style: pw.TextStyle(
+                  fontSize: 14,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.deepPurple,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+
+              pw.Table(
+                border: pw.TableBorder.all(),
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey300,
+                    ),
+                    children: [
+                      _buildTableCell('Planet', isHeader: true),
+                      _buildTableCell('Start Date', isHeader: true),
+                      _buildTableCell('Prediction', isHeader: true),
+                    ],
+                  ),
+                  ...varshaphal.varshikDasha.map((dasha) {
+                    return pw.TableRow(
+                      children: [
+                        _buildTableCell(dasha.planet),
+                        _buildTableCell(_formatDate(dasha.startDate)),
+                        _buildTableCell(dasha.prediction),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1651,5 +2193,93 @@ class PDFReportService {
     if (color == material.Colors.yellow) return PdfColors.yellow;
     if (color == material.Colors.yellow[700]) return PdfColors.amber;
     return PdfColors.black;
+  }
+
+  // Helper to convert ChartData to format expected by PdfReportCharts
+  static Map<String, Map<String, dynamic>> _getPlanetSignificators(
+    CompleteChartData chart,
+  ) {
+    final significators = <String, Map<String, dynamic>>{};
+    chart.baseChart.planets.forEach((planet, info) {
+      significators[planet.toString().split('.').last] = {
+        'position': info.position.longitude,
+      };
+    });
+    return significators;
+  }
+
+  static pw.Widget _buildPlanetaryComparisonTable(
+    CompleteChartData groom,
+    CompleteChartData bride,
+  ) {
+    final planets = [
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
+      'Rahu',
+      'Ketu',
+    ];
+
+    return pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.grey300),
+      children: [
+        // Header
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          children: [
+            _buildTableCell('Planet', isHeader: true),
+            _buildTableCell('Groom (Sign / Deg / Nak)', isHeader: true),
+            _buildTableCell('Bride (Sign / Deg / Nak)', isHeader: true),
+          ],
+        ),
+        // Rows
+        ...planets.map((planetName) {
+          // Find planet info
+          dynamic p1Info, p2Info;
+
+          for (final entry in groom.baseChart.planets.entries) {
+            if (entry.key.toString().toLowerCase().contains(
+              planetName.toLowerCase(),
+            )) {
+              p1Info = entry.value;
+              break;
+            }
+          }
+          for (final entry in bride.baseChart.planets.entries) {
+            if (entry.key.toString().toLowerCase().contains(
+              planetName.toLowerCase(),
+            )) {
+              p2Info = entry.value;
+              break;
+            }
+          }
+
+          String formatInfo(dynamic info) {
+            if (info == null) return '-';
+            final longitude = info.position.longitude;
+            final sign = AstrologyConstants.getSignName(
+              (longitude / 30).floor(),
+            );
+            final deg = longitude % 30;
+            final d = deg.floor();
+            final m = ((deg - d) * 60).round();
+            final nak = info.position.nakshatra;
+            return '$sign $d°$m\' / $nak';
+          }
+
+          return pw.TableRow(
+            children: [
+              _buildTableCell(planetName, isHeader: true),
+              _buildTableCell(formatInfo(p1Info)),
+              _buildTableCell(formatInfo(p2Info)),
+            ],
+          );
+        }),
+      ],
+    );
   }
 }

@@ -24,6 +24,7 @@ import 'predictions/transit_screen.dart';
 import '../../logic/planetary_aspect_service.dart';
 import 'predictions/varshaphal_screen.dart';
 import 'analysis/retrograde_screen.dart';
+import 'analysis/sudarshan_chakra_screen.dart';
 import 'comparison/chart_comparison_screen.dart';
 import 'predictions/rashiphal_dashboard.dart';
 import 'predictions/life_predictions_screen.dart';
@@ -428,6 +429,11 @@ class _ChartScreenState extends State<ChartScreen> {
                             onPressed: () => _navigateTo('retrograde'),
                           ),
                           MenuFlyoutItem(
+                            text: const Text('Sudarshan Chakra'),
+                            leading: const Icon(FluentIcons.view_all),
+                            onPressed: () => _navigateTo('sudarshan_chakra'),
+                          ),
+                          MenuFlyoutItem(
                             text: const Text('Comparison'),
                             leading: const Icon(FluentIcons.compare),
                             onPressed: () => _navigateTo('comparison'),
@@ -446,7 +452,88 @@ class _ChartScreenState extends State<ChartScreen> {
                 wrappedItem: CommandBarButton(
                   icon: const Icon(FluentIcons.analytics_view),
                   label: const Text('Analysis'),
-                  onPressed: () {},
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => ContentDialog(
+                        title: const Text('Analysis Tools'),
+                        content: SizedBox(
+                          height: 300,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildMobileAnalysisLink(
+                                  'Shadbala',
+                                  'shadbala',
+                                  FluentIcons.favorite_star,
+                                ),
+                                _buildMobileAnalysisLink(
+                                  'Ashtakavarga',
+                                  'ashtakavarga',
+                                  FluentIcons.grid_view_small,
+                                ),
+                                _buildMobileAnalysisLink(
+                                  'Bhava Bala',
+                                  'bhava_bala',
+                                  FluentIcons.home,
+                                ),
+                                const Divider(),
+                                _buildMobileAnalysisLink(
+                                  'Transit',
+                                  'transit',
+                                  FluentIcons.history,
+                                ),
+                                _buildMobileAnalysisLink(
+                                  'Varshaphal',
+                                  'varshaphal',
+                                  FluentIcons.calendar,
+                                ),
+                                const Divider(),
+                                _buildMobileAnalysisLink(
+                                  'Yoga & Dosha',
+                                  'yoga_dosha',
+                                  FluentIcons.scale_volume,
+                                ),
+                                _buildMobileAnalysisLink(
+                                  'Planetary Maitri',
+                                  'planetary_maitri',
+                                  FluentIcons.people,
+                                ),
+                                _buildMobileAnalysisLink(
+                                  'Retrograde',
+                                  'retrograde',
+                                  FluentIcons.repeat_one,
+                                ),
+                                _buildMobileAnalysisLink(
+                                  'Sudarshan Chakra',
+                                  'sudarshan_chakra',
+                                  FluentIcons.view_all,
+                                ),
+                                _buildMobileAnalysisLink(
+                                  'Comparison',
+                                  'comparison',
+                                  FluentIcons.compare,
+                                ),
+                                const Divider(),
+                                _buildMobileAnalysisLink(
+                                  'PDF Report',
+                                  'pdf_report',
+                                  FluentIcons.pdf,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        actions: [
+                          Button(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
 
@@ -670,6 +757,11 @@ class _ChartScreenState extends State<ChartScreen> {
                                 FluentIcons.repeat_one,
                               ),
                               _buildMobileAnalysisLink(
+                                'Sudarshan Chakra',
+                                'sudarshan_chakra',
+                                FluentIcons.view_all,
+                              ),
+                              _buildMobileAnalysisLink(
                                 'Comparison',
                                 'comparison',
                                 FluentIcons.compare,
@@ -856,6 +948,9 @@ class _ChartScreenState extends State<ChartScreen> {
         break;
       case 'retrograde':
         screen = RetrogradeScreen(chartData: chartData);
+        break;
+      case 'sudarshan_chakra':
+        screen = SudarshanChakraScreen(chartData: chartData);
         break;
       case 'comparison':
         screen = ChartComparisonScreen(chart1: chartData);

@@ -345,8 +345,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(
                       context,
                     ),
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
+                    mainAxisSpacing: ResponsiveHelper.useMobileLayout(context) ? 16 : 12,
+                    crossAxisSpacing: ResponsiveHelper.useMobileLayout(context) ? 16 : 12,
                     childAspectRatio: ResponsiveHelper.getGridChildAspectRatio(
                       context,
                     ),
@@ -419,8 +419,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Spacer(),
                   SizedBox(
                     width: ResponsiveHelper.useMobileLayout(context)
-                        ? 180
+                        ? 200
                         : 250,
+                    height: ResponsiveHelper.useMobileLayout(context) ? 44 : 36,
                     child: TextBox(
                       key: _searchKey,
                       controller: _searchController,
@@ -491,19 +492,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemCount: _filteredCharts.length,
                     itemBuilder: (context, index) {
                       final chart = _filteredCharts[index];
+                      final isMobile = ResponsiveHelper.useMobileLayout(context);
                       return Padding(
                         padding: EdgeInsets.symmetric(
-                          vertical: ResponsiveHelper.useMobileLayout(context)
-                              ? 6
-                              : 4, // Larger vertical detail
+                          vertical: isMobile ? 8 : 4,
                         ),
                         child: Card(
                           padding: EdgeInsets.zero,
                           child: ListTile.selectable(
                             onPressed: () => _openChart(chart),
                             leading: Container(
-                              width: 40,
-                              height: 40,
+                              width: isMobile ? 48 : 40,
+                              height: isMobile ? 48 : 40,
                               margin: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: AppStyles.primaryColor.withAlpha(25),
@@ -512,25 +512,35 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Icon(
                                 FluentIcons.contact,
                                 color: AppStyles.primaryColor,
-                                size: 20,
+                                size: isMobile ? 24 : 20,
                               ),
                             ),
                             title: Text(
                               chart['name'] ?? 'Unknown',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
+                                fontSize: isMobile ? 16 : 14,
                               ),
                             ),
                             subtitle: Text(
                               '${_formatDateTime(chart['dateTime'])}'
                               '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
+                              style: TextStyle(fontSize: isMobile ? 13 : 12),
                             ),
-                            trailing: IconButton(
-                              icon: Icon(FluentIcons.delete, color: Colors.red),
-                              onPressed: () async {
-                                await _dbHelper.deleteChart(chart['id']);
-                                _loadCharts();
-                              },
+                            trailing: SizedBox(
+                              width: isMobile ? 48 : 40,
+                              height: isMobile ? 48 : 40,
+                              child: IconButton(
+                                icon: Icon(
+                                  FluentIcons.delete,
+                                  color: Colors.red,
+                                  size: isMobile ? 24 : 16,
+                                ),
+                                onPressed: () async {
+                                  await _dbHelper.deleteChart(chart['id']);
+                                  _loadCharts();
+                                },
+                              ),
                             ),
                           ),
                         ),
@@ -553,48 +563,52 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return HoverButton(
-      onPressed: onTap,
-      builder: (context, states) {
-        return Card(
-          key: key,
-          padding: const EdgeInsets.all(8),
-          backgroundColor: states.isHovered ? color.withAlpha(25) : null,
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 20),
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
+    return Card(
+      key: key,
+      padding: EdgeInsets.all(isMobile ? 12 : 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
+            Container(
+              width: isMobile ? 48 : 40,
+              height: isMobile ? 48 : 40,
+              decoration: BoxDecoration(
+                color: color.withAlpha(25),
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
+              child: Icon(icon, color: color, size: isMobile ? 24 : 20),
+            ),
+            SizedBox(width: isMobile ? 12 : 8),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: isMobile ? 14 : 13,
                     ),
-                    Text(
-                      subtitle,
-                      style: TextStyle(fontSize: 11, color: Colors.grey[100]),
-                    ),
-                  ],
-                ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: isMobile ? 12 : 11, color: Colors.grey[100]),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            ),
+            Icon(
+              FluentIcons.chevron_right,
+              color: Colors.grey[400],
+              size: isMobile ? 20 : 16,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

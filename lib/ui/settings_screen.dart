@@ -600,11 +600,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     bool value,
     ValueChanged<bool> onChanged,
   ) {
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
     return Column(
       children: [
         ListTile(
-          title: Text(label),
-          trailing: ToggleSwitch(checked: value, onChanged: onChanged),
+          title: Text(label, style: TextStyle(fontSize: isMobile ? 16 : 14)),
+          trailing: SizedBox(
+            height: isMobile ? 48 : 32,
+            child: ToggleSwitch(checked: value, onChanged: onChanged),
+          ),
         ),
         const Divider(),
       ],
@@ -617,11 +621,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     bool value,
     ValueChanged<bool> onChanged,
   ) {
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label),
-        ToggleSwitch(checked: value, onChanged: onChanged),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(fontSize: isMobile ? 16 : 14),
+          ),
+        ),
+        SizedBox(
+          height: isMobile ? 48 : 32,
+          child: ToggleSwitch(checked: value, onChanged: onChanged),
+        ),
       ],
     );
   }

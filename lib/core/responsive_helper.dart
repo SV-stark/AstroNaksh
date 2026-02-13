@@ -59,7 +59,7 @@ class ResponsiveHelper {
   /// Get child aspect ratio for grid
   static double getGridChildAspectRatio(BuildContext context) {
     if (useMobileLayout(context)) {
-      return 3.0; // Wider cards on mobile
+      return 2.5; // Wider cards on mobile for better touch targets
     }
     return 2.2;
   }
@@ -67,9 +67,25 @@ class ResponsiveHelper {
   /// Get appropriate NavigationPaneDisplayMode
   static PaneDisplayMode getNavigationPaneDisplayMode(BuildContext context) {
     if (useMobileLayout(context)) {
-      return PaneDisplayMode.minimal; // Hamburger menu on mobile
+      return PaneDisplayMode.open; // Open pane on mobile for easier navigation
     }
     return PaneDisplayMode.open; // Full side pane on desktop
+  }
+
+  /// Get navigation pane width
+  static double getNavigationPaneWidth(BuildContext context) {
+    if (useMobileLayout(context)) {
+      return 280; // Wider pane on mobile for easier touch
+    }
+    return 200;
+  }
+
+  /// Get compact navigation pane width
+  static double getCompactPaneWidth(BuildContext context) {
+    if (useMobileLayout(context)) {
+      return 64; // Larger compact width on mobile
+    }
+    return 48;
   }
 
   /// Get appropriate PaneDisplayMode for top navigation
@@ -101,4 +117,6 @@ extension ResponsiveContextExtension on BuildContext {
       ResponsiveHelper.getNavigationPaneDisplayMode(this);
   PaneDisplayMode get topPaneDisplayMode =>
       ResponsiveHelper.getTopPaneDisplayMode(this);
+  double get paneWidth => ResponsiveHelper.getNavigationPaneWidth(this);
+  double get compactPaneWidth => ResponsiveHelper.getCompactPaneWidth(this);
 }

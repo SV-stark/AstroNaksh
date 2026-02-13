@@ -844,8 +844,8 @@ class _ChartScreenState extends State<ChartScreen> {
         onChanged: (i) => setState(() => _currentIndex = i),
         displayMode: ResponsiveHelper.getNavigationPaneDisplayMode(context),
         size: NavigationPaneSize(
-          openWidth: 200,
-          compactWidth: ResponsiveHelper.useMobileLayout(context) ? 56 : 48,
+          openWidth: context.paneWidth,
+          compactWidth: context.compactPaneWidth,
         ),
         header: Container(
           padding: const EdgeInsets.all(16.0),
@@ -913,20 +913,24 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   Widget _buildMobileAnalysisLink(String title, String navKey, IconData icon) {
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Button(
-        onPressed: () {
-          Navigator.pop(context); // Close dialog
-          _navigateTo(navKey);
-        },
-        child: Row(
-          children: [
-            Icon(icon, size: 18),
-            const SizedBox(width: 12),
-            Expanded(child: Text(title)),
-            const Icon(FluentIcons.chevron_right, size: 12),
-          ],
+      child: SizedBox(
+        height: isMobile ? 56 : 44,
+        child: Button(
+          onPressed: () {
+            Navigator.pop(context);
+            _navigateTo(navKey);
+          },
+          child: Row(
+            children: [
+              Icon(icon, size: isMobile ? 24 : 18),
+              const SizedBox(width: 12),
+              Expanded(child: Text(title, style: TextStyle(fontSize: isMobile ? 16 : 14))),
+              Icon(FluentIcons.chevron_right, size: isMobile ? 20 : 12),
+            ],
+          ),
         ),
       ),
     );
@@ -1178,7 +1182,7 @@ class _ChartScreenState extends State<ChartScreen> {
           const SizedBox(height: 16),
           // Horizontal scrolling list for Charts
           SizedBox(
-            height: 40,
+            height: ResponsiveHelper.useMobileLayout(context) ? 56 : 40,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children:
@@ -1203,14 +1207,22 @@ class _ChartScreenState extends State<ChartScreen> {
                       .map(
                         (code) => Padding(
                           padding: const EdgeInsets.only(right: 8.0),
-                          child: ToggleButton(
-                            checked: _selectedDivisionalChart == code,
-                            onChanged: (selected) {
-                              if (selected) {
-                                setState(() => _selectedDivisionalChart = code);
-                              }
-                            },
-                            child: Text(code),
+                          child: SizedBox(
+                            height: ResponsiveHelper.useMobileLayout(context) ? 48 : 32,
+                            child: ToggleButton(
+                              checked: _selectedDivisionalChart == code,
+                              onChanged: (selected) {
+                                if (selected) {
+                                  setState(() => _selectedDivisionalChart = code);
+                                }
+                              },
+                              child: Text(
+                                code,
+                                style: TextStyle(
+                                  fontSize: ResponsiveHelper.useMobileLayout(context) ? 16 : 14,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       )

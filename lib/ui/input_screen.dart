@@ -521,36 +521,43 @@ class _InputScreenState extends State<InputScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: AutoSuggestBox<City>(
-                                controller: _citySearchController,
-                                items: _cityItems,
-                                onChanged: (text, reason) {
-                                  _onCitySearch(text);
-                                },
-                                onSelected: (item) {
-                                  setState(() {
-                                    _selectedCity = item.value;
-                                  });
-                                },
-                                placeholder: "Search city...",
-                                leadingIcon: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Icon(FluentIcons.city_next),
+                              child: SizedBox(
+                                height: ResponsiveHelper.useMobileLayout(context) ? 56 : 40,
+                                child: AutoSuggestBox<City>(
+                                  controller: _citySearchController,
+                                  items: _cityItems,
+                                  onChanged: (text, reason) {
+                                    _onCitySearch(text);
+                                  },
+                                  onSelected: (item) {
+                                    setState(() {
+                                      _selectedCity = item.value;
+                                    });
+                                  },
+                                  placeholder: "Search city...",
+                                  leadingIcon: const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Icon(FluentIcons.city_next),
+                                  ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            FilledButton(
-                              onPressed: _isLoadingLocation
-                                  ? null
-                                  : _useCurrentLocation,
-                              child: _isLoadingLocation
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: ProgressRing(strokeWidth: 2),
-                                    )
-                                  : const Icon(FluentIcons.location),
+                            SizedBox(
+                              height: ResponsiveHelper.useMobileLayout(context) ? 56 : 40,
+                              width: ResponsiveHelper.useMobileLayout(context) ? 56 : 40,
+                              child: FilledButton(
+                                onPressed: _isLoadingLocation
+                                    ? null
+                                    : _useCurrentLocation,
+                                child: _isLoadingLocation
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: ProgressRing(strokeWidth: 2),
+                                      )
+                                    : const Icon(FluentIcons.location),
+                              ),
                             ),
                           ],
                         ),
@@ -573,7 +580,7 @@ class _InputScreenState extends State<InputScreen> {
 
                 // Action
                 SizedBox(
-                  height: 48,
+                  height: ResponsiveHelper.useMobileLayout(context) ? 56 : 48,
                   child: FilledButton(
                     onPressed: _generateChart,
                     child: const Text(

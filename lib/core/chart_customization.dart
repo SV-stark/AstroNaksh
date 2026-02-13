@@ -46,6 +46,20 @@ class ChartCustomization {
 
   // Ayanamsa Settings
   String ayanamsaSystem = 'newKP';
+  
+  // Node Type (Rahu/Ketu) - Mean vs True Node
+  bool useTrueNode = false;
+  
+  // Position Calculation
+  bool useTopocentric = false;
+  bool calculateSpeed = true;
+  
+  // Aspect Calculation
+  bool includeSpecialAspects = true;
+  bool includeNodesInAspects = true;
+  
+  // Outer Planets
+  bool includeOuterPlanets = false;
 
   // Notification Settings
   bool dailyTransitNotifications = true;
@@ -110,6 +124,13 @@ class ChartCustomization {
 
     settings.ayanamsaSystem = json['ayanamsaSystem'] ?? 'newKP';
 
+    settings.useTrueNode = json['useTrueNode'] ?? false;
+    settings.useTopocentric = json['useTopocentric'] ?? false;
+    settings.calculateSpeed = json['calculateSpeed'] ?? true;
+    settings.includeSpecialAspects = json['includeSpecialAspects'] ?? true;
+    settings.includeNodesInAspects = json['includeNodesInAspects'] ?? true;
+    settings.includeOuterPlanets = json['includeOuterPlanets'] ?? false;
+
     settings.dailyTransitNotifications =
         json['dailyTransitNotifications'] ?? true;
     if (json['notificationTime'] != null) {
@@ -152,6 +173,12 @@ class ChartCustomization {
       'showTransits': showTransits,
       'transitDaysToShow': transitDaysToShow,
       'ayanamsaSystem': ayanamsaSystem,
+      'useTrueNode': useTrueNode,
+      'useTopocentric': useTopocentric,
+      'calculateSpeed': calculateSpeed,
+      'includeSpecialAspects': includeSpecialAspects,
+      'includeNodesInAspects': includeNodesInAspects,
+      'includeOuterPlanets': includeOuterPlanets,
       'dailyTransitNotifications': dailyTransitNotifications,
       'notificationTime': '$notificationHour:$notificationMinute',
     };
@@ -187,6 +214,12 @@ class ChartCustomization {
     showTransits = true;
     transitDaysToShow = 30;
     ayanamsaSystem = 'newKP';
+    useTrueNode = false;
+    useTopocentric = false;
+    calculateSpeed = true;
+    includeSpecialAspects = true;
+    includeNodesInAspects = true;
+    includeOuterPlanets = false;
     dailyTransitNotifications = true;
     notificationHour = 8;
     notificationMinute = 0;

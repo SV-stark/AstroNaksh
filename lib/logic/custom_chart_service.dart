@@ -23,6 +23,9 @@ class CustomChartService {
     String? timezone,
     String houseSystem = 'W', // Whole Sign by default
     bool includeOuterPlanets = false,
+    bool useTrueNode = false,
+    bool useTopocentric = false,
+    bool calculateSpeed = true,
   }) async {
     try {
       // Get initialized ephemeris service
@@ -57,8 +60,13 @@ class CustomChartService {
         // Use Tropical for initial calculation, then manually adjust
         flags = CalculationFlags.defaultFlags();
       } else {
-        // Use standard engine calculation
-        flags = CalculationFlags.sidereal(ayanamsaMode);
+        // Use standard engine calculation with custom settings
+        flags = CalculationFlags(
+          siderealMode: ayanamsaMode,
+          nodeType: useTrueNode ? NodeType.trueNode : NodeType.meanNode,
+          useTopocentric: useTopocentric,
+          calculateSpeed: calculateSpeed,
+        );
       }
 
       // Calculate Ascendant and house cusps

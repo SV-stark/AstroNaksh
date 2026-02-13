@@ -1,5 +1,6 @@
 import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
+import '../core/settings_manager.dart';
 import 'custom_chart_service.dart';
 
 /// Varshaphal (Annual Chart) System
@@ -11,6 +12,8 @@ class VarshaphalSystem {
     BirthData birthData,
     int year,
   ) async {
+    final chartSettings = SettingsManager().chartSettings;
+    
     // 1. Calculate rigorous Solar Return Time (High Precision)
     final solarReturnTime = await calculateSolarReturn(birthData, year);
 
@@ -23,6 +26,9 @@ class VarshaphalSystem {
         longitude: birthData.location.longitude,
       ),
       ayanamsaMode: SiderealMode.lahiri,
+      useTrueNode: chartSettings.useTrueNode,
+      useTopocentric: chartSettings.useTopocentric,
+      calculateSpeed: chartSettings.calculateSpeed,
     );
 
     // 3. Get Natal Information (Needed for Muntha and Varshesh)
@@ -33,6 +39,9 @@ class VarshaphalSystem {
         longitude: birthData.location.longitude,
       ),
       ayanamsaMode: SiderealMode.lahiri,
+      useTrueNode: chartSettings.useTrueNode,
+      useTopocentric: chartSettings.useTopocentric,
+      calculateSpeed: chartSettings.calculateSpeed,
     );
     final natalAsc = getAscendantSign(natalChart);
     final isDay = isDayBirth(varshaChart); // For Varsha chart day/night

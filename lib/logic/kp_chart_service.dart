@@ -22,6 +22,7 @@ class KPChartService {
 
     // Get current Ayanamsa setting
     final ayanamsaName = SettingsManager().chartSettings.ayanamsaSystem;
+    final chartSettings = SettingsManager().chartSettings;
 
     // Use library's ayanamsa implementation for all systems including 'newKP'
     final ayanamsaSystem = AyanamsaCalculator.getSystem(ayanamsaName);
@@ -37,6 +38,10 @@ class KPChartService {
       ),
       ayanamsaMode: mode,
       timezone: birthData.timezone,
+      useTrueNode: chartSettings.useTrueNode,
+      useTopocentric: chartSettings.useTopocentric,
+      calculateSpeed: chartSettings.calculateSpeed,
+      includeOuterPlanets: chartSettings.includeOuterPlanets,
     );
 
     // Use library's native KP calculation

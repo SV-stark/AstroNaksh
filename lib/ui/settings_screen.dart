@@ -264,6 +264,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         ),
+        const SizedBox(height: 24),
+        const Text('Advanced Options'),
+        const SizedBox(height: 8),
+        Card(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              _buildListTileToggle(
+                'Include Outer Planets (Uranus, Neptune, Pluto)',
+                _settings.includeOuterPlanets,
+                (v) => setState(() => _settings.includeOuterPlanets = v),
+              ),
+              _buildListTileToggle(
+                'Include Special Aspects (Mars, Jupiter, Saturn)',
+                _settings.includeSpecialAspects,
+                (v) => setState(() => _settings.includeSpecialAspects = v),
+              ),
+              _buildListTileToggle(
+                'Include Nodes (Rahu/Ketu) in Aspects',
+                _settings.includeNodesInAspects,
+                (v) => setState(() => _settings.includeNodesInAspects = v),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -330,9 +355,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAyanamsaSettings() {
     return ScaffoldPage.scrollable(
-      header: const PageHeader(title: Text('Ayanamsa System')),
+      header: const PageHeader(title: Text('Ayanamsa & Calculation')),
       children: [
-        const Text('Select Ayanamsa'),
+        const Text('Ayanamsa System'),
         const SizedBox(height: 8),
         Card(
           padding: EdgeInsets.zero,
@@ -372,6 +397,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               );
             }).toList(),
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text('Node Type (Rahu/Ketu)'),
+        const SizedBox(height: 8),
+        Card(
+          child: Column(
+            children: [
+              ListTile.selectable(
+                title: const Text('Mean Node'),
+                subtitle: const Text('Traditional Vedic (recommended)'),
+                leading: const Icon(FluentIcons.circle_ring),
+                selected: !_settings.useTrueNode,
+                onPressed: () => setState(() => _settings.useTrueNode = false),
+              ),
+              const Divider(),
+              ListTile.selectable(
+                title: const Text('True Node'),
+                subtitle: const Text('More accurate for modern calculations'),
+                leading: const Icon(FluentIcons.circle_ring),
+                selected: _settings.useTrueNode,
+                onPressed: () => setState(() => _settings.useTrueNode = true),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text('Position Calculation'),
+        const SizedBox(height: 8),
+        Card(
+          child: Column(
+            children: [
+              SwitchListTile(
+                title: const Text('Calculate Speed'),
+                subtitle: const Text('Show retrograde motion & planetary velocity'),
+                value: _settings.calculateSpeed,
+                onChanged: (v) => setState(() => _settings.calculateSpeed = v),
+              ),
+              const Divider(),
+              SwitchListTile(
+                title: const Text('Topocentric Positions'),
+                subtitle: const Text('Use observed positions (from Earth surface)'),
+                value: _settings.useTopocentric,
+                onChanged: (v) => setState(() => _settings.useTopocentric = v),
+              ),
+            ],
           ),
         ),
       ],

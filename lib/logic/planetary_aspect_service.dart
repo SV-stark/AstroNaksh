@@ -1,118 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:jyotish/jyotish.dart' as j;
+import '../core/ephemeris_manager.dart';
 
 /// Planetary Aspect Service
 /// Calculates and provides planetary aspects (Drishti) using jyotish library
 class PlanetaryAspectService {
+  static j.AspectService? _aspectService;
+
   /// Calculate all planetary aspects for a natal chart
-  /// Uses manual calculation based on Vedic astrology principles
+  /// Uses native jyotish library for accurate Vedic aspects
   static List<PlanetaryAspect> calculateAspects(j.VedicChart chart) {
-    final List<PlanetaryAspect> aspects = [];
-    final planets = chart.planets.entries.toList();
+    _aspectService ??= j.AspectService();
 
-    // Standard aspects (applicable to all planets)
-    // - Conjunction: 0°
-    // - Sextile: 60° (3rd and 11th houses)
-    // - Square: 90° (4th and 10th houses)
-    // - Trine: 120° (5th and 9th houses)
-    // - Opposition: 180° (7th house)
+    final libraryAspects = _aspectService!.calculateAspects(
+      chart.planets.map((e) => MapEntry(e.key, e.value.position)),
+      config: j.AspectConfig.vedic,
+    );
 
-    for (int i = 0; i < planets.length; i++) {
-      for (int j = i + 1; j < planets.length; j++) {
-        final planet1 = planets[i];
-        final planet2 = planets[j];
-
-        final long1 = planet1.value.position.longitude;
-        final long2 = planet2.value.position.longitude;
-
-        // Calculate angular difference
-        double diff = (long2 - long1).abs();
-        if (diff > 180) diff = 360 - diff;
-
-        // Check for aspects with orb
-        final aspect = _getAspectType(diff, planet1.key, planet2.key);
-        if (aspect != null) {
-          aspects.add(PlanetaryAspect(
-            aspectingPlanet: planet1.key,
-            aspectedPlanet: planet2.key,
-            type: aspect,
-            orb: (diff - _getAspectAngle(aspect)).abs(),
-            isApplying: true, // Simplified
-          ));
-        }
-      }
-    }
-
-    return aspects;
+    return libraryAspects.map((aspect) {
+      return PlanetaryAspect(
+        aspectingPlanet: aspect.aspectingPlanet,
+        aspectedPlanet: aspect.aspectedPlanet,
+        type: _mapLibraryAspectType(aspect.type),
+        orb: aspect.exactOrb,
+        isApplying: aspect.isApplying,
+      );
+    }).toList();
   }
 
-  /// Get aspect type based on angular difference
-  static AspectType? _getAspectType(double diff, j.Planet p1, j.Planet p2) {
-    const orb = 8.0; // Standard orb
+  /// Calculate aspects for a specific date/time and location
+  static Future<List<PlanetaryAspect>> calculateAspectsForDateTime(
+    DateTime dateTime,
+    j.GeographicLocation location,
+  ) async {
+    await EphemerisManager.ensureEphemerisData();
+    final jyotish = EphemerisManager.jyotish;
 
-    // Conjunction - 0°
-    if (diff <= orb) {
-      return AspectType.conjunction;
-    }
+    final libraryAspects = await jyotish.getAspects(
+      dateTime: dateTime,
+      location: location,
+    );
 
-    // Sextile - 60° (3rd/11th aspect)
-    if ((diff - 60).abs() <= orb) {
-      return AspectType.sextile;
-    }
-
-    // Square - 90° (4th/10th aspect)
-    if ((diff - 90).abs() <= orb) {
-      return AspectType.square;
-    }
-
-    // Trine - 120° (5th/9th aspect)
-    if ((diff - 120).abs() <= orb) {
-      return AspectType.trine;
-    }
-
-    // Opposition - 180° (7th aspect)
-    if ((diff - 180).abs() <= orb) {
-      return AspectType.opposition;
-    }
-
-    // Special aspects
-    // Mars aspects 4th, 7th, 8th
-    if (p1 == j.Planet.mars || p2 == j.Planet.mars) {
-      if ((diff - 120).abs() <= orb || (diff - 180).abs() <= orb || (diff - 210).abs() <= 8) {
-        return AspectType.square;
-      }
-    }
-
-    // Jupiter aspects 5th, 7th, 9th
-    if (p1 == j.Planet.jupiter || p2 == j.Planet.jupiter) {
-      if ((diff - 120).abs() <= orb || (diff - 180).abs() <= orb) {
-        return AspectType.trine;
-      }
-    }
-
-    // Saturn aspects 3rd, 7th, 10th
-    if (p1 == j.Planet.saturn || p2 == j.Planet.saturn) {
-      if ((diff - 60).abs() <= orb || (diff - 180).abs() <= orb || (diff - 270).abs() <= 8) {
-        return AspectType.square;
-      }
-    }
-
-    return null;
+    return libraryAspects.map((aspect) {
+      return PlanetaryAspect(
+        aspectingPlanet: aspect.aspectingPlanet,
+        aspectedPlanet: aspect.aspectedPlanet,
+        type: _mapLibraryAspectType(aspect.type),
+        orb: aspect.exactOrb,
+        isApplying: aspect.isApplying,
+      );
+    }).toList();
   }
 
-  /// Get ideal angle for aspect type
-  static double _getAspectAngle(AspectType type) {
+  /// Map library's AspectType to local AspectType
+  static AspectType _mapLibraryAspectType(j.AspectType type) {
     switch (type) {
-      case AspectType.conjunction:
-        return 0;
-      case AspectType.sextile:
-        return 60;
-      case AspectType.square:
-        return 90;
-      case AspectType.trine:
-        return 120;
-      case AspectType.opposition:
-        return 180;
+      case j.AspectType.conjunction:
+        return AspectType.conjunction;
+      case j.AspectType.opposition:
+        return AspectType.opposition;
+      case j.AspectType.trine5th:
+      case j.AspectType.trine9th:
+      case j.AspectType.jupiterSpecial5th:
+      case j.AspectType.jupiterSpecial9th:
+        return AspectType.trine;
+      case j.AspectType.square4th:
+      case j.AspectType.square10th:
+      case j.AspectType.marsSpecial4th:
+      case j.AspectType.marsSpecial8th:
+      case j.AspectType.saturnSpecial3rd:
+      case j.AspectType.saturnSpecial10th:
+        return AspectType.square;
+      case j.AspectType.sextile3rd:
+      case j.AspectType.sextile11th:
+        return AspectType.sextile;
     }
   }
 

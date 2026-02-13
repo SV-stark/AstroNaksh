@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import '../logic/panchang_service.dart';
+import '../logic/gowri_panchanga_service.dart';
 import '../data/models.dart';
 import '../data/city_database.dart';
 import 'package:intl/intl.dart';
@@ -15,8 +16,10 @@ class PanchangScreen extends StatefulWidget {
 
 class _PanchangScreenState extends State<PanchangScreen> {
   DateTime _selectedDate = DateTime.now();
-  final PanchangService _panchangService = PanchangService();
-  PanchangResult? _result;
+  final PankajService _panchangService = PankajService();
+  final GowriPanchangaService _gowriService = GowriPanchangaService();
+  PankajResult? _result;
+  GowriPanchangamInfo? _gowri;
   List<PanchangInauspicious> _inauspicious = [];
   List<PanchangHora> _horas = [];
   List<PanchangChoghadiya> _choghadiya = [];
@@ -82,8 +85,14 @@ class _PanchangScreenState extends State<PanchangScreen> {
         location,
       );
 
+      final gowri = await _gowriService.getCurrentGowriPanchanga(
+        _selectedDate,
+        location,
+      );
+
       setState(() {
         _result = result;
+        _gowri = gowri;
         _inauspicious = inauspicious;
         _horas = horas;
         _choghadiya = choghadiya;
@@ -509,6 +518,14 @@ class _PanchangScreenState extends State<PanchangScreen> {
                                     onTap: () =>
                                         setState(() => _selectedTabIndex = 5),
                                   ),
+                                  const SizedBox(width: 8),
+                                  _buildTabButton(
+                                    icon: FluentIcons.star,
+                                    label: 'Gowri',
+                                    isSelected: _selectedTabIndex == 6,
+                                    onTap: () =>
+                                        setState(() => _selectedTabIndex = 6),
+                                  ),
                                 ],
                               ),
                             ),
@@ -532,7 +549,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 else if (_selectedTabIndex == 4)
                   _buildHoraTab()
                 else if (_selectedTabIndex == 5)
-                  _buildChoghadiyaTab(),
+                  _buildChoghadiyaTab()
+                else if (_selectedTabIndex == 6)
+                  _buildGowriPanchangaTab(),
 
                 // Information Section
                 SliverToBoxAdapter(
@@ -792,6 +811,101 @@ class _PanchangScreenState extends State<PanchangScreen> {
         ],
       ),
       content: Text(desc),
+    );
+  }
+
+  Widget _buildGowriPanchangaTab() {
+    if (_gowri == null) {
+      return const SliverFillRemaining(
+        child: Center(child: Text('Loading...')),
+      );
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.all(16),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          Card(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(FluentIcons.star, size: 24),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Gowri Panchanga',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _buildInfoRow('Day', _gowri!.weekday),
+                _buildInfoRow('Tithi', _gowri!.tithi),
+                _buildInfoRow('Nakshatra', _gowri!.nakshatra),
+                _buildInfoRow('Yoga', _gowri!.yoga),
+                _buildInfoRow('Karana', _gowri!.karana),
+                const Divider(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Auspicious', style: TextStyle(color: Colors.green)),
+                          Text(_gowri!.isAuspicious ? 'Yes' : 'No'),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Muhurta', style: TextStyle(color: Colors.blue)),
+                          Text(_gowri!.isMuhurta ? 'Yes' : 'No'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'About Gowri Panchanga',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Gowri Panchanga is used to determine auspicious timings for various activities. '
+                  'It is calculated based on the weekday and the position of Sun and Moon.',
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
+              ],
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey[400])),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+        ],
+      ),
     );
   }
 

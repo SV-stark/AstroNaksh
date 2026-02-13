@@ -1,32 +1,10 @@
 import 'package:jyotish/jyotish.dart';
-import 'package:path_provider/path_provider.dart';
+import 'ephemeris_manager.dart';
 
 /// Ayanamsa Calculation System
 /// Supports multiple ayanamsa systems used in Vedic astrology
 /// Wraps the [SiderealMode] from the jyotish library.
 class AyanamsaCalculator {
-  static EphemerisService? _sharedService;
-  static bool _isInitialized = false;
-
-  /// Gets the shared, initialized EphemerisService
-  static Future<EphemerisService> _getEphemerisService() async {
-    if (_sharedService != null && _isInitialized) {
-      return _sharedService!;
-    }
-
-    _sharedService = EphemerisService();
-
-    // Get ephemeris path
-    final directory = await getApplicationSupportDirectory();
-    final ephemerisPath = '${directory.path}/ephe';
-
-    // Initialize with the ephemeris path
-    await _sharedService!.initialize(ephemerisPath: ephemerisPath);
-    _isInitialized = true;
-
-    return _sharedService!;
-  }
-
   /// Get all available ayanamsa systems
   static List<AyanamsaSystem> get systems {
     // Define custom order: Lahiri first, then KP Old, then KP New, then rest
@@ -94,8 +72,8 @@ class AyanamsaCalculator {
     if (system == null || system.mode == null) return 0.0;
 
     try {
-      final service = await _getEphemerisService();
-      return await service.getAyanamsa(dateTime: date, mode: system.mode!);
+      await EphemerisManager.ensureEphemerisData();
+      return await EphemerisManager.service.getAyanamsa(dateTime: date, mode: system.mode!);
     } catch (e) {
       throw Exception('Failed to calculate ayanamsa: $e');
     }

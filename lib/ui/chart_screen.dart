@@ -30,6 +30,9 @@ import 'predictions/rashiphal_dashboard.dart';
 import 'predictions/life_predictions_screen.dart';
 import 'reports/pdf_report_screen.dart';
 import '../../core/chart_share_service.dart';
+import 'analysis/jaimini_screen.dart';
+import 'analysis/progeny_screen.dart';
+import 'analysis/nadi_screen.dart';
 
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
@@ -414,6 +417,11 @@ class _ChartScreenState extends State<ChartScreen> {
                         leading: const Icon(FluentIcons.lightbulb),
                         items: (context) => [
                           MenuFlyoutItem(
+                            text: const Text('Jaimini (AK, Karakamsa)'),
+                            leading: const Icon(FluentIcons.star),
+                            onPressed: () => _navigateTo('jaimini'),
+                          ),
+                          MenuFlyoutItem(
                             text: const Text('Yoga & Dosha'),
                             leading: const Icon(FluentIcons.scale_volume),
                             onPressed: () => _navigateTo('yoga_dosha'),
@@ -437,6 +445,16 @@ class _ChartScreenState extends State<ChartScreen> {
                             text: const Text('Comparison'),
                             leading: const Icon(FluentIcons.compare),
                             onPressed: () => _navigateTo('comparison'),
+                          ),
+                          MenuFlyoutItem(
+                            text: const Text('Progeny'),
+                            leading: const Icon(FluentIcons.baby),
+                            onPressed: () => _navigateTo('progeny'),
+                          ),
+                          MenuFlyoutItem(
+                            text: const Text('Nadi Analysis'),
+                            leading: const Icon(FluentIcons.flow),
+                            onPressed: () => _navigateTo('nadi'),
                           ),
                         ],
                       ),
@@ -954,6 +972,15 @@ class _ChartScreenState extends State<ChartScreen> {
         break;
       case 'comparison':
         screen = ChartComparisonScreen(chart1: chartData);
+        break;
+      case 'jaimini':
+        screen = JaiminiScreen(chartData: chartData);
+        break;
+      case 'progeny':
+        screen = ProgenyScreen(chartData: chartData);
+        break;
+      case 'nadi':
+        screen = NadiScreen(chartData: chartData);
         break;
       case 'pdf_report':
         screen = PDFReportScreen(chartData: chartData);

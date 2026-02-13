@@ -16,6 +16,7 @@ class PlanetPosition {
   /// [latitudeSpeed] - Speed of latitude change in degrees/day.
   /// [distanceSpeed] - Speed of distance change in AU/day.
   /// [isCombust] - Whether the planet is combust (optional, defaults to false).
+  /// [isRetrograde] - Override retrograde detection (optional, auto-detected if not provided).
   const PlanetPosition({
     required this.planet,
     required this.dateTime,
@@ -27,7 +28,8 @@ class PlanetPosition {
     required this.distanceSpeed,
     this.declination = 0.0,
     this.isCombust = false,
-  }) : isRetrograde = longitudeSpeed < 0;
+    bool? isRetrograde,
+  }) : isRetrograde = isRetrograde ?? longitudeSpeed < 0;
 
   /// Creates a position from raw Swiss Ephemeris calculation results.
   factory PlanetPosition.fromSwissEph({
@@ -35,6 +37,7 @@ class PlanetPosition {
     required DateTime dateTime,
     required List<double> results,
     double? sunLongitude,
+    bool? isRetrograde,
   }) {
     return PlanetPosition(
       planet: planet,
@@ -49,6 +52,7 @@ class PlanetPosition {
       isCombust: sunLongitude != null
           ? calculateCombustion(planet, results[0], sunLongitude)
           : false,
+      isRetrograde: isRetrograde,
     );
   }
 

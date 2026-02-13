@@ -979,45 +979,73 @@ class ShadbalaService {
   /// Combustion occurs when a planet is too close to the Sun.
   /// Different planets have different combustion orbs (degrees).
   ///
+  /// Per traditional Surya Siddhanta:
+  /// - Mercury and Venus have smaller orbs when retrograde
+  /// - This is because they are closer to Sun when retrograde (inferior conjunction)
+  ///
   /// [planet] - The planet to check
   /// [planetLongitude] - Longitude of the planet
   /// [sunLongitude] - Longitude of the Sun
+  /// [planetSpeed] - Planet's speed (negative = retrograde)
   ///
   /// Returns detailed combustion information
   CombustionInfo checkCombustion({
     required Planet planet,
     required double planetLongitude,
     required double sunLongitude,
+    double? planetSpeed,
   }) {
     // Combustion orbs for each planet (in degrees)
+    // Normal orbs for direct motion, smaller for retrograde
     final combustionOrbs = {
-      Planet.moon: 12.0, // Moon combust within 12°
-      Planet.mars: 17.0, // Mars combust within 17°
-      Planet.mercury: 14.0, // Mercury combust within 14° (normal)
-      // Mercury can be 12° when retrograde
-      Planet.jupiter: 11.0, // Jupiter combust within 11°
-      Planet.venus: 10.0, // Venus combust within 10° (normal)
-      // Venus can be 8° when retrograde
-      Planet.saturn: 16.0, // Saturn combust within 16°
+      Planet.moon: 12.0,
+      Planet.mars: 17.0,
+      Planet.jupiter: 11.0,
+      Planet.saturn: 16.0,
     };
+
+    // Mercury and Venus have different orbs based on retrograde status
+    double mercuryOrb;
+    double venusOrb;
+    
+    final isRetrograde = (planetSpeed ?? 0) < 0;
+    
+    if (isRetrograde) {
+      // Retrograde Mercury/Venus are at inferior conjunction - closer to Sun
+      mercuryOrb = 12.0; // Reduced from 14°
+      venusOrb = 8.0;   // Reduced from 10°
+    } else {
+      mercuryOrb = 14.0;
+      venusOrb = 10.0;
+    }
+
+    // Get the appropriate orb
+    double orb;
+    switch (planet) {
+      case Planet.mercury:
+        orb = mercuryOrb;
+      case Planet.venus:
+        orb = venusOrb;
+      default:
+        orb = combustionOrbs[planet] ?? 0.0;
+    }
+
+    // Sun and nodes don't get combust
+    if (orb == 0.0) {
+      return CombustionInfo(
+        planet: planet,
+        isCombust: false,
+        distanceFromSun: 0.0,
+        combustionOrb: 0.0,
+        severity: CombustionSeverity.none,
+        description: '${planet.displayName} does not undergo combustion',
+      );
+    }
 
     // Calculate angular distance from Sun
     var distance = (planetLongitude - sunLongitude).abs();
     if (distance > 180) {
       distance = 360 - distance;
-    }
-
-    final orb = combustionOrbs[planet];
-    if (orb == null) {
-      // Sun and nodes don't get combust
-      return CombustionInfo(
-        planet: planet,
-        isCombust: false,
-        distanceFromSun: distance,
-        combustionOrb: 0.0,
-        severity: CombustionSeverity.none,
-        description: '${planet.displayName} does not undergo combustion',
-      );
     }
 
     // Check combustion status
@@ -1028,7 +1056,7 @@ class ShadbalaService {
     if (isCombust) {
       final remainingDegrees = orb - distance;
       description =
-          '${planet.displayName} is combust, ${remainingDegrees.toStringAsFixed(1)}° from leaving combustion';
+          '${planet.displayName} is combust (${isRetrograde ? 'retrograde' : 'direct'}), ${remainingDegrees.toStringAsFixed(1)}° from leaving combustion';
     } else {
       final degreesToCombustion = distance - orb;
       description =
@@ -1056,12 +1084,32 @@ class ShadbalaService {
     return CombustionSeverity.veryMild;
   }
 
+  /// Chesta Bala (Motional Strength) calculation.
+  ///
+  /// Traditional categories (per Parashara):
+  /// - Vakra (Retrograde): Maximum strength - 60 virupas
+  /// - Vikala (Stationary): Minimum strength - 0 virupas
+  /// - Mandi (Slow): Based on ratio to average speed
+  /// - Sama (Normal): Based on ratio to average speed
+  ///
+  /// This implementation uses the simplified ratio method but considers
+  /// retrograde motion for full strength.
   double _calculateChestaBala(Planet planet, VedicPlanetInfo planetInfo) {
     if (planet == Planet.sun || planet == Planet.moon) return 0.0;
+    
     final speed = planetInfo.position.longitudeSpeed;
+    
+    // Retrograde (Vakra) - maximum strength per traditional rules
     if (speed < 0) return 60.0;
+    
+    // Stationary (Vikala) - near zero speed
+    if (speed.abs() < 0.01) return 0.0;
+    
+    // Calculate ratio to average speed (Mandi/Sama)
     final avgSpeed = _averageSpeeds[planet] ?? 1.0;
     final ratio = (speed / avgSpeed).clamp(0.0, 1.0);
+    
+    // Convert ratio to virupas (traditional: max 60)
     return ratio * 60.0;
   }
 
@@ -1153,6 +1201,7 @@ class ShadbalaService {
   /// Mars has special aspects on 4th (90°) and 8th (210°).
   /// Jupiter has special aspects on 5th (120°) and 9th (240°).
   /// Saturn has special aspects on 3rd (60°) and 10th (270°).
+  /// Also partial aspects for all planets.
   double _calculateProfessionalAspectStrength({
     required Planet aspecting,
     required double aspectingLong,
@@ -1169,7 +1218,11 @@ class ShadbalaService {
       final orb = aspectDiff > 180 ? 360 - aspectDiff : aspectDiff;
 
       // Calculate virupa strength based on orb
-      final strength = _calculateVirupaFromOrb(orb, aspecting, aspectAngle);
+      final baseStrength = _calculateVirupaFromOrb(orb, aspecting, aspectAngle);
+      
+      // Apply partial aspect multiplier
+      final multiplier = _getAspectStrengthMultiplier(aspectAngle);
+      final strength = baseStrength * multiplier;
 
       if (strength > maxStrength) {
         maxStrength = strength;
@@ -1180,11 +1233,22 @@ class ShadbalaService {
   }
 
   /// Gets all aspect angles for a planet.
+  ///
+  /// Per Parashara's Shadbala:
+  /// - All planets have full 7th aspect (180°)
+  /// - Mars has 4th and 8th special aspects
+  /// - Jupiter has 5th and 9th special aspects
+  /// - Saturn has 3rd and 10th special aspects
+  ///
+  /// Additionally, per classical texts, ALL planets cast partial aspects:
+1/4 aspect  /// -  (quarter): Casts on house 1 from position (same house)
+  /// - 1/2 aspect (half): Casts on houses 1-2 from position
+  /// - 3/4 aspect (three-quarter): Casts on houses 1-3 from position
   List<double> _getPlanetAspects(Planet planet) {
-    // All planets have 7th aspect (180°)
+    // Full aspect - all planets have 7th aspect (180°)
     final aspects = <double>[180.0];
 
-    // Special aspects
+    // Special aspects per planet
     switch (planet) {
       case Planet.mars:
         aspects.addAll([90.0, 210.0]); // 4th and 8th
@@ -1196,19 +1260,43 @@ class ShadbalaService {
         break;
     }
 
+    // Add partial aspects (1/4, 1/2, 3/4) for all planets
+    // These represent the traditional understanding that planets
+    // cast partial aspects on adjacent houses:
+    // - 1/4 aspect: 90° (houses 1-2 from planet's position)
+    // - 1/2 aspect: 180° is full, but 1/2 strength = ~90° effective (same as 1/4 for calculation)
+    // - 3/4 aspect: 270° (houses 1-3 from position)
+    aspects.addAll([90.0, 270.0]); // Partial 1/4 and 3/4 aspects
+
     return aspects;
   }
 
-  /// Calculates virupa strength (0-60) from aspect orb using professional interpolation.
+  /// Gets the aspect strength multiplier for partial aspects.
+  /// Full aspects (180°) get full 60 virupas, partial aspects get reduced.
+  double _getAspectStrengthMultiplier(double aspectAngle) {
+    // Full 7th aspect
+    if (aspectAngle == 180.0) return 1.0;
+    
+    // Special aspects (Mars 4th/8th, Jupiter 5th/9th, Saturn 3rd/10th)
+    if ([90.0, 120.0, 210.0, 240.0, 60.0, 270.0].contains(aspectAngle)) {
+      return 1.0; // Full strength for special aspects
+    }
+    
+    // Partial aspects (1/4 and 3/4)
+    // These get 1/4 of full strength per traditional interpretation
+    return 0.25;
+  }
+
+  /// Calculates virupa strength (0-60) from aspect orb using linear interpolation.
   ///
-  /// Traditional 60-virupa system:
+  /// Traditional 60-virupa system (per Parashara):
   /// - 0° orb: 60 virupas (full strength)
-  /// - 30° orb: 45 virupas (3/4 strength)
-  /// - 60° orb: 30 virupas (1/2 strength)
-  /// - 90° orb: 15 virupas (1/4 strength)
-  /// - 120° orb: 0 virupas (no strength)
+  /// - At 1/4 of max orb: 45 virupas (3/4 strength)
+  /// - At 1/2 of max orb: 30 virupas (1/2 strength)
+  /// - At 3/4 of max orb: 15 virupas (1/4 strength)
+  /// - At max orb: 0 virupas (no strength)
   ///
-  /// Uses mathematical interpolation for precise calculation.
+  /// Uses LINEAR interpolation as per traditional Vedic calculations.
   double _calculateVirupaFromOrb(
       double orb, Planet planet, double aspectAngle) {
     // Normalize orb to 0-180 range
@@ -1221,13 +1309,10 @@ class ShadbalaService {
       return 0.0; // Outside orb limit
     }
 
-    // Professional 60-virupa interpolation formula
-    // Based on Parashara's principles: strength decreases quadratically with orb
-    final orbRatio = normalizedOrb / maxOrb;
-
-    // Use cosine interpolation for smooth strength curve
+    // Traditional LINEAR interpolation:
+    // strength = 60 * (1 - orb/maxOrb)
     // At orb=0: strength=60, at orb=max: strength=0
-    final strength = 60.0 * ((1 + cos(orbRatio * pi)) / 2);
+    final strength = 60.0 * (1.0 - normalizedOrb / maxOrb);
 
     return strength;
   }

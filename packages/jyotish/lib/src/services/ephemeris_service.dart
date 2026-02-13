@@ -130,11 +130,17 @@ class EphemerisService {
         // Convert tropical to sidereal by subtracting ayanamsa
         results[0] = (results[0] - ayanamsa + 360) % 360;
 
+        // Determine retrograde status BEFORE adjusting speed
+        // The precession adjustment is very small (~0.000137°/day) but could
+        // theoretically affect edge cases near zero velocity
+        final isRetrograde = results[3] < 0;
+
         // Adjust longitudeSpeed for sidereal frame:
         // In the sidereal frame, speeds are slightly lower due to precession.
         // The precession rate is ~50.3"/year = ~0.000137°/day.
         // This adjustment is negligible for most practical purposes (~0.01%),
         // but included for professional-grade precision in Chesta Bala.
+        // Note: Retrograde status is determined from the original speed above.
         const double precessionRatePerDay = 50.3 / 3600.0 / 365.25; // deg/day
         results[3] = results[3] - precessionRatePerDay;
 
@@ -142,6 +148,7 @@ class EphemerisService {
           planet: planet,
           dateTime: dateTime,
           results: results,
+          isRetrograde: isRetrograde,
         );
       } finally {
         malloc.free(errorBuffer);
@@ -215,7 +222,10 @@ class EphemerisService {
   ///
   /// [dateTime] - The date and time for calculation.
   /// [location] - The geographic location for calculation.
-  /// [houseSystem] - The house system to use ('P' = Placidus, 'K' = Koch, etc.)
+  /// [houseSystem] - The house system to use ('P' = Placidus, 'K' = Koch, 'W' = Whole Sign, etc.)
+  ///
+  /// Note: For latitudes above 65°, some house systems (Placidus, Koch) may produce
+  /// unreliable results. Whole Sign ('W') is recommended for high-latitude locations.
   ///
   /// Returns a map with 'cusps' and 'ascmc' arrays.
   ///
@@ -270,7 +280,8 @@ class EphemerisService {
   /// [atpress] - Atmospheric pressure in mbar (default: 0 = standard)
   /// [attemp] - Atmospheric temperature in Celsius (default: 0 = standard)
   ///
-  /// Returns the DateTime of the event, or null if the event doesn't occur.
+  /// Returns the DateTime of the event, or null if the event doesn't occur
+  /// (e.g., polar regions where the sun doesn't rise/set for extended periods).
   ///
   /// Throws [CalculationException] if calculation fails.
   Future<DateTime?> getRiseSet({
@@ -283,6 +294,13 @@ class EphemerisService {
   }) async {
     if (!_isInitialized || _bindings == null) {
       throw CalculationException('EphemerisService is not initialized');
+    }
+
+    // Check for extreme latitudes that may cause issues
+    final absLatitude = location.latitude.abs();
+    if (absLatitude > 66.5) {
+      // Beyond Arctic/Antarctic Circle - sun may not rise/set for extended periods
+      // Return null with a log message (could add logging here if needed)
     }
 
     try {

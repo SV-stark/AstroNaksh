@@ -2,6 +2,18 @@ import '../models/planet.dart';
 import '../models/planet_position.dart';
 
 /// Represents Vedic astrology house system information.
+///
+/// ## House System Precision Notes
+///
+/// Different house systems have varying precision at extreme latitudes:
+/// - **Whole Sign (W)**: Most reliable across all latitudes, recommended for Vedic astrology
+/// - **Placidus (P)**: May produce unreliable results above 65° latitude
+/// - **Koch (K)**: Limited accuracy above 60° latitude
+/// - **Porphyrius (O)**: Moderate reliability at high latitudes
+/// - **Regiomontanus (R)**: Similar limitations to Placidus
+/// - **Campanus (C)**: Good accuracy across most latitudes
+///
+/// For locations above 65°N or below 65°S, Whole Sign houses are recommended.
 class HouseSystem {
   const HouseSystem({
     required this.system,

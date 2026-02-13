@@ -14,7 +14,18 @@ class _VimshottariPlanetInfo {
 /// Service for calculating Vedic dasha periods.
 ///
 /// Supports Vimshottari, Yogini, Chara, Narayana, Ashtottari, and Kalachakra dasha systems.
+///
+/// Year Length Options:
+/// - 365.25 (default): Sidereal year with leap days
+/// - 360.0: Savana year (traditional) - 12 x 30-day months
+///   Many traditional schools prefer the 360-day year for precision.
 class DashaService {
+  /// Default year length (sidereal year with leap days)
+  static const double defaultYearLength = 365.25;
+  
+  /// Traditional Savana year length (360 days)
+  static const double savanaYearLength = 360.0;
+
   /// Vimshottari dasha sequence: Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury, Ketu, Venus
   static const List<Planet> vimshottariSequence = [
     Planet.sun,
@@ -77,11 +88,19 @@ class DashaService {
   ];
 
   /// Calculates Vimshottari Dasha from birth details.
+  ///
+  /// [moonLongitude] - Moon's longitude in degrees (0-360)
+  /// [birthDateTime] - Birth date and time
+  /// [levels] - Number of dasha levels (1-4): Mahadasha, Antardasha, Pratyantardasha, Sookshmadasha
+  /// [birthTimeUncertainty] - Uncertainty in birth time in minutes (for precision warning)
+  /// [yearLength] - Year length in days. Default is 365.25 (sidereal).
+  ///                 Use 360.0 for traditional Savana year (more precise for some schools).
   DashaResult calculateVimshottariDasha({
     required double moonLongitude,
     required DateTime birthDateTime,
     int levels = 3,
     int? birthTimeUncertainty,
+    double yearLength = defaultYearLength,
   }) {
     const nakshatraWidth = 360.0 / 27;
     final nakshatraIndex = (moonLongitude / nakshatraWidth).floor() % 27;
@@ -91,14 +110,30 @@ class DashaService {
     final portionTraversed = positionInNakshatra / nakshatraWidth;
     final portionRemaining = 1.0 - portionTraversed;
     final firstDashaYears = _vimshottariPlanets[startingLordIndex].years;
-    final balanceDays = firstDashaYears * 365.25 * portionRemaining;
+    final balanceDays = firstDashaYears * yearLength * portionRemaining;
 
     final mahadashas = _calculateMahadashas(
       birthDateTime: birthDateTime,
       startingLordIndex: startingLordIndex,
       balanceDays: balanceDays,
       levels: levels,
+      yearLength: yearLength,
     );
+
+    // Generate precision warning if birth time uncertainty is provided
+    String? precisionWarning;
+    if (birthTimeUncertainty != null && birthTimeUncertainty > 0) {
+      precisionWarning =
+          'Birth time uncertain by $birthTimeUncertainty minutes. '
+          'Dasha timing may vary by up to ${(birthTimeUncertainty / 60 * 0.2).toStringAsFixed(1)} days.';
+    }
+
+    // Add note about year length used
+    if (yearLength != defaultYearLength) {
+      precisionWarning = precisionWarning != null 
+          ? '$precisionWarning Using $yearLength-day year for calculations.'
+          : 'Using $yearLength-day year for calculations.';
+    }
 
     return DashaResult(
       type: DashaType.vimshottari,
@@ -108,6 +143,7 @@ class DashaService {
       birthPada: pada,
       balanceOfFirstDasha: balanceDays,
       allMahadashas: mahadashas,
+      precisionWarning: precisionWarning,
     );
   }
 
@@ -116,6 +152,7 @@ class DashaService {
     required int startingLordIndex,
     required double balanceDays,
     required int levels,
+    double yearLength = defaultYearLength,
   }) {
     final mahadashas = <DashaPeriod>[];
     var currentDate = birthDateTime;
@@ -125,7 +162,7 @@ class DashaService {
         final lordIndex = (startingLordIndex + i) % 9;
         final planetInfo = _vimshottariPlanets[lordIndex];
         double durationDays =
-            (cycle == 0 && i == 0) ? balanceDays : planetInfo.years * 365.25;
+            (cycle == 0 && i == 0) ? balanceDays : planetInfo.years * yearLength;
         final endDate = currentDate.add(Duration(days: durationDays.round()));
 
         List<DashaPeriod> subPeriods = [];
@@ -135,6 +172,7 @@ class DashaService {
             mahadashaDays: durationDays,
             startingLordIndex: lordIndex,
             levels: levels,
+            yearLength: yearLength,
           );
         }
 
@@ -275,6 +313,10 @@ class DashaService {
       birthPada: (positionInNakshatra / (nakshatraWidth / 4)).floor() + 1,
       balanceOfFirstDasha: balanceDays,
       allMahadashas: mahadashas,
+      precisionWarning: birthTimeUncertainty != null && birthTimeUncertainty > 0
+          ? 'Birth time uncertain by $birthTimeUncertainty minutes. '
+              'Dasha timing may vary by up to ${(birthTimeUncertainty / 60 * 0.2).toStringAsFixed(1)} days.'
+          : null,
     );
   }
 

@@ -25,6 +25,11 @@ import 'models/special_transits.dart';
 import 'models/transit.dart';
 import 'models/sudarshan_chakra.dart';
 import 'models/vedic_chart.dart';
+import 'models/varshapal.dart';
+import 'models/house_strength.dart';
+import 'models/nadi.dart';
+import 'models/progeny.dart';
+import 'models/compatibility.dart';
 
 import 'services/aspect_service.dart';
 import 'services/ashtakavarga_service.dart';
@@ -47,10 +52,15 @@ import 'services/prashna_service.dart';
 import 'services/shadbala_service.dart';
 import 'services/special_transit_service.dart';
 import 'services/transit_service.dart';
+import 'services/house_strength_service.dart';
+import 'services/nadi_service.dart';
+import 'services/progeny_service.dart';
+import 'services/compatibility_service.dart';
 import 'services/sudarshan_chakra_service.dart';
 import 'services/vedic_chart_service.dart';
 import 'services/gochara_vedha_service.dart';
 import 'services/strength_analysis_service.dart';
+import 'services/varshapal_service.dart';
 
 /// The main entry point for the Jyotish library.
 ///
@@ -110,6 +120,11 @@ class Jyotish {
   PrashnaService? _prashnaService;
   GocharaVedhaService? _gocharaVedhaService;
   StrengthAnalysisService? _strengthAnalysisService;
+  VarshapalService? _varshapalService;
+  HouseStrengthService? _houseStrengthService;
+  NadiService? _nadiService;
+  ProgenyService? _progenyService;
+  CompatibilityService? _compatibilityService;
   bool _isInitialized = false;
 
   /// Initializes the Swiss Ephemeris library.
@@ -151,6 +166,11 @@ class Jyotish {
       _prashnaService = PrashnaService(_ephemerisService!);
       _gocharaVedhaService = GocharaVedhaService();
       _strengthAnalysisService = StrengthAnalysisService();
+      _varshapalService = VarshapalService(_ephemerisService!);
+      _houseStrengthService = HouseStrengthService(_shadbalaService!);
+      _nadiService = NadiService();
+      _progenyService = ProgenyService();
+      _compatibilityService = CompatibilityService();
       _isInitialized = true;
     } catch (e) {
       throw JyotishException(
@@ -551,10 +571,14 @@ class Jyotish {
   /// print('Current dasha: ${dasha.getCurrentPeriodString(DateTime.now())}');
   /// print('Birth nakshatra: ${dasha.birthNakshatra}');
   /// ```
+  /// 
+  /// [yearLength] - Optional year length in days. Default is 365.25 (sidereal).
+  /// Use 360.0 for traditional Savana year calculations.
   Future<DashaResult> getVimshottariDasha({
     required VedicChart natalChart,
     int levels = 3,
     int? birthTimeUncertainty,
+    double yearLength = 365.25,
   }) async {
     _ensureInitialized();
 
@@ -570,6 +594,7 @@ class Jyotish {
         birthDateTime: natalChart.dateTime,
         levels: levels,
         birthTimeUncertainty: birthTimeUncertainty,
+        yearLength: yearLength,
       );
     } catch (e) {
       if (e is JyotishException) rethrow;
@@ -686,6 +711,111 @@ class Jyotish {
   }) async {
     _ensureInitialized();
     return _dashaService!.getKalachakraDasha(natalChart);
+  }
+
+  // ============================================================
+  // VARSHAPAL (ANNUAL CHART) CALCULATIONS
+  // ============================================================
+
+  /// Calculates the Varshapal (Annual Chart) for a given year.
+  ///
+  /// Varshapal is an annual chart calculated from the birthday each year.
+  /// It shows the planetary influences for the entire year based on the
+  /// solar return chart (when the Sun returns to the birth Sun position).
+  ///
+  /// The Varshapal has its own period system (Dasa):
+  /// - Varsha Dasa: Year-long periods ruled by planets
+  /// - Maas Dasa: Monthly periods
+  /// - Dina Dasa: Daily periods
+  /// - Hora Dasa: Hourly periods
+  ///
+  /// [birthDateTime] - Original birth date and time
+  /// [varshaDateTime] - The birthday date/time for the year to calculate
+  /// [location] - Birth location for chart calculation
+  /// [houseSystem] - House system to use (default: Whole Sign 'W')
+  /// [checkDate] - Optional date to check current periods (defaults to now)
+  ///
+  /// Returns [Varshapal] with chart and all period calculations.
+  ///
+  /// Example:
+  /// ```dart
+  /// final varshapal = await jyotish.getVarshapal(
+  ///   birthDateTime: DateTime(1990, 5, 15, 10, 30),
+  ///   varshaDateTime: DateTime(2025, 5, 15, 10, 30),
+  ///   location: location,
+  /// );
+  /// print('Varsha Lord: ${varshapal.varshaLord.displayName}');
+  /// print('Current Period: ${varshapal.getCurrentPeriodString(DateTime.now())}');
+  /// ```
+  Future<Varshapal> getVarshapal({
+    required DateTime birthDateTime,
+    required DateTime varshaDateTime,
+    required GeographicLocation location,
+    String houseSystem = 'W',
+    DateTime? checkDate,
+  }) async {
+    _ensureInitialized();
+
+    try {
+      return await _varshapalService!.calculateVarshapal(
+        birthDateTime: birthDateTime,
+        varshaDateTime: varshaDateTime,
+        location: location,
+        houseSystem: houseSystem,
+        checkDate: checkDate,
+      );
+    } catch (e) {
+      if (e is JyotishException) rethrow;
+      throw JyotishException(
+        'Failed to calculate Varshapal: ${e.toString()}',
+        originalError: e,
+      );
+    }
+  }
+
+  /// Calculates the current Varshapal for this year.
+  ///
+  /// This calculates the annual chart from this year's birthday and
+  /// determines the current periods.
+  ///
+  /// [birthDateTime] - Original birth date and time
+  /// [location] - Birth location for chart calculation
+  /// [houseSystem] - House system to use (default: Whole Sign 'W')
+  /// [checkDate] - Optional date to check current periods (defaults to now)
+  ///
+  /// Returns [Varshapal] with chart and current period calculations.
+  ///
+  /// Example:
+  /// ```dart
+  /// final varshapal = await jyotish.getCurrentVarshapal(
+  ///   birthDateTime: DateTime(1990, 5, 15, 10, 30),
+  ///   location: location,
+  /// );
+  /// print('Samvatsara: ${varshapal.samvatsaraName}');
+  /// print('Current Period: ${varshapal.getCurrentPeriodString(DateTime.now())}');
+  /// ```
+  Future<Varshapal> getCurrentVarshapal({
+    required DateTime birthDateTime,
+    required GeographicLocation location,
+    String houseSystem = 'W',
+    DateTime? checkDate,
+  }) async {
+    _ensureInitialized();
+
+    try {
+      return await _varshapalService!.calculateCurrentVarshapal(
+        birthDateTime: birthDateTime,
+        location: location,
+        houseSystem: houseSystem,
+        checkDate: checkDate,
+      );
+    } catch (e) {
+      if (e is JyotishException) rethrow;
+      throw JyotishException(
+        'Failed to calculate current Varshapal: ${e.toString()}',
+        originalError: e,
+      );
+    }
   }
 
   // ============================================================
@@ -1928,5 +2058,111 @@ class Jyotish {
   Future<double> calculateGulikaSphuta(VedicChart chart) async {
     _ensureInitialized();
     return await _prashnaService!.calculateGulikaSphuta(chart);
+  }
+
+  // ============================================================
+  // HOUSE STRENGTH (VIMSOPAKA BALA)
+  // ============================================================
+
+  /// Calculates enhanced Bhava Bala with Vimsopaka integration.
+  Future<Map<int, EnhancedBhavaBalaResult>> getEnhancedBhavaBala(VedicChart chart) async {
+    _ensureInitialized();
+    return await _houseStrengthService!.calculateEnhancedBhavaBala(chart);
+  }
+
+  /// Calculates Vimsopaka Bala (divisional chart strength).
+  Map<Planet, VimsopakaBalaResult> getVimsopakaBala(VedicChart chart) {
+    _ensureInitialized();
+    return _houseStrengthService!.calculateVimsopakaBala(chart);
+  }
+
+  // ============================================================
+  // NADI ASTROLOGY
+  // ============================================================
+
+  /// Calculates the Nadi chart for a given Vedic chart.
+  NadiChart calculateNadiChart(VedicChart chart) {
+    _ensureInitialized();
+    return _nadiService!.calculateNadiChart(chart);
+  }
+
+  /// Gets Nadi information from a specific longitude.
+  NadiInfo getNadiFromLongitude(double longitude) {
+    _ensureInitialized();
+    return _nadiService!.getNadiFromLongitude(longitude);
+  }
+
+  /// Gets the Nadi interpretation for a given Nadi number.
+  String getNadiInterpretation(int nadiNumber) {
+    _ensureInitialized();
+    return _nadiService!.getNadiInterpretation(nadiNumber);
+  }
+
+  /// Identifies the Nadi seed based on Nakshatra and Pada.
+  NadiSeedResult identifyNadiSeed(int nakshatraNumber, int pada) {
+    _ensureInitialized();
+    return _nadiService!.identifyNadiSeed(nakshatraNumber, pada);
+  }
+
+  // ============================================================
+  // PROGENY (CHILD) ANALYSIS
+  // ============================================================
+
+  /// Analyzes progeny prospects based on the chart.
+  ProgenyResult analyzeProgeny(VedicChart chart) {
+    _ensureInitialized();
+    return _progenyService!.analyzeProgeny(chart);
+  }
+
+  /// Analyzes the strength of the 5th house for children.
+  FifthHouseStrength analyzeFifthHouse(VedicChart chart) {
+    _ensureInitialized();
+    return _progenyService!.analyzeFifthHouse(chart);
+  }
+
+  /// Analyzes Jupiter's condition for child prospects.
+  JupiterCondition analyzeJupiterCondition(VedicChart chart) {
+    _ensureInitialized();
+    return _progenyService!.analyzeJupiterCondition(chart);
+  }
+
+  /// Detects favorable child yogas in the chart.
+  List<ChildYoga> detectChildYogas(VedicChart chart) {
+    _ensureInitialized();
+    return _progenyService!.detectChildYogas(chart);
+  }
+
+  // ============================================================
+  // MARRIAGE COMPATIBILITY (KUNDLI MILAN)
+  // ============================================================
+
+  /// Calculates compatibility between two charts.
+  CompatibilityResult calculateCompatibility(VedicChart boyChart, VedicChart girlChart) {
+    _ensureInitialized();
+    return _compatibilityService!.calculateCompatibility(boyChart, girlChart);
+  }
+
+  /// Calculates Guna Milan (Ashtakoota) scores.
+  GunaScores calculateGunaMilan(VedicChart boyChart, VedicChart girlChart) {
+    _ensureInitialized();
+    return _compatibilityService!.calculateGunaMilan(boyChart, girlChart);
+  }
+
+  /// Checks for Manglik Dosha in a chart.
+  ManglikDoshaResult checkManglikDosha(VedicChart chart) {
+    _ensureInitialized();
+    return _compatibilityService!.checkManglikDosha(chart);
+  }
+
+  /// Checks for Nadi Dosha between two charts.
+  NadiDoshaResult checkNadiDosha(VedicChart boyChart, VedicChart girlChart) {
+    _ensureInitialized();
+    return _compatibilityService!.checkNadiDosha(boyChart, girlChart);
+  }
+
+  /// Checks for Bhakoot Dosha between two charts.
+  BhakootDoshaResult checkBhakootDosha(VedicChart boyChart, VedicChart girlChart) {
+    _ensureInitialized();
+    return _compatibilityService!.checkBhakootDosha(boyChart, girlChart);
   }
 }

@@ -558,15 +558,27 @@ class DivisionalChartService {
           return (8 + part) % 12;
         }
 
-      case DivisionalChartType.d60: // Shashtiamsa
+      case DivisionalChartType.d60: // Shashtiamsa (60 divisions)
+        // Traditional D60 calculation (Shashtiamsa)
+        // Each sign is divided into 60 parts of 0.5° each
+        //
+        // Per BPHS and classical sources:
+        // - For odd signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius):
+        //   Count forward: Part 0 = same sign, Part 59 = 11th sign ahead
+        // - For even signs (Taurus, Cancer, Virgo, Scorpio, Capricorn, Pisces):
+        //   Count backward: Part 0 = 9th sign from current (traditional method)
+        //
+        // Alternative simpler method (also valid): Continuous count for all
         final part = (degreeInSign / (30 / 60)).floor(); // 0-59
+        
+        // Using the sign-based approach (most traditional):
         if (isOdd) {
+          // Odd signs: forward count from sign
           return (signIndex + part) % 12;
         } else {
-          // For even signs, count backwards from the 9th sign FROM the sign itself
-          // Part 0 maps to 9th from sign, Part 1 to 8th from sign, etc.
-          // Formula: (signIndex + 9 - part) % 12
-          return (signIndex + 9 - part) % 12;
+          // Even signs: backward from 9th sign (traditional)
+          // 9th from current sign = (signIndex + 8) % 12
+          return (signIndex + 8 - part) % 12;
         }
 
       case DivisionalChartType.d150: // Nadi Amsa

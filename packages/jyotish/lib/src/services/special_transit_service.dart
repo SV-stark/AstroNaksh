@@ -214,7 +214,7 @@ class SpecialTransitService {
     var lateBound = startDate.add(const Duration(days: 1100)); // Max ~3 years
 
     const maxIterations = 50;
-    const accuracyThreshold = Duration(hours: 1); // 1 hour precision
+    const accuracyThreshold = Duration(minutes: 1); // 1 minute precision
 
     for (var i = 0; i < maxIterations; i++) {
       if (lateBound.difference(earlyBound) <= accuracyThreshold) {

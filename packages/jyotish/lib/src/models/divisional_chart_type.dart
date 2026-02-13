@@ -1,13 +1,13 @@
 /// Represents the different Divisional Charts (Varga) in Vedic Astrology.
 enum DivisionalChartType {
   /// D1 - Rashi (Root/Body)
-  d1('D1', 'Rashi', 'Body', 1),
+  d1('D1', 'Rashi', 'Body', 1, vimsopakaWeight: 6.0),
 
   /// D2 - Hora (Wealth/Family)
-  d2('D2', 'Hora', 'Wealth', 2),
+  d2('D2', 'Hora', 'Wealth', 2, vimsopakaWeight: 2.0),
 
   /// D3 - Drekkana (Siblings/Courage)
-  d3('D3', 'Drekkana', 'Siblings', 3),
+  d3('D3', 'Drekkana', 'Siblings', 3, vimsopakaWeight: 4.0),
 
   /// D4 - Chaturthamsa (Fortune/Assets)
   d4('D4', 'Chaturthamsa', 'Assets', 4),
@@ -28,13 +28,13 @@ enum DivisionalChartType {
   d11('D11', 'Rudramsa', 'Gains/Challenges', 11),
 
   /// D9 - Navamsa (Spouse/Dharma)
-  d9('D9', 'Navamsa', 'Spouse', 9),
+  d9('D9', 'Navamsa', 'Spouse', 9, vimsopakaWeight: 5.0),
 
   /// D10 - Dasamsa (Career/Profession)
   d10('D10', 'Dasamsa', 'Career', 10),
 
   /// D12 - Dwadasamsa (Parents)
-  d12('D12', 'Dwadasamsa', 'Parents', 12),
+  d12('D12', 'Dwadasamsa', 'Parents', 12, vimsopakaWeight: 1.0),
 
   /// D16 - Shodasamsa (Vehicles/Happiness)
   d16('D16', 'Shodasamsa', 'Vehicles', 16),
@@ -49,7 +49,7 @@ enum DivisionalChartType {
   d27('D27', 'Saptavimsamsa', 'Strength', 27),
 
   /// D30 - Trimsamsa (Misfortunes/Evil effects)
-  d30('D30', 'Trimsamsa', 'Misfortunes', 30),
+  d30('D30', 'Trimsamsa', 'Misfortunes', 30, vimsopakaWeight: 2.0),
 
   /// D40 - Khavedamsa (Auspicious/Inauspicious effects)
   d40('D40', 'Khavedamsa', 'Auspiciousness', 40),
@@ -58,21 +58,20 @@ enum DivisionalChartType {
   d45('D45', 'Akshavedamsa', 'Character', 45),
 
   /// D60 - Shashtiamsa (Past Life/Karma)
-  d60('D60', 'Shashtiamsa', 'Past Life', 60),
+  d60('D60', 'Shashtiamsa', 'Past Life', 60, vimsopakaWeight: 4.0),
 
   /// D150 - Nadi Amsa (Micro-level destiny/Past Life Karma)
-  /// The 150th division - extremely fine subdivision for detailed analysis
-  /// of past life karmas and subtle destiny patterns
   d150('D150', 'Nadi Amsa', 'Micro Destiny', 150),
 
   /// D249 - 249 Subdivisions (Micro-Level Analysis)
   d249('D249', '249 Subdivisions', 'Micro Analysis', 249);
 
   const DivisionalChartType(
-      this.code, this.name, this.significance, this.divisions);
+      this.code, this.name, this.significance, this.divisions, {this.vimsopakaWeight = 0.0});
 
   final String code;
   final String name;
   final String significance;
   final int divisions;
+  final double vimsopakaWeight;
 }

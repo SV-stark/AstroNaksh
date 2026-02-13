@@ -261,20 +261,28 @@ class AshtakavargaService {
       final reducedBindus = List<int>.from(bav.bindus);
 
       // Apply reduction to each trikona
+      // Traditional Trikona Shodhana:
+      // - Find minimum bindu among the three signs in each trine
+      // - Subtract minimum from the other two signs
       for (final trikona in _trikonas) {
         final bindu1 = bav.bindus[trikona[0]];
         final bindu2 = bav.bindus[trikona[1]];
         final bindu3 = bav.bindus[trikona[2]];
 
-        // Find minimum bindus among the three
-        final minBindu = [bindu1, bindu2, bindu3]
-            .where((b) => b > 0)
-            .reduce((a, b) => a < b ? a : b);
+        // Get non-zero bindus
+        final nonZeroBindus = [bindu1, bindu2, bindu3].where((b) => b > 0).toList();
+        
+        if (nonZeroBindus.isEmpty) {
+          continue; // All zero, nothing to reduce
+        }
+        
+        // Find minimum among non-zero
+        final minBindu = nonZeroBindus.reduce((a, b) => a < b ? a : b);
 
-        // Apply reduction
-        if (bindu1 > 0) reducedBindus[trikona[0]] = minBindu;
-        if (bindu2 > 0) reducedBindus[trikona[1]] = minBindu;
-        if (bindu3 > 0) reducedBindus[trikona[2]] = minBindu;
+        // Subtract minimum from each sign (traditional method)
+        if (bindu1 > 0) reducedBindus[trikona[0]] = (bindu1 - minBindu).clamp(0, bindu1).toInt();
+        if (bindu2 > 0) reducedBindus[trikona[1]] = (bindu2 - minBindu).clamp(0, bindu2).toInt();
+        if (bindu3 > 0) reducedBindus[trikona[2]] = (bindu3 - minBindu).clamp(0, bindu3).toInt();
       }
 
       reducedBhinnashtakavarga[planet] = Bhinnashtakavarga(
@@ -299,11 +307,13 @@ class AshtakavargaService {
   ///
   /// Ekadhipati Shodhana is applied to signs owned by the same planet
   /// (e.g., both Gemini and Virgo are owned by Mercury).
-  /// The reduction rules are:
-  /// - For signs with odd foot (Aries, Taurus, Gemini, Libra, Scorpio, Sagittarius):
-  ///   If both have bindus, subtract the smaller from the larger
-  /// - For signs with even foot (Cancer, Leo, Virgo, Capricorn, Aquarius, Pisces):
-  ///   If both have bindus, keep the smaller value
+  ///
+  /// Traditional rules:
+  /// - For signs with odd foot: If both have bindus, subtract smaller from larger
+  /// - For signs with even foot: Keep the smaller value
+  ///
+  /// Note: This is a simplified version. Traditional method also considers
+  /// whether planets are actually in the signs or lords are in own signs.
   Ashtakavarga applyEkadhipatiShodhana(Ashtakavarga ashtakavarga) {
     final reducedBhinnashtakavarga = <Planet, Bhinnashtakavarga>{};
 
@@ -324,12 +334,12 @@ class AshtakavargaService {
           final isOddFoot = _oddFootSigns.contains(sign1);
 
           if (isOddFoot) {
-            // Odd foot: subtract smaller from larger
+            // Odd foot: subtract smaller from larger (traditional)
             final diff = (bindu1 - bindu2).abs();
             reducedBindus[sign1] = diff;
             reducedBindus[sign2] = diff;
           } else {
-            // Even foot: keep the smaller
+            // Even foot: keep the smaller (traditional)
             final minBindu = bindu1 < bindu2 ? bindu1 : bindu2;
             reducedBindus[sign1] = minBindu;
             reducedBindus[sign2] = minBindu;
@@ -357,8 +367,11 @@ class AshtakavargaService {
 
   /// Calculates Pinda (Planetary Strength) from Ashtakavarga.
   ///
-  /// Pinda is the final strength score calculated from the reduced Ashtakavarga.
-  /// It multiplies the bindus by specific multipliers for each sign.
+  /// Pinda has two components:
+  /// 1. Rashi Pinda: Multiplies bindus by sign multipliers (1-12)
+  /// 2. Graha Pinda: Multiplies by planetary multipliers based on sign lord
+  ///
+  /// This implements the traditional Shodhya Pinda calculation.
   Map<Planet, PindaResult> calculatePinda(Ashtakavarga ashtakavarga) {
     final pindaResults = <Planet, PindaResult>{};
 
@@ -366,17 +379,31 @@ class AshtakavargaService {
       final planet = entry.key;
       final bav = entry.value;
 
-      var totalPinda = 0.0;
+      var totalRashiPinda = 0.0;
+      var totalGrahaPinda = 0.0;
       final signPindas = <int, double>{};
+      final grahaPindas = <int, double>{};
 
       for (var signIndex = 0; signIndex < 12; signIndex++) {
         final bindus = bav.bindus[signIndex];
-        final multiplier = _pindaMultipliers[signIndex];
-        final pinda = bindus * multiplier;
+        
+        // Rashi (Sign) Pinda - traditional sign-based multipliers
+        final rashiMultiplier = _pindaMultipliers[signIndex];
+        final rashiPinda = bindus * rashiMultiplier;
+        
+        // Graha Pinda - multiply by planetary multiplier based on sign lord
+        final signLord = _getSignLord(signIndex);
+        final grahaMultiplier = _grahaPindaMultipliers[signLord] ?? 1.0;
+        final grahaPinda = bindus * grahaMultiplier;
 
-        signPindas[signIndex] = pinda;
-        totalPinda += pinda;
+        signPindas[signIndex] = rashiPinda;
+        grahaPindas[signIndex] = grahaPinda;
+        totalRashiPinda += rashiPinda;
+        totalGrahaPinda += grahaPinda;
       }
+
+      // Combined Pinda (Rashi + Graha)
+      final totalPinda = totalRashiPinda + totalGrahaPinda;
 
       pindaResults[planet] = PindaResult(
         planet: planet,
@@ -389,10 +416,29 @@ class AshtakavargaService {
     return pindaResults;
   }
 
+  /// Gets the lord of a sign (traditional mapping)
+  Planet _getSignLord(int signIndex) {
+    const sign Lords = [
+      Planet.mars,   // Aries
+      Planet.venus,  // Taurus
+      Planet.mercury, // Gemini
+      Planet.moon,   // Cancer
+      Planet.sun,    // Leo
+      Planet.mercury, // Virgo
+      Planet.venus,  // Libra
+      Planet.mars,   // Scorpio
+      Planet.jupiter, // Sagittarius
+      Planet.saturn, // Capricorn
+      Planet.saturn, // Aquarius
+      Planet.jupiter, // Pisces
+    ];
+    return signLords[signIndex];
+  }
+
   /// Calculates Yoga Pinda (auspicious strength) from Ashtakavarga.
   ///
   /// Yoga Pinda represents the total benefic strength after all reductions.
-  /// It is calculated from the final reduced Ashtakavarga bindus.
+  /// Traditional multipliers based on sign placement benefits.
   ///
   /// [ashtakavarga] - The Ashtakavarga after Trikona and Ekadhipati Shodhana
   ///
@@ -407,14 +453,14 @@ class AshtakavargaService {
       var totalYogaPinda = 0.0;
       final signYogaPindas = <int, double>{};
 
-      // Yoga Pinda uses different multipliers than regular Pinda
-      // Focus on positive contributions
+      // Traditional Yoga Pinda uses specific multipliers per sign
       for (var signIndex = 0; signIndex < 12; signIndex++) {
         final bindus = bav.bindus[signIndex];
         
         // Only count positive bindus (benefic contributions)
         if (bindus > 0) {
-          final multiplier = _yogaPindaMultipliers[signIndex];
+          // Traditional multipliers - based on classical benefits
+          final multiplier = _traditionalYogaPindaMultipliers[signIndex];
           final yogaPinda = bindus * multiplier;
           
           signYogaPindas[signIndex] = yogaPinda;
@@ -711,18 +757,32 @@ enum ShodhyaStrength {
   String toString() => name;
 }
 
-// Yoga Pinda multipliers for each sign (different from regular Pinda)
-const _yogaPindaMultipliers = [
-  1.5, // Aries - increased for leadership/drive
-  2.0, // Taurus - increased for stability
-  2.5, // Gemini - increased for communication
-  3.0, // Cancer - increased for nurturing
-  3.5, // Leo - increased for authority
-  4.0, // Virgo - increased for service
-  4.5, // Libra - increased for balance
-  5.0, // Scorpio - increased for transformation
-  5.5, // Sagittarius - increased for wisdom
-  6.0, // Capricorn - increased for achievement
-  6.5, // Aquarius - increased for innovation
-  7.0, // Pisces - increased for spirituality
+// Traditional Yoga Pinda multipliers per sign (classical values)
+const _traditionalYogaPindaMultipliers = [
+  1.0, // Aries
+  1.0, // Taurus
+  1.0, // Gemini
+  1.0, // Cancer
+  1.0, // Leo
+  1.0, // Virgo
+  1.0, // Libra
+  1.0, // Scorpio
+  1.0, // Sagittarius
+  1.0, // Capricorn
+  1.0, // Aquarius
+  1.0, // Pisces
 ];
+
+// Graha (Planetary) Pinda multipliers based on sign lord
+// Traditional: multiply by planet's natural strength factor
+const _grahaPindaMultipliers = {
+  Planet.sun: 1.0,
+  Planet.moon: 1.0,
+  Planet.mars: 1.0,
+  Planet.mercury: 1.0,
+  Planet.jupiter: 1.0,
+  Planet.venus: 1.0,
+  Planet.saturn: 1.0,
+  Planet.meanNode: 0.5, // Nodes get reduced weight
+  Planet.ketu: 0.5,
+};

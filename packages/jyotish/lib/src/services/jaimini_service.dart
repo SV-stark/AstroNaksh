@@ -6,12 +6,19 @@ import '../models/vedic_chart.dart';
 /// Service for Jaimini astrology calculations (Karakamsa, Rashi Drishti).
 class JaiminiService {
   /// Gets the Atmakaraka (planet with highest degree in its sign).
+  ///
+  /// Per Jaimini, Atmakaraka is the planet with the highest degree
+  /// in its sign (excluding the Sun). Traditionally includes 7 planets + Rahu.
+  ///
+  /// Special rule for Rahu: Since Rahu moves in reverse direction,
+  /// its degrees are measured as 30° minus its longitude within the sign.
+  /// This gives Rahu a chance to be Atmakaraka.
   Planet getAtmakaraka(VedicChart chart) {
     Planet? atmakaraka;
     double highestDegree = -1;
 
-    // Consider 7 planets (Sun to Saturn) + Rahu (per some traditions)
-    // Most common: 7 planets excluding Rahu
+    // Consider 8 planets per Jaimini tradition (Sun to Saturn + Rahu)
+    // Ketu is not typically considered as it co-locates with Rahu
     const planets = [
       Planet.sun,
       Planet.moon,
@@ -20,6 +27,7 @@ class JaiminiService {
       Planet.jupiter,
       Planet.venus,
       Planet.saturn,
+      Planet.meanNode, // Rahu
     ];
 
     for (final planet in planets) {
@@ -27,7 +35,17 @@ class JaiminiService {
       if (info == null) continue;
 
       // Degree within sign (0-30)
-      final degreeInSign = info.longitude % 30;
+      var degreeInSign = info.longitude % 30;
+
+      // Special handling for Rahu (and Ketu): 
+      // Since they move backwards, their effective degree is reversed
+      // This gives them a chance to be Atmakaraka
+      if (planet == Planet.meanNode || planet == Planet.ketu) {
+        degreeInSign = 30.0 - degreeInSign;
+      }
+
+      // Skip Sun per traditional Jaimini rules
+      if (planet == Planet.sun) continue;
 
       if (degreeInSign > highestDegree) {
         highestDegree = degreeInSign;
@@ -35,7 +53,7 @@ class JaiminiService {
       }
     }
 
-    return atmakaraka ?? Planet.sun; // Fallback
+    return atmakaraka ?? Planet.moon; // Fallback to Moon
   }
 
   /// Gets Karakamsa information.

@@ -522,7 +522,7 @@ This fork was created to bridge the gap between low-level astronomical calculati
 - **Configurable Node Type**: Full support for switching between Mean Node (traditional Vedic standard) and True Node (modern preference) for Rahu/Ketu calculations.
 - **Global Setting via CalculationFlags**: Use `NodeType.meanNode` (default) for traditional calculations or `NodeType.trueNode` for greater precision with actual node positions.
 
-### 6. Lunar Month (Masa) & Abhijit Nakshatra
+### 11. Lunar Month (Masa) & Abhijit Nakshatra
 - **Abhijit Nakshatra**: Full support for the 28th intercalary nakshatra (6°40' to 10°53'20" in Capricorn), including position checking and nakshatra calculation with Abhijit detection.
 - **Lunar Month (Masa) Calculations**: Complete implementation of both Amanta and Purnimanta lunar month systems:
   - **Amanta (Amavasyanta)**: Month starts from Amavasya (New Moon). Used in Southern India, Gujarat, and other regions.
@@ -530,7 +530,7 @@ This fork was created to bridge the gap between low-level astronomical calculati
 - **Adhika Masa Detection**: Automatic detection of extra lunar months (leap months) in the lunar calendar.
 - **Samvatsara**: Support for the 60-year Jupiter cycle (Samvatsara names from Prabhava to Akshaya).
 
-### 7. Mean Node vs True Node (Rahu) Configuration
+### 12. Mean Node vs True Node (Rahu) Configuration
 - **Configurable Node Type**: Full support for switching between Mean Node (traditional Vedic standard) and True Node (modern preference) for Rahu/Ketu calculations.
 - **Global Setting via CalculationFlags**: Use `NodeType.meanNode` (default) for traditional calculations or `NodeType.trueNode` for greater precision with actual node positions.
 - **Per-Call Flexibility**: Calculate specific charts with different node types without affecting global defaults.

@@ -1,6 +1,5 @@
 import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
-import '../core/ephemeris_manager.dart';
 
 class NadiService {
   /// Get Nadi analysis for a chart
@@ -11,6 +10,7 @@ class NadiService {
         nadiType: 'Unknown',
         description: 'Moon position not available',
         strength: 0,
+        pada: 1,
       );
     }
 
@@ -34,7 +34,7 @@ class NadiService {
 
   int _calculateNadiStrength(int nakshatraIndex, CompleteChartData chartData) {
     int strength = 50;
-    
+
     // Check Moon's strength
     final moon = chartData.baseChart.planets[Planet.moon];
     if (moon != null) {
@@ -43,10 +43,10 @@ class NadiService {
       if (signIndex == 1) strength += 20; // Exalted
       if (signIndex == 7) strength -= 20; // Debilitated
     }
-    
+
     // Check aspects on Moon
     // This is simplified - library would do more detailed analysis
-    
+
     return strength.clamp(0, 100);
   }
 

@@ -44,4 +44,36 @@ class GowriPanchangamInfo {
 
   String get description =>
       '${type.name} ($periodNumber) - ${type.isAuspicious ? "Good" : "Bad"}';
+
+  /// Whether this period is considered auspicious.
+  bool get isAuspicious => type.isAuspicious;
+
+  /// The day of the week for this period.
+  String get weekday {
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+    return days[startTime.weekday - 1];
+  }
+
+  /// Placeholder for Tithi (satisfied UI requirement)
+  String get tithi => '';
+
+  /// Placeholder for Nakshatra (satisfied UI requirement)
+  String get nakshatra => '';
+
+  /// Placeholder for Yoga (satisfied UI requirement)
+  String get yoga => '';
+
+  /// Placeholder for Karana (satisfied UI requirement)
+  String get karana => '';
+
+  /// Placeholder for isMuhurta (satisfied UI requirement)
+  bool get isMuhurta => isAuspicious;
 }

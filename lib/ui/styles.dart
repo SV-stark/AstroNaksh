@@ -37,13 +37,7 @@ class AppStyles {
   static const double elementSpacing = 12.0;
 
   // Current theme mode
-  static AppThemeMode _currentThemeMode = AppThemeMode.dark;
-
-  static AppThemeMode get currentThemeMode => _currentThemeMode;
-  
-  static set currentThemeMode(AppThemeMode mode) {
-    _currentThemeMode = mode;
-  }
+  static AppThemeMode currentThemeMode = AppThemeMode.dark;
 
   // Fluent Dark Theme
   static FluentThemeData get darkTheme {
@@ -65,7 +59,9 @@ class AppStyles {
   static FluentThemeData get oledTheme {
     return FluentThemeData(
       brightness: Brightness.dark,
-      accentColor: _createAccentColor(const Color(0xFFBB86FC)), // Purple accent for OLED
+      accentColor: _createAccentColor(
+        const Color(0xFFBB86FC),
+      ), // Purple accent for OLED
       scaffoldBackgroundColor: oledBackground,
       cardColor: oledSurface,
       typography: Typography.fromBrightness(brightness: Brightness.dark),
@@ -95,7 +91,7 @@ class AppStyles {
 
   /// Get theme based on current mode
   static FluentThemeData get theme {
-    switch (_currentThemeMode) {
+    switch (currentThemeMode) {
       case AppThemeMode.light:
         return lightTheme;
       case AppThemeMode.dark:
@@ -119,7 +115,7 @@ class AppStyles {
 
   /// Get background color for current theme
   static Color get backgroundColor {
-    switch (_currentThemeMode) {
+    switch (currentThemeMode) {
       case AppThemeMode.light:
         return lightBackground;
       case AppThemeMode.dark:
@@ -131,7 +127,7 @@ class AppStyles {
 
   /// Get surface color for current theme
   static Color get surfaceColor {
-    switch (_currentThemeMode) {
+    switch (currentThemeMode) {
       case AppThemeMode.light:
         return lightSurface;
       case AppThemeMode.dark:
@@ -143,7 +139,7 @@ class AppStyles {
 
   /// Get border color for current theme
   static Color get borderColor {
-    switch (_currentThemeMode) {
+    switch (currentThemeMode) {
       case AppThemeMode.light:
         return lightBorder;
       case AppThemeMode.dark:

@@ -1007,13 +1007,13 @@ class ShadbalaService {
     // Mercury and Venus have different orbs based on retrograde status
     double mercuryOrb;
     double venusOrb;
-    
+
     final isRetrograde = (planetSpeed ?? 0) < 0;
-    
+
     if (isRetrograde) {
       // Retrograde Mercury/Venus are at inferior conjunction - closer to Sun
       mercuryOrb = 12.0; // Reduced from 14°
-      venusOrb = 8.0;   // Reduced from 10°
+      venusOrb = 8.0; // Reduced from 10°
     } else {
       mercuryOrb = 14.0;
       venusOrb = 10.0;
@@ -1096,19 +1096,19 @@ class ShadbalaService {
   /// retrograde motion for full strength.
   double _calculateChestaBala(Planet planet, VedicPlanetInfo planetInfo) {
     if (planet == Planet.sun || planet == Planet.moon) return 0.0;
-    
+
     final speed = planetInfo.position.longitudeSpeed;
-    
+
     // Retrograde (Vakra) - maximum strength per traditional rules
     if (speed < 0) return 60.0;
-    
+
     // Stationary (Vikala) - near zero speed
     if (speed.abs() < 0.01) return 0.0;
-    
+
     // Calculate ratio to average speed (Mandi/Sama)
     final avgSpeed = _averageSpeeds[planet] ?? 1.0;
     final ratio = (speed / avgSpeed).clamp(0.0, 1.0);
-    
+
     // Convert ratio to virupas (traditional: max 60)
     return ratio * 60.0;
   }
@@ -1219,7 +1219,7 @@ class ShadbalaService {
 
       // Calculate virupa strength based on orb
       final baseStrength = _calculateVirupaFromOrb(orb, aspecting, aspectAngle);
-      
+
       // Apply partial aspect multiplier
       final multiplier = _getAspectStrengthMultiplier(aspectAngle);
       final strength = baseStrength * multiplier;
@@ -1241,7 +1241,7 @@ class ShadbalaService {
   /// - Saturn has 3rd and 10th special aspects
   ///
   /// Additionally, per classical texts, ALL planets cast partial aspects:
-1/4 aspect  /// -  (quarter): Casts on house 1 from position (same house)
+  /// - 1/4 aspect (quarter): Casts on house 1 from position (same house)
   /// - 1/2 aspect (half): Casts on houses 1-2 from position
   /// - 3/4 aspect (three-quarter): Casts on houses 1-3 from position
   List<double> _getPlanetAspects(Planet planet) {
@@ -1276,12 +1276,12 @@ class ShadbalaService {
   double _getAspectStrengthMultiplier(double aspectAngle) {
     // Full 7th aspect
     if (aspectAngle == 180.0) return 1.0;
-    
+
     // Special aspects (Mars 4th/8th, Jupiter 5th/9th, Saturn 3rd/10th)
     if ([90.0, 120.0, 210.0, 240.0, 60.0, 270.0].contains(aspectAngle)) {
       return 1.0; // Full strength for special aspects
     }
-    
+
     // Partial aspects (1/4 and 3/4)
     // These get 1/4 of full strength per traditional interpretation
     return 0.25;

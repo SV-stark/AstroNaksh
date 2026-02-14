@@ -255,60 +255,60 @@ class VedicChartService {
   Map<Planet, Map<Planet, int>> _getPlanetaryRelationships() {
     return {
       Planet.sun: {
-        Planet.moon: 1, // Friend
-        Planet.mars: 1, // Friend
-        Planet.jupiter: 1, // Friend
-        Planet.mercury: 0, // Neutral
-        Planet.venus: -1, // Enemy
-        Planet.saturn: -1, // Enemy
+        Planet.moon: 1,
+        Planet.mars: 1,
+        Planet.jupiter: 1,
+        Planet.mercury: 0,
+        Planet.venus: -1,
+        Planet.saturn: -1,
       },
       Planet.moon: {
-        Planet.sun: 0, // Neutral
-        Planet.mercury: 0, // Neutral
-        Planet.venus: 0, // Neutral
-        Planet.mars: 0, // Neutral
-        Planet.jupiter: 0, // Neutral
-        Planet.saturn: 0, // Neutral
+        Planet.sun: 1,
+        Planet.mercury: 1,
+        Planet.venus: 1, // Added as per user request
+        Planet.mars: 0,
+        Planet.jupiter: 0,
+        Planet.saturn: 0,
       },
       Planet.mars: {
-        Planet.sun: 1, // Friend
-        Planet.moon: 1, // Friend
-        Planet.jupiter: 1, // Friend
-        Planet.mercury: -1, // Enemy
-        Planet.venus: -1, // Enemy
-        Planet.saturn: 0, // Neutral
+        Planet.sun: 1,
+        Planet.moon: 1,
+        Planet.jupiter: 1,
+        Planet.mercury: -1,
+        Planet.venus: 0,
+        Planet.saturn: 0,
       },
       Planet.mercury: {
-        Planet.sun: 1, // Friend
-        Planet.venus: 1, // Friend
-        Planet.mars: 0, // Neutral
-        Planet.jupiter: 0, // Neutral
-        Planet.saturn: 1, // Friend
-        Planet.moon: 0, // Neutral
+        Planet.sun: 1,
+        Planet.venus: 1,
+        Planet.moon: -1, // Added as per user request
+        Planet.mars: 0,
+        Planet.jupiter: 0,
+        Planet.saturn: 0,
       },
       Planet.jupiter: {
-        Planet.sun: 1, // Friend
-        Planet.moon: 1, // Friend
-        Planet.mars: 1, // Friend
-        Planet.mercury: -1, // Enemy
-        Planet.venus: 0, // Neutral
-        Planet.saturn: 0, // Neutral
+        Planet.sun: 1,
+        Planet.moon: 1,
+        Planet.mars: 1,
+        Planet.mercury: -1,
+        Planet.venus: -1,
+        Planet.saturn: 0,
       },
       Planet.venus: {
-        Planet.mercury: 1, // Friend
-        Planet.saturn: 1, // Friend
-        Planet.mars: 0, // Neutral
-        Planet.jupiter: 0, // Neutral
-        Planet.sun: -1, // Enemy
-        Planet.moon: 0, // Neutral
+        Planet.mercury: 1,
+        Planet.saturn: 1,
+        Planet.mars: 0,
+        Planet.jupiter: 0,
+        Planet.sun: -1,
+        Planet.moon: -1,
       },
       Planet.saturn: {
-        Planet.mercury: 1, // Friend
-        Planet.venus: 1, // Friend
-        Planet.jupiter: 0, // Neutral
-        Planet.mars: -1, // Enemy
-        Planet.sun: -1, // Enemy
-        Planet.moon: -1, // Enemy
+        Planet.mercury: 1,
+        Planet.venus: 1,
+        Planet.jupiter: 0,
+        Planet.mars: -1,
+        Planet.sun: -1,
+        Planet.moon: -1,
       },
     };
   }

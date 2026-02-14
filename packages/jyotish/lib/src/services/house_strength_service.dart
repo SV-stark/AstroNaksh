@@ -276,25 +276,33 @@ class HouseStrengthService {
   }
 
   PlanetaryFriendship _getFriendshipLevel(Planet planet1, Planet planet2) {
+    if (planet1 == planet2) return PlanetaryFriendship.own;
+
     const naturalFriends = {
       Planet.sun: [Planet.moon, Planet.mars, Planet.jupiter],
-      Planet.moon: [Planet.sun, Planet.mercury],
+      Planet.moon: [Planet.sun, Planet.mercury, Planet.venus],
       Planet.mars: [Planet.sun, Planet.moon, Planet.jupiter],
       Planet.mercury: [Planet.sun, Planet.venus],
       Planet.jupiter: [Planet.sun, Planet.moon, Planet.mars],
       Planet.venus: [Planet.mercury, Planet.saturn],
-      Planet.saturn: [Planet.venus, Planet.mercury],
+      Planet.saturn: [Planet.mercury, Planet.venus],
+    };
+
+    const naturalEnemies = {
+      Planet.sun: [Planet.venus, Planet.saturn],
+      Planet.moon: [], // Moon has no natural enemies
+      Planet.mars: [Planet.mercury],
+      Planet.mercury: [Planet.moon],
+      Planet.jupiter: [Planet.mercury, Planet.venus],
+      Planet.venus: [Planet.sun, Planet.moon],
+      Planet.saturn: [Planet.sun, Planet.moon, Planet.mars],
     };
 
     final p1Friends = naturalFriends[planet1] ?? [];
-    final p2Friends = naturalFriends[planet2] ?? [];
+    final p1Enemies = naturalEnemies[planet1] ?? [];
 
-    if (planet1 == planet2) return PlanetaryFriendship.own;
-    if (p1Friends.contains(planet2) && p2Friends.contains(planet1)) {
-      return PlanetaryFriendship.friend;
-    }
     if (p1Friends.contains(planet2)) return PlanetaryFriendship.friend;
-    if (p2Friends.contains(planet1)) return PlanetaryFriendship.friend;
+    if (p1Enemies.contains(planet2)) return PlanetaryFriendship.enemy;
 
     return PlanetaryFriendship.neutral;
   }

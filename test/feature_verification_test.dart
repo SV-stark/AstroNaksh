@@ -11,10 +11,6 @@ void main() {
 
     expect(charaDasha.periods, isNotEmpty);
     expect(charaDasha.startSign, isNotNull);
-    // Print first period for manual verification
-    if (charaDasha.periods.isNotEmpty) {
-      print('Chara Dasha Start: ${charaDasha.periods.first.signName}');
-    }
   });
 
   test('Verify Native Narayana Dasha Integration', () async {
@@ -26,9 +22,6 @@ void main() {
 
     expect(narayanaDasha.periods, isNotEmpty);
     expect(narayanaDasha.startSign, isNotNull);
-    if (narayanaDasha.periods.isNotEmpty) {
-      print('Narayana Dasha Start: ${narayanaDasha.periods.first.signName}');
-    }
   });
 
   test('Verify Sudarshan Chakra Service Instantiation', () async {

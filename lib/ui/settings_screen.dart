@@ -427,20 +427,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const Text('Position Calculation'),
         const SizedBox(height: 8),
         Card(
+          padding: EdgeInsets.zero,
           child: Column(
             children: [
-              SwitchListTile(
-                title: const Text('Calculate Speed'),
-                subtitle: const Text('Show retrograde motion & planetary velocity'),
-                value: _settings.calculateSpeed,
-                onChanged: (v) => setState(() => _settings.calculateSpeed = v),
+              _buildListTileToggle(
+                'Calculate Speed',
+                _settings.calculateSpeed,
+                (v) => setState(() => _settings.calculateSpeed = v),
               ),
-              const Divider(),
-              SwitchListTile(
-                title: const Text('Topocentric Positions'),
-                subtitle: const Text('Use observed positions (from Earth surface)'),
-                value: _settings.useTopocentric,
-                onChanged: (v) => setState(() => _settings.useTopocentric = v),
+              _buildListTileToggle(
+                'Topocentric Positions',
+                _settings.useTopocentric,
+                (v) => setState(() => _settings.useTopocentric = v),
               ),
             ],
           ),
@@ -697,10 +695,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Text(
-            label,
-            style: TextStyle(fontSize: isMobile ? 16 : 14),
-          ),
+          child: Text(label, style: TextStyle(fontSize: isMobile ? 16 : 14)),
         ),
         SizedBox(
           height: isMobile ? 48 : 32,

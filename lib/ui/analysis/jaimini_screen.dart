@@ -1,5 +1,4 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
 import '../../logic/jaimini_service.dart';
 
@@ -10,13 +9,11 @@ class JaiminiScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final jaimini = JaiminiService();
+    final jaimini = JaiminiAnalysisService();
     final analysis = jaimini.getJaiminiAnalysis(chartData);
 
     return ScaffoldPage(
-      header: const PageHeader(
-        title: Text('Jaimini Astrology'),
-      ),
+      header: const PageHeader(title: Text('Jaimini Astrology')),
       content: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -24,7 +21,7 @@ class JaiminiScreen extends StatelessWidget {
           _buildSection(
             'Atmakaraka (AK)',
             'Planet with highest degree',
-            '${analysis.atmakaraka.displayName}',
+            analysis.atmakaraka.displayName,
             'The soul indicator - represents the native\'s main life purpose',
           ),
           const SizedBox(height: 16),
@@ -33,7 +30,7 @@ class JaiminiScreen extends StatelessWidget {
           _buildSection(
             'Karakamsa',
             'AK in Navamsa',
-            '${analysis.karakamsa.karakamsaRashi?.name ?? "Unknown"}',
+            analysis.karakamsa.karakamsaSign.name,
             'Reieves spiritual progress and moksha indications',
           ),
           const SizedBox(height: 16),
@@ -49,10 +46,15 @@ class JaiminiScreen extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
-                Text('Appearance indicator', style: TextStyle(color: Colors.grey[400])),
+                Text(
+                  'Appearance indicator',
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
                 const SizedBox(height: 8),
-                Text('Sign: ${analysis.arudhaLagna.rashi?.name ?? "Unknown"}'),
-                Text('Lord: ${analysis.arudhaLagna.lord?.displayName ?? "Unknown"}'),
+                Text('Sign: ${analysis.arudhaLagna.sign.name}'),
+                Text(
+                  'House from Lagna: ${analysis.arudhaLagna.houseFromLagna}',
+                ),
               ],
             ),
           ),
@@ -69,10 +71,13 @@ class JaiminiScreen extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
-                Text('Spouse & marriage indicator', style: TextStyle(color: Colors.grey[400])),
+                Text(
+                  'Spouse & marriage indicator',
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
                 const SizedBox(height: 8),
-                Text('Sign: ${analysis.upapada.rashi?.name ?? "Unknown"}'),
-                Text('Lord: ${analysis.upapada.lord?.displayName ?? "Unknown"}'),
+                Text('Sign: ${analysis.upapada.sign.name}'),
+                Text('House from Lagna: ${analysis.upapada.houseFromLagna}'),
               ],
             ),
           ),
@@ -89,15 +94,24 @@ class JaiminiScreen extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
-                Text('Sign aspects (Jaimini)', style: TextStyle(color: Colors.grey[400])),
+                Text(
+                  'Sign aspects (Jaimini)',
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
                 const SizedBox(height: 8),
                 if (analysis.rashiDrishti.isEmpty)
                   const Text('No significant Rashi Drishti found')
                 else
-                  ...analysis.rashiDrishti.take(5).map((rd) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text('${rd.fromRashi?.name} → ${rd.toRashi?.name}'),
-                  )),
+                  ...analysis.rashiDrishti
+                      .take(5)
+                      .map(
+                        (rd) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            '${rd.aspectingSign.name} → ${rd.aspectedSign.name}',
+                          ),
+                        ),
+                      ),
               ],
             ),
           ),
@@ -114,12 +128,21 @@ class JaiminiScreen extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
-                Text('Planetary influences on houses', style: TextStyle(color: Colors.grey[400])),
+                Text(
+                  'Planetary influences on houses',
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
                 const SizedBox(height: 8),
-                ...analysis.argalas.entries.take(6).map((e) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text('House ${e.key}: ${e.value.length} argala(s)'),
-                )),
+                ...analysis.argalas.entries
+                    .take(6)
+                    .map(
+                      (e) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(
+                          'House ${e.key}: ${e.value.length} argala(s)',
+                        ),
+                      ),
+                    ),
               ],
             ),
           ),
@@ -128,17 +151,28 @@ class JaiminiScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(String title, String subtitle, String value, String description) {
+  Widget _buildSection(
+    String title,
+    String subtitle,
+    String value,
+    String description,
+  ) {
     return Card(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
           const SizedBox(height: 4),
           Text(subtitle, style: TextStyle(color: Colors.grey[400])),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 4),
           Text(description, style: TextStyle(color: Colors.grey[300])),
         ],

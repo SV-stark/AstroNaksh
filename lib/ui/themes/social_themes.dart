@@ -443,13 +443,7 @@ class SocialThemeManager {
   factory SocialThemeManager() => _instance;
   SocialThemeManager._internal();
 
-  SocialTheme _currentTheme = SocialTheme.cosmicNebula;
-
-  SocialTheme get currentTheme => _currentTheme;
-
-  set currentTheme(SocialTheme theme) {
-    _currentTheme = theme;
-  }
+  SocialTheme currentTheme = SocialTheme.cosmicNebula;
 
   /// Get all available themes
   List<SocialTheme> get allThemes => SocialTheme.values;

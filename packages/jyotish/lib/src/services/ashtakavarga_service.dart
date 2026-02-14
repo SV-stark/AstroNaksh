@@ -270,19 +270,26 @@ class AshtakavargaService {
         final bindu3 = bav.bindus[trikona[2]];
 
         // Get non-zero bindus
-        final nonZeroBindus = [bindu1, bindu2, bindu3].where((b) => b > 0).toList();
-        
+        final nonZeroBindus =
+            [bindu1, bindu2, bindu3].where((b) => b > 0).toList();
+
         if (nonZeroBindus.isEmpty) {
           continue; // All zero, nothing to reduce
         }
-        
+
         // Find minimum among non-zero
         final minBindu = nonZeroBindus.reduce((a, b) => a < b ? a : b);
 
         // Subtract minimum from each sign (traditional method)
-        if (bindu1 > 0) reducedBindus[trikona[0]] = (bindu1 - minBindu).clamp(0, bindu1).toInt();
-        if (bindu2 > 0) reducedBindus[trikona[1]] = (bindu2 - minBindu).clamp(0, bindu2).toInt();
-        if (bindu3 > 0) reducedBindus[trikona[2]] = (bindu3 - minBindu).clamp(0, bindu3).toInt();
+        if (bindu1 > 0)
+          reducedBindus[trikona[0]] =
+              (bindu1 - minBindu).clamp(0, bindu1).toInt();
+        if (bindu2 > 0)
+          reducedBindus[trikona[1]] =
+              (bindu2 - minBindu).clamp(0, bindu2).toInt();
+        if (bindu3 > 0)
+          reducedBindus[trikona[2]] =
+              (bindu3 - minBindu).clamp(0, bindu3).toInt();
       }
 
       reducedBhinnashtakavarga[planet] = Bhinnashtakavarga(
@@ -293,13 +300,15 @@ class AshtakavargaService {
     }
 
     // Recalculate Sarvashtakavarga
-    final sarvashtakavarga = _calculateSarvashtakavarga(reducedBhinnashtakavarga);
+    final sarvashtakavarga =
+        _calculateSarvashtakavarga(reducedBhinnashtakavarga);
 
     return Ashtakavarga(
       natalChart: ashtakavarga.natalChart,
       bhinnashtakavarga: reducedBhinnashtakavarga,
       sarvashtakavarga: sarvashtakavarga,
-      samudayaAshtakavarga: _calculateSamudayaAshtakavarga(reducedBhinnashtakavarga),
+      samudayaAshtakavarga:
+          _calculateSamudayaAshtakavarga(reducedBhinnashtakavarga),
     );
   }
 
@@ -355,13 +364,15 @@ class AshtakavargaService {
     }
 
     // Recalculate Sarvashtakavarga
-    final sarvashtakavarga = _calculateSarvashtakavarga(reducedBhinnashtakavarga);
+    final sarvashtakavarga =
+        _calculateSarvashtakavarga(reducedBhinnashtakavarga);
 
     return Ashtakavarga(
       natalChart: ashtakavarga.natalChart,
       bhinnashtakavarga: reducedBhinnashtakavarga,
       sarvashtakavarga: sarvashtakavarga,
-      samudayaAshtakavarga: _calculateSamudayaAshtakavarga(reducedBhinnashtakavarga),
+      samudayaAshtakavarga:
+          _calculateSamudayaAshtakavarga(reducedBhinnashtakavarga),
     );
   }
 
@@ -386,11 +397,11 @@ class AshtakavargaService {
 
       for (var signIndex = 0; signIndex < 12; signIndex++) {
         final bindus = bav.bindus[signIndex];
-        
+
         // Rashi (Sign) Pinda - traditional sign-based multipliers
         final rashiMultiplier = _pindaMultipliers[signIndex];
         final rashiPinda = bindus * rashiMultiplier;
-        
+
         // Graha Pinda - multiply by planetary multiplier based on sign lord
         final signLord = _getSignLord(signIndex);
         final grahaMultiplier = _grahaPindaMultipliers[signLord] ?? 1.0;
@@ -418,15 +429,15 @@ class AshtakavargaService {
 
   /// Gets the lord of a sign (traditional mapping)
   Planet _getSignLord(int signIndex) {
-    const sign Lords = [
-      Planet.mars,   // Aries
-      Planet.venus,  // Taurus
+    const signLords = [
+      Planet.mars, // Aries
+      Planet.venus, // Taurus
       Planet.mercury, // Gemini
-      Planet.moon,   // Cancer
-      Planet.sun,    // Leo
+      Planet.moon, // Cancer
+      Planet.sun, // Leo
       Planet.mercury, // Virgo
-      Planet.venus,  // Libra
-      Planet.mars,   // Scorpio
+      Planet.venus, // Libra
+      Planet.mars, // Scorpio
       Planet.jupiter, // Sagittarius
       Planet.saturn, // Capricorn
       Planet.saturn, // Aquarius
@@ -456,13 +467,13 @@ class AshtakavargaService {
       // Traditional Yoga Pinda uses specific multipliers per sign
       for (var signIndex = 0; signIndex < 12; signIndex++) {
         final bindus = bav.bindus[signIndex];
-        
+
         // Only count positive bindus (benefic contributions)
         if (bindus > 0) {
           // Traditional multipliers - based on classical benefits
           final multiplier = _traditionalYogaPindaMultipliers[signIndex];
           final yogaPinda = bindus * multiplier;
-          
+
           signYogaPindas[signIndex] = yogaPinda;
           totalYogaPinda += yogaPinda;
         } else {
@@ -496,24 +507,24 @@ class AshtakavargaService {
   ShodhyaPindaResult calculateShodhyaPinda(Ashtakavarga ashtakavarga) {
     // Step 1: Apply Trikona Shodhana
     final trikonaReduced = applyTrikonaShodhana(ashtakavarga);
-    
+
     // Step 2: Apply Ekadhipati Shodhana
     final ekadhipatiReduced = applyEkadhipatiShodhana(trikonaReduced);
-    
+
     // Step 3: Calculate Pinda from reduced Ashtakavarga
     final reducedPinda = calculatePinda(ekadhipatiReduced);
-    
+
     // Step 4: Calculate Yoga Pinda from reduced Ashtakavarga
     final yogaPinda = calculateYogaPinda(ekadhipatiReduced);
 
     // Calculate totals
     var totalReducedPinda = 0.0;
     var totalYogaPinda = 0.0;
-    
+
     for (final entry in reducedPinda.entries) {
       totalReducedPinda += entry.value.totalPinda;
     }
-    
+
     for (final entry in yogaPinda.entries) {
       totalYogaPinda += entry.value.totalYogaPinda;
     }
@@ -585,19 +596,19 @@ class AshtakavargaService {
 
   // Trikona groups (trines)
   static const _trikonas = [
-    [0, 4, 8],   // Aries, Leo, Sagittarius (Fire)
-    [1, 5, 9],   // Taurus, Virgo, Capricorn (Earth)
-    [2, 6, 10],  // Gemini, Libra, Aquarius (Air)
-    [3, 7, 11],  // Cancer, Scorpio, Pisces (Water)
+    [0, 4, 8], // Aries, Leo, Sagittarius (Fire)
+    [1, 5, 9], // Taurus, Virgo, Capricorn (Earth)
+    [2, 6, 10], // Gemini, Libra, Aquarius (Air)
+    [3, 7, 11], // Cancer, Scorpio, Pisces (Water)
   ];
 
   // Dual signs (owned by same planet)
   static const _dualSigns = [
-    [2, 5],   // Gemini, Virgo (Mercury)
-    [1, 6],   // Taurus, Libra (Venus)
-    [0, 7],   // Aries, Scorpio (Mars)
-    [8, 11],  // Sagittarius, Pisces (Jupiter)
-    [9, 10],  // Capricorn, Aquarius (Saturn)
+    [2, 5], // Gemini, Virgo (Mercury)
+    [1, 6], // Taurus, Libra (Venus)
+    [0, 7], // Aries, Scorpio (Mars)
+    [8, 11], // Sagittarius, Pisces (Jupiter)
+    [9, 10], // Capricorn, Aquarius (Saturn)
   ];
 
   // Signs with odd foot
@@ -605,15 +616,15 @@ class AshtakavargaService {
 
   // Pinda multipliers for each sign
   static const _pindaMultipliers = [
-    1.0,  // Aries
-    2.0,  // Taurus
-    3.0,  // Gemini
-    4.0,  // Cancer
-    5.0,  // Leo
-    6.0,  // Virgo
-    7.0,  // Libra
-    8.0,  // Scorpio
-    9.0,  // Sagittarius
+    1.0, // Aries
+    2.0, // Taurus
+    3.0, // Gemini
+    4.0, // Cancer
+    5.0, // Leo
+    6.0, // Virgo
+    7.0, // Libra
+    8.0, // Scorpio
+    9.0, // Sagittarius
     10.0, // Capricorn
     11.0, // Aquarius
     12.0, // Pisces

@@ -913,18 +913,19 @@ class PDFReportService {
                       // Often measured in Rupas (1 Rupa = 60 Shashtiamsas) or just raw
                       // The app uses raw units mostly, let's use raw from screen
                       String status = 'Weak';
-                      if (score >= 400)
+                      if (score >= 400) {
                         status = 'Very Strong';
-                      else if (score >= 300)
+                      } else if (score >= 300) {
                         status = 'Strong';
-                      else if (score >= 200)
+                      } else if (score >= 200) {
                         status = 'Moderate';
+                      }
 
                       return pw.TableRow(
                         children: [
                           _buildTableCell('$rank'),
                           _buildTableCell(planet),
-                          _buildTableCell('${score.toStringAsFixed(1)}'),
+                          _buildTableCell(score.toStringAsFixed(1)),
                           _buildTableCell(status),
                         ],
                       );
@@ -972,7 +973,7 @@ class PDFReportService {
                         children: [
                           _buildTableCell('House ${e.key}'),
                           _buildTableCell(
-                            '${e.value.totalStrength.toStringAsFixed(1)}',
+                            e.value.totalStrength.toStringAsFixed(1),
                           ),
                         ],
                       );
@@ -984,7 +985,9 @@ class PDFReportService {
           },
         ),
       );
-    } catch (e) {}
+    } catch (e) {
+      // Ignore errors for this section
+    }
   }
 
   static Future<void> _addTransitSection(
@@ -1046,7 +1049,9 @@ class PDFReportService {
           },
         ),
       );
-    } catch (e) {}
+    } catch (e) {
+      // Ignore errors for this section
+    }
   }
 
   /// Build vargas summary table

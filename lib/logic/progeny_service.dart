@@ -1,35 +1,34 @@
 import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
-import '../core/ephemeris_manager.dart';
 
 class ProgenyService {
   /// Analyze prospects for children
   ProgenyAnalysis analyzeProgeny(CompleteChartData chartData) {
     final factors = <ProgenyFactor>[];
-    
+
     // Check 5th house (children)
     final fifthHouse = _getFifthHouse(chartData);
     factors.add(fifthHouse);
-    
+
     // Check Jupiter (natural karaka for children)
     final jupiterFactor = _analyzeJupiter(chartData);
     factors.add(jupiterFactor);
-    
+
     // Check Venus (alternates for male/female chart)
     final venusFactor = _analyzeVenus(chartData);
     factors.add(venusFactor);
-    
+
     // Check Mars (for male chart)
     final marsFactor = _analyzeMars(chartData);
     factors.add(marsFactor);
-    
+
     // Check Moon (for female chart)
     final moonFactor = _analyzeMoon(chartData);
     factors.add(moonFactor);
-    
+
     // Calculate overall prospects
     final score = factors.fold(0, (sum, f) => sum + f.score) ~/ factors.length;
-    
+
     return ProgenyAnalysis(
       factors: factors,
       overallScore: score,
@@ -41,7 +40,7 @@ class ProgenyService {
   ProgenyFactor _getFifthHouse(CompleteChartData chartData) {
     final lagna = (chartData.baseChart.houses.cusps[0] / 30).floor();
     final fifthHouse = (lagna + 4) % 12;
-    
+
     // Check planets in 5th house
     final planetsIn5th = <Planet>[];
     for (final entry in chartData.baseChart.planets.entries) {
@@ -51,10 +50,10 @@ class ProgenyService {
         planetsIn5th.add(entry.key);
       }
     }
-    
+
     int score = 50;
     String description = '5th house has ${planetsIn5th.length} planet(s)';
-    
+
     if (planetsIn5th.contains(Planet.jupiter)) {
       score += 20;
       description += ', Jupiter blessed';
@@ -67,7 +66,7 @@ class ProgenyService {
       score -= 20;
       description += ', Saturn delays';
     }
-    if (planetsIn5th.contains(Planet.rahu)) {
+    if (planetsIn5th.contains(Planet.meanNode)) {
       score += 10;
       description += ', Rahu can give children';
     }
@@ -75,7 +74,7 @@ class ProgenyService {
       score -= 10;
       description += ', Ketu may cause delays';
     }
-    
+
     return ProgenyFactor(
       name: '5th House',
       score: score.clamp(0, 100),
@@ -92,23 +91,25 @@ class ProgenyService {
         description: 'Jupiter position not available',
       );
     }
-    
+
     final signIndex = (jupiter.position.longitude / 30).floor();
     int score = 50;
     String desc = 'Jupiter in ${jupiter.position.rashi}';
-    
+
     // Exalted/Debilitated
-    if (signIndex == 2 || signIndex == 4) { // Cancer, Pisces
+    if (signIndex == 2 || signIndex == 4) {
+      // Cancer, Pisces
       score += 25;
       desc += ' (Exalted)';
-    } else if (signIndex == 8 || signIndex == 10) { // Capricorn, Aquarius
+    } else if (signIndex == 8 || signIndex == 10) {
+      // Capricorn, Aquarius
       score -= 20;
       desc += ' (Debilitated)';
     }
-    
+
     // Check aspects
     // Simplified - would check actual aspects
-    
+
     return ProgenyFactor(
       name: 'Jupiter',
       score: score.clamp(0, 100),
@@ -125,15 +126,16 @@ class ProgenyService {
         description: 'Venus position not available',
       );
     }
-    
+
     final signIndex = (venus.position.longitude / 30).floor();
     int score = 50;
     String desc = 'Venus in ${venus.position.rashi}';
-    
-    if (signIndex == 0 || signIndex == 6) { // Aries, Libra
+
+    if (signIndex == 0 || signIndex == 6) {
+      // Aries, Libra
       score += 15;
     }
-    
+
     return ProgenyFactor(
       name: 'Venus',
       score: score.clamp(0, 100),
@@ -150,17 +152,17 @@ class ProgenyService {
         description: 'Mars position not available',
       );
     }
-    
+
     int score = 50;
     String desc = 'Mars in ${mars.position.rashi}';
-    
+
     // Manglik in 1, 4, 7, 8, 12 can affect progeny
     final signIndex = (mars.position.longitude / 30).floor();
     if ([0, 3, 6, 7, 11].contains(signIndex)) {
       score -= 10;
       desc += ' (Manglik position)';
     }
-    
+
     return ProgenyFactor(
       name: 'Mars',
       score: score.clamp(0, 100),
@@ -177,16 +179,17 @@ class ProgenyService {
         description: 'Moon position not available',
       );
     }
-    
+
     int score = 50;
     String desc = 'Moon in ${moon.position.rashi}';
-    
+
     // Check for Chandra Mantas
     final signIndex = (moon.position.longitude / 30).floor();
-    if (signIndex == 2 || signIndex == 4) { // Cancer, Pisces
+    if (signIndex == 2 || signIndex == 4) {
+      // Cancer, Pisces
       score += 20;
     }
-    
+
     return ProgenyFactor(
       name: 'Moon',
       score: score.clamp(0, 100),
@@ -204,7 +207,7 @@ class ProgenyService {
 
   List<String> _getRecommendations(List<ProgenyFactor> factors) {
     final recs = <String>[];
-    
+
     for (final f in factors) {
       if (f.score < 40) {
         if (f.name == 'Jupiter') {
@@ -215,11 +218,11 @@ class ProgenyService {
         }
       }
     }
-    
+
     if (recs.isEmpty) {
       recs.add('Progeny prospects appear favorable');
     }
-    
+
     return recs;
   }
 }

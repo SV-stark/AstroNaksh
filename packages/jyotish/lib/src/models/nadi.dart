@@ -1,5 +1,4 @@
 import '../models/planet.dart';
-import '../models/rashi.dart';
 
 enum NadiType {
   agasthiya('Agasthiya', 'Sage Agastya', 'Most comprehensive Nadi system'),

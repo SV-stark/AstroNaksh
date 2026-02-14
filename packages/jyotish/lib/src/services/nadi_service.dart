@@ -1,6 +1,5 @@
 import '../models/planet.dart';
 import '../models/rashi.dart';
-import '../models/nakshatra.dart';
 import '../models/nadi.dart';
 import '../models/vedic_chart.dart';
 
@@ -9,16 +8,56 @@ class NadiService {
   static const int totalNadis = 1800;
 
   static final Map<int, String> _nadiNames = {
-    1: 'Agneya', 2: 'Ap', 3: 'Ayu', 4: 'Mitra', 5: 'Vara',
-    6: 'Vishnu', 7: 'Vayu', 8: 'Kuber', 9: 'Ashwin', 10: 'Bhuta',
-    11: 'Gandha', 12: 'Jaya', 13: 'Tva', 14: 'Sampada', 15: 'Mridu',
-    16: 'Krama', 17: 'Tandra', 18: 'Ksham', 19: 'Harsha', 20: 'Shiva',
-    21: 'Santana', 22: 'Punya', 23: 'Pavahana', 24: 'Madhava', 25: 'Arka',
-    26: 'Soma', 27: 'Surya', 28: 'Prabha', 29: 'Chaya', 30: 'Shuchi',
-    31: 'Sita', 32: 'Kanya', 33: 'Kumara', 34: 'Vasava', 35: 'Indra',
-    36: 'Brihaspati', 37: 'Savitri', 38: 'Gayatri', 39: 'Saraswati', 40: 'Brahma',
-    41: 'Vedhas', 42: 'Tapomaya', 43: 'Dharma', 44: 'Adharma', 45: 'Shubha',
-    46: 'Ashubha', 47: 'Mangala', 48: 'Saumya', 49: 'Bharga', 50: 'Deva',
+    1: 'Agneya',
+    2: 'Ap',
+    3: 'Ayu',
+    4: 'Mitra',
+    5: 'Vara',
+    6: 'Vishnu',
+    7: 'Vayu',
+    8: 'Kuber',
+    9: 'Ashwin',
+    10: 'Bhuta',
+    11: 'Gandha',
+    12: 'Jaya',
+    13: 'Tva',
+    14: 'Sampada',
+    15: 'Mridu',
+    16: 'Krama',
+    17: 'Tandra',
+    18: 'Ksham',
+    19: 'Harsha',
+    20: 'Shiva',
+    21: 'Santana',
+    22: 'Punya',
+    23: 'Pavahana',
+    24: 'Madhava',
+    25: 'Arka',
+    26: 'Soma',
+    27: 'Surya',
+    28: 'Prabha',
+    29: 'Chaya',
+    30: 'Shuchi',
+    31: 'Sita',
+    32: 'Kanya',
+    33: 'Kumara',
+    34: 'Vasava',
+    35: 'Indra',
+    36: 'Brihaspati',
+    37: 'Savitri',
+    38: 'Gayatri',
+    39: 'Saraswati',
+    40: 'Brahma',
+    41: 'Vedhas',
+    42: 'Tapomaya',
+    43: 'Dharma',
+    44: 'Adharma',
+    45: 'Shubha',
+    46: 'Ashubha',
+    47: 'Mangala',
+    48: 'Saumya',
+    49: 'Bharga',
+    50: 'Deva',
   };
 
   NadiChart calculateNadiChart(VedicChart chart) {
@@ -153,13 +192,33 @@ class NadiService {
 
   int _getNakshatraNumber(String nakshatra) {
     final nakshatraMap = {
-      'Ashwini': 1, 'Bharani': 2, 'Krittika': 3, 'Rohini': 4,
-      'Mrigashirsha': 5, 'Ardra': 6, 'Punarvasu': 7, 'Pushya': 8,
-      'Ashlesha': 9, 'Magha': 10, 'Purva Phalguni': 11, 'Uttara Phalguni': 12,
-      'Hasta': 13, 'Chitra': 14, 'Swati': 15, 'Vishakha': 16,
-      'Anuradha': 17, 'Jyeshtha': 18, 'Mula': 19, 'Purva Ashadha': 20,
-      'Uttara Ashadha': 21, 'Shravana': 22, 'Dhanishtha': 23, 'Shatabhisha': 24,
-      'Purva Bhadrapada': 25, 'Uttara Bhadrapada': 26, 'Revati': 27,
+      'Ashwini': 1,
+      'Bharani': 2,
+      'Krittika': 3,
+      'Rohini': 4,
+      'Mrigashirsha': 5,
+      'Ardra': 6,
+      'Punarvasu': 7,
+      'Pushya': 8,
+      'Ashlesha': 9,
+      'Magha': 10,
+      'Purva Phalguni': 11,
+      'Uttara Phalguni': 12,
+      'Hasta': 13,
+      'Chitra': 14,
+      'Swati': 15,
+      'Vishakha': 16,
+      'Anuradha': 17,
+      'Jyeshtha': 18,
+      'Mula': 19,
+      'Purva Ashadha': 20,
+      'Uttara Ashadha': 21,
+      'Shravana': 22,
+      'Dhanishtha': 23,
+      'Shatabhisha': 24,
+      'Purva Bhadrapada': 25,
+      'Uttara Bhadrapada': 26,
+      'Revati': 27,
     };
     return nakshatraMap[nakshatra] ?? 1;
   }
@@ -195,13 +254,16 @@ class NadiService {
 
     final sb = StringBuffer();
     sb.writeln('Nadi ${nadiNumber} - ${sign.name}');
-    sb.writeln('Position in sign: ${(positionInSign / 150 * 100).toStringAsFixed(1)}%');
+    sb.writeln(
+        'Position in sign: ${(positionInSign / 150 * 100).toStringAsFixed(1)}%');
     sb.writeln('');
 
     if (nadiNumber <= 300) {
-      sb.writeln('This nadi indicates early life experiences and foundational karma.');
+      sb.writeln(
+          'This nadi indicates early life experiences and foundational karma.');
     } else if (nadiNumber <= 600) {
-      sb.writeln('This nadi relates to material pursuits and worldly achievements.');
+      sb.writeln(
+          'This nadi relates to material pursuits and worldly achievements.');
     } else if (nadiNumber <= 900) {
       sb.writeln('This nadi indicates relationships and partnerships.');
     } else if (nadiNumber <= 1200) {

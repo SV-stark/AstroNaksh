@@ -16,9 +16,9 @@ class PanchangScreen extends StatefulWidget {
 
 class _PanchangScreenState extends State<PanchangScreen> {
   DateTime _selectedDate = DateTime.now();
-  final PankajService _panchangService = PankajService();
+  final PanchangService _panchangService = PanchangService();
   final GowriPanchangaService _gowriService = GowriPanchangaService();
-  PankajResult? _result;
+  PanchangResult? _result;
   GowriPanchangamInfo? _gowri;
   List<PanchangInauspicious> _inauspicious = [];
   List<PanchangHora> _horas = [];
@@ -520,7 +520,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   _buildTabButton(
-                                    icon: FluentIcons.star,
+                                    icon: FluentIcons.favorite_star,
                                     label: 'Gowri',
                                     isSelected: _selectedTabIndex == 6,
                                     onTap: () =>
@@ -832,11 +832,14 @@ class _PanchangScreenState extends State<PanchangScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(FluentIcons.star, size: 24),
+                    const Icon(FluentIcons.favorite_star, size: 24),
                     const SizedBox(width: 8),
                     const Text(
                       'Gowri Panchanga',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -853,7 +856,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Auspicious', style: TextStyle(color: Colors.green)),
+                          Text(
+                            'Auspicious',
+                            style: TextStyle(color: Colors.green),
+                          ),
                           Text(_gowri!.isAuspicious ? 'Yes' : 'No'),
                         ],
                       ),
@@ -862,7 +868,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Muhurta', style: TextStyle(color: Colors.blue)),
+                          Text('Muhurta', style: TextStyle(color: Colors.blue)),
                           Text(_gowri!.isMuhurta ? 'Yes' : 'No'),
                         ],
                       ),

@@ -6,19 +6,19 @@ class MasaService {
   /// Get current Hindu lunar month (Masa)
   Future<HinduMasa> getCurrentMasa(DateTime date, Location location) async {
     await EphemerisManager.ensureEphemerisData();
-    
+
     // Calculate moon's position
     final locationGeo = GeographicLocation(
       latitude: location.latitude,
       longitude: location.longitude,
       altitude: 0,
     );
-    
+
     final chart = await EphemerisManager.jyotish.calculateVedicChart(
       dateTime: date,
       location: locationGeo,
     );
-    
+
     final moon = chart.planets[Planet.moon];
     if (moon == null) {
       return HinduMasa(
@@ -27,22 +27,23 @@ class MasaService {
         amanta: 'Unknown',
         month: 0,
         year: 0,
+        moonPhase: 'Unknown',
       );
     }
-    
+
     final sun = chart.planets[Planet.sun];
     final sunLongitude = sun?.position.longitude ?? 0;
     final moonLongitude = moon.position.longitude;
-    
+
     // Calculate which masa (month) based on sun/moon positions
     final masaIndex = ((moonLongitude - sunLongitude + 360) % 360) ~/ 30;
     final masaName = _getMasaName(masaIndex);
     final year = _getVikramYear(date);
-    
+
     // Calculate both purnimanta and amanta
     final purnimanta = ((masaIndex + 1) % 12) + 1;
     final amanta = (masaIndex % 12) + 1;
-    
+
     return HinduMasa(
       masaName: masaName,
       purnimanta: _getMonthName(purnimanta),
@@ -55,18 +56,36 @@ class MasaService {
 
   String _getMasaName(int index) {
     const masas = [
-      'Chaitra', 'Vaishakha', 'Jyeshtha', 'Ashadha',
-      'Shravana', 'Bhadrapada', 'Ashwin', 'Kartika',
-      'Margashirsha', 'Pausha', 'Magha', 'Phalguna'
+      'Chaitra',
+      'Vaishakha',
+      'Jyeshtha',
+      'Ashadha',
+      'Shravana',
+      'Bhadrapada',
+      'Ashwin',
+      'Kartika',
+      'Margashirsha',
+      'Pausha',
+      'Magha',
+      'Phalguna',
     ];
     return index >= 0 && index < 12 ? masas[index] : 'Unknown';
   }
 
   String _getMonthName(int index) {
     const months = [
-      'Chaitra', 'Vaishakha', 'Jyeshtha', 'Ashadha',
-      'Shravana', 'Bhadrapada', 'Ashwin', 'Kartika',
-      'Margashirsha', 'Pausha', 'Magha', 'Phalguna'
+      'Chaitra',
+      'Vaishakha',
+      'Jyeshtha',
+      'Ashadha',
+      'Shravana',
+      'Bhadrapada',
+      'Ashwin',
+      'Kartika',
+      'Margashirsha',
+      'Pausha',
+      'Magha',
+      'Phalguna',
     ];
     return index >= 1 && index <= 12 ? months[index - 1] : 'Unknown';
   }
@@ -82,7 +101,7 @@ class MasaService {
 
   String _getMoonPhase(double moonLong, double sunLong) {
     final phase = (moonLong - sunLong + 360) % 360;
-    
+
     if (phase < 15) return 'Shukla Pratipada';
     if (phase < 30) return 'Shukla Dwitiya';
     if (phase < 45) return 'Shukla Tritiya';

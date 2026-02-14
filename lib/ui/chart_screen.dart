@@ -418,7 +418,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         items: (context) => [
                           MenuFlyoutItem(
                             text: const Text('Jaimini (AK, Karakamsa)'),
-                            leading: const Icon(FluentIcons.star),
+                            leading: const Icon(FluentIcons.favorite_star),
                             onPressed: () => _navigateTo('jaimini'),
                           ),
                           MenuFlyoutItem(
@@ -448,7 +448,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           ),
                           MenuFlyoutItem(
                             text: const Text('Progeny'),
-                            leading: const Icon(FluentIcons.baby),
+                            leading: const Icon(FluentIcons.reminder_person),
                             onPressed: () => _navigateTo('progeny'),
                           ),
                           MenuFlyoutItem(
@@ -927,7 +927,12 @@ class _ChartScreenState extends State<ChartScreen> {
             children: [
               Icon(icon, size: isMobile ? 24 : 18),
               const SizedBox(width: 12),
-              Expanded(child: Text(title, style: TextStyle(fontSize: isMobile ? 16 : 14))),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontSize: isMobile ? 16 : 14),
+                ),
+              ),
               Icon(FluentIcons.chevron_right, size: isMobile ? 20 : 12),
             ],
           ),
@@ -1208,18 +1213,25 @@ class _ChartScreenState extends State<ChartScreen> {
                         (code) => Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: SizedBox(
-                            height: ResponsiveHelper.useMobileLayout(context) ? 48 : 32,
+                            height: ResponsiveHelper.useMobileLayout(context)
+                                ? 48
+                                : 32,
                             child: ToggleButton(
                               checked: _selectedDivisionalChart == code,
                               onChanged: (selected) {
                                 if (selected) {
-                                  setState(() => _selectedDivisionalChart = code);
+                                  setState(
+                                    () => _selectedDivisionalChart = code,
+                                  );
                                 }
                               },
                               child: Text(
                                 code,
                                 style: TextStyle(
-                                  fontSize: ResponsiveHelper.useMobileLayout(context) ? 16 : 14,
+                                  fontSize:
+                                      ResponsiveHelper.useMobileLayout(context)
+                                      ? 16
+                                      : 14,
                                 ),
                               ),
                             ),

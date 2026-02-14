@@ -413,19 +413,20 @@ class _SudarshanChakraScreenState extends State<SudarshanChakraScreen> {
               ),
               ...List.generate(12, (i) {
                 final h = result.houseStrengths[i + 1];
-                if (h == null)
+                if (h == null) {
                   return TableRow(
                     children: isMobile
                         ? List.generate(4, (_) => const SizedBox())
                         : List.generate(7, (_) => const SizedBox()),
                   );
+                }
                 final color = _categoryColor(h.category);
                 return TableRow(
                   children: isMobile
                       ? [
                           _DataCell('H${h.houseNumber}', bold: true),
                           _BarCell(h.combinedScore, color),
-                          _DataCell('${h.combinedScore.toStringAsFixed(0)}'),
+                          _DataCell(h.combinedScore.toStringAsFixed(0)),
                           _CategoryCell(h.category.name, color),
                         ]
                       : [
@@ -517,7 +518,7 @@ class _SudarshanChakraScreenState extends State<SudarshanChakraScreen> {
                       ? [
                           _DataCell(ps.planet.displayName, bold: true),
                           _BarCell(ps.combinedScore, color),
-                          _DataCell('${ps.combinedScore.toStringAsFixed(0)}'),
+                          _DataCell(ps.combinedScore.toStringAsFixed(0)),
                           _CategoryCell(ps.category.name, color),
                         ]
                       : [

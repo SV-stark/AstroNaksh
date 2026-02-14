@@ -7,7 +7,8 @@ import 'divisional_chart_service.dart';
 
 class ProgenyService {
   ProgenyService();
-  final DivisionalChartService _divisionalChartService = DivisionalChartService();
+  final DivisionalChartService _divisionalChartService =
+      DivisionalChartService();
 
   ProgenyResult analyzeProgeny(VedicChart chart) {
     final fifthHouseStrength = analyzeFifthHouse(chart);
@@ -23,7 +24,8 @@ class ProgenyService {
     if (fifthHouseStrength.isStrong) {
       analysis.add('5th house is strong (${fifthHouseStrength.score} pts)');
     } else {
-      analysis.add('5th house needs attention (${fifthHouseStrength.score} pts)');
+      analysis
+          .add('5th house needs attention (${fifthHouseStrength.score} pts)');
     }
 
     totalScore += jupiterCondition.score;
@@ -164,7 +166,8 @@ class ProgenyService {
 
   D7Analysis analyzeD7Chart(VedicChart chart) {
     var score = 0;
-    final d7Chart = _divisionalChartService.calculateDivisionalChart(chart, DivisionalChartType.d7);
+    final d7Chart = _divisionalChartService.calculateDivisionalChart(
+        chart, DivisionalChartType.d7);
 
     final fifthLord = _getHouseLord(chart, 5);
     final fifthLordD7 = d7Chart.getPlanet(fifthLord);
@@ -182,9 +185,6 @@ class ProgenyService {
         score += 15;
       }
     }
-
-    final venusD7 = d7Chart.getPlanet(Planet.venus);
-    final moonD7 = d7Chart.getPlanet(Planet.moon);
 
     return D7Analysis(
       score: score.clamp(0, 30),
@@ -213,12 +213,14 @@ class ProgenyService {
     yogas.add(ChildYoga(
       name: 'Santanada Yoga',
       description: 'When Jupiter aspects the 5th house or its lord',
-      isPresent: jupiterInfo != null && _doesPlanetAspectHouse(jupiterInfo, fifthHouseNumber),
+      isPresent: jupiterInfo != null &&
+          _doesPlanetAspectHouse(jupiterInfo, fifthHouseNumber),
     ));
 
     yogas.add(ChildYoga(
       name: 'Kalyana Vimsopaka Yoga',
-      description: 'Venus in 5th house indicates intelligent and beautiful children',
+      description:
+          'Venus in 5th house indicates intelligent and beautiful children',
       isPresent: planetsInFifth.any((p) => p.planet == Planet.venus),
     ));
 
@@ -235,9 +237,12 @@ class ProgenyService {
     final planetsInFifth = chart.getPlanetsInHouse(5);
     var score = 10;
 
-    final jupiterScore = planetsInFifth.any((p) => p.planet == Planet.jupiter) ? 20 : 0;
-    final venusScore = planetsInFifth.any((p) => p.planet == Planet.venus) ? 15 : 0;
-    final moonScore = planetsInFifth.any((p) => p.planet == Planet.moon) ? 15 : 0;
+    final jupiterScore =
+        planetsInFifth.any((p) => p.planet == Planet.jupiter) ? 20 : 0;
+    final venusScore =
+        planetsInFifth.any((p) => p.planet == Planet.venus) ? 15 : 0;
+    final moonScore =
+        planetsInFifth.any((p) => p.planet == Planet.moon) ? 15 : 0;
 
     score += jupiterScore + venusScore + moonScore;
 
@@ -272,7 +277,8 @@ class ProgenyService {
   }
 
   bool _isBenefic(Planet planet) {
-    return [Planet.jupiter, Planet.venus, Planet.moon, Planet.mercury].contains(planet);
+    return [Planet.jupiter, Planet.venus, Planet.moon, Planet.mercury]
+        .contains(planet);
   }
 
   List<Planet> _getPlanetsAspectingHouse(VedicChart chart, int houseNumber) {

@@ -1,4 +1,5 @@
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart' hide Colors, FontWeight;
+import 'package:flutter/material.dart' show InkWell, Colors, FontWeight;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import '../core/responsive_helper.dart';
 import 'styles.dart';
@@ -345,8 +346,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(
                       context,
                     ),
-                    mainAxisSpacing: ResponsiveHelper.useMobileLayout(context) ? 16 : 12,
-                    crossAxisSpacing: ResponsiveHelper.useMobileLayout(context) ? 16 : 12,
+                    mainAxisSpacing: ResponsiveHelper.useMobileLayout(context)
+                        ? 16
+                        : 12,
+                    crossAxisSpacing: ResponsiveHelper.useMobileLayout(context)
+                        ? 16
+                        : 12,
                     childAspectRatio: ResponsiveHelper.getGridChildAspectRatio(
                       context,
                     ),
@@ -492,7 +497,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemCount: _filteredCharts.length,
                     itemBuilder: (context, index) {
                       final chart = _filteredCharts[index];
-                      final isMobile = ResponsiveHelper.useMobileLayout(context);
+                      final isMobile = ResponsiveHelper.useMobileLayout(
+                        context,
+                      );
                       return Padding(
                         padding: EdgeInsets.symmetric(
                           vertical: isMobile ? 8 : 4,
@@ -596,7 +603,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: isMobile ? 12 : 11, color: Colors.grey[100]),
+                    style: TextStyle(
+                      fontSize: isMobile ? 12 : 11,
+                      color: Colors.grey[100],
+                    ),
                   ),
                 ],
               ),

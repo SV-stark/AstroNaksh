@@ -13,7 +13,7 @@ class PlanetaryAspectService {
     _aspectService ??= j.AspectService();
 
     final libraryAspects = _aspectService!.calculateAspects(
-      chart.planets.map((e) => MapEntry(e.key, e.value.position)),
+      chart.planets.map((key, value) => MapEntry(key, value.position)),
       config: j.AspectConfig.vedic,
     );
 
@@ -81,15 +81,25 @@ class PlanetaryAspectService {
   static Color getAspectColor(AspectType type, {double opacity = 1.0}) {
     switch (type) {
       case AspectType.conjunction:
-        return const Color(0xFF9C27B0).withAlpha((255 * opacity).round()); // Purple
+        return const Color(
+          0xFF9C27B0,
+        ).withAlpha((255 * opacity).round()); // Purple
       case AspectType.sextile:
-        return const Color(0xFF2196F3).withAlpha((255 * opacity).round()); // Blue
+        return const Color(
+          0xFF2196F3,
+        ).withAlpha((255 * opacity).round()); // Blue
       case AspectType.square:
-        return const Color(0xFFF44336).withAlpha((255 * opacity).round()); // Red
+        return const Color(
+          0xFFF44336,
+        ).withAlpha((255 * opacity).round()); // Red
       case AspectType.trine:
-        return const Color(0xFF4CAF50).withAlpha((255 * opacity).round()); // Green
+        return const Color(
+          0xFF4CAF50,
+        ).withAlpha((255 * opacity).round()); // Green
       case AspectType.opposition:
-        return const Color(0xFFFF9800).withAlpha((255 * opacity).round()); // Orange
+        return const Color(
+          0xFFFF9800,
+        ).withAlpha((255 * opacity).round()); // Orange
     }
   }
 
@@ -133,13 +143,7 @@ class PlanetaryAspect {
 }
 
 /// Aspect Types
-enum AspectType {
-  conjunction,
-  sextile,
-  square,
-  trine,
-  opposition,
-}
+enum AspectType { conjunction, sextile, square, trine, opposition }
 
 /// Extension to get symbol for aspect type
 extension AspectTypeSymbol on AspectType {

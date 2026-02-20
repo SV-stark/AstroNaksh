@@ -645,8 +645,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String subtitle,
     VoidCallback onPressed,
   ) {
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
     return SizedBox(
-      width: 150,
+      width: isMobile ? MediaQuery.of(context).size.width / 2 - 40 : 150,
       child: Button(
         onPressed: onPressed,
         child: Container(
@@ -654,9 +655,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 4),
-              Text(subtitle, style: FluentTheme.of(context).typography.caption),
+              Text(
+                subtitle,
+                style: FluentTheme.of(context).typography.caption,
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),

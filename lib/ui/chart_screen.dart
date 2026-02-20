@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart' hide Colors;
+import 'package:flutter/material.dart' show Colors;
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import '../core/responsive_helper.dart';
 import 'widgets/chart_widget.dart';
 import 'widgets/planetary_timeline.dart';
@@ -51,6 +53,8 @@ class _ChartScreenState extends State<ChartScreen> {
   int _dashaTabIndex = 0; // 0 = Vimshottari, 1 = Yogini, 2 = Chara
   bool _showAspects = false; // Toggle for planetary aspects (drishti)
   final GlobalKey _d1ChartKey = GlobalKey();
+  final GlobalKey _analysisMenuKey = GlobalKey();
+  static bool _hasSeenChartTutorialSession = false;
 
   // Timeline state variables
   DateTime _timelineCurrentDate = DateTime.now();
@@ -66,6 +70,12 @@ class _ChartScreenState extends State<ChartScreen> {
       if (args != null) {
         _birthData = args;
         _loadChartData();
+
+        if (!_hasSeenChartTutorialSession) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _showChartTutorial();
+          });
+        }
       } else {
         // Handle missing arguments
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -91,6 +101,89 @@ class _ChartScreenState extends State<ChartScreen> {
         _chartDataFuture = _kpChartService.generateCompleteChart(_birthData!);
       });
     }
+  }
+
+  void _showChartTutorial() {
+    _hasSeenChartTutorialSession = true;
+    List<TargetFocus> targets = [];
+
+    targets.add(
+      TargetFocus(
+        identify: "d1Chart",
+        keyTarget: _d1ChartKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Your Birth Chart",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: Text(
+                      "This is your main D-1 Rashi chart. Scroll down for planetary details and timeline.",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "analysisMenu",
+        keyTarget: _analysisMenuKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Deep Analysis",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: Text(
+                      "Click here to access advanced tools like KP System, Shadbala, Ashtakavarga and PDF Reports.",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    TutorialCoachMark(
+      targets: targets,
+      colorShadow: Colors.black,
+      textSkip: "SKIP",
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+    ).show(context: context);
   }
 
   void _openAyanamsaSelection() {
@@ -468,6 +561,7 @@ class _ChartScreenState extends State<ChartScreen> {
                   );
                 },
                 wrappedItem: CommandBarButton(
+                  key: _analysisMenuKey,
                   icon: const Icon(FluentIcons.analytics_view),
                   label: const Text('Analysis'),
                   onPressed: () {
@@ -1471,108 +1565,56 @@ class _ChartScreenState extends State<ChartScreen> {
               "KP Sub Lords",
               style: FluentTheme.of(context).typography.subtitle,
             ),
-            const SizedBox(height: 10),
-            // Simple Table Concept (using Column/Rows)
-            Table(
-              columnWidths: const {0: FlexColumnWidth(1)},
-              children: [
-                TableRow(
-                  decoration: BoxDecoration(
-                    color: FluentTheme.of(context).cardColor,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: FluentTheme.of(
-                          context,
-                        ).resources.dividerStrokeColorDefault,
-                      ),
-                    ),
+            const SizedBox(height: 16),
+            ...data.significatorTable.entries.map((entry) {
+              final planet = entry.key;
+              final info = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Expander(
+                  header: Text(
+                    planet,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        "Planet",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: FluentTheme.of(context).accentColor,
-                        ),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        "Nakshatra",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        "Star Lord",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        "Sub Lord",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        "Sub-Sub",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-                const TableRow(
-                  children: [
-                    SizedBox(height: 8),
-                    SizedBox(),
-                    SizedBox(),
-                    SizedBox(),
-                    SizedBox(),
-                  ],
-                ),
-                ...data.significatorTable.entries.map((entry) {
-                  final planet = entry.key;
-                  final info = entry.value;
-                  return TableRow(
+                  content: Wrap(
+                    spacing: 24,
+                    runSpacing: 12,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          planet,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
+                      _buildKPDetailItem(
+                        "Nakshatra",
+                        info['nakshatra']?.toString() ?? '-',
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(info['nakshatra'] ?? ''),
+                      _buildKPDetailItem(
+                        "Star Lord",
+                        info['starLord']?.toString() ?? '-',
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(info['starLord'] ?? ''),
+                      _buildKPDetailItem(
+                        "Sub Lord",
+                        info['subLord']?.toString() ?? '-',
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(info['subLord'] ?? ''),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(info['subSubLord'] ?? ''),
+                      _buildKPDetailItem(
+                        "Sub-Sub",
+                        info['subSubLord']?.toString() ?? '-',
                       ),
                     ],
-                  );
-                }),
-              ],
-            ),
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildKPDetailItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+      ],
     );
   }
 
@@ -1588,66 +1630,28 @@ class _ChartScreenState extends State<ChartScreen> {
               style: FluentTheme.of(context).typography.subtitle,
             ),
             const SizedBox(height: 16),
-            Table(
-              columnWidths: const {
-                0: FlexColumnWidth(1),
-                1: FlexColumnWidth(4),
-              },
-              children: [
-                TableRow(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: FluentTheme.of(
-                          context,
-                        ).resources.dividerStrokeColorDefault,
-                      ),
-                    ),
+            ...data.significatorTable.entries.map((entry) {
+              final planet = entry.key;
+              final info = entry.value;
+              final significations =
+                  info['significations'] as List<dynamic>? ?? [];
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Expander(
+                  header: Text(
+                    planet,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        "Planet",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: FluentTheme.of(context).accentColor,
-                        ),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        "Houses (Significations)",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
+                  content: Text(
+                    significations.isNotEmpty
+                        ? significations.join(', ')
+                        : 'None',
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ),
-                const TableRow(children: [SizedBox(height: 8), SizedBox()]),
-                ...data.significatorTable.entries.map((entry) {
-                  final planet = entry.key;
-                  final info = entry.value;
-                  final significations =
-                      info['significations'] as List<dynamic>? ?? [];
-                  return TableRow(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(
-                          planet,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(significations.join(', ')),
-                      ),
-                    ],
-                  );
-                }),
-              ],
-            ),
+              );
+            }),
           ],
         ),
       ),

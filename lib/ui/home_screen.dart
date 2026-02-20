@@ -5,8 +5,10 @@ import '../core/responsive_helper.dart';
 import 'styles.dart';
 import '../core/database_helper.dart';
 import '../data/models.dart';
+import '../data/sample_charts.dart';
 import '../core/settings_manager.dart';
 import 'horary/horary_input_screen.dart';
+import 'widgets/panchang_daily_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -328,6 +330,17 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       content: CustomScrollView(
         slivers: [
+          // Today's Sky Dashboard Widget
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              ResponsiveHelper.useMobileLayout(context) ? 16 : 24,
+              24,
+              ResponsiveHelper.useMobileLayout(context) ? 16 : 24,
+              8,
+            ),
+            sliver: const SliverToBoxAdapter(child: PanchangDailyWidget()),
+          ),
+
           // Dashboard Quick Actions
           SliverPadding(
             padding: ResponsiveHelper.getResponsivePadding(context),
@@ -340,33 +353,99 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: FluentTheme.of(context).typography.subtitle,
                   ),
                   const SizedBox(height: 16),
+                  // Prominent New Chart Button
+                  HoverButton(
+                    onPressed: () async {
+                      await Navigator.pushNamed(context, '/input');
+                      _loadCharts();
+                    },
+                    builder: (context, states) {
+                      return Card(
+                        padding: EdgeInsets.zero,
+                        child: Container(
+                          key: _newChartKey,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppStyles.primaryColor,
+                                AppStyles.primaryColor.withValues(alpha: 0.7),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 20,
+                            horizontal: 20,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  FluentIcons.add,
+                                  color: Colors.black,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Create New Chart",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Calculate birth data and explore detailed horoscopes",
+                                      style: TextStyle(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                FluentIcons.chevron_right,
+                                color: Colors.black87,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
                   GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(
-                      context,
-                    ),
+                    crossAxisCount: ResponsiveHelper.useMobileLayout(context)
+                        ? 2
+                        : 3,
                     mainAxisSpacing: ResponsiveHelper.useMobileLayout(context)
                         ? 16
                         : 12,
                     crossAxisSpacing: ResponsiveHelper.useMobileLayout(context)
                         ? 16
                         : 12,
-                    childAspectRatio: ResponsiveHelper.getGridChildAspectRatio(
-                      context,
-                    ),
+                    childAspectRatio:
+                        ResponsiveHelper.getGridChildAspectRatio(context) *
+                        (ResponsiveHelper.useMobileLayout(context) ? 1.0 : 1.5),
                     children: [
-                      _buildQuickAction(
-                        key: _newChartKey,
-                        icon: FluentIcons.add,
-                        title: "New Chart",
-                        subtitle: "Calculate birth data",
-                        color: AppStyles.primaryColor,
-                        onTap: () async {
-                          await Navigator.pushNamed(context, '/input');
-                          _loadCharts();
-                        },
-                      ),
                       _buildQuickAction(
                         icon: FluentIcons.heart_fill,
                         title: "Compare",
@@ -481,6 +560,52 @@ class _HomeScreenState extends State<HomeScreen> {
                               SizedBox(width: 8),
                               Text("Create New Chart"),
                             ],
+                          ),
+                        ),
+                        const SizedBox(height: 48),
+                        Text(
+                          "Or explore famous charts:",
+                          style: FluentTheme.of(context).typography.subtitle,
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: 400,
+                          child: Column(
+                            children: SampleCharts.samples
+                                .map(
+                                  (sample) => Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4.0,
+                                    ),
+                                    child: Card(
+                                      padding: EdgeInsets.zero,
+                                      child: ListTile.selectable(
+                                        leading: const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Icon(
+                                            FluentIcons.contact_info,
+                                            color: AppStyles.primaryColor,
+                                          ),
+                                        ),
+                                        title: Text(
+                                          sample.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        subtitle: Text(sample.place),
+                                        onPressed: () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            '/chart',
+                                            arguments: sample,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ),
                       ],

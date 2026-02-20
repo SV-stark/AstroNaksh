@@ -44,16 +44,20 @@ void main(List<String> args) async {
       tz.initializeTimeZones();
       AppEnvironment.log('Main: Timezones initialized');
 
-      // Initialize Window for Acrylic effect
-      try {
-        await Window.initialize();
-        await Window.setEffect(
-          effect: WindowEffect.acrylic,
-          color: const Color(0xCC222222),
-        );
-        AppEnvironment.log('Main: Window effect initialized');
-      } catch (e) {
-        AppEnvironment.log("Main: Failed to initialize window effect: $e");
+      // Initialize Window for Acrylic effect (Desktop Only)
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        try {
+          await Window.initialize();
+          await Window.setEffect(
+            effect: WindowEffect.acrylic,
+            color: const Color(0xCC222222),
+          );
+          AppEnvironment.log('Main: Window effect initialized');
+        } catch (e) {
+          AppEnvironment.log("Main: Failed to initialize window effect: $e");
+        }
+      } else {
+        AppEnvironment.log('Main: Window effect skipped on mobile platforms');
       }
 
       // Initialize settings

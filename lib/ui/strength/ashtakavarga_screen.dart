@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/ashtakavarga.dart';
 import '../../core/responsive_helper.dart';
+import '../styles.dart';
 
 class AshtakavargaScreen extends StatefulWidget {
   final CompleteChartData chartData;
@@ -312,31 +313,31 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
             if (isBhinna) {
               if (points >= 6) {
                 statusText = 'Very Strong';
-                statusColor = Colors.green;
+                statusColor = AppStyles.beneficColor;
               } else if (points >= 4) {
                 statusText = 'Strong';
-                statusColor = Colors.teal;
+                statusColor = AppStyles.beneficColor.withValues(alpha: 0.8);
               } else if (points >= 3) {
                 statusText = 'Average';
-                statusColor = Colors.orange;
+                statusColor = AppStyles.neutralColor;
               } else {
                 statusText = 'Weak';
-                statusColor = Colors.red;
+                statusColor = AppStyles.maleficColor;
               }
             } else {
               // Sarva logic
               if (points >= 32) {
                 statusText = 'Very Strong';
-                statusColor = Colors.green;
+                statusColor = AppStyles.beneficColor;
               } else if (points >= 28) {
                 statusText = 'Strong';
-                statusColor = Colors.teal;
+                statusColor = AppStyles.beneficColor.withValues(alpha: 0.8);
               } else if (points >= 25) {
                 statusText = 'Average';
-                statusColor = Colors.orange;
+                statusColor = AppStyles.neutralColor;
               } else {
                 statusText = 'Weak';
-                statusColor = Colors.red;
+                statusColor = AppStyles.maleficColor;
               }
             }
 

@@ -4,6 +4,7 @@ import '../../data/models.dart';
 import '../../logic/shadbala.dart';
 import '../widgets/strength_meter.dart';
 import '../../core/responsive_helper.dart';
+import '../styles.dart';
 
 class ShadbalaScreen extends StatelessWidget {
   final CompleteChartData chartData;
@@ -166,7 +167,7 @@ class ShadbalaScreen extends StatelessWidget {
                             value: normalizedStrength,
                             label: '${totalStrength.toStringAsFixed(2)} units',
                             showPercentage: false,
-                            color: _getPlanetColor(planetName),
+                            color: _getStrengthColor(totalStrength),
                           ),
                         ],
                       ),
@@ -280,7 +281,7 @@ class ShadbalaScreen extends StatelessWidget {
                 value: (totalStrength / 600) * 100,
                 label: _getStrengthInterpretation(totalStrength),
                 showPercentage: true,
-                color: _getPlanetColor(planetName),
+                color: _getStrengthColor(totalStrength),
               ),
               const SizedBox(height: 16),
               _buildInterpretationText(planetName, totalStrength),
@@ -329,6 +330,14 @@ class ShadbalaScreen extends StatelessWidget {
     if (strength >= 200) return 'Moderate';
     if (strength >= 100) return 'Weak';
     return 'Very Weak';
+  }
+
+  Color _getStrengthColor(double strength) {
+    if (strength >= 400) return AppStyles.beneficColor;
+    if (strength >= 300) return AppStyles.beneficColor.withValues(alpha: 0.8);
+    if (strength >= 200) return AppStyles.neutralColor;
+    if (strength >= 100) return AppStyles.maleficColor.withValues(alpha: 0.8);
+    return AppStyles.maleficColor;
   }
 
   Color _getPlanetColor(String planet) {

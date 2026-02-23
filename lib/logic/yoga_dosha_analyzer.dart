@@ -1,15 +1,19 @@
+import 'package:intl/intl.dart';
 import '../data/models.dart';
 
 /// Yoga and Dosha Analyzer
 /// Detects auspicious (Yoga) and inauspicious (Dosha) combinations.
 class YogaDoshaAnalyzer {
   /// Analyze chart for common Yogas and Doshas
-  /// Analyze chart for common Yogas and Doshas
-  static YogaDoshaAnalysisResult analyze(CompleteChartData chart) {
-    var yogas = _findYogas(chart);
-    final doshas = _findDoshas(chart);
+  static YogaDoshaAnalysisResult analyze(
+    CompleteChartData chart, {
+    DateTime? referenceDate,
+  }) {
+    final now = referenceDate ?? DateTime.now();
+    var yogas = _findYogas(chart, now);
+    final doshas = _findDoshas(chart, now);
 
-    // Score calculation
+    // Score calculation (only active items affect score)
     double score = 50.0;
     for (var y in yogas) {
       score += (y.strength / 100.0) * 5;
@@ -28,31 +32,259 @@ class YogaDoshaAnalyzer {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Manifestation Period Computation
+  // ---------------------------------------------------------------------------
+
+  /// Returns a formatted label for when this yoga/dosha manifests most strongly.
+  /// Looks through Vimshottari Mahadasha/Antardasha periods for those involving
+  /// key planets, relative to [now].
+  static (String period, String dashaLord) _computeManifestationPeriod(
+    CompleteChartData chart,
+    List<String> keyPlanets,
+    DateTime now,
+  ) {
+    if (keyPlanets.isEmpty) {
+      return ('See chart analysis', '');
+    }
+
+    final fmt = DateFormat('MMM yyyy');
+    final mahadashas = chart.dashaData.vimshottari.mahadashas;
+
+    String? currentPeriod;
+    String? currentDashaLord;
+    String? futurePeriod;
+    String? futureDashaLord;
+
+    for (final md in mahadashas) {
+      final mdName = md.lord;
+      final isMdKey = keyPlanets.contains(mdName);
+
+      for (final ad in md.antardashas) {
+        final adName = ad.lord;
+        final isAdKey = keyPlanets.contains(adName);
+
+        // A period is relevant if either MD or AD lord is a key planet
+        if (!isMdKey && !isAdKey) continue;
+
+        final start = ad.startDate;
+        final end = ad.endDate;
+        final label = '${fmt.format(start)} – ${fmt.format(end)}';
+        final dasha = isMdKey && isAdKey
+            ? '$mdName MD → $adName AD'
+            : isMdKey
+            ? '$mdName MD → $adName AD'
+            : '$mdName MD → $adName AD';
+
+        if (now.isAfter(start) && now.isBefore(end)) {
+          currentPeriod = 'Currently active – until ${fmt.format(end)}';
+          currentDashaLord = dasha;
+          break;
+        } else if (now.isBefore(start) && futurePeriod == null) {
+          futurePeriod = label;
+          futureDashaLord = dasha;
+        }
+      }
+      if (currentPeriod != null) break;
+    }
+
+    if (currentPeriod != null) {
+      return (currentPeriod, currentDashaLord ?? '');
+    } else if (futurePeriod != null) {
+      return (futurePeriod, futureDashaLord ?? '');
+    } else {
+      // Look for most recent past peak
+      String? pastPeriod;
+      String? pastLord;
+      outer:
+      for (final md in mahadashas.reversed) {
+        for (final ad in md.antardashas.reversed) {
+          if (!keyPlanets.contains(md.lord) && !keyPlanets.contains(ad.lord)) {
+            continue;
+          }
+          if (now.isAfter(ad.endDate)) {
+            pastPeriod =
+                'Peak passed: ${fmt.format(ad.startDate)} – ${fmt.format(ad.endDate)}';
+            pastLord = '${md.lord} MD → ${ad.lord} AD';
+            break outer;
+          }
+        }
+      }
+      return (pastPeriod ?? 'See full Dasha chart', pastLord ?? '');
+    }
+  }
+
+  /// Returns key planets that drive a given yoga or dosha by name
+  static List<String> _getKeyPlanets(String name) {
+    final k = <String>[];
+    if (name.contains('Gajakesari') || name.contains('Gaja Kesari')) {
+      k.addAll(['Jupiter', 'Moon']);
+    }
+    if (name.contains('Budhaditya')) k.addAll(['Sun', 'Mercury']);
+    if (name.contains('Chandra Mangala')) k.addAll(['Moon', 'Mars']);
+    if (name.contains('Ruchaka')) k.add('Mars');
+    if (name.contains('Bhadra')) k.add('Mercury');
+    if (name.contains('Hamsa')) k.add('Jupiter');
+    if (name.contains('Malavya')) k.add('Venus');
+    if (name.contains('Sasa')) k.add('Saturn');
+    if (name.contains('Dhana')) k.addAll(['Jupiter', 'Venus']);
+    if (name.contains('Raj Yoga') || name.contains('Raja Yoga')) {
+      k.addAll(['Sun', 'Jupiter']);
+    }
+    if (name.contains('Lakshmi')) k.addAll(['Venus', 'Jupiter']);
+    if (name.contains('Saraswati')) k.addAll(['Jupiter', 'Venus', 'Mercury']);
+    if (name.contains('Kaal Sarp') || name.contains('Kala Sarpa')) {
+      k.addAll(['Rahu', 'Ketu']);
+    }
+    if (name.contains('Mangal') ||
+        name.contains('Manglik') ||
+        name.contains('Angarak')) {
+      k.add('Mars');
+    }
+    if (name.contains('Pitra')) k.addAll(['Sun', 'Rahu']);
+    if (name.contains('Kemadruma')) k.add('Moon');
+    if (name.contains('Grahan')) k.addAll(['Rahu', 'Ketu']);
+    if (name.contains('Vish') || name.contains('Punarphoo')) {
+      k.addAll(['Saturn', 'Moon']);
+    }
+    if (name.contains('Shrapit')) k.addAll(['Saturn', 'Rahu']);
+    if (name.contains('Daridra')) k.add('Saturn');
+    if (name.contains('Guru Chandal')) k.addAll(['Jupiter', 'Rahu']);
+    if (name.contains('Sakat')) k.addAll(['Moon', 'Jupiter']);
+    if (name.contains('Neecha Bhanga')) {
+      // Try to extract the planet from the parentheses e.g. 'Neecha Bhanga Raj Yoga (Sun - …)'
+      final match = RegExp(r'\(([A-Z][a-z]+)').firstMatch(name);
+      if (match != null) k.add(match.group(1)!);
+    }
+    // Generic fallback
+    for (final p in [
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
+    ]) {
+      if (name.contains(p) && !k.contains(p)) k.add(p);
+    }
+    return k;
+  }
+
   // --- Dosha Detection ---
 
-  static List<BhangaResult> _findDoshas(CompleteChartData chart) {
+  static List<BhangaResult> _findDoshas(CompleteChartData chart, DateTime now) {
     List<BhangaResult> results = [];
 
-    // Basic Checks
+    // Basic Checks — only add if the dosha is actually detected
     if (_hasKaalSarpDosha(chart)) {
-      results.add(_checkKaalSarpBhanga(chart));
+      final r = _checkKaalSarpBhanga(chart);
+      final (period, lord) = _computeManifestationPeriod(
+        chart,
+        _getKeyPlanets(r.name),
+        now,
+      );
+      results.add(
+        BhangaResult(
+          name: r.name,
+          description: r.description,
+          isActive: r.isActive,
+          cancellationReasons: r.cancellationReasons,
+          strength: r.strength,
+          status: r.status,
+          manifestationPeriod: period,
+          peakDashaLord: lord,
+        ),
+      );
     }
     if (_hasMangalDosha(chart)) {
-      results.add(_checkManglikBhanga(chart));
+      final r = _checkManglikBhanga(chart);
+      final (period, lord) = _computeManifestationPeriod(
+        chart,
+        _getKeyPlanets(r.name),
+        now,
+      );
+      results.add(
+        BhangaResult(
+          name: r.name,
+          description: r.description,
+          isActive: r.isActive,
+          cancellationReasons: r.cancellationReasons,
+          strength: r.strength,
+          status: r.status,
+          manifestationPeriod: period,
+          peakDashaLord: lord,
+        ),
+      );
     }
     if (_hasPitraDosha(chart)) {
-      results.add(_checkPitraDoshaBhanga(chart));
+      final r = _checkPitraDoshaBhanga(chart);
+      final (period, lord) = _computeManifestationPeriod(
+        chart,
+        _getKeyPlanets(r.name),
+        now,
+      );
+      results.add(
+        BhangaResult(
+          name: r.name,
+          description: r.description,
+          isActive: r.isActive,
+          cancellationReasons: r.cancellationReasons,
+          strength: r.strength,
+          status: r.status,
+          manifestationPeriod: period,
+          peakDashaLord: lord,
+        ),
+      );
     }
     if (_hasKemadrumaDosha(chart)) {
-      results.add(_checkKemadrumaBhanga(chart));
+      final r = _checkKemadrumaBhanga(chart);
+      final (period, lord) = _computeManifestationPeriod(
+        chart,
+        _getKeyPlanets(r.name),
+        now,
+      );
+      results.add(
+        BhangaResult(
+          name: r.name,
+          description: r.description,
+          isActive: r.isActive,
+          cancellationReasons: r.cancellationReasons,
+          strength: r.strength,
+          status: r.status,
+          manifestationPeriod: period,
+          peakDashaLord: lord,
+        ),
+      );
     }
 
-    // Additional Dosha Checks (with bhanga logic)
-    results.add(_checkGrahanDoshaBhanga(chart));
-    results.add(_checkVishDoshaBhanga(chart));
-    results.add(_checkAngarakDoshaBhanga(chart));
-    results.add(_checkShrapitDoshaBhanga(chart));
-    results.add(_checkDaridraDoshaBhanga(chart));
+    // Additional Dosha Checks — filter out 'Not Present' results
+    for (final r in [
+      _checkGrahanDoshaBhanga(chart),
+      _checkVishDoshaBhanga(chart),
+      _checkAngarakDoshaBhanga(chart),
+      _checkShrapitDoshaBhanga(chart),
+      _checkDaridraDoshaBhanga(chart),
+    ]) {
+      if (r.status == 'Not Present') continue; // Skip absent doshas
+      final (period, lord) = _computeManifestationPeriod(
+        chart,
+        _getKeyPlanets(r.name),
+        now,
+      );
+      results.add(
+        BhangaResult(
+          name: r.name,
+          description: r.description,
+          isActive: r.isActive,
+          cancellationReasons: r.cancellationReasons,
+          strength: r.strength,
+          status: r.status,
+          manifestationPeriod: period,
+          peakDashaLord: lord,
+        ),
+      );
+    }
 
     // Advanced Checks (Text based conversion)
     List<String> textDoshas = [];
@@ -64,21 +296,37 @@ class YogaDoshaAnalyzer {
     _checkCurseDoshas(chart, textDoshas);
 
     for (var d in textDoshas) {
+      BhangaResult r;
       if (d.contains('Guru Chandal')) {
-        results.add(_checkGuruChandalBhanga(chart));
+        r = _checkGuruChandalBhanga(chart);
       } else if (d.contains('Sakat Dosha')) {
-        results.add(_checkSakatBhanga(chart));
+        r = _checkSakatBhanga(chart);
       } else {
-        // Check for generic weakening/cancellation if applicable, otherwise active
-        results.add(
-          BhangaResult(
-            name: d.split('(').first.trim(),
-            description: d,
-            isActive: true,
-            status: 'Active',
-          ),
+        r = BhangaResult(
+          name: d.split('(').first.trim(),
+          description: d,
+          isActive: true,
+          status: 'Active',
         );
       }
+      if (r.status == 'Not Present') continue;
+      final (period, lord) = _computeManifestationPeriod(
+        chart,
+        _getKeyPlanets(r.name),
+        now,
+      );
+      results.add(
+        BhangaResult(
+          name: r.name,
+          description: r.description,
+          isActive: r.isActive,
+          cancellationReasons: r.cancellationReasons,
+          strength: r.strength,
+          status: r.status,
+          manifestationPeriod: period,
+          peakDashaLord: lord,
+        ),
+      );
     }
 
     return results;
@@ -172,7 +420,7 @@ class YogaDoshaAnalyzer {
 
   // --- Yoga Detection ---
 
-  static List<BhangaResult> _findYogas(CompleteChartData chart) {
+  static List<BhangaResult> _findYogas(CompleteChartData chart, DateTime now) {
     List<String> yogas = [];
 
     // 1. Gajakesari Yoga
@@ -190,7 +438,6 @@ class YogaDoshaAnalyzer {
       yogas.add('Chandra Mangala Yoga');
     }
 
-    // 5. Raj Yoga (Kendra-Trikona lords)
     // 5. Raj Yoga (Kendra-Trikona lords)
     if (_hasRajYoga(chart)) {
       yogas.add('Parasari Raj Yoga (Kendra-Trikona Lord Combination)');
@@ -289,9 +536,25 @@ class YogaDoshaAnalyzer {
     // 28. Miscellaneous Yogas
     _checkMiscYogas(chart, yogas);
 
+    // Enrich with strength analysis and manifestation period
     return yogas.map((y) {
-      String name = y.contains('(') ? y.split('(').first.trim() : y;
-      return _checkYogaWeakening(chart, name, y);
+      final name = y.contains('(') ? y.split('(').first.trim() : y;
+      final r = _checkYogaWeakening(chart, name, y);
+      final (period, lord) = _computeManifestationPeriod(
+        chart,
+        _getKeyPlanets(r.name),
+        now,
+      );
+      return BhangaResult(
+        name: r.name,
+        description: r.description,
+        isActive: r.isActive,
+        cancellationReasons: r.cancellationReasons,
+        strength: r.strength,
+        status: r.status,
+        manifestationPeriod: period,
+        peakDashaLord: lord,
+      );
     }).toList();
   }
 
@@ -2106,7 +2369,7 @@ class YogaDoshaAnalyzer {
     if (strength == 0.0) {
       status = 'Fully Cancelled';
     } else if (strength < 30.0) {
-      status = 'Mostly Cancelled';
+      status = 'Fully Cancelled'; // Changed from 'Mostly Cancelled'
     } else if (strength < 100.0) {
       status = 'Partially Cancelled';
     }
@@ -2218,7 +2481,9 @@ class YogaDoshaAnalyzer {
       strength: strength,
       status: strength == 0.0
           ? 'Fully Cancelled'
-          : (strength < 50 ? 'Mostly Cancelled' : 'Active'),
+          : (strength < 50
+                ? 'Fully Cancelled'
+                : 'Active'), // Changed from 'Mostly Cancelled'
     );
   }
 
@@ -2478,7 +2743,7 @@ class YogaDoshaAnalyzer {
       cancellationReasons: cancellations,
       strength: strength,
       status: strength < 40
-          ? 'Mostly Cancelled'
+          ? 'Fully Cancelled' // Changed from 'Mostly Cancelled'
           : (strength < 70 ? 'Partially Cancelled' : 'Active'),
     );
   }
@@ -2534,7 +2799,7 @@ class YogaDoshaAnalyzer {
       cancellationReasons: cancellations,
       strength: strength,
       status: strength < 30
-          ? 'Mostly Cancelled'
+          ? 'Fully Cancelled' // Changed from 'Mostly Cancelled'
           : (strength < 60 ? 'Partially Cancelled' : 'Active'),
     );
   }
@@ -2586,7 +2851,7 @@ class YogaDoshaAnalyzer {
       cancellationReasons: cancellations,
       strength: strength,
       status: strength < 40
-          ? 'Mostly Cancelled'
+          ? 'Fully Cancelled' // Changed from 'Mostly Cancelled'
           : (strength < 70 ? 'Partially Cancelled' : 'Active'),
     );
   }
@@ -2647,7 +2912,7 @@ class YogaDoshaAnalyzer {
       cancellationReasons: cancellations,
       strength: strength,
       status: strength < 30
-          ? 'Mostly Cancelled'
+          ? 'Fully Cancelled' // Changed from 'Mostly Cancelled'
           : (strength < 60 ? 'Partially Cancelled' : 'Active'),
     );
   }

@@ -50,12 +50,6 @@ class RashiphalService {
     );
 
     // 2. Get Panchang Data
-    // We use the location from the birth chart for the user's current location context
-    // Ideally, the app should ask for *current* location, but usually birth location or
-    // a stored "current location" setting is used.
-    // For MVP, we'll use the chart's location assuming the user is there or it's a proxy.
-    // Note: Using birth location as current location context for now.
-    // Future update: Add parameter for current user location.
     final panchang = await _panchangService.getPanchang(
       date,
       chartData.birthData.location,
@@ -68,14 +62,17 @@ class RashiphalService {
     final nakshatraStr = panchang.nakshatra;
     final tithiStr = panchang.tithi; // e.g., "Shukla Pratipada"
     final tithiNum = panchang.tithiNumber;
+    final moonSignName = _getSignName(moonSign);
 
-    // 4. Generate Predictions using Rules Engine
+    // 4. Generate Predictions using Rules Engine (now with sign name context)
     final signPrediction = RashiphalRules.getMoonSignPrediction(
       moonSign,
       houseFromNatal,
+      signName: moonSignName,
     );
     final nakshatraPrediction = RashiphalRules.getNakshatraPrediction(
       panchang.nakshatraNumber - 1,
+      nakshatraName: nakshatraStr,
     );
     final tithiRec = RashiphalRules.getTithiRecommendation(tithiNum);
     final muhurta = RashiphalRules.getMuhurtaTimings(date);
@@ -140,38 +137,132 @@ class RashiphalService {
     final keyHighlights = <String>[];
     final cautions = <String>[];
 
-    // Add transit recommendations
+    // Tarabala category name for descriptive output
+    final tarabalaCategoryName = _getTarabalaCategoryName(tarabalaCategory);
+
+    // Add transit recommendations with planetary context
     if (moonTransit.isFavorable) {
-      keyHighlights.add('Moon transit is favorable ($murti Murti)');
+      keyHighlights.add(
+        'Moon transit through $moonSignName ($murti Murti) in ${_getOrdinal(houseFromNatal)} house from natal Moon is favorable.',
+      );
       keyHighlights.addAll(moonTransit.recommendations);
     } else {
-      cautions.add('Moon transit advises caution ($murti Murti)');
+      cautions.add(
+        'Moon transit through $moonSignName ($murti Murti) in ${_getOrdinal(houseFromNatal)} house from natal Moon advises caution.',
+      );
       cautions.addAll(moonTransit.recommendations);
     }
 
     if (tarabalaPoints >= 30) {
-      keyHighlights.add('Excellent Tarabala: Highly supportive star energy.');
+      keyHighlights.add(
+        'Tarabala is $tarabalaCategoryName (category $tarabalaCategory of 9) — highly supportive star energy from $nakshatraStr Nakshatra.',
+      );
     } else if (tarabalaPoints == 0) {
-      cautions.add('Weak Tarabala: Success may require extra effort.');
+      cautions.add(
+        'Tarabala is $tarabalaCategoryName (category $tarabalaCategory of 9) — star energy from $nakshatraStr Nakshatra may require extra effort.',
+      );
     }
 
     if (isMoonObstructed) {
-      cautions.add('Moon is obstructed (Vedha) - positive energy is blocked.');
+      cautions.add(
+        'Moon\'s positive transit through $moonSignName is obstructed by Vedha — beneficial energy is partially blocked.',
+      );
     }
 
-    // 7. Construct Final Object
+    // 7. Build Transit Context — explicit planetary positions for reasoning
+    final transitContext = <String>[];
+
+    // Moon position
+    transitContext.add(
+      'Moon: $moonSignName (${_getOrdinal(houseFromNatal)} house from natal Moon) — $nakshatraStr Nakshatra',
+    );
+
+    // Jupiter position
+    final jupiterTransit = transitChart.jupiterTransit;
+    final jupiterSignName = _getSignName(jupiterTransit.transitSign);
+    transitContext.add(
+      'Jupiter: $jupiterSignName (${_getOrdinal(jupiterTransit.houseFromMoon)} house from natal Moon)${jupiterTransit.isBenefic ? " — Favorable" : ""}',
+    );
+
+    // Saturn position
+    final saturnTransit = transitChart.saturnTransit;
+    final saturnSignName = _getSignName(saturnTransit.transitSign);
+    String saturnNote =
+        'Saturn: $saturnSignName (${_getOrdinal(saturnTransit.houseFromMoon)} house from natal Moon)';
+    if (saturnTransit.isSadeSati) {
+      saturnNote += ' — Sade Sati ${saturnTransit.sadeSatiPhase.name} phase';
+    }
+    if (saturnTransit.isRetrograde) {
+      saturnNote += ' [Retrograde]';
+    }
+    transitContext.add(saturnNote);
+
+    // Rahu-Ketu position
+    final rahuKetuTransit = transitChart.rahuKetuTransit;
+    final rahuSignName = _getSignName(rahuKetuTransit.rahuSign);
+    final ketuSignName = _getSignName(rahuKetuTransit.ketuSign);
+    transitContext.add('Rahu: $rahuSignName | Ketu: $ketuSignName');
+
+    // 8. Build Dasha Context — current running Dasha period
+    String dashaContext = '';
+    final currentDashas = chartData.getCurrentDashas(date);
+    if (currentDashas.isNotEmpty) {
+      final md = currentDashas['mahadasha'] ?? '';
+      final ad = currentDashas['antardasha'] ?? '';
+      final pd = currentDashas['pratyantardasha'] ?? '';
+      if (md.isNotEmpty) {
+        dashaContext = '$md Mahadasha';
+        if (ad.isNotEmpty) dashaContext += ' → $ad Antardasha';
+        if (pd.isNotEmpty) dashaContext += ' → $pd Pratyantardasha';
+      }
+    }
+
+    // 9. Construct Final Object
     return DailyRashiphal(
       date: date,
-      moonSign: _getSignName(moonSign),
+      moonSign: moonSignName,
       nakshatra: nakshatraStr,
       tithi: tithiStr,
-      overallPrediction: '$signPrediction $nakshatraPrediction',
+      overallPrediction: '$signPrediction\n\n$nakshatraPrediction',
       keyHighlights: keyHighlights,
       auspiciousPeriods: muhurta,
       cautions: cautions,
       recommendation: tithiRec,
       favorableScore: finalScore,
+      transitContext: transitContext,
+      dashaContext: dashaContext,
     );
+  }
+
+  /// Get Tarabala category name
+  String _getTarabalaCategoryName(int category) {
+    const names = {
+      1: 'Janma (Birth)',
+      2: 'Sampat (Wealth)',
+      3: 'Vipat (Danger)',
+      4: 'Kshema (Well-being)',
+      5: 'Pratyak (Obstacle)',
+      6: 'Sadhana (Achievement)',
+      7: 'Naidhana (Death-like)',
+      8: 'Mitra (Friend)',
+      9: 'Param Mitra (Best Friend)',
+    };
+    return names[category] ?? 'Unknown';
+  }
+
+  /// Get ordinal suffix
+  String _getOrdinal(int number) {
+    if (number >= 11 && number <= 13) return '${number}th';
+    switch (number % 10) {
+      case 1:
+        return '${number}st';
+      case 2:
+        return '${number}nd';
+      case 3:
+        return '${number}rd';
+      default:
+        return '${number}th';
+    }
   }
 
   String _getSignName(int index) {

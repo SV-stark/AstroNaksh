@@ -75,19 +75,37 @@ class LifePredictionsResult {
         : (aspects.map((a) => a.score).reduce((a, b) => a + b) / aspects.length)
               .round();
 
+    // Identify strongest and weakest aspects for the summary
+    final sortedAspects = List<LifeAspectPrediction>.from(aspects)
+      ..sort((a, b) => b.score.compareTo(a.score));
+    final strongest = sortedAspects.isNotEmpty ? sortedAspects.first : null;
+    final weakest = sortedAspects.length > 1 ? sortedAspects.last : null;
+
+    // Find key planetary highlights
+    String planetaryNote = '';
+    if (strongest != null && strongest.influences.isNotEmpty) {
+      final topInfluence = strongest.influences.first;
+      planetaryNote =
+          ' ${topInfluence.planetName} (${topInfluence.status}) in your chart particularly strengthens ${strongest.aspectName.toLowerCase()}.';
+    }
+
     String summary;
     if (avgScore >= 80) {
       summary =
           'Your birth chart shows strong positive influences across most life areas. '
-          'The planetary alignments favor success, happiness and spiritual growth.';
+          'The planetary alignments favor success, happiness and spiritual growth.$planetaryNote';
     } else if (avgScore >= 65) {
       summary =
           'Your chart indicates a balanced life path with good opportunities. '
-          'Some areas may require extra attention but overall prospects are favorable.';
+          'Some areas may require extra attention but overall prospects are favorable.$planetaryNote';
+      if (weakest != null && weakest.score < 55) {
+        summary +=
+            ' ${weakest.aspectName} (score: ${weakest.score}) may need focused remedial action.';
+      }
     } else {
       summary =
           'Your chart shows mixed influences requiring focused effort in key areas. '
-          'With awareness and right actions, challenges can be transformed into growth.';
+          'With awareness and right actions, challenges can be transformed into growth.$planetaryNote';
     }
 
     return LifePredictionsResult(

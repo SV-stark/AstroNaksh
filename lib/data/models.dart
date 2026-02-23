@@ -506,6 +506,8 @@ class DailyRashiphal {
   final List<String> cautions;
   final String recommendation;
   final double favorableScore; // 0.0 to 1.0
+  final List<String> transitContext; // Descriptive planetary transit positions
+  final String dashaContext; // Current running Dasha period description
 
   DailyRashiphal({
     required this.date,
@@ -518,6 +520,8 @@ class DailyRashiphal {
     required this.cautions,
     required this.recommendation,
     this.favorableScore = 0.5,
+    this.transitContext = const [],
+    this.dashaContext = '',
   });
 }
 
@@ -541,7 +545,11 @@ class BhangaResult {
   final bool isActive;
   final List<String> cancellationReasons;
   final double strength; // 0-100 scale
-  final String status; // 'Active', 'Partially Cancelled', 'Fully Cancelled'
+  final String
+  status; // 'Active', 'Partially Cancelled', 'Fully Cancelled', 'Strong', 'Moderate', 'Weak'
+  final String
+  manifestationPeriod; // e.g. "Mar 2025 – Nov 2027" or "Currently active"
+  final String peakDashaLord; // e.g. "Jupiter MD → Venus AD"
 
   BhangaResult({
     required this.name,
@@ -550,6 +558,8 @@ class BhangaResult {
     this.cancellationReasons = const [],
     this.strength = 100.0,
     required this.status,
+    this.manifestationPeriod = '',
+    this.peakDashaLord = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -559,6 +569,8 @@ class BhangaResult {
     'cancellationReasons': cancellationReasons,
     'strength': strength,
     'status': status,
+    'manifestationPeriod': manifestationPeriod,
+    'peakDashaLord': peakDashaLord,
   };
 }
 

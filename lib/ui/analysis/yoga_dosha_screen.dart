@@ -149,12 +149,21 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
 
   Widget _buildSummaryTab(YogaDoshaAnalysisResult analysis) {
     final yogas = analysis.yogas;
-    final doshas = analysis.doshas;
+    final doshas = analysis.doshas; // Already filtered — no 'Not Present'
 
     // Count active items
     final activeYogas = yogas.where((y) => y.isActive).length;
     final activeDoshas = doshas.where((d) => d.isActive).length;
-    final cancelledDoshas = doshas.length - activeDoshas;
+    final cancelledDoshas = doshas.where((d) => !d.isActive).length;
+
+    // Notable yogas: top 3 by strength
+    final notableYogas = List<BhangaResult>.from(yogas)
+      ..sort((a, b) => b.strength.compareTo(a.strength));
+
+    // Important doshas for quick summary (Active or Fully Cancelled)
+    final criticalDoshas = doshas
+        .where((d) => d.isActive || d.status == 'Fully Cancelled')
+        .toList();
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 20),
@@ -225,14 +234,18 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               ),
               child: const Icon(FluentIcons.warning, color: Colors.white),
             ),
-            title: const Text('Doshas/Challenges'),
-            subtitle: Text('$activeDoshas active, $cancelledDoshas cancelled'),
+            title: const Text('Doshas & Challenges'),
+            subtitle: Text(
+              cancelledDoshas > 0
+                  ? '$activeDoshas active, $cancelledDoshas partially/fully cancelled'
+                  : '$activeDoshas active',
+            ),
             trailing: Text(
               '$activeDoshas',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.red,
+                color: activeDoshas > 0 ? Colors.red : Colors.green,
               ),
             ),
           ),
@@ -241,23 +254,23 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         const SizedBox(height: 16),
 
         // Quick highlights
-        if (yogas.isNotEmpty) ...[
+        if (notableYogas.isNotEmpty) ...[
           const Text(
             'Notable Yogas',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          ...yogas.take(3).map((yoga) => _buildQuickYogaCard(yoga)),
+          ...notableYogas.take(3).map((yoga) => _buildQuickYogaCard(yoga)),
         ],
 
-        if (doshas.isNotEmpty) ...[
+        if (criticalDoshas.isNotEmpty) ...[
           const SizedBox(height: 16),
           const Text(
-            'Important Doshas',
+            'Doshas & Afflictions',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          ...doshas.map((dosha) => _buildQuickDoshaCard(dosha)),
+          ...criticalDoshas.map((dosha) => _buildQuickDoshaCard(dosha)),
         ],
       ],
     );
@@ -337,7 +350,12 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
   }
 
   Widget _buildDoshasTab(List<BhangaResult> doshas) {
-    if (doshas.isEmpty) {
+    // Filter out 'Not Present' doshas — only show detected ones
+    final visibleDoshas = doshas
+        .where((d) => d.status != 'Not Present')
+        .toList();
+
+    if (visibleDoshas.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -347,7 +365,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               Icon(FluentIcons.completed, size: 64, color: Colors.green),
               const SizedBox(height: 16),
               Text(
-                'No major doshas detected!',
+                'No active doshas detected!',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -365,6 +383,10 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         ),
       );
     }
+
+    // Separate active from partially cancelled
+    final activeDoshas = visibleDoshas.where((d) => d.isActive).toList();
+    final cancelledDoshas = visibleDoshas.where((d) => !d.isActive).toList();
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 20),
@@ -388,7 +410,27 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        ...doshas.map((dosha) => _buildDoshaCard(dosha)),
+        if (activeDoshas.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Active Doshas (${activeDoshas.length})',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ...activeDoshas.map((d) => _buildDoshaCard(d)),
+        ],
+        if (cancelledDoshas.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Cancelled / Reduced Doshas (${cancelledDoshas.length})',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ...cancelledDoshas.map((d) => _buildDoshaCard(d)),
+        ],
       ],
     );
   }
@@ -465,46 +507,83 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
 
   Widget _buildYogaCard(BhangaResult yoga) {
     final description = _getYogaDescription(yoga.name);
+    final strengthColor = yoga.strength >= 80
+        ? Colors.green
+        : yoga.strength >= 50
+        ? Colors.teal
+        : Colors.orange;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Expander(
         header: Row(
           children: [
-            Icon(FluentIcons.favorite_star, color: Colors.yellow, size: 24),
-            const SizedBox(width: 12),
+            Icon(FluentIcons.favorite_star, color: Colors.yellow, size: 20),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Text(
-                        yoga.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      Flexible(
+                        child: Text(
+                          yoga.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      if (!yoga.isActive) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            yoga.status,
-                            style: TextStyle(fontSize: 10),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: strengthColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: strengthColor.withValues(alpha: 0.5),
                           ),
                         ),
-                      ],
+                        child: Text(
+                          yoga.status,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: strengthColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Strength bar always visible in header
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ProgressBar(
+                          value: yoga.strength,
+                          activeColor: strengthColor,
+                          backgroundColor: Colors.grey.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${yoga.strength.toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: strengthColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                   Text(
                     _getYogaType(yoga.name),
-                    style: TextStyle(fontSize: 12, color: Colors.green),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.green.withValues(alpha: 0.8),
+                    ),
                   ),
                 ],
               ),
@@ -514,14 +593,13 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status and Strength
-            if (yoga.strength < 100) ...[
-              Text(
-                'Strength: ${yoga.strength.toStringAsFixed(0)}%',
-                style: TextStyle(fontWeight: FontWeight.bold),
+            // Manifestation Period
+            if (yoga.manifestationPeriod.isNotEmpty) ...[
+              _buildManifestationSection(
+                yoga.manifestationPeriod,
+                yoga.peakDashaLord,
+                isYoga: true,
               ),
-              const SizedBox(height: 4),
-              ProgressBar(value: yoga.strength),
               const SizedBox(height: 12),
             ],
 
@@ -537,11 +615,11 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               const SizedBox(height: 6),
               ...yoga.cancellationReasons.map(
                 (r) => Padding(
-                  padding: EdgeInsets.only(bottom: 4),
+                  padding: const EdgeInsets.only(bottom: 4),
                   child: Row(
                     children: [
                       Icon(FluentIcons.warning, size: 12, color: Colors.orange),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(child: Text(r)),
                     ],
                   ),
@@ -574,11 +652,19 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
 
     // Determine status color
     Color statusColor = Colors.red;
-    if (dosha.status == 'Fully Cancelled') {
+    if (dosha.status == 'Fully Cancelled' ||
+        dosha.status == 'Mostly Cancelled') {
       statusColor = Colors.green;
     } else if (dosha.status == 'Partially Cancelled') {
       statusColor = Colors.orange;
     }
+
+    // Strength bar color for doshas: lower strength = better (more cancelled)
+    final barColor = dosha.strength <= 20
+        ? Colors.green
+        : dosha.strength <= 50
+        ? Colors.orange
+        : Colors.red;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -586,41 +672,67 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         header: Row(
           children: [
             Icon(
-              FluentIcons.warning,
-              color: dosha.isActive ? Colors.orange : Colors.grey,
-              size: 24,
+              dosha.isActive ? FluentIcons.warning : FluentIcons.shield,
+              color: dosha.isActive ? Colors.red : Colors.green,
+              size: 20,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Text(
-                        dosha.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      Flexible(
+                        child: Text(
+                          dosha.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      if (dosha.status != 'Active') ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: statusColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: statusColor.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          child: Text(
-                            dosha.status,
-                            style: TextStyle(fontSize: 10, color: statusColor),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: statusColor.withValues(alpha: 0.5),
                           ),
                         ),
-                      ],
+                        child: Text(
+                          dosha.status,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: statusColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Intensity bar always visible in header
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ProgressBar(
+                          value: dosha.strength,
+                          activeColor: barColor,
+                          backgroundColor: Colors.grey.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Intensity: ${dosha.strength.toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: barColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                   Text(
@@ -628,8 +740,10 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                         ? 'Remedial measures recommended'
                         : 'Effects nullified or reduced',
                     style: TextStyle(
-                      fontSize: 12,
-                      color: dosha.isActive ? Colors.orange : Colors.green,
+                      fontSize: 11,
+                      color: dosha.isActive
+                          ? Colors.red.withValues(alpha: 0.8)
+                          : Colors.green.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -640,36 +754,12 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status and Strength
-            if (dosha.strength < 100) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Dosha Intensity: ${dosha.strength.toStringAsFixed(0)}%',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  if (dosha.strength == 0)
-                    Text(
-                      'CANCELLED',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              ProgressBar(
-                value: dosha.strength,
-                backgroundColor: Colors.grey.withValues(alpha: 0.1),
-                activeColor: dosha.strength >= 80
-                    ? Colors.green
-                    : dosha.strength >= 60
-                    ? Colors.teal
-                    : dosha.strength >= 40
-                    ? Colors.orange
-                    : Colors.red,
+            // Manifestation Period
+            if (dosha.manifestationPeriod.isNotEmpty) ...[
+              _buildManifestationSection(
+                dosha.manifestationPeriod,
+                dosha.peakDashaLord,
+                isYoga: false,
               ),
               const SizedBox(height: 12),
             ],
@@ -686,7 +776,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               const SizedBox(height: 6),
               ...dosha.cancellationReasons.map(
                 (r) => Padding(
-                  padding: EdgeInsets.only(bottom: 4),
+                  padding: const EdgeInsets.only(bottom: 4),
                   child: Row(
                     children: [
                       Icon(
@@ -694,7 +784,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                         size: 12,
                         color: Colors.green,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(child: Text(r)),
                     ],
                   ),
@@ -726,6 +816,64 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// Shared manifestation period section used by both yoga and dosha cards
+  Widget _buildManifestationSection(
+    String period,
+    String dashaLord, {
+    required bool isYoga,
+  }) {
+    final color = isYoga ? const Color(0xFF1976D2) : Colors.purple;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(FluentIcons.calendar, size: 14, color: color),
+              const SizedBox(width: 6),
+              Text(
+                isYoga ? 'Peak Manifestation Period' : 'Peak Intensity Period',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(period, style: const TextStyle(fontSize: 13)),
+          if (dashaLord.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  FluentIcons.timeline,
+                  size: 12,
+                  color: color.withValues(alpha: 0.7),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Dasha: $dashaLord',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: color.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }

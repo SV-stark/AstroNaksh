@@ -62,6 +62,8 @@ class DailyPredictionCard extends StatelessWidget {
               _buildChip(context, 'Moon: ${prediction.moonSign}'),
               _buildChip(context, 'Nakshatra: ${prediction.nakshatra}'),
               _buildChip(context, 'Tithi: ${prediction.tithi}'),
+              if (prediction.dashaContext.isNotEmpty)
+                _buildHighlightChip(context, prediction.dashaContext),
             ],
           ),
           const SizedBox(height: 16),
@@ -79,6 +81,59 @@ class DailyPredictionCard extends StatelessWidget {
             style: FluentTheme.of(context).typography.bodyLarge,
           ),
           const SizedBox(height: 16),
+
+          // Planetary Positions (Transit Context)
+          if (prediction.transitContext.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(FluentIcons.globe, size: 16, color: Colors.teal),
+                const SizedBox(width: 8),
+                Text(
+                  'Current Planetary Positions',
+                  style: FluentTheme.of(context).typography.bodyStrong,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.teal.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.teal.withValues(alpha: 0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: prediction.transitContext
+                    .map(
+                      (t) => Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              _getPlanetIcon(t),
+                              size: 14,
+                              color: Colors.teal,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                t,
+                                style: FluentTheme.of(
+                                  context,
+                                ).typography.caption?.copyWith(height: 1.4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
 
           // Highlights
           if (prediction.keyHighlights.isNotEmpty) ...[
@@ -148,6 +203,43 @@ class DailyPredictionCard extends StatelessWidget {
       ),
       child: Text(text, style: FluentTheme.of(context).typography.caption),
     );
+  }
+
+  Widget _buildHighlightChip(BuildContext context, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.purple.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(FluentIcons.timeline, size: 12, color: Colors.purple),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              text,
+              style: FluentTheme.of(context).typography.caption?.copyWith(
+                color: Colors.purple,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getPlanetIcon(String text) {
+    final lower = text.toLowerCase();
+    if (lower.startsWith('moon')) return FluentIcons.brightness;
+    if (lower.startsWith('jupiter')) return FluentIcons.starburst;
+    if (lower.startsWith('saturn')) return FluentIcons.blocked_site;
+    if (lower.startsWith('rahu')) return FluentIcons.sync_folder;
+    return FluentIcons.circle_ring;
   }
 
   Widget _buildBulletPoint(BuildContext context, String text, Color dotColor) {

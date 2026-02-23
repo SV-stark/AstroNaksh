@@ -413,8 +413,9 @@ class _InputScreenState extends State<InputScreen> {
                                           return "Required";
                                         }
                                         final lat = double.tryParse(value);
-                                        if (lat == null)
+                                        if (lat == null) {
                                           return "Invalid number";
+                                        }
                                         if (lat < -90 || lat > 90) {
                                           return "Must be -90 to 90";
                                         }
@@ -443,8 +444,9 @@ class _InputScreenState extends State<InputScreen> {
                                           return "Required";
                                         }
                                         final long = double.tryParse(value);
-                                        if (long == null)
+                                        if (long == null) {
                                           return "Invalid number";
+                                        }
                                         if (long < -180 || long > 180) {
                                           return "Must be -180 to 180";
                                         }
@@ -472,14 +474,16 @@ class _InputScreenState extends State<InputScreen> {
                                               signed: true,
                                             ),
                                         validator: (value) {
-                                          if (!_useManualCoordinates)
+                                          if (!_useManualCoordinates) {
                                             return null;
+                                          }
                                           if (value == null || value.isEmpty) {
                                             return "Required";
                                           }
                                           final lat = double.tryParse(value);
-                                          if (lat == null)
+                                          if (lat == null) {
                                             return "Invalid number";
+                                          }
                                           if (lat < -90 || lat > 90) {
                                             return "Must be -90 to 90";
                                           }
@@ -505,14 +509,16 @@ class _InputScreenState extends State<InputScreen> {
                                               signed: true,
                                             ),
                                         validator: (value) {
-                                          if (!_useManualCoordinates)
+                                          if (!_useManualCoordinates) {
                                             return null;
+                                          }
                                           if (value == null || value.isEmpty) {
                                             return "Required";
                                           }
                                           final long = double.tryParse(value);
-                                          if (long == null)
+                                          if (long == null) {
                                             return "Invalid number";
+                                          }
                                           if (long < -180 || long > 180) {
                                             return "Must be -180 to 180";
                                           }

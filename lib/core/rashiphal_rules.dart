@@ -4,33 +4,39 @@ class RashiphalRules {
   /// Get prediction for Moon Sign Transit (Chandra Gochar)
   /// [moonSign] 0=Aries, 11=Pisces
   /// [houseFromNatal] The house the transiting Moon is in relative to natal Moon
-  static String getMoonSignPrediction(int moonSign, int houseFromNatal) {
+  /// [signName] The name of the sign the Moon is transiting (e.g., "Aries")
+  static String getMoonSignPrediction(
+    int moonSign,
+    int houseFromNatal, {
+    String signName = '',
+  }) {
+    final signRef = signName.isNotEmpty ? ' through $signName' : '';
     // Basic rules based on house position from Natal Moon (Chandrashtama etc.)
     switch (houseFromNatal) {
       case 1:
-        return 'The Moon is visiting your natal sign. You may feel more emotional and sensitive today. Focus on self-care and personal well-being.';
+        return 'The Moon transiting$signRef is visiting your natal sign (1st house from natal Moon). You may feel more emotional and sensitive today. This transit heightens self-awareness — focus on self-care and personal well-being.';
       case 2:
-        return 'Moon in the 2nd house suggests a focus on finances and family. Good for planning expenses, but avoid impulsive spending.';
+        return 'Moon transiting$signRef occupies the 2nd house from your natal Moon, activating the house of wealth and speech. This suggests a focus on finances and family matters. Good for planning expenses, but avoid impulsive spending.';
       case 3:
-        return 'Moon in the 3rd house brings energy and courage. Excellent day for communication, short trips, and starting new initiatives.';
+        return 'Moon transiting$signRef in the 3rd house from your natal Moon energizes the house of courage and communication. Excellent day for short trips, writing, and starting new initiatives with confidence.';
       case 4:
-        return 'Moon in the 4th house highlights home and inner peace. Spend time with family or improve your living space. Watch out for mood swings.';
+        return 'Moon transiting$signRef in the 4th house from your natal Moon highlights domestic life and inner peace (Sukha Bhava). Spend time with family or improve your living space. Watch out for mood swings.';
       case 5:
-        return 'Moon in the 5th house enhances creativity and romance. A good day for hobbies, spending time with children, or speculative planning.';
+        return 'Moon transiting$signRef in the 5th house from your natal Moon activates the house of creativity, romance, and intellect. A good day for hobbies, spending time with children, or speculative planning.';
       case 6:
-        return 'Moon in the 6th house indicates routine work and health. Great for organizing and service, but avoid conflict with opponents.';
+        return 'Moon transiting$signRef in the 6th house from your natal Moon activates the house of service and health (Ari Bhava). Great for organizing, overcoming obstacles, and routine work, but avoid unnecessary conflict.';
       case 7:
-        return 'Moon in the 7th house focuses on relationships and partnerships. Collaboration flows well today. Perfect for social interactions.';
+        return 'Moon transiting$signRef in the 7th house from your natal Moon lights up partnerships and relationships (Kalatra Bhava). Collaboration flows well. Perfect for negotiations and social interactions.';
       case 8:
-        return 'Moon in the 8th house (Chandrashtama) calls for caution. Avoid major decisions, risks, or arguments. Focus on research or introspection.';
+        return 'Moon transiting$signRef in the 8th house from your natal Moon triggers Chandrashtama — a classically cautious transit through the house of transformation. Avoid major decisions, risks, or arguments. Focus on research or introspection.';
       case 9:
-        return 'Moon in the 9th house brings luck and higher learning. Good for spiritual practices, long-distance travel, or seeking mentorship.';
+        return 'Moon transiting$signRef in the 9th house from your natal Moon activates the house of fortune and higher learning (Dharma Bhava). Good for spiritual practices, long-distance travel, or seeking mentorship. Luck favors you.';
       case 10:
-        return 'Moon in the 10th house highlights career and public image. Your efforts at work will be noticed. A productive day for professional goals.';
+        return 'Moon transiting$signRef in the 10th house from your natal Moon highlights career and public image (Karma Bhava). Your efforts at work will be noticed. A highly productive day for professional goals.';
       case 11:
-        return 'Moon in the 11th house is excellent for gains and networking. Socializing brings benefits. Your desires are more easily fulfilled.';
+        return 'Moon transiting$signRef in the 11th house from your natal Moon activates the house of gains and aspirations (Labha Bhava). Excellent for networking, socializing, and fulfilling desires. Opportunities come easily.';
       case 12:
-        return 'Moon in the 12th house suggests rest and withdrawal. Good for meditation, expenses on charity, or planning foreign travel. Avoid stress.';
+        return 'Moon transiting$signRef in the 12th house from your natal Moon activates the house of expenditure and liberation (Vyaya Bhava). Good for meditation, charity, or planning foreign travel. Conserve energy and avoid stress.';
       default:
         return 'Planetary energies are neutral today. Maintain a balanced approach to your daily activities.';
     }
@@ -38,35 +44,39 @@ class RashiphalRules {
 
   /// Get prediction based on Nakshatra
   /// [nakshatraIndex] 0=Ashwini, 26=Revati
-  static String getNakshatraPrediction(int nakshatraIndex) {
+  /// [nakshatraName] The name of the Nakshatra for contextual reference
+  static String getNakshatraPrediction(
+    int nakshatraIndex, {
+    String nakshatraName = '',
+  }) {
     const predictions = [
-      'Good for starting quick tasks and healing therapies.', // Ashwini
-      'Favorable for creative works and resolving conflicts.', // Bharani
-      'Excellent for competitive activities and making firm decisions.', // Krittika
-      'Great for planting seeds, financial planning, and creative arts.', // Rohini
-      'Good for travel, search, and communication.', // Mrigashira
-      'Favorable for research and breaking old habits. Avoid sensitive talks.', // Ardra
-      'Excellent for travel, family gatherings, and starting repairs.', // Punarvasu
-      'Highly auspicious for spiritual activities and legal matters.', // Pushya
-      'Good for kundalini yoga and introspection. Avoid starting new business.', // Ashlesha
-      'Favorable for ceremonies and honoring ancestors.', // Magha
-      'Good for romance, relaxation, and artistic pursuits.', // Purva Phalguni
-      'Excellent for weddings, foundations, and long-term agreements.', // Uttara Phalguni
-      'Great for detailed work, writing, and learning crafts.', // Hasta
-      'Favorable for design, architecture, and spiritual activities.', // Chitra
-      'Good for trade, business deals, and learning.', // Swati
-      'Excellent for goal-setting and determined efforts.', // Vishakha
-      'Favorable for friendship, group activities, and relaxation.', // Anuradha
-      'Good for assuming authority and facing challenges.', // Jyeshtha
-      'Favorable for getting to the root of problems and gardening.', // Mula
-      'Good for debates, conflict resolution, and water-related activities.', // Purva Ashadha
-      'Excellent for laying foundations and starting public works.', // Uttara Ashadha
-      'Good for listening, learning, and counseling.', // Shravana
-      'Favorable for music, wealth creation, and medical treatment.', // Dhanishta
-      'Good for healing, technology, and solving mysteries.', // Shatabhisha
-      'Favorable for penance and spiritual elevation. Careful with money.', // Purva Bhadrapada
-      'Excellent for retirement planning, seclusion, and charity.', // Uttara Bhadrapada
-      'Good for completions, weddings, and artistic excellence.', // Revati
+      'Under the swift healing energy of Ashwini Nakshatra (ruled by Ketu, deity: Ashwini Kumaras), this is good for starting quick tasks, healing therapies, and medical treatments.',
+      'Bharani Nakshatra (ruled by Venus, deity: Yama) governs today — favorable for creative works, resolving conflicts, and matters of transformation.',
+      'Krittika Nakshatra (ruled by Sun, deity: Agni) brings fiery determination — excellent for competitive activities, cooking, and making firm decisions.',
+      'Rohini Nakshatra (ruled by Moon, deity: Brahma) fosters growth — great for financial planning, planting seeds, agriculture, and creative arts.',
+      'Mrigashira Nakshatra (ruled by Mars, deity: Soma) activates curiosity — good for travel, search, exploration, and communication.',
+      'Ardra Nakshatra (ruled by Rahu, deity: Rudra) brings transformative energy — favorable for research and breaking old habits. Avoid sensitive conversations.',
+      'Punarvasu Nakshatra (ruled by Jupiter, deity: Aditi) brings renewal — excellent for travel, family gatherings, homecoming, and starting repairs.',
+      'Pushya Nakshatra (ruled by Saturn, deity: Brihaspati) is one of the most auspicious — highly favorable for spiritual activities, nourishment, and legal matters.',
+      'Ashlesha Nakshatra (ruled by Mercury, deity: Naga) activates deep intuition — good for kundalini yoga and introspection. Avoid starting new business ventures.',
+      'Magha Nakshatra (ruled by Ketu, deity: Pitris) connects to ancestry — favorable for ceremonies, honoring ancestors, and matters of authority.',
+      'Purva Phalguni Nakshatra (ruled by Venus, deity: Bhaga) brings pleasure — good for romance, relaxation, entertainment, and artistic pursuits.',
+      'Uttara Phalguni Nakshatra (ruled by Sun, deity: Aryaman) brings commitment — excellent for weddings, laying foundations, and long-term agreements.',
+      'Hasta Nakshatra (ruled by Moon, deity: Savitar) brings dexterity — great for detailed work, writing, craftsmanship, and learning new skills.',
+      'Chitra Nakshatra (ruled by Mars, deity: Vishwakarma) inspires creation — favorable for design, architecture, jewellery, and spiritual activities.',
+      'Swati Nakshatra (ruled by Rahu, deity: Vayu) brings independence — good for trade, business deals, learning, and building connections.',
+      'Vishakha Nakshatra (ruled by Jupiter, deity: Indra-Agni) fuels ambition — excellent for goal-setting, determined efforts, and competitive endeavors.',
+      'Anuradha Nakshatra (ruled by Saturn, deity: Mitra) fosters devotion — favorable for friendship, group activities, and deepening bonds.',
+      'Jyeshtha Nakshatra (ruled by Mercury, deity: Indra) empowers leadership — good for assuming authority, facing challenges, and protecting others.',
+      'Mula Nakshatra (ruled by Ketu, deity: Nirriti) uncovers roots — favorable for investigation, getting to the root of problems, and gardening.',
+      'Purva Ashadha Nakshatra (ruled by Venus, deity: Apas) brings invincibility — good for debates, conflict resolution, and water-related activities.',
+      'Uttara Ashadha Nakshatra (ruled by Sun, deity: Vishve Devas) grants final victory — excellent for laying foundations, government work, and starting public works.',
+      'Shravana Nakshatra (ruled by Moon, deity: Vishnu) enhances receptivity — good for listening, learning, counseling, and acquiring knowledge.',
+      'Dhanishta Nakshatra (ruled by Mars, deity: Vasus) brings prosperity — favorable for music, wealth creation, real estate, and medical treatment.',
+      'Shatabhisha Nakshatra (ruled by Rahu, deity: Varuna) activates healing — good for alternative medicine, technology, astronomy, and solving mysteries.',
+      'Purva Bhadrapada Nakshatra (ruled by Jupiter, deity: Aja Ekapada) brings intensity — favorable for penance, spiritual elevation, and austerity. Be careful with money.',
+      'Uttara Bhadrapada Nakshatra (ruled by Saturn, deity: Ahir Budhnya) brings depth — excellent for retirement planning, seclusion, meditation, and charity.',
+      'Revati Nakshatra (ruled by Mercury, deity: Pushan) brings completion — good for finishing projects, weddings, artistic excellence, and safe travels.',
     ];
     return predictions[nakshatraIndex % 27];
   }

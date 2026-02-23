@@ -148,7 +148,16 @@ class SwissEphBindings {
     } else if (Platform.isLinux) {
       return ffi.DynamicLibrary.open('libswisseph.so');
     } else if (Platform.isWindows) {
-      return ffi.DynamicLibrary.open('swisseph.dll');
+      // Resolve path adjacent to the executable to avoid CWD issues (e.g., from shortcuts)
+      final executableDir = File(Platform.resolvedExecutable).parent.path;
+      final absolutePath = executableDir + Platform.pathSeparator + 'swisseph.dll';
+      
+      try {
+        return ffi.DynamicLibrary.open(absolutePath);
+      } catch (e) {
+        // Fallback for development/flutter run
+        return ffi.DynamicLibrary.open('swisseph.dll');
+      }
     } else {
       throw UnsupportedError('Unsupported platform');
     }

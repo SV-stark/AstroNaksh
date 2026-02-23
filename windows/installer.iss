@@ -36,6 +36,7 @@ Source: "..\build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}";
 Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Include the DLL from root if it exists - useful if untracked DLLs are needed
 Source: "..\swisseph.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\swisseph_src\swisseph.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

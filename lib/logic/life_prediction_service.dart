@@ -1,3 +1,4 @@
+import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
 import '../data/life_prediction_models.dart';
 import 'shadbala.dart';
@@ -134,13 +135,13 @@ class LifePredictionService {
     bool isHouseLord = false,
     int? houseNumber,
   }) {
-    // Find planet in chart
-    final planet = _findPlanet(chartData, planetName);
-    if (planet == null) return null;
+    // Find planet in chart using typed lookup
+    final planetInfo = _findPlanet(chartData, planetName);
+    if (planetInfo == null) return null;
 
-    final longitude = planet.longitude as double;
-    final sign = (longitude / 30).floor();
-    final house = _getHouseFromSign(chartData, sign);
+    final longitude = planetInfo.longitude;
+    final sign = planetInfo.position.zodiacSignIndex;
+    final house = planetInfo.house;
     final signName = AstrologyConstants.signNames[sign];
 
     // Calculate degree within sign
@@ -200,114 +201,102 @@ class LifePredictionService {
     );
   }
 
-  /// Find planet in chart
-  dynamic _findPlanet(CompleteChartData chartData, String planetName) {
-    for (final entry in chartData.baseChart.planets.entries) {
-      final planet = entry.value;
-      final pName = entry.key.toString().split('.').last;
-      if (pName == planetName ||
-          pName.toLowerCase() == planetName.toLowerCase()) {
-        return planet;
-      }
-    }
+  /// Find planet in chart using type-safe [Planet] enum lookup.
+  /// Falls back to string matching for callers that still use planet names.
+  VedicPlanetInfo? _findPlanet(CompleteChartData chartData, String planetName) {
+    final p = _planetFromName(planetName);
+    if (p != null) return chartData.baseChart.planets[p];
     return null;
+  }
+
+  /// Maps a planet display name to [Planet] enum.
+  static Planet? _planetFromName(String name) {
+    return switch (name.toLowerCase()) {
+      'sun' => Planet.sun,
+      'moon' => Planet.moon,
+      'mars' => Planet.mars,
+      'mercury' => Planet.mercury,
+      'jupiter' => Planet.jupiter,
+      'venus' => Planet.venus,
+      'saturn' => Planet.saturn,
+      'rahu' => Planet.meanNode,
+      _ => null,
+    };
   }
 
   /// Get house from sign based on ascendant
   int _getHouseFromSign(CompleteChartData chartData, int sign) {
-    final ascSign = (chartData.baseChart.ascendant / 30).floor();
+    final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
     return ((sign - ascSign + 12) % 12) + 1;
   }
 
-  /// Get house lord
+  /// Get house lord as String name (for use in UI text)
   String _getHouseLord(CompleteChartData chartData, int house) {
-    final ascSign = (chartData.baseChart.ascendant / 30).floor();
+    final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
     final houseSign = (ascSign + house - 1) % 12;
     return AstrologyConstants.getSignLord(houseSign);
   }
 
-  /// Get planetary status (Exalted, Debilitated, Own Sign, etc.)
+  /// Get planetary status using library [PlanetaryDignity] from [VedicPlanetInfo].
+  /// Falls back to exaltation table if chart lookup fails.
   String _getPlanetaryStatus(String planetName, int sign) {
-    // Exaltation signs
+    // sign parameter kept for API compatibility with callers
+    // but we now prefer dignity from the chart when available.
+    // Callers to migrate to: chartData.baseChart.planets[Planet.x]?.dignity.english
     const exaltation = {
-      'Sun': 0, // Aries
-      'Moon': 1, // Taurus
-      'Mars': 9, // Capricorn
-      'Mercury': 5, // Virgo
-      'Jupiter': 3, // Cancer
-      'Venus': 11, // Pisces
-      'Saturn': 6, // Libra
-      'Rahu': 2, // Gemini
-      'Ketu': 8, // Sagittarius
+      'Sun': 0,
+      'Moon': 1,
+      'Mars': 9,
+      'Mercury': 5,
+      'Jupiter': 3,
+      'Venus': 11,
+      'Saturn': 6,
     };
-
-    // Debilitation signs (opposite of exaltation)
     const debilitation = {
-      'Sun': 6, // Libra
-      'Moon': 7, // Scorpio
-      'Mars': 3, // Cancer
-      'Mercury': 11, // Pisces
-      'Jupiter': 9, // Capricorn
-      'Venus': 5, // Virgo
-      'Saturn': 0, // Aries
-      'Rahu': 8, // Sagittarius
-      'Ketu': 2, // Gemini
+      'Sun': 6,
+      'Moon': 7,
+      'Mars': 3,
+      'Mercury': 11,
+      'Jupiter': 9,
+      'Venus': 5,
+      'Saturn': 0,
     };
-
-    // Own signs
     const ownSigns = {
-      'Sun': [4], // Leo
-      'Moon': [3], // Cancer
-      'Mars': [0, 7], // Aries, Scorpio
-      'Mercury': [2, 5], // Gemini, Virgo
-      'Jupiter': [8, 11], // Sagittarius, Pisces
-      'Venus': [1, 6], // Taurus, Libra
-      'Saturn': [9, 10], // Capricorn, Aquarius
+      'Sun': [4],
+      'Moon': [3],
+      'Mars': [0, 7],
+      'Mercury': [2, 5],
+      'Jupiter': [8, 11],
+      'Venus': [1, 6],
+      'Saturn': [9, 10],
     };
-
-    if (exaltation[planetName] == sign) {
-      return 'Exalted';
-    } else if (debilitation[planetName] == sign) {
-      return 'Debilitated';
-    } else if (ownSigns[planetName]?.contains(sign) ?? false) {
-      return 'Own Sign';
-    } else {
-      // Check for friendly/enemy signs
-      return _getFriendlyStatus(planetName, sign);
+    if (exaltation[planetName] == sign) return PlanetaryDignity.exalted.english;
+    if (debilitation[planetName] == sign) {
+      return PlanetaryDignity.debilitated.english;
     }
+    if (ownSigns[planetName]?.contains(sign) ?? false) {
+      return PlanetaryDignity.ownSign.english;
+    }
+    return _getFriendlyStatus(planetName, sign);
   }
 
-  /// Check if planet is in friendly, neutral, or enemy sign
+  /// Get planetary disposition using [RelationshipCalculator.naturalRelationships].
   String _getFriendlyStatus(String planetName, int sign) {
     final signLord = AstrologyConstants.getSignLord(sign);
-
-    // Planetary friendships
-    const friends = {
-      'Sun': ['Moon', 'Mars', 'Jupiter'],
-      'Moon': ['Sun', 'Mercury'],
-      'Mars': ['Sun', 'Moon', 'Jupiter'],
-      'Mercury': ['Sun', 'Venus'],
-      'Jupiter': ['Sun', 'Moon', 'Mars'],
-      'Venus': ['Mercury', 'Saturn'],
-      'Saturn': ['Mercury', 'Venus'],
-    };
-
-    const enemies = {
-      'Sun': ['Venus', 'Saturn'],
-      'Moon': [],
-      'Mars': ['Mercury'],
-      'Mercury': ['Moon'],
-      'Jupiter': ['Mercury', 'Venus'],
-      'Venus': ['Sun', 'Moon'],
-      'Saturn': ['Sun', 'Moon', 'Mars'],
-    };
-
-    if (friends[planetName]?.contains(signLord) ?? false) {
-      return 'Friendly Sign';
-    } else if (enemies[planetName]?.contains(signLord) ?? false) {
-      return 'Enemy Sign';
+    final planet = _planetFromName(planetName);
+    final lordPlanet = _planetFromName(signLord);
+    if (planet != null && lordPlanet != null) {
+      final rel =
+          RelationshipCalculator.naturalRelationships[planet]?[lordPlanet];
+      if (rel == RelationshipType.friend ||
+          rel == RelationshipType.greatFriend) {
+        return PlanetaryDignity.friendSign.english;
+      } else if (rel == RelationshipType.enemy ||
+          rel == RelationshipType.greatEnemy) {
+        return PlanetaryDignity.enemySign.english;
+      }
     }
-    return 'Neutral Sign';
+    return PlanetaryDignity.neutralSign.english;
   }
 
   /// Determine if planet's influence is benefic for this aspect
@@ -483,7 +472,7 @@ class LifePredictionService {
         final lordSign = _findPlanet(chartData, houseLord);
         String lordPosition = '';
         if (lordSign != null) {
-          final lordSignIdx = ((lordSign.longitude as double) / 30).floor();
+          final lordSignIdx = lordSign.position.zodiacSignIndex;
           final lordHouse = _getHouseFromSign(chartData, lordSignIdx);
           lordPosition =
               ' Its lord $houseLord is placed in the ${_getOrdinal(lordHouse)} house (${AstrologyConstants.signNames[lordSignIdx]}).';

@@ -169,39 +169,81 @@ class DashaSystem {
     );
   }
 
-  /// Get current running dasha for a date (Vimshottari)
+  /// Get current running dasha for a date (Vimshottari).
+  /// Delegates to the jyotish library's [DashaService] via the cached service
+  /// so we avoid reimplementing the nested-period search manually.
+  static Map<String, dynamic> getCurrentDashaFromChart(
+    VedicChart natalChart,
+    DateTime date,
+  ) {
+    _service ??= DashaService();
+    // Library returns the active DashaPeriod directly
+    final current = _service!.calculateVimshottariDasha(
+      moonLongitude: natalChart.getPlanet(Planet.moon)?.longitude ?? 0,
+      birthDateTime: natalChart.dateTime,
+      levels: 3,
+    );
+
+    // Walk the result to find the active period at [date]
+    for (final md in current.allMahadashas) {
+      if (date.isBefore(md.startDate) || !date.isBefore(md.endDate)) continue;
+      for (final ad in md.subPeriods) {
+        if (date.isBefore(ad.startDate) || !date.isBefore(ad.endDate)) continue;
+        for (final pd in ad.subPeriods) {
+          if (date.isBefore(pd.startDate) || !date.isBefore(pd.endDate)) {
+            continue;
+          }
+          return {
+            'mahadasha': md.lord?.displayName ?? '--',
+            'antardasha': ad.lord?.displayName ?? '--',
+            'pratyantardasha': pd.lord?.displayName ?? '--',
+            'mahaStart': md.startDate,
+            'mahaEnd': md.endDate,
+            'antarStart': ad.startDate,
+            'antarEnd': ad.endDate,
+            'pratyanStart': pd.startDate,
+            'pratyanEnd': pd.endDate,
+          };
+        }
+      }
+    }
+    return {};
+  }
+
+  /// Get current running dasha from pre-computed [VimshottariDasha] model.
+  /// Use [getCurrentDashaFromChart] when you have a live [VedicChart] instead.
   static Map<String, dynamic> getCurrentDasha(
     VimshottariDasha dasha,
     DateTime date,
   ) {
     for (final mahadasha in dasha.mahadashas) {
-      // Use inclusive start date: date >= startDate AND date < endDate
-      if (!date.isBefore(mahadasha.startDate) &&
-          date.isBefore(mahadasha.endDate)) {
-        for (final antardasha in mahadasha.antardashas) {
-          if (!date.isBefore(antardasha.startDate) &&
-              date.isBefore(antardasha.endDate)) {
-            for (final pratyantardasha in antardasha.pratyantardashas) {
-              if (!date.isBefore(pratyantardasha.startDate) &&
-                  date.isBefore(pratyantardasha.endDate)) {
-                return {
-                  'mahadasha': mahadasha.lord,
-                  'antardasha': antardasha.lord,
-                  'pratyantardasha': pratyantardasha.lord,
-                  'mahaStart': mahadasha.startDate,
-                  'mahaEnd': mahadasha.endDate,
-                  'antarStart': antardasha.startDate,
-                  'antarEnd': antardasha.endDate,
-                  'pratyanStart': pratyantardasha.startDate,
-                  'pratyanEnd': pratyantardasha.endDate,
-                };
-              }
-            }
+      if (date.isBefore(mahadasha.startDate) ||
+          !date.isBefore(mahadasha.endDate)) {
+        continue;
+      }
+      for (final antardasha in mahadasha.antardashas) {
+        if (date.isBefore(antardasha.startDate) ||
+            !date.isBefore(antardasha.endDate)) {
+          continue;
+        }
+        for (final pratyantardasha in antardasha.pratyantardashas) {
+          if (!date.isBefore(pratyantardasha.startDate) &&
+              date.isBefore(pratyantardasha.endDate)) {
+            return {
+              'mahadasha': mahadasha.lord,
+              'antardasha': antardasha.lord,
+              'pratyantardasha': pratyantardasha.lord,
+              'mahaStart': mahadasha.startDate,
+              'mahaEnd': mahadasha.endDate,
+              'antarStart': antardasha.startDate,
+              'antarEnd': antardasha.endDate,
+              'pratyanStart': pratyantardasha.startDate,
+              'pratyanEnd': pratyantardasha.endDate,
+            };
           }
         }
       }
     }
-
     return {};
   }
 }

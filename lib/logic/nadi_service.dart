@@ -21,7 +21,7 @@ class NadiService {
     return NadiAnalysis(
       nadiType: nadiType,
       nakshatra: moon.position.nakshatra,
-      pada: moon.position.pada,
+      pada: moon.position.nakshatraPada,
       strength: strength,
       description: _getNadiDescription(nadiType),
     );

@@ -1,5 +1,9 @@
 # ✨ AstroNaksh
 
+<p align="center">
+  <img src="Astronaksh.png" alt="AstroNaksh Logo" width="200">
+</p>
+
 **A Comprehensive Vedic Astrology & KP System Desktop & Web Application**
 
 Built with Flutter, powered by precision astronomical calculations, and designed for both beginners and professional astrologers.

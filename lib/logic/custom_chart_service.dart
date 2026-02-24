@@ -58,7 +58,7 @@ class CustomChartService {
 
       if (overrideAyanamsa != null) {
         // Use Tropical for initial calculation, then manually adjust
-        flags = CalculationFlags.defaultFlags();
+        flags = CalculationFlags.traditionalist();
       } else {
         // Use standard engine calculation with custom settings
         flags = CalculationFlags(

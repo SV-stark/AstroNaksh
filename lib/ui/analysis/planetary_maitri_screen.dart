@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart' hide RelationshipType;
+import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
 import '../../logic/planetary_maitri_service.dart';
 import '../../core/responsive_helper.dart';
@@ -488,6 +488,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
 
   Widget _buildRelationshipIcon(RelationshipType type) {
     switch (type) {
+      case RelationshipType.greatFriend:
       case RelationshipType.friend:
         return Container(
           width: 24,
@@ -513,6 +514,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
           child: const Icon(FluentIcons.remove, size: 14, color: Colors.white),
         );
       case RelationshipType.enemy:
+      case RelationshipType.greatEnemy:
         return Container(
           width: 24,
           height: 24,

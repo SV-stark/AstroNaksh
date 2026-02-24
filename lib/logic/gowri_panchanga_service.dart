@@ -22,13 +22,13 @@ class GowriPanchangaService {
   ) async {
     await EphemerisManager.ensureEphemerisData();
     final results = <GowriPanchangamInfo>[];
-    
+
     for (int hour = 0; hour < 24; hour++) {
       final dt = DateTime(date.year, date.month, date.day, hour);
       final gowri = await getCurrentGowriPanchanga(dt, location);
       results.add(gowri);
     }
-    
+
     return results;
   }
 
@@ -39,55 +39,63 @@ class GowriPanchangaService {
     String activity,
   ) async {
     final gowriList = await getGowriPanchangaForDay(date, location);
-    
+
     final favorable = <MuhurtaPeriod>[];
     DateTime? startTime;
-    
+
     for (int i = 0; i < gowriList.length; i++) {
       final gowri = gowriList[i];
       final isFavorable = _isFavorableForActivity(gowri, activity);
-      
+
       if (isFavorable && startTime == null) {
         startTime = DateTime(date.year, date.month, date.day, i);
       } else if (!isFavorable && startTime != null) {
-        favorable.add(MuhurtaPeriod(
-          start: startTime,
-          end: DateTime(date.year, date.month, date.day, i),
-          quality: 'Gowri favorable',
-        ));
+        favorable.add(
+          MuhurtaPeriod(
+            start: startTime,
+            end: DateTime(date.year, date.month, date.day, i),
+            quality: 'Gowri favorable',
+          ),
+        );
         startTime = null;
       }
     }
-    
+
     if (startTime != null) {
-      favorable.add(MuhurtaPeriod(
-        start: startTime,
-        end: DateTime(date.year, date.month, date.day, 23, 59),
-        quality: 'Gowri favorable',
-      ));
+      favorable.add(
+        MuhurtaPeriod(
+          start: startTime,
+          end: DateTime(date.year, date.month, date.day, 23, 59),
+          quality: 'Gowri favorable',
+        ),
+      );
     }
-    
+
     return favorable;
   }
 
   bool _isFavorableForActivity(GowriPanchangamInfo gowri, String activity) {
     final activityLower = activity.toLowerCase();
-    
+
     switch (activityLower) {
       case 'marriage':
       case 'wedding':
-        return gowri.weekday == 'Friday' || gowri.weekday == 'Wednesday';
+        return gowri.startTime.weekday == DateTime.friday ||
+            gowri.startTime.weekday == DateTime.wednesday;
       case 'education':
       case 'learning':
-        return gowri.weekday == 'Wednesday' || gowri.weekday == 'Thursday';
+        return gowri.startTime.weekday == DateTime.wednesday ||
+            gowri.startTime.weekday == DateTime.thursday;
       case 'business':
       case 'new venture':
-        return gowri.weekday == 'Wednesday' || gowri.weekday == 'Friday';
+        return gowri.startTime.weekday == DateTime.wednesday ||
+            gowri.startTime.weekday == DateTime.friday;
       case 'property':
       case 'real estate':
-        return gowri.weekday == 'Tuesday' || gowri.weekday == 'Saturday';
+        return gowri.startTime.weekday == DateTime.tuesday ||
+            gowri.startTime.weekday == DateTime.saturday;
       default:
-        return gowri.isAuspicious;
+        return gowri.type.isAuspicious;
     }
   }
 

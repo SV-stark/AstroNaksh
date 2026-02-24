@@ -94,7 +94,7 @@ class ProgenyService {
 
     final signIndex = (jupiter.position.longitude / 30).floor();
     int score = 50;
-    String desc = 'Jupiter in ${jupiter.position.rashi}';
+    String desc = 'Jupiter in ${jupiter.position.zodiacSign}';
 
     // Exalted/Debilitated
     if (signIndex == 2 || signIndex == 4) {
@@ -129,7 +129,7 @@ class ProgenyService {
 
     final signIndex = (venus.position.longitude / 30).floor();
     int score = 50;
-    String desc = 'Venus in ${venus.position.rashi}';
+    String desc = 'Venus in ${venus.position.zodiacSign}';
 
     if (signIndex == 0 || signIndex == 6) {
       // Aries, Libra
@@ -154,7 +154,7 @@ class ProgenyService {
     }
 
     int score = 50;
-    String desc = 'Mars in ${mars.position.rashi}';
+    String desc = 'Mars in ${mars.position.zodiacSign}';
 
     // Manglik in 1, 4, 7, 8, 12 can affect progeny
     final signIndex = (mars.position.longitude / 30).floor();
@@ -181,7 +181,7 @@ class ProgenyService {
     }
 
     int score = 50;
-    String desc = 'Moon in ${moon.position.rashi}';
+    String desc = 'Moon in ${moon.position.zodiacSign}';
 
     // Check for Chandra Mantas
     final signIndex = (moon.position.longitude / 30).floor();

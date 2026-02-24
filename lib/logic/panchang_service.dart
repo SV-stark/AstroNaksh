@@ -82,7 +82,8 @@ class PanchangChoghadiya {
 }
 
 class PanchangService {
-  final Jyotish _jyotish = Jyotish();
+  // Reuse the global singleton to avoid double-initialization
+  final Jyotish _jyotish = EphemerisManager.jyotish;
   PanchangaService? _panchangaService;
 
   // Helper map for Yoga recommendations
@@ -318,7 +319,8 @@ class PanchangService {
 
     if (sr == null || ss == null) return [];
 
-    final dynamic rawPeriods = _jyotish.getInauspiciousPeriods(
+    // Use typed InauspiciousPeriods return instead of dynamic cast
+    final InauspiciousPeriods periods = _jyotish.getInauspiciousPeriods(
       date: date,
       sunrise: sr,
       sunset: ss,
@@ -327,33 +329,32 @@ class PanchangService {
     final timeFormat = DateFormat('HH:mm');
     final results = <PanchangInauspicious>[];
 
-    // Inspecting structure dynamically if it's not a Map.
-    // Usually it has a 'periods' or 'all' list.
-    try {
-      final Iterable periods = rawPeriods is Map
-          ? rawPeriods.entries
-          : (rawPeriods.periods ?? []);
-      for (final p in periods) {
-        if (p is MapEntry) {
-          results.add(
-            PanchangInauspicious(
-              name: p.key,
-              startTime: timeFormat.format(p.value.start.toLocal()),
-              endTime: timeFormat.format(p.value.end.toLocal()),
-            ),
-          );
-        } else {
-          results.add(
-            PanchangInauspicious(
-              name: p.name,
-              startTime: timeFormat.format(p.start.toLocal()),
-              endTime: timeFormat.format(p.end.toLocal()),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      // Log or handle
+    if (periods.rahukalam != null) {
+      results.add(
+        PanchangInauspicious(
+          name: 'Rahukalam',
+          startTime: timeFormat.format(periods.rahukalam!.start.toLocal()),
+          endTime: timeFormat.format(periods.rahukalam!.end.toLocal()),
+        ),
+      );
+    }
+    if (periods.gulikalam != null) {
+      results.add(
+        PanchangInauspicious(
+          name: 'Gulikalam',
+          startTime: timeFormat.format(periods.gulikalam!.start.toLocal()),
+          endTime: timeFormat.format(periods.gulikalam!.end.toLocal()),
+        ),
+      );
+    }
+    if (periods.yamagandam != null) {
+      results.add(
+        PanchangInauspicious(
+          name: 'Yamagandam',
+          startTime: timeFormat.format(periods.yamagandam!.start.toLocal()),
+          endTime: timeFormat.format(periods.yamagandam!.end.toLocal()),
+        ),
+      );
     }
 
     return results;
@@ -401,25 +402,21 @@ class PanchangService {
 
     if (sr == null || ss == null) return [];
 
-    final dynamic rawResult = _jyotish.getChoghadiya(
+    // Use typed ChoghadiyaPeriods return instead of dynamic cast
+    final ChoghadiyaPeriods result = _jyotish.getChoghadiya(
       date: date,
       sunrise: sr,
       sunset: ss,
     );
 
-    // Choghadiya might be wrapped in a class. Let's try to find the list.
-    final List<dynamic> choghadiyas = rawResult is List
-        ? rawResult
-        : (rawResult.periods ?? []);
-
     final timeFormat = DateFormat('HH:mm');
-    return choghadiyas.map<PanchangChoghadiya>((c) {
+    return result.allPeriods.map<PanchangChoghadiya>((c) {
       return PanchangChoghadiya(
         name: c.name,
-        type: c.type.toString().split('.').last,
-        startTime: timeFormat.format(c.start.toLocal()),
-        endTime: timeFormat.format(c.end.toLocal()),
-        isDay: c.isDay,
+        type: c.type.nature, // e.g. 'Auspicious' or 'Inauspicious'
+        startTime: timeFormat.format(c.startTime.toLocal()),
+        endTime: timeFormat.format(c.endTime.toLocal()),
+        isDay: c.isDaytime,
       );
     }).toList();
   }

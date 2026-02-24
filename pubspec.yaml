@@ -67,6 +67,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
   
 dependency_overrides:
   intl: ^0.20.0
@@ -112,3 +113,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  image_path: "Astronaksh.png"
+  windows:
+    generate: true
+    image_path: "Astronaksh.png"
+    icon_size: 256

@@ -1,82 +1,22 @@
-import 'package:jyotish/jyotish.dart' hide RelationshipType;
+import 'package:jyotish/jyotish.dart';
 
 /// Planetary Maitri (Friendship) Analysis Service
-/// Calculates Natural, Temporary, and Compound relationships between planets
+/// Calculates Natural, Temporary, and Compound relationships between planets.
+/// Delegates to the jyotish library's [RelationshipCalculator] for all data.
 class PlanetaryMaitriService {
-  /// Natural (Naisargika) Friendship Table - Permanent relationships
-  static final Map<Planet, Map<Planet, RelationshipType>> _naturalFriendship = {
-    Planet.sun: {
-      Planet.moon: RelationshipType.friend,
-      Planet.mars: RelationshipType.friend,
-      Planet.jupiter: RelationshipType.friend,
-      Planet.mercury: RelationshipType.neutral,
-      Planet.venus: RelationshipType.enemy,
-      Planet.saturn: RelationshipType.enemy,
-    },
-    Planet.moon: {
-      Planet.sun: RelationshipType.friend,
-      Planet.mercury: RelationshipType.friend,
-      Planet.mars: RelationshipType.neutral,
-      Planet.jupiter: RelationshipType.neutral,
-      Planet.venus: RelationshipType.neutral,
-      Planet.saturn: RelationshipType.neutral,
-    },
-    Planet.mars: {
-      Planet.sun: RelationshipType.friend,
-      Planet.moon: RelationshipType.friend,
-      Planet.jupiter: RelationshipType.friend,
-      Planet.venus: RelationshipType.neutral,
-      Planet.saturn: RelationshipType.neutral,
-      Planet.mercury: RelationshipType.enemy,
-    },
-    Planet.mercury: {
-      Planet.sun: RelationshipType.friend,
-      Planet.venus: RelationshipType.friend,
-      Planet.moon: RelationshipType.enemy,
-      Planet.mars: RelationshipType.neutral,
-      Planet.jupiter: RelationshipType.neutral,
-      Planet.saturn: RelationshipType.neutral,
-    },
-    Planet.jupiter: {
-      Planet.sun: RelationshipType.friend,
-      Planet.moon: RelationshipType.friend,
-      Planet.mars: RelationshipType.friend,
-      Planet.saturn: RelationshipType.neutral,
-      Planet.mercury: RelationshipType.enemy,
-      Planet.venus: RelationshipType.enemy,
-    },
-    Planet.venus: {
-      Planet.mercury: RelationshipType.friend,
-      Planet.saturn: RelationshipType.friend,
-      Planet.mars: RelationshipType.neutral,
-      Planet.jupiter: RelationshipType.neutral,
-      Planet.sun: RelationshipType.enemy,
-      Planet.moon: RelationshipType.enemy,
-    },
-    Planet.saturn: {
-      Planet.mercury: RelationshipType.friend,
-      Planet.venus: RelationshipType.friend,
-      Planet.jupiter: RelationshipType.neutral,
-      Planet.sun: RelationshipType.enemy,
-      Planet.moon: RelationshipType.enemy,
-      Planet.mars: RelationshipType.enemy,
-    },
-  };
-
-  /// Get natural relationship between two planets
+  /// Get natural relationship between two planets.
+  /// Uses [RelationshipCalculator.naturalRelationships] from the library.
   static RelationshipType getNaturalRelationship(
     Planet planet1,
     Planet planet2,
   ) {
-    if (planet1 == planet2) {
-      return RelationshipType.friend; // Same planet is friend
-    }
-    return _naturalFriendship[planet1]?[planet2] ?? RelationshipType.neutral;
+    if (planet1 == planet2) return RelationshipType.friend;
+    return RelationshipCalculator.naturalRelationships[planet1]?[planet2] ??
+        RelationshipType.neutral;
   }
 
-  /// Calculate temporary (Tatkalika) relationships based on chart positions
-  /// Planets in 2nd, 3rd, 4th, 10th, 11th, 12th houses from each other are temporary friends
-  /// Planets in 1st, 5th, 6th, 7th, 8th, 9th houses from each other are temporary enemies
+  /// Calculate temporary (Tatkalika) relationships based on chart positions.
+  /// Uses [RelationshipCalculator.calculateTemporary] from the library.
   static Map<Planet, Map<Planet, RelationshipType>>
   calculateTemporaryRelationships(VedicChart chart) {
     final Map<Planet, Map<Planet, RelationshipType>> tempRelations = {};
@@ -84,40 +24,22 @@ class PlanetaryMaitriService {
 
     for (final planet1 in planets) {
       tempRelations[planet1] = {};
-      final pos1 = chart.planets[planet1]!;
-      final house1 = (pos1.position.longitude / 30).floor() + 1;
+      // Use .zodiacSignIndex instead of (longitude / 30).floor()
+      final sign1 = chart.planets[planet1]!.position.zodiacSignIndex;
 
       for (final planet2 in planets) {
         if (planet1 == planet2) continue;
-
-        final pos2 = chart.planets[planet2]!;
-        final house2 = (pos2.position.longitude / 30).floor() + 1;
-
-        // Calculate house distance from planet1 to planet2
-        int distance = (house2 - house1 + 12) % 12;
-        if (distance == 0) distance = 12;
-
-        // Temporary friends: 2, 3, 4, 10, 11, 12
-        // Temporary enemies: 1, 5, 6, 7, 8, 9
-        if ([2, 3, 4, 10, 11, 12].contains(distance)) {
-          tempRelations[planet1]![planet2] = RelationshipType.friend;
-        } else {
-          tempRelations[planet1]![planet2] = RelationshipType.enemy;
-        }
+        final sign2 = chart.planets[planet2]!.position.zodiacSignIndex;
+        tempRelations[planet1]![planet2] =
+            RelationshipCalculator.calculateTemporary(sign1, sign2);
       }
     }
 
     return tempRelations;
   }
 
-  /// Calculate compound (Panchadha) relationships
-  /// Combines natural and temporary relationships:
-  /// - Natural Friend + Temporary Friend = Best Friend (Adhi Mitr)
-  /// - Natural Friend + Temporary Enemy = Friend (Mitr)
-  /// - Natural Neutral + Temporary Friend = Friend (Mitr)
-  /// - Natural Neutral + Temporary Enemy = Neutral (Sama)
-  /// - Natural Enemy + Temporary Friend = Neutral (Sama)
-  /// - Natural Enemy + Temporary Enemy = Enemy (Satru)
+  /// Calculate compound (Panchadha) relationships.
+  /// Uses [RelationshipCalculator.calculateCompound] from the library.
   static Map<Planet, Map<Planet, CompoundRelationship>>
   calculateCompoundRelationships(VedicChart chart) {
     final tempRelations = calculateTemporaryRelationships(chart);
@@ -134,9 +56,12 @@ class PlanetaryMaitriService {
         final temporary =
             tempRelations[planet1]?[planet2] ?? RelationshipType.neutral;
 
-        compoundRelations[planet1]![planet2] = _getCompoundRelationship(
+        final libraryCompound = RelationshipCalculator.calculateCompound(
           natural,
           temporary,
+        );
+        compoundRelations[planet1]![planet2] = _mapToCompoundRelationship(
+          libraryCompound,
         );
       }
     }
@@ -144,52 +69,51 @@ class PlanetaryMaitriService {
     return compoundRelations;
   }
 
-  /// Get compound relationship from natural and temporary
-  static CompoundRelationship _getCompoundRelationship(
-    RelationshipType natural,
-    RelationshipType temporary,
+  /// Maps the library's 5-value [RelationshipType] to the local 4-value
+  /// [CompoundRelationship] for UI display.
+  static CompoundRelationship _mapToCompoundRelationship(
+    RelationshipType type,
   ) {
-    if (natural == RelationshipType.friend &&
-        temporary == RelationshipType.friend) {
-      return CompoundRelationship.bestFriend;
-    } else if ((natural == RelationshipType.friend &&
-            temporary == RelationshipType.enemy) ||
-        (natural == RelationshipType.neutral &&
-            temporary == RelationshipType.friend)) {
-      return CompoundRelationship.friend;
-    } else if ((natural == RelationshipType.neutral &&
-            temporary == RelationshipType.enemy) ||
-        (natural == RelationshipType.enemy &&
-            temporary == RelationshipType.friend)) {
-      return CompoundRelationship.neutral;
-    } else {
-      return CompoundRelationship.enemy;
+    switch (type) {
+      case RelationshipType.greatFriend:
+        return CompoundRelationship.bestFriend;
+      case RelationshipType.friend:
+        return CompoundRelationship.friend;
+      case RelationshipType.neutral:
+        return CompoundRelationship.neutral;
+      case RelationshipType.enemy:
+      case RelationshipType.greatEnemy:
+        return CompoundRelationship.enemy;
     }
   }
 
-  /// Get all maitri data for a chart
+  /// Get all maitri data for a chart.
   static PlanetaryMaitriData getAllMaitriData(VedicChart chart) {
     return PlanetaryMaitriData(
-      natural: _naturalFriendship,
+      natural: RelationshipCalculator.naturalRelationships,
       temporary: calculateTemporaryRelationships(chart),
       compound: calculateCompoundRelationships(chart),
       chart: chart,
     );
   }
 
-  /// Get relationship description
+  /// Get relationship description.
   static String getRelationshipDescription(RelationshipType type) {
     switch (type) {
+      case RelationshipType.greatFriend:
+        return 'Great Friend (Adhi Mitr)';
       case RelationshipType.friend:
         return 'Friend (Mitr)';
       case RelationshipType.neutral:
         return 'Neutral (Sama)';
       case RelationshipType.enemy:
         return 'Enemy (Satru)';
+      case RelationshipType.greatEnemy:
+        return 'Great Enemy (Adhi Satru)';
     }
   }
 
-  /// Get compound relationship description
+  /// Get compound relationship description.
   static String getCompoundRelationshipDescription(CompoundRelationship type) {
     switch (type) {
       case CompoundRelationship.bestFriend:
@@ -204,18 +128,15 @@ class PlanetaryMaitriService {
   }
 }
 
-/// Types of planetary relationships
-enum RelationshipType { friend, neutral, enemy }
-
-/// Compound relationship types (Panchadha Maitri)
+/// Compound relationship types for UI display (simplified from library's 5-value enum).
 enum CompoundRelationship {
-  bestFriend, // Adhi Mitr
-  friend, // Mitr
-  neutral, // Sama
-  enemy, // Satru
+  bestFriend, // Great Friend (Adhi Mitr)
+  friend, // Friend (Mitr)
+  neutral, // Neutral (Sama)
+  enemy, // Enemy or Great Enemy
 }
 
-/// Complete maitri data for a chart
+/// Complete maitri data for a chart.
 class PlanetaryMaitriData {
   final Map<Planet, Map<Planet, RelationshipType>> natural;
   final Map<Planet, Map<Planet, RelationshipType>> temporary;

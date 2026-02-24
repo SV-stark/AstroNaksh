@@ -148,16 +148,7 @@ class SwissEphBindings {
     } else if (Platform.isLinux) {
       return ffi.DynamicLibrary.open('libswisseph.so');
     } else if (Platform.isWindows) {
-      // Resolve path adjacent to the executable to avoid CWD issues (e.g., from shortcuts)
-      final executableDir = File(Platform.resolvedExecutable).parent.path;
-      final absolutePath = executableDir + Platform.pathSeparator + 'swisseph.dll';
-      
-      try {
-        return ffi.DynamicLibrary.open(absolutePath);
-      } catch (e) {
-        // Fallback for development/flutter run
-        return ffi.DynamicLibrary.open('swisseph.dll');
-      }
+      return ffi.DynamicLibrary.open('swisseph.dll');
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -186,6 +177,10 @@ class SwissEphBindings {
     required ffi.Pointer<ffi.Char> errorBuffer,
   }) {
     final resultPtr = malloc<ffi.Double>(6);
+    for (var i = 0; i < 6; i++) {
+      resultPtr[i] = 0.0;
+    }
+
     try {
       final returnCode = _sweCalcUt(
         julianDay,
@@ -196,7 +191,15 @@ class SwissEphBindings {
       );
 
       if (returnCode < 0) {
-        return null;
+        return null; // The exact error is in errorBuffer
+      }
+
+      // If it falls back to Moshier (4) instead of Swiss (2), or has warnings
+      if (returnCode != flags && returnCode != 2) {
+        final msg = errorBuffer.cast<Utf8>().toDartString();
+        if (msg.isNotEmpty) {
+          print('SwissEph Warning (Planet $planetId): $msg');
+        }
       }
 
       return List.generate(6, (i) => resultPtr[i]);

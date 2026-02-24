@@ -844,11 +844,16 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildInfoRow('Day', _gowri!.weekday),
-                _buildInfoRow('Tithi', _gowri!.tithi),
-                _buildInfoRow('Nakshatra', _gowri!.nakshatra),
-                _buildInfoRow('Yoga', _gowri!.yoga),
-                _buildInfoRow('Karana', _gowri!.karana),
+                _buildInfoRow('Period Name', _gowri!.type.name),
+                _buildInfoRow(
+                  'Description',
+                  _gowri!.type.description.split(',').first,
+                ),
+                _buildInfoRow(
+                  'Time of Day',
+                  _gowri!.isDaytime ? 'Daytime' : 'Nighttime',
+                ),
+                _buildInfoRow('Period No.', _gowri!.periodNumber.toString()),
                 const Divider(),
                 Row(
                   children: [
@@ -858,18 +863,13 @@ class _PanchangScreenState extends State<PanchangScreen> {
                         children: [
                           Text(
                             'Auspicious',
-                            style: TextStyle(color: Colors.green),
+                            style: TextStyle(
+                              color: _gowri!.type.isAuspicious
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
                           ),
-                          Text(_gowri!.isAuspicious ? 'Yes' : 'No'),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Muhurta', style: TextStyle(color: Colors.blue)),
-                          Text(_gowri!.isMuhurta ? 'Yes' : 'No'),
+                          Text(_gowri!.type.isAuspicious ? 'Yes' : 'No'),
                         ],
                       ),
                     ),

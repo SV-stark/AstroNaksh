@@ -155,6 +155,10 @@ await jyotish.initialize({String? ephemerisPath});
 |-----------|------|----------|-------------|
 | `ephemerisPath` | `String?` | No | Custom path to Swiss Ephemeris data files |
 
+| Property | Type | Description |
+|----------|------|-------------|
+| `isInitialized` | `bool` | Whether the library has been initialized |
+
 #### Planetary Position Methods
 
 | Method | Returns | Description |
@@ -204,6 +208,14 @@ await jyotish.initialize({String? ephemerisPath});
 | `getTransitPositions({natalChart, transitDateTime?, location})` | `Future<Map<Planet, TransitInfo>>` | Transit positions vs natal |
 | `getTransitEvents({natalChart, startDate, endDate, location, planets?})` | `Future<List<TransitEvent>>` | Transit events in date range |
 | `calculateSpecialTransits({natalChart, checkDate?, location})` | `Future<SpecialTransits>` | Sade Sati, Dhaiya, Panchak |
+| `predictSadeSatiPeriods(natalChart, {yearsBefore?, yearsAfter?})` | `List<Map<String, dynamic>>` | Past/future Sade Sati periods |
+
+#### Sunrise/Sunset & Rise/Set Methods
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `getSunriseSunset({date, location, atpress?, attemp?})` | `Future<(DateTime?, DateTime?)>` | High-precision sunrise/sunset |
+| `getRiseSet({planet, date, location, rsmi, atpress?, attemp?})` | `Future<DateTime?>` | Rise/set time for any planet |
 
 #### Panchanga Methods
 
@@ -225,6 +237,11 @@ await jyotish.initialize({String? ephemerisPath});
 | `calculateAshtakavarga(natalChart)` | `Ashtakavarga` | Complete Ashtakavarga |
 | `analyzeAshtakavargaTransit({ashtakavarga, transitPlanet, transitSign})` | `TransitAnalysis` | Transit strength analysis |
 | `getAshtakavargaReductions(ashtakavarga, {trikonaReduction?, ekadhipatiReduction?})` | `Ashtakavarga` | Reduced Ashtakavarga |
+| `calculatePinda(ashtakavarga)` | `Map<Planet, PindaResult>` | Rashi + Graha Pinda strength |
+| `calculateYogaPinda(ashtakavarga)` | `Map<Planet, YogaPindaResult>` | Auspicious Yoga Pinda |
+| `calculateShodhyaPinda(ashtakavarga)` | `ShodhyaPindaResult` | Reduced Shodhya Pinda |
+| `calculateHousePinda(ashtakavarga, houseNumber)` | `double` | Pinda for specific house |
+| `calculateAllHousesPinda(ashtakavarga)` | `Map<int, double>` | Pinda for all 12 houses |
 
 #### KP System Methods
 
@@ -233,6 +250,8 @@ await jyotish.initialize({String? ephemerisPath});
 | `calculateKPData(natalChart, {useNewAyanamsa?})` | `KPCalculations` | Complete KP data |
 | `getSubLord(longitude)` | `Planet` | Sub-Lord for longitude |
 | `getSubSubLord(longitude)` | `Planet` | Sub-Sub-Lord |
+| `getHouseGroupSignificators(significators)` | `KPHouseGroupSignificators` | House group significators |
+| `calculateTransitKPDivisions(transitPositions)` | `Map<Planet, KPDivision>` | Transit KP divisions |
 
 #### Muhurta Methods
 
@@ -267,9 +286,16 @@ await jyotish.initialize({String? ephemerisPath});
 | `getMasa({dateTime, location, type?})` | `Future<MasaInfo>` | Lunar month |
 | `getAmantaMasa({dateTime, location})` | `Future<MasaInfo>` | Amanta system |
 | `getPurnimantaMasa({dateTime, location})` | `Future<MasaInfo>` | Purnimanta system |
-vatsara({dateTime, location| `getSam})` | `Future<String>` | 60-year cycle name |
+| `getSamvatsara({dateTime, location})` | `Future<String>` | 60-year cycle name |
 | `getMasaListForYear({year, location, type?})` | `Future<List<MasaInfo>>` | All months in year |
 | `getRitu(masaInfo)` | `Ritu` | Hindu season |
+| `getRituDetails({dateTime, location})` | `Future<RituInfo>` | Detailed season info |
+
+#### Ephemeris Methods
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateHouses({dateTime, location, houseSystem?})` | `Future<Map<String, List<double>>>` | House cusps and ascendant/MC |
 
 #### Shadbala & Strength Methods
 
@@ -339,11 +365,13 @@ vatsara({dateTime, location| `getSam})` | `Future<String>` | 60-year cycle name 
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `calculateCompatibility(boyChart, girlChart)` | `CompatibilityResult` | Full compatibility |
-| `calculateGunaMilan(boyChart, girlChart)` | `GunaScores` | Ashtakoota scores |
-| `checkManglikDosha(chart)` | `ManglikDoshaResult` | Mars placement |
-| `checkNadiDosha(boyChart, girlChart)` | `NadiDoshaResult` | Nadi compatibility |
-| `checkBhakootDosha(boyChart, girlChart)` | `BhakootDoshaResult` | Moon sign compatibility |
+| `calculateCompatibility(boyChart, girlChart)` | `CompatibilityResult` | Full compatibility + doshas |
+| `calculateGunaMilan(boyChart, girlChart)` | `GunaScores` | All 8 Ashtakoota scores |
+| `checkManglikDosha(chart)` | `ManglikDoshaResult` | Mars in 1/2/4/7/8/12 houses |
+| `checkNadiDosha(boyChart, girlChart)` | `NadiDoshaResult` | Nadi match (cyclic grouping) |
+| `checkBhakootDosha(boyChart, girlChart)` | `BhakootDoshaResult` | 2/12, 5/9, or 6/8 moon-sign pairs |
+| `checkDoshas(boyChart, girlChart)` | `DoshaCheck` | All dosha checks combined |
+| `calculateDashaCompatibility(boyChart, girlChart)` | `DashaCompatibility` | Dasha timing compatibility |
 
 #### Service Accessors
 
@@ -363,6 +391,7 @@ vatsara({dateTime, location| `getSam})` | `Future<String>` | 60-year cycle name 
 | `getArudhaLagna(chart)` | `Rashi` | Arudha Lagna (AL) |
 | `getUpapada(chart)` | `Rashi` | Upapada Lagna (UL) |
 | `getAllArgalas(chart)` | `Map<int, List<ArgalaInfo>>` | Argalas for all houses |
+| `getArgalaForHouse(chart, house)` | `List<ArgalaInfo>` | Argala for specific house |
 
 #### Prashna (Horary) Methods
 
@@ -376,7 +405,7 @@ vatsara({dateTime, location| `getSam})` | `Future<String>` | 60-year cycle name 
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `getPlanetaryRelationships({natalChart})` | `Map<Planet, Map<Planet, RelationshipInfo>>` | Panchadha Maitri |
+| `getPlanetaryRelationships({natalChart})` | `List<PlanetaryRelationship>` | Panchadha Maitri |
 
 #### Cleanup
 
@@ -446,10 +475,17 @@ Controls calculation behavior for planetary positions.
 #### Factory Constructors
 
 ```dart
-// Default flags
+// Default flags (Deprecated - use traditionalist/modernPrecision)
+@Deprecated('Use traditionalist() or modernPrecision()')
 CalculationFlags.defaultFlags();
 
-// Sidereal with Lahiri ayanamsa (default for Vedic)
+// Traditional Vedic standard (Mean Node, Lahiri)
+CalculationFlags.traditionalist();
+
+// Modern precision standard (True Node, Lahiri)
+CalculationFlags.modernPrecision();
+
+// Sidereal with Lahiri ayanamsa 
 CalculationFlags.siderealLahiri();
 
 // Custom sidereal mode
@@ -575,14 +611,26 @@ final service = PanchangaService(ephemerisService);
 | `getTithi({dateTime, location})` | `Future<TithiInfo>` | Tithi (lunar day) |
 | `getYoga({dateTime, location})` | `Future<YogaInfo>` | Yoga (Sun+Moon combination) |
 | `getKarana({dateTime, location})` | `Future<KaranaInfo>` | Karana (half-Tithi) |
-| `getVara(dateTime, location)` | `Future<VaraInfo>` | Vara (weekday lord) |
+| `getVara({dateTime, location})` | `Future<VaraInfo>` | Vara (weekday lord) |
 | `getNakshatra({dateTime, location})` | `Future<NakshatraInfo>` | Moon's nakshatra |
 | `getTithiEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Tithi end |
 | `calculateAbhijitMuhurta({date, location})` | `Future<AbhijitMuhurta>` | 8th Muhurta (1/15th of daytime) |
-| `calculateBrahmaMuhurta({date, location})` | `Future<BrahmaMuhurta>` | 14th Muhurta of night (1/15th of nighttime) |
+| `calculateBrahmaMuhurta({date, location})` | `Future<BrahmaMuhurta>` | 14th Muhurta of night (uses previous sunset → today sunrise) |
 | `calculateNighttimeInauspicious({date, location})` | `Future<NighttimeInauspiciousPeriods>` | Night Rahu/Gulika/Yamagandam |
 | `getTithiJunction({targetTithiNumber, startDate, location})` | `Future<DateTime>` | Microsecond-precision Tithi change |
 | `getMoonPhaseDetails({dateTime, location})` | `Future<MoonPhaseDetails>` | Comprehensive lunar data |
+
+> **API Change (v2.1.0)**: `TithiInfo.tithiNames` has been replaced.
+> Use `TithiInfo.nameFromNumber(int tithiNumber)` to get the correct name for
+> any Tithi (1–30). This correctly returns **"Purnima"** for Shukla Tithi 15
+> and **"Amavasya"** for Krishna Tithi 15. Direct access via `shuklaTithiNames`
+> and `krishnaTithiNames` lists is also available.
+>
+> **API Change (v2.1.0)**: `MoonPhaseDetails.illumination` now uses the correct
+> cosine formula. New Moon (elongation=0°) = **0%**, Full Moon (180°) = **100%**.
+> The old formula was inverted.
+
+
 
 ---
 
@@ -685,6 +733,7 @@ final service = ShadbalaService(ephemerisService);
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `calculateShadbala(chart)` | `Map<Planet, ShadbalaResult>` | Complete Shadbala |
+| `getUchchaBalaOnly(planet, longitude)` | `double` | Uchcha Bala (exaltation strength) for a planet |
 | `calculateHoraLordsForDay({date, location})` | `Future<List<Planet>>` | 24 Hora lords |
 | `checkCombustion({planet, planetLongitude, sunLongitude, planetSpeed?})` | `CombustionInfo` | Detailed combustion status. planetSpeed enables retrograde-aware orbs for Mercury/Venus |
 
@@ -1671,18 +1720,25 @@ Marriage compatibility result.
 
 ### GunaScores
 
-Ashtakoota (36 Guna) scoring.
+Ashtakoota (36 Guna) scoring. All 8 Kootas are calculated per BPHS and
+standard Vedic texts. Scores are added to produce the total out of 36.
 
-| Koota | Max Points |
-|-------|------------|
-| `varna` | 1 |
-| `vashya` | 2 |
-| `tara` | 3 |
-| `yoni` | 4 |
-| `grahaMaitri` | 5 |
-| `gana` | 6 |
-| `bhakoot` | 7 |
-| `nadi` | 8 |
+| Koota | Max Points | Classification Basis |
+|-------|------------|---------------------|
+| `varna` | 1 | BPHS 4-tier: Brahmin / Kshatriya / Vaishya / Shudra per nakshatra |
+| `vashya` | 2 | 5-category: Manava / Vanachara / Chatushpada / Jalajiva / Keeta per nakshatra |
+| `tara` | 3 | Count from boy's nakshatra to girl's; groups of 9 (birth, sampat, vipat…) |
+| `yoni` | 4 | Animal pair per nakshatra (all 27 correctly mapped); friend/enemy pairs scored |
+| `grahaMaitri` | 5 | Natural friendship between Moon sign lords per BPHS friendship table |
+| `gana` | 6 | BPHS: Deva / Manushya / Rakshasa — same=6, Deva+Manushya=3, Rakshasa=0 |
+| `bhakoot` | 7 | No dosha = 7; Dosha (2/12, 5/9, or 6/8 moon-sign relationship) = 0 |
+| `nadi` | 8 | Cyclic modulo-3 grouping: 0% same Nadi (Dosha) = 0, different = 8 |
+
+**Bhakoot Dosha** is checked for three problematic inter-sign relationships:
+2/12 (financial stress), 5/9 (progeny issues), and 6/8 (health/longevity).
+
+**Nadi** is determined by `nakshatraIndex % 3` (cyclic): 0=Adi, 1=Madhya, 2=Antya.
+This differs from the old sequential block-of-9 approach which was incorrect.
 
 ### CompatibilityLevel
 
@@ -1880,6 +1936,12 @@ try {
   // Library not initialized
 } on CalculationException catch (e) {
   // Calculation failed
+} on PolarRegionException catch (e) {
+  // Latitude too high for Placidus/Koch house systems
+} on AyanamsaMismatchException catch (e) {
+  // Base chart Ayanamsa incompatible with requested divisional chart
+} on ValidationException catch (e) {
+  // Invalid inputs
 } on JyotishException catch (e) {
   // General error
 }

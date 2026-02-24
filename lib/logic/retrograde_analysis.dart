@@ -1,90 +1,83 @@
+import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
 
 /// Retrograde Analysis Module
-/// Detects retrograde planets and provides interpretation
+/// Detects retrograde planets and provides interpretation.
+/// Uses the jyotish library's [Planet] enum for type-safe lookups.
 class RetrogradeAnalysis {
-  /// Analyze all planets for retrograde motion
+  /// The planets that can go retrograde.
+  static const _retroPlanets = [
+    Planet.mercury,
+    Planet.venus,
+    Planet.mars,
+    Planet.jupiter,
+    Planet.saturn,
+  ];
+
+  /// Analyze all planets for retrograde motion.
+  /// Returns a map keyed by display name (e.g. 'Mercury') for UI compatibility.
   static Map<String, RetrogradeInfo> analyzeRetrogrades(
     CompleteChartData chart,
   ) {
     final Map<String, RetrogradeInfo> analysis = {};
 
-    for (var planet in ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']) {
-      final isRetro = _isRetrograde(chart, planet);
-      final interpretation = _getInterpretation(planet, isRetro);
+    for (final planet in _retroPlanets) {
+      // Type-safe lookup — no string matching needed
+      final planetInfo = chart.baseChart.planets[planet];
+      final isRetro = planetInfo?.isRetrograde ?? false;
 
-      analysis[planet] = RetrogradeInfo(
-        planetName: planet,
+      analysis[planet.displayName] = RetrogradeInfo(
+        planetName: planet.displayName,
         isRetrograde: isRetro,
-        interpretation: interpretation,
+        interpretation: _getInterpretation(planet, isRetro),
       );
     }
 
     return analysis;
   }
 
-  /// Check if a planet is retrograde
-  static bool _isRetrograde(CompleteChartData chart, String planetName) {
-    // Check if planet's isRetrograde flag is set in the chart data
-    for (var entry in chart.baseChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains(planetName.toLowerCase())) {
-        return entry.value.isRetrograde;
-      }
-    }
-    return false;
-  }
+  static String _getInterpretation(Planet planet, bool isRetrograde) {
+    if (!isRetrograde) return _getDirectInterpretation(planet);
 
-  /// Get interpretation for retrograde status
-  static String _getInterpretation(String planet, bool isRetrograde) {
-    if (!isRetrograde) {
-      return _getDirectInterpretation(planet);
-    }
-
-    // Retrograde interpretations
     switch (planet) {
-      case 'Mercury':
+      case Planet.mercury:
         return 'Mercury retrograde: Introspective thinking, review and revision favored. '
             'Communication may require extra care. Good for editing, debugging, and '
             'revisiting past projects.';
-
-      case 'Venus':
+      case Planet.venus:
         return 'Venus retrograde: Re-evaluation of relationships and values. '
             'Past connections may resurface. Time to reflect on what truly brings joy '
             'and satisfaction.';
-
-      case 'Mars':
+      case Planet.mars:
         return 'Mars retrograde: Energy directed inward. Actions may feel blocked or delayed. '
             'Good time to strategize rather than execute. Avoid starting new ventures; '
             'complete ongoing ones.';
-
-      case 'Jupiter':
+      case Planet.jupiter:
         return 'Jupiter retrograde: Inner growth and spiritual expansion emphasized. '
             'Wisdom comes from reflection rather than experience. Re-examine beliefs '
             'and philosophies.';
-
-      case 'Saturn':
+      case Planet.saturn:
         return 'Saturn retrograde: Internal restructuring. Karma and past lessons resurface. '
             'Time to handle unfinished responsibilities. Builds inner discipline and maturity.';
-
       default:
         return 'Retrograde motion indicates internalized energy and karmic review.';
     }
   }
 
-  static String _getDirectInterpretation(String planet) {
+  static String _getDirectInterpretation(Planet planet) {
     switch (planet) {
-      case 'Mercury':
+      case Planet.mercury:
         return 'Mercury direct: Clear communication, smooth transactions, and '
             'effective learning.';
-      case 'Venus':
+      case Planet.venus:
         return 'Venus direct: Harmonious relationships, artistic expression, and '
             'enjoyment of pleasures.';
-      case 'Mars':
+      case Planet.mars:
         return 'Mars direct: Assertive action, courage, and forward momentum in pursuits.';
-      case 'Jupiter':
+      case Planet.jupiter:
         return 'Jupiter direct: Expansion through external experiences, optimism, '
             'and growth opportunities.';
-      case 'Saturn':
+      case Planet.saturn:
         return 'Saturn direct: External discipline, structured progress, and '
             'tangible achievements.';
       default:
@@ -92,10 +85,10 @@ class RetrogradeAnalysis {
     }
   }
 
-  /// Get period when planet is likely retrograde (approximate)
-  /// This is a simplified educational note, not an ephemeris calculation
-  static String getRetrogradeFrequency(String planet) {
-    switch (planet) {
+  /// Get the approximate retrograde frequency note.
+  /// Accepts a planet display name string for UI compatibility (e.g. 'Mercury').
+  static String getRetrogradeFrequency(String planetName) {
+    switch (planetName) {
       case 'Mercury':
         return '3-4 times per year, ~3 weeks each';
       case 'Venus':

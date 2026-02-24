@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
 
 /// Yoga and Dosha Analyzer
@@ -930,19 +931,19 @@ class YogaDoshaAnalyzer {
     return [6, 8, 12].contains(house);
   }
 
+  /// Whether a planet is debilitated.
+  /// NOTE: Since _getPlanetSign() now reads zodiacSignIndex from the library,
+  /// callers pass an already-correct sign, so the table lookup is still valid.
   static bool _isDebilitated(String planet, int sign) {
     const debilitations = {
-      'Sun': 6,
-      'Moon': 7,
-      'Mars': 3,
-      'Mercury': 11,
-      'Jupiter': 9,
-      'Venus': 5,
-      'Saturn': 0,
+      'Sun': 6, 'Moon': 7, 'Mars': 3, 'Mercury': 11,
+      'Jupiter': 9, 'Venus': 5, 'Saturn': 0,
+      'Rahu': 8, 'Ketu': 2, // Sagittarius, Gemini
     };
     return debilitations[planet] == sign;
   }
 
+  /// Whether a planet is exalted.
   static bool _isExalted(String planet, int sign) {
     const exaltations = {
       'Sun': 0,
@@ -958,6 +959,20 @@ class YogaDoshaAnalyzer {
 
   static bool _isOwnSign(String planet, int sign) {
     return _getSignLord(sign) == planet;
+  }
+
+  /// Maps a display planet name string to [Planet] enum.
+  static Planet? _planetFromName(String name) {
+    return switch (name.toLowerCase()) {
+      'sun' => Planet.sun,
+      'moon' => Planet.moon,
+      'mars' => Planet.mars,
+      'mercury' => Planet.mercury,
+      'jupiter' => Planet.jupiter,
+      'venus' => Planet.venus,
+      'saturn' => Planet.saturn,
+      _ => null, // Rahu, Ketu handled separately
+    };
   }
 
   static String _getExaltationSignLord(String planet) {
@@ -1109,17 +1124,27 @@ class YogaDoshaAnalyzer {
     CompleteChartData chart,
     String planetName,
   ) {
-    for (final entry in chart.baseChart.planets.entries) {
-      if (entry.key.toString().split('.').last.toLowerCase() ==
-          planetName.toLowerCase()) {
-        return entry.value.longitude;
-      }
+    if (planetName == 'Rahu') return chart.baseChart.rahu.longitude;
+    if (planetName == 'Ketu') return chart.baseChart.ketu.longitude;
+    final p = _planetFromName(planetName);
+    if (p != null) {
+      return chart.baseChart.planets[p]?.longitude ?? 0.0;
     }
     return 0.0;
   }
 
   static int _getPlanetSign(CompleteChartData chart, String planetName) {
-    return (_getPlanetLongitude(chart, planetName) / 30).floor();
+    if (planetName == 'Rahu') {
+      return chart.baseChart.rahu.position.zodiacSignIndex;
+    }
+    if (planetName == 'Ketu') {
+      return (chart.baseChart.ketu.longitude / 30).floor() % 12;
+    }
+    final p = _planetFromName(planetName);
+    if (p != null) {
+      return chart.baseChart.planets[p]?.position.zodiacSignIndex ?? 0;
+    }
+    return 0;
   }
 
   static int _getAscendantSign(CompleteChartData chart) {
@@ -3093,26 +3118,29 @@ class YogaDoshaAnalyzer {
     }
   }
 
+  /// Whether a planet is combust.
+  /// Delegates to [VedicPlanetInfo.isCombust] which uses correct per-planet
+  /// thresholds (Moon 12°, Mars 17°, etc.) instead of a flat 8° rule.
   static bool _isCombust(CompleteChartData chart, String planet) {
-    if (['Sun', 'Rahu', 'Ketu'].contains(planet)) return false;
-    final sunLong = _getPlanetLongitude(chart, 'Sun');
-    final pLong = _getPlanetLongitude(chart, planet);
-    double diff = (sunLong - pLong).abs();
-    if (diff > 180) diff = 360 - diff;
-    return diff < 8.0;
+    if (planet == 'Sun' || planet == 'Rahu' || planet == 'Ketu') return false;
+    final p = _planetFromName(planet);
+    if (p == null) return false;
+    return chart.baseChart.planets[p]?.isCombust ?? false;
   }
 
+  /// Whether a planet is retrograde.
+  /// Uses type-safe [Planet] enum lookup — no more string splitting.
   static bool _isRetrograde(CompleteChartData chart, String planet) {
-    // Rahu and Ketu are always retrograde by nature, Sun and Moon never retrograde
-    if (['Sun', 'Moon', 'Rahu', 'Ketu'].contains(planet)) return false;
-
-    for (var entry in chart.baseChart.planets.entries) {
-      if (entry.key.toString().split('.').last.toLowerCase() ==
-          planet.toLowerCase()) {
-        return entry.value.isRetrograde;
-      }
+    // Sun, Moon, Rahu, Ketu are never considered retrograde in dosha analysis
+    if (planet == 'Sun' ||
+        planet == 'Moon' ||
+        planet == 'Rahu' ||
+        planet == 'Ketu') {
+      return false;
     }
-    return false;
+    final p = _planetFromName(planet);
+    if (p == null) return false;
+    return chart.baseChart.planets[p]?.isRetrograde ?? false;
   }
 
   static String _getQualityLabel(double score) {

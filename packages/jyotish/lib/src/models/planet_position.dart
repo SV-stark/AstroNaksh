@@ -169,12 +169,6 @@ class PlanetPosition {
     return (posInNakshatra / (360 / 27 / 4)).floor() + 1;
   }
 
-  /// Convenience alias for [zodiacSignIndex]
-  int get rashi => zodiacSignIndex;
-
-  /// Convenience alias for [nakshatraPada]
-  int get pada => nakshatraPada;
-
   /// Formats the position as a traditional notation (e.g., "15° Aries 30'").
   String get formattedPosition {
     final dms = positionInSignDMS;

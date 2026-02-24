@@ -245,7 +245,7 @@ class TransitAnalysis {
     final saturnInfo = transitChart.planets[j.Planet.saturn];
 
     return SaturnTransitAnalysis(
-      transitSign: ((saturnInfo?.position.longitude ?? 0) / 30).floor(),
+      transitSign: saturnInfo?.position.zodiacSignIndex ?? 0,
       houseFromMoon: status.transitedHouse ?? 0,
       sadeSatiPhase: _mapSadeSatiPhase(status.phase),
       kantakaShani: dhaiya.isActive,
@@ -286,10 +286,11 @@ class TransitAnalysis {
     final moonInfo = natalChart.baseChart.planets[j.Planet.moon];
 
     if (moonInfo != null) {
-      final moonSign = (moonInfo.position.longitude / 30).floor();
+      // Use .zodiacSignIndex instead of (longitude / 30).floor()
+      final moonSign = moonInfo.position.zodiacSignIndex;
 
       transitChart.planets.forEach((planet, info) {
-        final transitSign = (info.position.longitude / 30).floor();
+        final transitSign = info.position.zodiacSignIndex;
         final house = ((transitSign - moonSign + 12) % 12) + 1;
         positions[planet] = house;
       });
@@ -320,8 +321,8 @@ class TransitAnalysis {
       );
     }
 
-    final transitSign = (moonInfo.position.longitude / 30).floor();
-    final natalMoonSign = (natalMoonInfo.position.longitude / 30).floor();
+    final transitSign = moonInfo.position.zodiacSignIndex;
+    final natalMoonSign = natalMoonInfo.position.zodiacSignIndex;
     final houseFromMoon = ((transitSign - natalMoonSign + 12) % 12) + 1;
 
     // Favorable houses: 3, 6, 7, 10, 11
@@ -385,8 +386,8 @@ class TransitAnalysis {
       );
     }
 
-    final transitSign = (jupiterInfo.position.longitude / 30).floor();
-    final moonSign = (moonInfo.position.longitude / 30).floor();
+    final transitSign = jupiterInfo.position.zodiacSignIndex;
+    final moonSign = moonInfo.position.zodiacSignIndex;
     final houseFromMoon = ((transitSign - moonSign + 12) % 12) + 1;
 
     // Jupiter is favorable in 2, 5, 7, 9, 11 from Moon
@@ -429,15 +430,16 @@ class TransitAnalysis {
       );
     }
 
-    final rahuSign = (rahuInfo.position.longitude / 30).floor();
-    final ketuSign = (ketuPos.longitude / 30).floor();
+    final rahuSign = rahuInfo.position.zodiacSignIndex;
+    final ketuSign = (ketuPos.longitude / 30)
+        .floor(); // ketuPos is a raw PlanetPosition
 
     final affected = <String>[];
     var overNatalRahu = false;
     var overNatalKetu = false;
 
     natalChart.baseChart.planets.forEach((p, info) {
-      final sign = (info.position.longitude / 30).floor();
+      final sign = info.position.zodiacSignIndex;
       if (sign == rahuSign || sign == ketuSign) {
         affected.add(p.displayName);
         if (p == j.Planet.meanNode) overNatalRahu = true;

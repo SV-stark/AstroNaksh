@@ -307,7 +307,6 @@ class _HomeScreenState extends State<HomeScreen> {
               : CommandBarOverflowBehavior.noWrap,
           primaryItems: [
             CommandBarButton(
-              key: _newChartKey,
               icon: const Icon(FluentIcons.add),
               label: const Text('New Chart'),
               onPressed: () async {

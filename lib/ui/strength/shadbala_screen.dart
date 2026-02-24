@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
 import '../../logic/shadbala.dart';
 import '../widgets/strength_meter.dart';
@@ -13,8 +14,8 @@ class ShadbalaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, double>>(
-      future: ShadbalaCalculator.calculateShadbala(chartData),
+    return FutureBuilder<ShadbalaScreenData>(
+      future: ShadbalaCalculator.getScreenData(chartData),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const ScaffoldPage(
@@ -38,7 +39,14 @@ class ShadbalaScreen extends StatelessWidget {
           );
         }
 
-        final shadbalaData = snapshot.data ?? {};
+        if (snapshot.data == null) {
+          return const ScaffoldPage(
+            content: Center(child: Text('No data generated')),
+          );
+        }
+
+        final screenData = snapshot.data!;
+        final shadbalaData = screenData.shadbala;
 
         return ScaffoldPage(
           header: PageHeader(
@@ -96,8 +104,13 @@ class ShadbalaScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Individual planet cards
-              ..._buildPlanetCards(context, shadbalaData),
+              // Individual planet cards with Vimsopaka and Combustion details
+              ..._buildPlanetCards(context, screenData),
+
+              const SizedBox(height: 16),
+
+              // Hora Lords section
+              _buildHoraLordsCard(context, screenData.horaLords),
 
               const SizedBox(height: 32),
             ],
@@ -243,11 +256,18 @@ class ShadbalaScreen extends StatelessWidget {
 
   List<Widget> _buildPlanetCards(
     BuildContext context,
-    Map<String, double> shadbalaData,
+    ShadbalaScreenData screenData,
   ) {
-    return shadbalaData.entries.map((entry) {
+    return screenData.shadbala.entries.map((entry) {
       final planetName = entry.key;
       final totalStrength = entry.value;
+
+      final planetObj = Planet.traditionalPlanets.firstWhere(
+        (p) => p.displayName == planetName,
+        orElse: () => Planet.sun,
+      );
+      final vimsopaka = screenData.vimsopaka[planetObj];
+      final combustion = screenData.combustion[planetObj];
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 12.0),
@@ -285,6 +305,46 @@ class ShadbalaScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _buildInterpretationText(planetName, totalStrength),
+              if (vimsopaka != null) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                const Text(
+                  'Vimsopaka Bala (20-Point Scale):',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '${vimsopaka.totalScore.toStringAsFixed(1)} / 20.0 (${vimsopaka.strengthCategory.name})',
+                ),
+                Text(
+                  'Based on dignity in D-1, D-2, D-3, D-9, D-12, D-30 charts.',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+              if (combustion != null) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text(
+                      'Combustion Status: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      combustion.isCombust ? 'Combust' : 'Not Combust',
+                      style: TextStyle(
+                        color: combustion.isCombust ? Colors.red : Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  combustion.description,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
             ],
           ),
         ),
@@ -320,6 +380,77 @@ class ShadbalaScreen extends StatelessWidget {
       child: Text(
         interpretation,
         style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+      ),
+    );
+  }
+
+  Widget _buildHoraLordsCard(BuildContext context, List<Planet> horaLords) {
+    if (horaLords.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(FluentIcons.clock, color: Colors.purple),
+                const SizedBox(width: 8),
+                const Text(
+                  'Hora Lords of the Day (24 Hours)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Each day is divided into 24 planetary hours (Horas). The first hora begins at sunrise and is ruled by the lord of the weekday. Each subsequent hora is ruled by the 6th planet in the weekday sequence.',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: List.generate(horaLords.length, (index) {
+                final lord = horaLords[index];
+                return Container(
+                  width: 90,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _getPlanetColor(
+                      lord.displayName,
+                    ).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: _getPlanetColor(
+                        lord.displayName,
+                      ).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Hora ${index + 1}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        lord.displayName,
+                        style: TextStyle(
+                          color: _getPlanetColor(lord.displayName),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }

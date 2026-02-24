@@ -6,6 +6,7 @@ import '../data/models.dart';
 import '../data/city_database.dart';
 import 'package:intl/intl.dart';
 import '../core/responsive_helper.dart';
+import '../core/ephemeris_manager.dart';
 
 class PanchangScreen extends StatefulWidget {
   const PanchangScreen({super.key});
@@ -25,6 +26,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
   List<PanchangChoghadiya> _choghadiya = [];
   AbhijitMuhurta? _abhijit;
   BrahmaMuhurta? _brahma;
+  MoonPhaseDetails? _moonPhase;
+  DateTime? _tithiJunction;
+  EclipseData? _eclipseData;
   bool _isLoading = false;
 
   // Tab state
@@ -90,6 +94,52 @@ class _PanchangScreenState extends State<PanchangScreen> {
         location,
       );
 
+      final moonPhase = await _panchangService.getMoonPhaseDetails(
+        _selectedDate,
+        location,
+      );
+
+      final nightInauspicious = await _panchangService.getNighttimeInauspicious(
+        _selectedDate,
+        location,
+      );
+
+      final tf = DateFormat('HH:mm');
+      inauspicious.add(
+        PanchangInauspicious(
+          name: 'Night Rahukalam',
+          startTime: tf.format(nightInauspicious.rahuKaal.start.toLocal()),
+          endTime: tf.format(nightInauspicious.rahuKaal.end.toLocal()),
+        ),
+      );
+      inauspicious.add(
+        PanchangInauspicious(
+          name: 'Night Gulikalam',
+          startTime: tf.format(nightInauspicious.gulikaKaal.start.toLocal()),
+          endTime: tf.format(nightInauspicious.gulikaKaal.end.toLocal()),
+        ),
+      );
+      inauspicious.add(
+        PanchangInauspicious(
+          name: 'Night Yamagandam',
+          startTime: tf.format(nightInauspicious.yamagandam.start.toLocal()),
+          endTime: tf.format(nightInauspicious.yamagandam.end.toLocal()),
+        ),
+      );
+
+      final tithiEndTime = await _panchangService.getTithiEndTime(
+        _selectedDate,
+        location,
+      );
+
+      final eclipseData = await EphemerisManager.service.getEclipseData(
+        date: _selectedDate,
+        location: GeographicLocation(
+          latitude: location.latitude,
+          longitude: location.longitude,
+        ),
+      );
+
       setState(() {
         _result = result;
         _gowri = gowri;
@@ -98,6 +148,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
         _choghadiya = choghadiya;
         _abhijit = abhijit;
         _brahma = brahma;
+        _moonPhase = moonPhase;
+        _tithiJunction = tithiEndTime;
+        _eclipseData = eclipseData;
         _isLoading = false;
       });
     } catch (e) {
@@ -968,7 +1021,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
           _buildPanchangCard(
             title: 'Tithi',
             value: _result!.tithi,
-            subtitle: 'Lunar Day',
+            subtitle: _tithiJunction != null
+                ? 'Ends at ${DateFormat('HH:mm').format(_tithiJunction!.toLocal())}'
+                : 'Lunar Day',
             icon: FluentIcons.calendar_day,
             color: Colors.orange,
             description: 'The lunar day based on moon phases',
@@ -1073,6 +1128,86 @@ class _PanchangScreenState extends State<PanchangScreen> {
               ),
             ],
           ),
+          if (_moonPhase != null) ...[
+            const SizedBox(height: 16),
+            Card(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Moon Phase',
+                    style: FluentTheme.of(context).typography.bodyStrong
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${_moonPhase!.phaseName} (${_moonPhase!.illumination.toStringAsFixed(1)}% illuminated)',
+                  ),
+                  Text(
+                    'Lunar Age: ${_moonPhase!.lunarAge.toStringAsFixed(1)} days',
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  Text(
+                    _moonPhase!.isWaxing ? 'Waxing Moon' : 'Waning Moon',
+                    style: TextStyle(
+                      color: _moonPhase!.isWaxing
+                          ? Colors.green
+                          : Colors.orange,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          if (_eclipseData != null) ...[
+            const SizedBox(height: 16),
+            Card(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(FluentIcons.warning, color: Colors.orange, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Eclipse Alert',
+                        style: FluentTheme.of(
+                          context,
+                        ).typography.bodyStrong?.copyWith(color: Colors.orange),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_eclipseData!.description),
+                  Text(
+                    'Magnitude: ${_eclipseData!.magnitude.toStringAsFixed(3)}',
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  if (_eclipseData!.isVisible)
+                    Text(
+                      'Visible from your location',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  else
+                    Text(
+                      'Not visible from your location',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  Text(
+                    'Date: ${DateFormat('dd MMM yyyy, HH:mm').format(_eclipseData!.date.toLocal())}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),

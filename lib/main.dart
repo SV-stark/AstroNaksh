@@ -8,6 +8,7 @@ import 'ui/settings_screen.dart';
 import 'ui/loading_screen.dart';
 import 'ui/panchang_screen.dart';
 import 'ui/comparison/chart_comparison_screen.dart';
+import 'ui/tools/muhurta_finder_screen.dart';
 import 'core/settings_manager.dart';
 import 'dart:io';
 import 'dart:async';
@@ -106,6 +107,7 @@ class AstroNakshApp extends StatelessWidget {
             '/settings': (context) => const SettingsScreen(),
             '/panchang': (context) => const PanchangScreen(),
             '/comparison': (context) => const ChartComparisonScreen(),
+            '/muhurta': (context) => const MuhurtaFinderScreen(),
           },
           debugShowCheckedModeBanner: false,
         );

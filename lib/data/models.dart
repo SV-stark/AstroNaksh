@@ -407,18 +407,77 @@ class NarayanaDashaPeriod {
   });
 }
 
+/// Ashtottari Dasha data class
+class AshtottariDasha {
+  final List<AshtottariMahadasha> mahadashas;
+  final String birthNakshatra;
+  final double balanceOfFirstDasha;
+
+  AshtottariDasha({
+    required this.mahadashas,
+    required this.birthNakshatra,
+    required this.balanceOfFirstDasha,
+  });
+}
+
+/// Ashtottari Mahadasha data class
+class AshtottariMahadasha {
+  final Planet lord;
+  final String lordName;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
+
+  AshtottariMahadasha({
+    required this.lord,
+    required this.lordName,
+    required this.startDate,
+    required this.endDate,
+    required this.periodYears,
+  });
+}
+
+/// Kalachakra Dasha data class
+class KalachakraDasha {
+  final List<KalachakraMahadasha> mahadashas;
+  final String birthNakshatra;
+
+  KalachakraDasha({required this.mahadashas, required this.birthNakshatra});
+}
+
+/// Kalachakra Mahadasha data class
+class KalachakraMahadasha {
+  final Rashi rashi;
+  final String signName;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
+
+  KalachakraMahadasha({
+    required this.rashi,
+    required this.signName,
+    required this.startDate,
+    required this.endDate,
+    required this.periodYears,
+  });
+}
+
 /// Combined Dasha data
 class DashaData {
   final VimshottariDasha vimshottari;
   final YoginiDasha yogini;
   final CharaDasha chara;
   final NarayanaDasha narayana;
+  final AshtottariDasha ashtottari;
+  final KalachakraDasha kalachakra;
 
   DashaData({
     required this.vimshottari,
     required this.yogini,
     required this.chara,
     required this.narayana,
+    required this.ashtottari,
+    required this.kalachakra,
   });
 }
 

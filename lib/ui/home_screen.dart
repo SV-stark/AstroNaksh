@@ -478,6 +478,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                       ),
+                      _buildQuickAction(
+                        icon: FluentIcons.diamond,
+                        title: "Muhurta Finder",
+                        subtitle: "Auspicious times",
+                        color: Colors.blue,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/muhurta');
+                        },
+                      ),
                     ],
                   ),
                 ],

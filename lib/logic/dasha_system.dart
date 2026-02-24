@@ -169,6 +169,47 @@ class DashaSystem {
     );
   }
 
+  /// Calculate Ashtottari Dasha
+  static Future<AshtottariDasha> calculateAshtottariDasha(
+    VedicChart chart,
+  ) async {
+    _service ??= DashaService();
+    final result = _service!.getAshtottariDasha(chart);
+    return AshtottariDasha(
+      birthNakshatra: result.birthNakshatra,
+      balanceOfFirstDasha: result.balanceOfFirstDasha / 365.25,
+      mahadashas: result.allMahadashas.map((p) {
+        return AshtottariMahadasha(
+          lord: p.lord!,
+          lordName: p.lord?.displayName ?? p.lordName ?? '--',
+          startDate: p.startDate,
+          endDate: p.endDate,
+          periodYears: p.durationYears,
+        );
+      }).toList(),
+    );
+  }
+
+  /// Calculate Kalachakra Dasha
+  static Future<KalachakraDasha> calculateKalachakraDasha(
+    VedicChart chart,
+  ) async {
+    _service ??= DashaService();
+    final result = _service!.getKalachakraDasha(chart);
+    return KalachakraDasha(
+      birthNakshatra: result.birthNakshatra,
+      mahadashas: result.allMahadashas.map((p) {
+        return KalachakraMahadasha(
+          rashi: p.rashi!,
+          signName: p.rashi?.name ?? '',
+          startDate: p.startDate,
+          endDate: p.endDate,
+          periodYears: p.durationYears,
+        );
+      }).toList(),
+    );
+  }
+
   /// Get current running dasha for a date (Vimshottari).
   /// Delegates to the jyotish library's [DashaService] via the cached service
   /// so we avoid reimplementing the nested-period search manually.

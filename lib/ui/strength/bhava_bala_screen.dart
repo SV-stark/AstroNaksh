@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
 import '../../logic/bhava_bala.dart';
 import '../../core/responsive_helper.dart';
@@ -17,8 +18,8 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<int, BhavaStrength>>(
-      future: BhavaBala.calculateBhavaBala(widget.chartData),
+    return FutureBuilder<Map<int, EnhancedBhavaBalaResult>>(
+      future: BhavaBala.calculateEnhancedBhavaBala(widget.chartData),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const ScaffoldPage(
@@ -47,7 +48,8 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
         final bhavaBalaData = snapshot.data ?? {};
 
         // Convert to list for sorting
-        List<MapEntry<int, BhavaStrength>> houses = bhavaBalaData.entries
+        List<MapEntry<int, EnhancedBhavaBalaResult>> houses = bhavaBalaData
+            .entries
             .toList();
 
         if (_sortByStrength) {
@@ -137,7 +139,7 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
     );
   }
 
-  Widget _buildHouseGrid(List<MapEntry<int, BhavaStrength>> houses) {
+  Widget _buildHouseGrid(List<MapEntry<int, EnhancedBhavaBalaResult>> houses) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -188,7 +190,7 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
     );
   }
 
-  Widget _buildHouseCard(int house, BhavaStrength strength) {
+  Widget _buildHouseCard(int house, EnhancedBhavaBalaResult strength) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Expander(
@@ -218,21 +220,15 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
         ),
         content: Column(
           children: [
+            _buildBalaRow('Lord Strength', strength.lordStrength),
             _buildBalaRow(
-              'Adhipati Bala (Lord Strength)',
-              strength.components['Lord Strength'] ?? 0.0,
+              'Kendradi Bala (Positional)',
+              strength.kendradiStrength,
             ),
+            _buildBalaRow('Drishti Bala (Aspect)', strength.drishtiStrength),
             _buildBalaRow(
-              'Dig Bala (Directional)',
-              strength.components['Directional'] ?? 0.0,
-            ),
-            _buildBalaRow(
-              'Drishti Bala (Aspect)',
-              strength.components['Aspects'] ?? 0.0,
-            ),
-            _buildBalaRow(
-              'Occupant Strength',
-              strength.components['Occupants'] ?? 0.0,
+              'Vimsopaka Bala Component',
+              strength.vimsopakaStrength,
             ),
             const Divider(),
             _buildBalaRow(

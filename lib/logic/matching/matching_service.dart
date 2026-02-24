@@ -8,7 +8,8 @@ import 'matching_models.dart';
 /// Extensive Kundali Matching Service
 /// Uses library's CompatibilityService for core calculations
 class MatchingService {
-  static final CompatibilityService _compatibilityService = CompatibilityService();
+  static final CompatibilityService _compatibilityService =
+      CompatibilityService();
 
   /// Analyze compatibility extensively
   static MatchingReport analyzeCompatibility(
@@ -56,7 +57,8 @@ class MatchingService {
     Color color;
 
     final totalScore = libraryResult.totalScore;
-    final criticalDosha = !manglikMatch.isMatch ||
+    final criticalDosha =
+        !manglikMatch.isMatch ||
         !_areExtrasGood(extraChecks) ||
         libraryResult.doshaCheck.hasNadiDosha;
 
@@ -101,7 +103,7 @@ class MatchingService {
     );
   }
 
-  static KootaResult _convertKoota(String name, int score, int maxScore) {
+  static KootaResult _convertKoota(String name, num score, num maxScore) {
     Color color;
     String description;
     if (score >= maxScore * 0.75) {
@@ -131,7 +133,9 @@ class MatchingService {
     CompleteChartData bride,
   ) {
     final manglikBoy = _compatibilityService.checkManglikDosha(groom.baseChart);
-    final manglikGirl = _compatibilityService.checkManglikDosha(bride.baseChart);
+    final manglikGirl = _compatibilityService.checkManglikDosha(
+      bride.baseChart,
+    );
 
     bool match = false;
     String desc = '';
@@ -162,19 +166,27 @@ class MatchingService {
     // 1. Mahendra
     int distBG = (gNak - bNak + 27) % 27 + 1;
     bool mahendra = [4, 7, 10, 13, 16, 19, 22, 25].contains(distBG);
-    checks.add(ExtraMatchingCheck(
-      name: 'Mahendra',
-      isFavorable: mahendra,
-      description: mahendra ? 'Promotes well-being & longevity' : 'Neutral/Unfavorable',
-    ));
+    checks.add(
+      ExtraMatchingCheck(
+        name: 'Mahendra',
+        isFavorable: mahendra,
+        description: mahendra
+            ? 'Promotes well-being & longevity'
+            : 'Neutral/Unfavorable',
+      ),
+    );
 
     // 2. Stree Deergha
     bool streeDeergha = distBG > 13;
-    checks.add(ExtraMatchingCheck(
-      name: 'Stree Deergha',
-      isFavorable: streeDeergha,
-      description: streeDeergha ? 'Good distance. Ensures prosperity.' : 'Short distance. Minor concern.',
-    ));
+    checks.add(
+      ExtraMatchingCheck(
+        name: 'Stree Deergha',
+        isFavorable: streeDeergha,
+        description: streeDeergha
+            ? 'Good distance. Ensures prosperity.'
+            : 'Short distance. Minor concern.',
+      ),
+    );
 
     // 3. Rajju Dosha
     int getRajjuGroup(int n) {
@@ -190,17 +202,33 @@ class MatchingService {
     int bRajju = getRajjuGroup(bNak);
     bool rajjuMatch = gRajju != bRajju;
 
-    checks.add(ExtraMatchingCheck(
-      name: 'Rajju Dosha',
-      isFavorable: rajjuMatch,
-      description: rajjuMatch ? 'Different Rajju. Good.' : 'Same Rajju. Avoid match.',
-    ));
+    checks.add(
+      ExtraMatchingCheck(
+        name: 'Rajju Dosha',
+        isFavorable: rajjuMatch,
+        description: rajjuMatch
+            ? 'Different Rajju. Good.'
+            : 'Same Rajju. Avoid match.',
+      ),
+    );
 
     // 4. Vedha
     final pairs = [
-      {0, 17}, {1, 16}, {2, 15}, {3, 14}, {5, 21}, {6, 20},
-      {7, 19}, {8, 18}, {9, 26}, {10, 25}, {11, 24}, {12, 23},
-      {4, 13}, {4, 22}, {13, 22},
+      {0, 17},
+      {1, 16},
+      {2, 15},
+      {3, 14},
+      {5, 21},
+      {6, 20},
+      {7, 19},
+      {8, 18},
+      {9, 26},
+      {10, 25},
+      {11, 24},
+      {12, 23},
+      {4, 13},
+      {4, 22},
+      {13, 22},
     ];
 
     bool vedha = false;
@@ -211,18 +239,32 @@ class MatchingService {
       }
     }
 
-    checks.add(ExtraMatchingCheck(
-      name: 'Vedha (Obstruction)',
-      isFavorable: !vedha,
-      description: vedha ? 'Mutual obstruction detected.' : 'No obstruction.',
-    ));
+    checks.add(
+      ExtraMatchingCheck(
+        name: 'Vedha (Obstruction)',
+        isFavorable: !vedha,
+        description: vedha ? 'Mutual obstruction detected.' : 'No obstruction.',
+      ),
+    );
 
     return checks;
   }
 
   static bool _areExtrasGood(List<ExtraMatchingCheck> extras) {
-    bool rajjuGood = extras.firstWhere((e) => e.name == 'Rajju Dosha', orElse: () => ExtraMatchingCheck(name: '', isFavorable: true, description: '')).isFavorable;
-    bool vedhaGood = extras.firstWhere((e) => e.name.contains('Vedha'), orElse: () => ExtraMatchingCheck(name: '', isFavorable: true, description: '')).isFavorable;
+    bool rajjuGood = extras
+        .firstWhere(
+          (e) => e.name == 'Rajju Dosha',
+          orElse: () =>
+              ExtraMatchingCheck(name: '', isFavorable: true, description: ''),
+        )
+        .isFavorable;
+    bool vedhaGood = extras
+        .firstWhere(
+          (e) => e.name.contains('Vedha'),
+          orElse: () =>
+              ExtraMatchingCheck(name: '', isFavorable: true, description: ''),
+        )
+        .isFavorable;
     return rajjuGood && vedhaGood;
   }
 

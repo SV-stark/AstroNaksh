@@ -38,4 +38,75 @@ class ShadbalaCalculator {
     _service ??= ShadbalaService(EphemerisManager.service);
     return await _service!.calculateShadbala(chart);
   }
+
+  /// Get comprehensive screen data combining Shadbala, Vimsopaka, Combustion, and Hora Lords
+  static Future<ShadbalaScreenData> getScreenData(
+    CompleteChartData chartData,
+  ) async {
+    _service ??= ShadbalaService(EphemerisManager.service);
+    final strengthService = StrengthAnalysisService();
+
+    final chart = chartData.baseChart;
+
+    final detailedShadbala = await _service!.calculateShadbala(chart);
+    final Map<String, double> shadbala = {};
+    detailedShadbala.forEach((planet, result) {
+      if (!Planet.lunarNodes.contains(planet)) {
+        shadbala[planet.displayName] = result.totalBala;
+      }
+    });
+
+    final vimsopaka = strengthService.getAllPlanetsVimshopakBala(chart);
+
+    final sunPos = chart.getPlanet(Planet.sun)?.longitude ?? 0.0;
+    final Map<Planet, CombustionInfo> combustion = {};
+    for (final planet in Planet.traditionalPlanets) {
+      if (planet == Planet.sun) continue;
+      final info = chart.getPlanet(planet);
+      if (info != null) {
+        // Speed is not readily available on VedicPlanetInfo in some implementations,
+        // we omit it or pass 0. By default it assumes direct motion unless speed < 0.
+        combustion[planet] = _service!.checkCombustion(
+          planet: planet,
+          planetLongitude: info.longitude,
+          sunLongitude: sunPos,
+        );
+      }
+    }
+
+    final location = GeographicLocation(
+      latitude: chart.latitude,
+      longitude: chart.longitudeCoord,
+      altitude: 0,
+    );
+
+    final horaLords = await _service!.calculateHoraLordsForDay(
+      date: chart.dateTime,
+      location: location,
+    );
+
+    return ShadbalaScreenData(
+      shadbala: shadbala,
+      detailedShadbala: detailedShadbala,
+      vimsopaka: vimsopaka,
+      combustion: combustion,
+      horaLords: horaLords,
+    );
+  }
+}
+
+class ShadbalaScreenData {
+  final Map<String, double> shadbala;
+  final Map<Planet, ShadbalaResult> detailedShadbala;
+  final Map<Planet, VimshopakBala> vimsopaka;
+  final Map<Planet, CombustionInfo> combustion;
+  final List<Planet> horaLords;
+
+  ShadbalaScreenData({
+    required this.shadbala,
+    required this.detailedShadbala,
+    required this.vimsopaka,
+    required this.combustion,
+    required this.horaLords,
+  });
 }

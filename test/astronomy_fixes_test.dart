@@ -55,6 +55,12 @@ void main() {
         yogini: YoginiDasha(startYogini: 'Mangala', mahadashas: []),
         chara: CharaDasha(startSign: 0, periods: []),
         narayana: NarayanaDasha(startSign: 0, periods: []),
+        ashtottari: AshtottariDasha(
+          birthNakshatra: '',
+          balanceOfFirstDasha: 0,
+          mahadashas: [],
+        ),
+        kalachakra: KalachakraDasha(birthNakshatra: '', mahadashas: []),
       );
 
       // 2. Construct VedicChart with Rahu=0, Ketu=180, and others in between

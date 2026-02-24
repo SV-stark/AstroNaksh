@@ -1701,25 +1701,24 @@ class _ChartScreenState extends State<ChartScreen> {
     return Column(
       children: [
         // Tab bar for selecting dasha type
-        Container(
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Expanded(
-                child: _buildDashaTabButton(
-                  'Vimshottari',
-                  FluentIcons.timeline_progress,
-                  0,
-                ),
+              _buildDashaTabButton(
+                'Vimshottari',
+                FluentIcons.timeline_progress,
+                0,
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: _buildDashaTabButton('Yogini', FluentIcons.flow, 1),
-              ),
+              _buildDashaTabButton('Yogini', FluentIcons.flow, 1),
               const SizedBox(width: 8),
-              Expanded(
-                child: _buildDashaTabButton('Chara', FluentIcons.rotate, 2),
-              ),
+              _buildDashaTabButton('Chara', FluentIcons.rotate, 2),
+              const SizedBox(width: 8),
+              _buildDashaTabButton('Ashtottari', FluentIcons.table, 3),
+              const SizedBox(width: 8),
+              _buildDashaTabButton('Kalachakra', FluentIcons.sync, 4),
             ],
           ),
         ),
@@ -1732,6 +1731,8 @@ class _ChartScreenState extends State<ChartScreen> {
               _buildVimshottariDashaContent(data.dashaData.vimshottari),
               _buildYoginiDashaContent(data.dashaData.yogini),
               _buildCharaDashaContent(data.dashaData.chara),
+              _buildAshtottariDashaContent(data.dashaData.ashtottari),
+              _buildKalachakraDashaContent(data.dashaData.kalachakra),
             ],
           ),
         ),
@@ -2539,6 +2540,360 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
+  Widget _buildAshtottariDashaContent(AshtottariDasha dasha) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            backgroundColor: FluentTheme.of(context).accentColor.withAlpha(20),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(
+                    FluentIcons.info,
+                    color: FluentTheme.of(context).accentColor,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Birth Nakshatra: ${dasha.birthNakshatra}',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          'Balance of First Dasha: ${dasha.balanceOfFirstDasha.toStringAsFixed(2)} years',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildPlanetBasedDashaContent(
+            title: 'Ashtottari Dasha Periods',
+            periods: dasha.mahadashas
+                .map(
+                  (p) => _DashaPeriodAdapter(
+                    lord: p.lordName,
+                    startDate: p.startDate,
+                    endDate: p.endDate,
+                    periodYears: p.periodYears,
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKalachakraDashaContent(KalachakraDasha dasha) {
+    return _buildSignBasedDashaContent(
+      title: 'Kalachakra Dasha Periods',
+      periods: dasha.mahadashas
+          .map(
+            (p) => _DashaPeriodAdapter(
+              signName: p.signName,
+              startDate: p.startDate,
+              endDate: p.endDate,
+              periodYears: p.periodYears,
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildPlanetBasedDashaContent({
+    required String title,
+    required List<_DashaPeriodAdapter> periods,
+  }) {
+    final now = DateTime.now();
+    final currentIndex = periods.indexWhere(
+      (m) => now.isAfter(m.startDate) && now.isBefore(m.endDate),
+    );
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: FluentTheme.of(context).typography.subtitle),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              decoration: BoxDecoration(
+                color: FluentTheme.of(context).accentColor.withAlpha(30),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'Lord',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'Period',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      'Duration',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...periods.asMap().entries.map((entry) {
+              final index = entry.key;
+              final p = entry.value;
+              final isCurrent = index == currentIndex;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: isCurrent
+                      ? FluentTheme.of(context).accentColor.withAlpha(40)
+                      : (index % 2 == 0 ? Colors.grey.withAlpha(10) : null),
+                  borderRadius: BorderRadius.circular(4),
+                  border: isCurrent
+                      ? Border.all(
+                          color: FluentTheme.of(context).accentColor,
+                          width: 1,
+                        )
+                      : null,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Row(
+                        children: [
+                          if (isCurrent)
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: FluentTheme.of(context).accentColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          Text(
+                            p.lord ?? '--',
+                            style: TextStyle(
+                              fontWeight: isCurrent
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: isCurrent
+                                  ? FluentTheme.of(context).accentColor
+                                  : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        '${_formatDate(p.startDate)} - ${_formatDate(p.endDate)}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        '${p.periodYears.toStringAsFixed(1)}y',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignBasedDashaContent({
+    required String title,
+    required List<_DashaPeriodAdapter> periods,
+  }) {
+    final now = DateTime.now();
+    final currentIndex = periods.indexWhere(
+      (m) => now.isAfter(m.startDate) && now.isBefore(m.endDate),
+    );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: FluentTheme.of(context).typography.subtitle),
+              const SizedBox(height: 12),
+              // Table Header
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: FluentTheme.of(context).accentColor.withAlpha(30),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Sign',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Lord',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Period',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        'Duration',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Table Rows
+              ...periods.asMap().entries.map((entry) {
+                final index = entry.key;
+                final p = entry.value;
+                final isCurrent = index == currentIndex;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 4),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isCurrent
+                        ? FluentTheme.of(context).accentColor.withAlpha(40)
+                        : (index % 2 == 0 ? Colors.grey.withAlpha(10) : null),
+                    borderRadius: BorderRadius.circular(4),
+                    border: isCurrent
+                        ? Border.all(
+                            color: FluentTheme.of(context).accentColor,
+                            width: 1,
+                          )
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Row(
+                          children: [
+                            if (isCurrent)
+                              Container(
+                                width: 8,
+                                height: 8,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  color: FluentTheme.of(context).accentColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            Text(
+                              p.signName ?? '--',
+                              style: TextStyle(
+                                fontWeight: isCurrent
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                color: isCurrent
+                                    ? FluentTheme.of(context).accentColor
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          p.lord ?? '--',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          '${_formatDate(p.startDate)} - ${_formatDate(p.endDate)}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          '${p.periodYears.toStringAsFixed(1)}y',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   String _getSignName(int signNumber) {
     final signs = [
       'Aries',
@@ -3198,4 +3553,20 @@ class _ChartScreenState extends State<ChartScreen> {
         return "Chart Views";
     }
   }
+}
+
+class _DashaPeriodAdapter {
+  final String? signName;
+  final String? lord;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
+
+  _DashaPeriodAdapter({
+    this.signName,
+    this.lord,
+    required this.startDate,
+    required this.endDate,
+    required this.periodYears,
+  });
 }

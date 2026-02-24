@@ -269,12 +269,16 @@ class KPChartService {
     final yogini = DashaSystem.calculateYoginiDasha(chart);
     final chara = await DashaSystem.calculateCharaDasha(chart);
     final narayana = await DashaSystem.calculateNarayanaDasha(chart);
+    final ashtottari = await DashaSystem.calculateAshtottariDasha(chart);
+    final kalachakra = await DashaSystem.calculateKalachakraDasha(chart);
 
     return DashaData(
       vimshottari: vimshottari,
       yogini: yogini,
       chara: chara,
       narayana: narayana,
+      ashtottari: ashtottari,
+      kalachakra: kalachakra,
     );
   }
 

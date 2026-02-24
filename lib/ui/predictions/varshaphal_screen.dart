@@ -6,6 +6,13 @@ import '../widgets/chart_widget.dart';
 import 'package:jyotish/jyotish.dart';
 import '../../core/responsive_helper.dart';
 
+class _CombinedVarshaphalData {
+  final VarshaphalChart customChart;
+  final Varshapal nativeChart;
+
+  _CombinedVarshaphalData(this.customChart, this.nativeChart);
+}
+
 class VarshaphalScreen extends StatefulWidget {
   final BirthData birthData;
 
@@ -34,11 +41,8 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      content: FutureBuilder<VarshaphalChart>(
-        future: VarshaphalSystem.calculateVarshaphal(
-          widget.birthData,
-          _selectedYear,
-        ),
+      content: FutureBuilder<_CombinedVarshaphalData>(
+        future: _fetchCombinedData(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: ProgressRing());
@@ -58,7 +62,9 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
             return const Center(child: Text('No Data'));
           }
 
-          final chart = snapshot.data!;
+          final combinedData = snapshot.data!;
+          final chart = combinedData.customChart;
+          final nativeChart = combinedData.nativeChart;
 
           return ListView(
             padding: context.responsiveBodyPadding,
@@ -73,12 +79,42 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
               const SizedBox(height: 16),
               _buildMuddaDashaSection(chart),
               const SizedBox(height: 16),
+              _buildNativePeriodsCard(nativeChart),
+              const SizedBox(height: 16),
               _buildSahamsCard(chart),
             ],
           );
         },
       ),
     );
+  }
+
+  Future<_CombinedVarshaphalData> _fetchCombinedData() async {
+    final customChart = await VarshaphalSystem.calculateVarshaphal(
+      widget.birthData,
+      _selectedYear,
+    );
+
+    final ephemerisService = EphemerisService();
+    await ephemerisService.initialize();
+
+    final varshapalService = VarshapalService(ephemerisService);
+    final nativeChart = await varshapalService.calculateVarshapal(
+      birthDateTime: widget.birthData.dateTime,
+      varshaDateTime: DateTime(
+        _selectedYear,
+        widget.birthData.dateTime.month,
+        widget.birthData.dateTime.day,
+        widget.birthData.dateTime.hour,
+        widget.birthData.dateTime.minute,
+      ),
+      location: GeographicLocation(
+        latitude: widget.birthData.location.latitude,
+        longitude: widget.birthData.location.longitude,
+      ),
+    );
+
+    return _CombinedVarshaphalData(customChart, nativeChart);
   }
 
   Widget _buildYearSelector() {
@@ -535,6 +571,75 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNativePeriodsCard(Varshapal nativeChart) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Varshaphal Dashas (VarshapalService)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Samvatsara: ${nativeChart.samvatsaraName}',
+              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: 12),
+            TabView(
+              currentIndex: 0,
+              onChanged: (index) {},
+              tabs: [
+                Tab(
+                  text: const Text('Varsha Periods'),
+                  body: _buildPeriodList(nativeChart.allVarshaPeriods),
+                ),
+                Tab(
+                  text: const Text('Maasa Periods'),
+                  body: _buildPeriodList(nativeChart.allMaasaPeriods),
+                ),
+                Tab(
+                  text: const Text('Dina Periods (First 30 Days)'),
+                  body: _buildPeriodList(
+                    nativeChart.allDinaPeriods.take(30).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPeriodList(List<VarshapalPeriod> periods) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: periods.length,
+      itemBuilder: (context, index) {
+        final period = periods[index];
+        return ListTile(
+          leading: Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: _getPlanetColor(period.lord.name),
+              shape: BoxShape.circle,
+            ),
+          ),
+          title: Text(period.lord.displayName),
+          subtitle: Text(
+            '${DateFormat('MMM dd, yyyy').format(period.startDate)} - ${DateFormat('MMM dd, yyyy').format(period.endDate)}',
+            style: const TextStyle(fontSize: 12),
+          ),
+        );
+      },
     );
   }
 

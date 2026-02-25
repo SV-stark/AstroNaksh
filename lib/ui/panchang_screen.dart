@@ -30,6 +30,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
   DateTime? _tithiJunction;
   EclipseData? _eclipseData;
   bool _isLoading = false;
+  PanchakStatus? _panchak;
 
   // Tab state
   int _selectedTabIndex = 0;
@@ -153,6 +154,33 @@ class _PanchangScreenState extends State<PanchangScreen> {
         _eclipseData = eclipseData;
         _isLoading = false;
       });
+
+      // Load Panchak (only needs transit Moon, use current transit chart)
+      try {
+        final transitChart = await EphemerisManager.jyotish.calculateVedicChart(
+          dateTime: _selectedDate,
+          location: GeographicLocation(
+            latitude: _selectedCity!.latitude,
+            longitude: _selectedCity!.longitude,
+          ),
+        );
+        final specialTransits = await EphemerisManager.jyotish
+            .calculateSpecialTransits(
+              natalChart: transitChart,
+              checkDate: _selectedDate,
+              location: GeographicLocation(
+                latitude: _selectedCity!.latitude,
+                longitude: _selectedCity!.longitude,
+              ),
+            );
+        if (mounted) {
+          setState(() {
+            _panchak = specialTransits.panchak;
+          });
+        }
+      } catch (_) {
+        // Panchak load failed — not critical, UI will show a message
+      }
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
@@ -579,6 +607,14 @@ class _PanchangScreenState extends State<PanchangScreen> {
                                     onTap: () =>
                                         setState(() => _selectedTabIndex = 6),
                                   ),
+                                  const SizedBox(width: 8),
+                                  _buildTabButton(
+                                    icon: FluentIcons.sync_occurence,
+                                    label: 'Transits',
+                                    isSelected: _selectedTabIndex == 7,
+                                    onTap: () =>
+                                        setState(() => _selectedTabIndex = 7),
+                                  ),
                                 ],
                               ),
                             ),
@@ -604,7 +640,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 else if (_selectedTabIndex == 5)
                   _buildChoghadiyaTab()
                 else if (_selectedTabIndex == 6)
-                  _buildGowriPanchangaTab(),
+                  _buildGowriPanchangaTab()
+                else if (_selectedTabIndex == 7)
+                  _buildTransitsTab(),
 
                 // Information Section
                 SliverToBoxAdapter(
@@ -1419,6 +1457,179 @@ class _PanchangScreenState extends State<PanchangScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildTransitsTab() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          _buildSectionHeading('Special Transits'),
+          const SizedBox(height: 8),
+          _buildPanchakCard(),
+          const SizedBox(height: 12),
+          Card(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      FluentIcons.sync_occurence,
+                      size: 16,
+                      color: FluentTheme.of(context).accentColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Sade Sati & Dhaiya',
+                      style: FluentTheme.of(
+                        context,
+                      ).typography.body?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const InfoBar(
+                  title: Text('Birth Chart Required'),
+                  content: Text(
+                    'Sade Sati (Saturn\'s 7.5-year transit) and Dhaiya (2.5-year Panoti) '
+                    'are calculated from the natal Moon sign. '
+                    'Open a birth chart → Analysis → Transit to see personalized Saturn transit analysis.',
+                  ),
+                  severity: InfoBarSeverity.info,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildPanchakCard() {
+    final panchak = _panchak;
+    if (panchak == null) {
+      return Card(
+        padding: const EdgeInsets.all(16),
+        child: const Row(
+          children: [
+            Icon(FluentIcons.sync_occurence),
+            SizedBox(width: 12),
+            Expanded(child: Text('Panchak information loading…')),
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: ProgressRing(strokeWidth: 2),
+            ),
+          ],
+        ),
+      );
+    }
+    final isActive = panchak.isActive;
+    final color = isActive ? Colors.orange : Colors.green;
+    final icon = isActive ? FluentIcons.warning : FluentIcons.completed;
+    return Card(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withAlpha(30),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Panchak',
+                      style: FluentTheme.of(
+                        context,
+                      ).typography.body?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const Text(
+                      'Moon in last 5 nakshatras (Dhanishta → Revati)',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: color.withAlpha(25),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: color.withAlpha(80)),
+                ),
+                child: Text(
+                  isActive ? 'Active' : 'Inactive',
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (isActive) ...[
+            const SizedBox(height: 14),
+            Text(panchak.description, style: const TextStyle(fontSize: 13)),
+            if ((panchak.daysRemaining ?? 0) > 0) ...[
+              const SizedBox(height: 6),
+              Text(
+                '${panchak.daysRemaining} day(s) remaining',
+                style: TextStyle(fontSize: 12, color: Colors.grey[130]),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Text(
+              'Precautions:',
+              style: FluentTheme.of(
+                context,
+              ).typography.body?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            ...panchak.precautions.map(
+              (p) => Padding(
+                padding: const EdgeInsets.only(left: 8, bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(FluentIcons.warning, size: 12, color: Colors.orange),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(p, style: const TextStyle(fontSize: 13)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Text(
+                'Moon is not in any Panchak nakshatra today. '
+                'Auspicious activities can proceed without Panchak restrictions.',
+                style: TextStyle(fontSize: 13, color: Colors.grey[130]),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

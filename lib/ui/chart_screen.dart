@@ -35,6 +35,8 @@ import '../../core/chart_share_service.dart';
 import 'analysis/jaimini_screen.dart';
 import 'analysis/progeny_screen.dart';
 import 'analysis/nadi_screen.dart';
+import 'analysis/gochara_vedha_screen.dart';
+import '../../logic/shadbala.dart';
 
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
@@ -549,6 +551,11 @@ class _ChartScreenState extends State<ChartScreen> {
                             leading: const Icon(FluentIcons.flow),
                             onPressed: () => _navigateTo('nadi'),
                           ),
+                          MenuFlyoutItem(
+                            text: const Text('Gochara Vedha'),
+                            leading: const Icon(FluentIcons.sync_occurence),
+                            onPressed: () => _navigateTo('gochara_vedha'),
+                          ),
                         ],
                       ),
                       const MenuFlyoutSeparator(),
@@ -626,6 +633,11 @@ class _ChartScreenState extends State<ChartScreen> {
                                   'Comparison',
                                   'comparison',
                                   FluentIcons.compare,
+                                ),
+                                _buildMobileAnalysisLink(
+                                  'Gochara Vedha',
+                                  'gochara_vedha',
+                                  FluentIcons.sync_occurence,
                                 ),
                                 const Divider(),
                                 _buildMobileAnalysisLink(
@@ -1001,6 +1013,12 @@ class _ChartScreenState extends State<ChartScreen> {
               (data) => RashiphalDashboardScreen(chartData: data),
             ),
           ),
+          PaneItemSeparator(),
+          PaneItem(
+            icon: const Icon(FluentIcons.scale_volume),
+            title: const Text("Planetary Strength"),
+            body: _buildBody(_buildStrengthTab),
+          ),
         ],
       ),
     );
@@ -1084,6 +1102,9 @@ class _ChartScreenState extends State<ChartScreen> {
         break;
       case 'nadi':
         screen = NadiScreen(chartData: chartData);
+        break;
+      case 'gochara_vedha':
+        screen = GocharaVedhaScreen(chartData: chartData);
         break;
       case 'pdf_report':
         screen = PDFReportScreen(chartData: chartData);
@@ -1302,6 +1323,8 @@ class _ChartScreenState extends State<ChartScreen> {
                         'D-40',
                         'D-45',
                         'D-60',
+                        'D-150',
+                        'D-249',
                       ]
                       .map(
                         (code) => Padding(
@@ -1719,6 +1742,8 @@ class _ChartScreenState extends State<ChartScreen> {
               _buildDashaTabButton('Ashtottari', FluentIcons.table, 3),
               const SizedBox(width: 8),
               _buildDashaTabButton('Kalachakra', FluentIcons.sync, 4),
+              const SizedBox(width: 8),
+              _buildDashaTabButton('Narayana', FluentIcons.sync_occurence, 5),
             ],
           ),
         ),
@@ -1733,6 +1758,7 @@ class _ChartScreenState extends State<ChartScreen> {
               _buildCharaDashaContent(data.dashaData.chara),
               _buildAshtottariDashaContent(data.dashaData.ashtottari),
               _buildKalachakraDashaContent(data.dashaData.kalachakra),
+              _buildNarayanaDashaContent(data.dashaData.narayana),
             ],
           ),
         ),
@@ -2611,6 +2637,62 @@ class _ChartScreenState extends State<ChartScreen> {
             ),
           )
           .toList(),
+    );
+  }
+
+  Widget _buildNarayanaDashaContent(NarayanaDasha dasha) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Card(
+            backgroundColor: FluentTheme.of(context).accentColor.withAlpha(20),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(
+                    FluentIcons.info,
+                    color: FluentTheme.of(context).accentColor,
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Narayana Dasha (Jaimini)',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          '12-sign cycle based on lagna/7th house strength',
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _buildSignBasedDashaContent(
+            title: 'Narayana Dasha Periods',
+            periods: dasha.periods
+                .map(
+                  (p) => _DashaPeriodAdapter(
+                    signName: p.signName,
+                    lord: p.lord,
+                    startDate: p.startDate,
+                    endDate: p.endDate,
+                    periodYears: p.periodYears,
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -3530,6 +3612,8 @@ class _ChartScreenState extends State<ChartScreen> {
         return FluentIcons.list;
       case 5:
         return FluentIcons.lightbulb;
+      case 6:
+        return FluentIcons.scale_volume;
       default:
         return FluentIcons.chart;
     }
@@ -3549,9 +3633,382 @@ class _ChartScreenState extends State<ChartScreen> {
         return "Planet Details";
       case 5:
         return "Daily Rashiphal";
+      case 6:
+        return "Planetary Strength";
       default:
         return "Chart Views";
     }
+  }
+
+  // ── Phase 5: Planetary Strength Tab ──────────────────────────────────────
+  Widget _buildStrengthTab(CompleteChartData data) {
+    return FutureBuilder<ShadbalaScreenData>(
+      future: ShadbalaCalculator.getScreenData(data),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: ProgressRing());
+        }
+        if (snapshot.hasError || snapshot.data == null) {
+          return Center(
+            child: InfoBar(
+              title: const Text('Error'),
+              content: Text('Failed to calculate strength: ${snapshot.error}'),
+              severity: InfoBarSeverity.error,
+            ),
+          );
+        }
+        final sd = snapshot.data!;
+        final strengthService = StrengthAnalysisService();
+        final bhavaBala = strengthService.getBhavaBala(
+          chart: data.baseChart,
+          shadbalaResults: {
+            for (final e in sd.detailedShadbala.entries)
+              e.key: e.value.totalBala,
+          },
+        );
+        return SingleChildScrollView(
+          padding: ResponsiveHelper.getResponsivePadding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Ishtaphala / Kashtaphala table ──
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ishtaphala & Kashtaphala',
+                        style: FluentTheme.of(context).typography.subtitle,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Favorable (Ishta) vs. Unfavorable (Kashta) fruit each planet can deliver.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 12),
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                          horizontal: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: FluentTheme.of(
+                            context,
+                          ).accentColor.withAlpha(30),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                'Planet',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                'Ishta ✨',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                'Kashta ⚠️',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                'Net',
+                                textAlign: TextAlign.right,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      ...sd.detailedShadbala.entries.map((entry) {
+                        final planet = entry.key;
+                        final shadbalaStrength = entry.value.totalBala;
+                        final ishta = strengthService.getIshtaphala(
+                          planet: planet,
+                          chart: data.baseChart,
+                          shadbalaStrength: shadbalaStrength,
+                        );
+                        final kashta = strengthService.getKashtaphala(
+                          planet: planet,
+                          chart: data.baseChart,
+                          shadbalaStrength: shadbalaStrength,
+                        );
+                        final net = ishta - kashta;
+                        final netColor = net > 0 ? Colors.green : Colors.red;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 3),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 7,
+                            horizontal: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: net > 0
+                                ? Colors.green.withAlpha(12)
+                                : Colors.red.withAlpha(12),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  planet.displayName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  '${(ishta * 100).toStringAsFixed(0)}%',
+                                  style: TextStyle(color: Colors.green),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  '${(kashta * 100).toStringAsFixed(0)}%',
+                                  style: TextStyle(color: Colors.orange),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  '${net >= 0 ? '+' : ''}${(net * 100).toStringAsFixed(0)}%',
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    color: netColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // ── Vimshopak Bala table ──
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Vimshopak Bala (20-fold Varga Strength)',
+                        style: FluentTheme.of(context).typography.subtitle,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Measures planetary dignity across 16 divisional charts on a 0–20 scale.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 12),
+                      ...sd.vimsopaka.entries.map((entry) {
+                        final planet = entry.key;
+                        final vb = entry.value;
+                        final pct = vb.totalScore / 20.0;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      planet.displayName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    '${vb.totalScore.toStringAsFixed(1)} / 20',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: pct >= 0.7
+                                          ? Colors.green.withAlpha(30)
+                                          : pct >= 0.4
+                                          ? Colors.orange.withAlpha(30)
+                                          : Colors.red.withAlpha(30),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      vb.strengthCategory.name,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: pct >= 0.7
+                                            ? Colors.green
+                                            : pct >= 0.4
+                                            ? Colors.orange
+                                            : Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              SizedBox(
+                                height: 6,
+                                child: LayoutBuilder(
+                                  builder: (ctx, constraints) {
+                                    return Stack(
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.withAlpha(40),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
+                                          ),
+                                        ),
+                                        FractionallySizedBox(
+                                          widthFactor: pct.clamp(0.0, 1.0),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: pct >= 0.7
+                                                  ? Colors.green
+                                                  : pct >= 0.4
+                                                  ? Colors.orange
+                                                  : Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // ── Bhava Bala (House Strength) table ──
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bhava Bala (House Strength)',
+                        style: FluentTheme.of(context).typography.subtitle,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Strength of each house (0–100). Kendra houses (1,4,7,10) are inherently strongest.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 12),
+                      ...bhavaBala.entries.map((entry) {
+                        final house = entry.key;
+                        final strength = entry.value;
+                        final pct = strength / 100.0;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 60,
+                                child: Text(
+                                  'House $house',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: SizedBox(
+                                  height: 6,
+                                  child: LayoutBuilder(
+                                    builder: (ctx, constraints) {
+                                      return Stack(
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.withAlpha(40),
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
+                                            ),
+                                          ),
+                                          FractionallySizedBox(
+                                            widthFactor: pct.clamp(0.0, 1.0),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: FluentTheme.of(
+                                                  context,
+                                                ).accentColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(3),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 36,
+                                child: Text(
+                                  '${strength.toStringAsFixed(0)}',
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

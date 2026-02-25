@@ -587,7 +587,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                 if (argala.isObstructed && argala.obstructingPlanets.isNotEmpty)
                   Text(
                     'Obstructed by: ${argala.obstructingPlanets.map((p) => p.displayName).join(", ")}',
-                    style: const TextStyle(fontSize: 12, color: Colors.orange),
+                    style: TextStyle(fontSize: 12, color: Colors.orange),
                   ),
               ],
             ),

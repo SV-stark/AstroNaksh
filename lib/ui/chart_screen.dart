@@ -3990,7 +3990,7 @@ class _ChartScreenState extends State<ChartScreen> {
                               SizedBox(
                                 width: 36,
                                 child: Text(
-                                  '${strength.toStringAsFixed(0)}',
+                                  strength.toStringAsFixed(0),
                                   textAlign: TextAlign.right,
                                   style: const TextStyle(fontSize: 12),
                                 ),

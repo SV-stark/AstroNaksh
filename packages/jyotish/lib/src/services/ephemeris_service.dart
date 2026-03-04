@@ -1,5 +1,4 @@
 import 'dart:ffi' as ffi;
-import 'dart:math' as Math;
 
 import 'package:ffi/ffi.dart';
 
@@ -304,6 +303,7 @@ class EphemerisService {
     required int rsmi,
     double atpress = 0.0,
     double attemp = 0.0,
+    bool searchFromExactTime = false,
   }) async {
     if (!_isInitialized || _bindings == null) {
       throw CalculationException('EphemerisService is not initialized');
@@ -317,8 +317,15 @@ class EphemerisService {
     }
 
     try {
-      // Start search from beginning of the day in UTC
-      final searchStart = DateTime.utc(date.year, date.month, date.day);
+      // By default search from beginning of the day in UTC.
+      // When searchFromExactTime is true, use the exact DateTime provided so
+      // that callers can locate the NEXT rise/set after a known event.
+      final DateTime searchStart;
+      if (searchFromExactTime) {
+        searchStart = date.isUtc ? date : date.toUtc();
+      } else {
+        searchStart = DateTime.utc(date.year, date.month, date.day);
+      }
       final julianDay =
           _dateTimeToJulianDay(searchStart, timezoneId: location.timezone);
 
@@ -603,49 +610,36 @@ class EphemerisService {
 
       final (time, type) = syzygy;
 
-      // Calculate positions at exact syzygy time
-      final sunPos = await calculatePlanetPosition(
-        planet: Planet.sun,
-        dateTime: time,
-        location: location,
-        flags: CalculationFlags.defaultFlags(),
-      );
+      // Filter by requested type if it's not EclipseType.any
+      if (eclipseType != EclipseType.any) {
+        final isRequestedSolar = eclipseType == EclipseType.solar ||
+            eclipseType == EclipseType.solarTotal ||
+            eclipseType == EclipseType.solarPartial ||
+            eclipseType == EclipseType.solarAnnular;
+        final isFoundSolar = type == EclipseType.solar;
 
-      final moonPos = await calculatePlanetPosition(
-        planet: Planet.moon,
-        dateTime: time,
-        location: location,
-        flags: CalculationFlags.defaultFlags(),
-      );
-
-      // Check Latitude for Eclipse Limit
-      // Solar Eclipse Limit: ~1.5 degrees (approx 1 degree 30 minutes)
-      // Lunar Eclipse Limit: ~1.0 degrees (approx 1 degree)
-      // These are geometric limits relative to the ecliptic.
-      final latAbs = moonPos.latitude.abs();
-      final isSolar = type == EclipseType.solar;
-      final limit = isSolar ? 1.5 : 1.0;
-
-      if (latAbs > limit) {
-        return null; // Moon too far from node
+        if (isRequestedSolar != isFoundSolar) {
+          return null;
+        }
       }
 
-      // Check user preference
-      if (eclipseType != EclipseType.any && eclipseType != type) {
-        return null;
+      // For Lunar Eclipses, use the superior Swiss Ephemeris built-in functions
+      if (type == EclipseType.lunar ||
+          type == EclipseType.lunarTotal ||
+          type == EclipseType.lunarPartial ||
+          type == EclipseType.lunarPenumbral) {
+        return _getDetailedLunarEclipse(time, location);
       }
 
-      return EclipseData(
-        date: time,
-        eclipseType: type,
-        magnitude: _calculateEclipseMagnitude(sunPos, moonPos, isSolar),
-        isVisible: isSolar
-            ? await _isSolarEclipseVisible(time, location)
-            : true, // Lunar eclipses visible from anywhere on night side
-        description: isSolar
-            ? 'Solar Eclipse (${latAbs.toStringAsFixed(2)}° from node)'
-            : 'Lunar Eclipse (${latAbs.toStringAsFixed(2)}° from node)',
-      );
+      // For Solar Eclipses, use the local Swiss Ephemeris built-in functions
+      if (type == EclipseType.solar ||
+          type == EclipseType.solarTotal ||
+          type == EclipseType.solarPartial ||
+          type == EclipseType.solarAnnular) {
+        return _getDetailedSolarEclipse(time, location);
+      }
+
+      return null;
     } catch (e, stackTrace) {
       throw CalculationException(
         'Error calculating eclipse data: $e',
@@ -756,65 +750,88 @@ class EphemerisService {
     return DateTime.fromMillisecondsSinceEpoch((low + high) ~/ 2);
   }
 
-  double _calculateEclipseMagnitude(
-    PlanetPosition sunPos,
-    PlanetPosition moonPos,
-    bool isSolar,
-  ) {
-    // Geometric Magnitude Approximation
-    // Distance between centers
-    // Note: This is an approximation on the celestial sphere (valid for small angles)
-    double dLat = (moonPos.latitude - 0).abs(); // Sun lat is ~0
-    double dLon = (moonPos.longitude - sunPos.longitude).abs();
-    if (dLon > 180) dLon = 360 - dLon;
-    // For Solar, dLon should be near 0. For Lunar, dLon should be near 180.
-    if (!isSolar) dLon = (dLon - 180).abs();
+  /// Calculates detailed local solar eclipse data using Swiss Ephemeris.
+  Future<EclipseData?> _getDetailedSolarEclipse(
+      DateTime globalDate, GeographicLocation location) async {
+    final jd = _dateTimeToJulianDay(globalDate);
+    final errorBuffer = malloc<ffi.Char>(256);
 
-    // Separation
-    double separation = Math.sqrt(dLat * dLat + dLon * dLon);
+    try {
+      print('Calling findSolarEclipseWhenLoc...');
+      // 1. Get precise local maximum and contact times using swe_sol_eclipse_when_loc.
+      // We search from 1 day before the global syzygy date.
+      final result = _bindings!.findSolarEclipseWhenLoc(
+        julianDay: jd - 1.0,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        altitude: location.altitude,
+        flags: 0,
+        backward: false,
+        errorBuffer: errorBuffer,
+      );
+      print('findSolarEclipseWhenLoc returned successfully.');
 
-    // Angular radii (approx)
-    const rSun = 0.266; // approx
-    const rMoon = 0.272; // approx
+      if (result == null) return null;
 
-    // Magnitude = (Radius1 + Radius2 - Separation) / (2 * RadiusBody)
-    // For Solar: Covered body is Sun.
-    // For Lunar: Covered body is Moon (by Shadow). Shadow radius ~ 0.7 deg?
-    // Using simplified "overlap" magnitude for now.
+      // Unpack the unified tret + attr array (30 elements)
+      final tret = result.sublist(0, 10);
+      final attr = result.sublist(10, 30);
 
-    if (isSolar) {
-      return (rSun + rMoon - separation) / (2 * rSun);
-    } else {
-      // Lunar: Earth's shadow radius at Moon distance is approx 0.7 degrees (umbara)
-      const rShadow = 0.70;
-      return (rShadow + rMoon - separation) / (2 * rMoon);
+      // tret[0] = time of maximum eclipse
+      // tret[1] = first contact (partial start)
+      // tret[2] = second contact (total/annular start)
+      // tret[3] = third contact (total/annular end)
+      // tret[4] = fourth contact (partial end)
+      // tret[5] = sunrise/sunset
+      final maxTime = _julianDayToDateTime(tret[0]);
+
+      // Since findSolarEclipseWhenLoc searches forward, if this syzygy is not an eclipse,
+      // it will return the NEXT eclipse (months/years later).
+      // We must check if the returned eclipse is close to the syzygy date.
+      if (maxTime.difference(globalDate).inDays.abs() > 2) {
+        return null; // The found eclipse is for a future syzygy, not this one
+      }
+
+      final c1 = tret[1] > 0 ? _julianDayToDateTime(tret[1]) : null;
+      final c2 = tret[2] > 0 ? _julianDayToDateTime(tret[2]) : null;
+      final c3 = tret[3] > 0 ? _julianDayToDateTime(tret[3]) : null;
+      final c4 = tret[4] > 0 ? _julianDayToDateTime(tret[4]) : null;
+
+      // attr[0] = fraction of solar diameter covered by moon (magnitude)
+      // attr[1] = ratio of lunar diameter to solar one
+      // attr[2] = fraction of solar disc covered (obscuration)
+      final localMagnitude = attr[0];
+
+      if (localMagnitude <= 0) {
+        return null; // Not visible at this specific observer location
+      }
+
+      EclipseType type = EclipseType.solarPartial;
+      if (attr[1] >= 1.0 && c2 != null && c3 != null) {
+        type = EclipseType.solarTotal;
+      } else if (attr[1] < 1.0 && c2 != null && c3 != null) {
+        type = EclipseType.solarAnnular;
+      }
+
+      return EclipseData(
+        date: maxTime,
+        eclipseType: type,
+        magnitude: localMagnitude,
+        isVisible: true,
+        maxEclipseTime: maxTime,
+        startTime: c1,
+        endTime: c4,
+        partialStartTime: c1,
+        partialEndTime: c4,
+        totalStartTime: c2,
+        totalEndTime: c3,
+        duration: c4 != null && c1 != null ? c4.difference(c1) : null,
+        description:
+            '${type.name} Eclipse (Local Mag: ${localMagnitude.toStringAsFixed(3)})',
+      );
+    } finally {
+      malloc.free(errorBuffer);
     }
-  }
-
-  Future<bool> _isSolarEclipseVisible(
-    DateTime date,
-    GeographicLocation location,
-  ) async {
-    // Simplified: Check if Sun is above horizon at peak time
-    // Real implementation requires Besselian elements or complex geometry (parallax).
-    // SwissEphemeris 'swe_sol_eclipse_where' could be used if available.
-    // For now, checking if it is day time is a good first step.
-
-    // Check if Sun altitude > 0
-    // We don't have altitude directly exposed easily without `swe_azalt`.
-    // But we can approximate by Hour Angle (already implemented in PanchangaService but private).
-    // Let's assume visibility if time is between 6 AM and 6 PM local approx? No.
-    // Let's use the Ascendant/MC calculation logic?
-
-    // Better: We are updating this service, let's use the 'houses' calculation to checks Asc/MC?
-    // Actually, 'houses' gives cusp longitudes.
-
-    // Let's just return true for now if latitude check passes, effectively saying "Eclipse occurring globally".
-    // The method name is `_isSolarEclipseVisible`, which implies local.
-    // For rigorous local visibility, we need Parallax correction.
-    // Given scope, I'll document this limitation.
-
-    return true;
   }
 
   /// Converts DateTime to Julian Day.
@@ -855,6 +872,116 @@ class EphemerisService {
 
   /// Gets whether the service is initialized.
   bool get isInitialized => _isInitialized;
+
+  /// Calculates detailed lunar eclipse data using Swiss Ephemeris.
+  Future<EclipseData?> _getDetailedLunarEclipse(
+      DateTime date, GeographicLocation location) async {
+    final jd = _dateTimeToJulianDay(date);
+    final errorBuffer = malloc<ffi.Char>(256);
+
+    try {
+      // 1. Get detailed magnitude and attribute info at moment of maximum.
+      final attr = _bindings!.calculateLunarEclipseHow(
+        julianDay: jd,
+        flags: 0,
+        errorBuffer: errorBuffer,
+      );
+
+      if (attr == null) return null;
+
+      // attr[0] = umbral magnitude
+      // attr[1] = penumbral magnitude
+      final umbralMag = attr[0];
+      final penumbralMag = attr[1];
+
+      if (penumbralMag <= 0) return null; // Not even penumbral
+
+      // 2. Get all contact times.
+      // Search from 1 day BEFORE the syzygy date so we capture all 7 times
+      // including P4 which may fall a day after the date passed in.
+      final tret = _bindings!.findLunarEclipseWhen(
+        julianDay: jd - 1.0,
+        flags: 0,
+        eclipseTypeFlags: 14, // SE_ECL_ALLTYPES_LUNAR
+        backward: false,
+        errorBuffer: errorBuffer,
+      );
+
+      if (tret == null) return null;
+
+      // Verified Swiss Ephemeris tret mapping for swe_lun_eclipse_when:
+      // tret[0] = maximum eclipse
+      // tret[2] = beginning of partial phase – Umbral first contact (U1)
+      // tret[3] = end of partial phase – Umbral last contact (U4)
+      // tret[4] = beginning of total phase (U2)
+      // tret[5] = end of total phase (U3)
+      // tret[6] = beginning of penumbral phase (P1)
+      // tret[7] = end of penumbral phase (P4)
+      // (tret[1], tret[8], tret[9] are unused / zero for lunar eclipses)
+      final maxTime = _julianDayToDateTime(tret[0]);
+      final u1 = tret[2] > 0 ? _julianDayToDateTime(tret[2]) : null;
+      final u4 = tret[3] > 0 ? _julianDayToDateTime(tret[3]) : null;
+      final u2 = tret[4] > 0 ? _julianDayToDateTime(tret[4]) : null;
+      final u3 = tret[5] > 0 ? _julianDayToDateTime(tret[5]) : null;
+      final p1 = tret[6] > 0 ? _julianDayToDateTime(tret[6]) : null;
+      final p4 = tret[7] > 0 ? _julianDayToDateTime(tret[7]) : null;
+
+      // 3. Get moonrise at the observer's location.
+      // PenumbralStartTime (P1) is the earliest relevant time; start from
+      // the day containing P1 so we get the correct evening moonrise.
+      final searchDate = p1 ?? maxTime;
+      final moonrise = await getRiseSet(
+        planet: Planet.moon,
+        date: searchDate,
+        location: location,
+        rsmi: SwissEphConstants.calcRise,
+      );
+
+      // 4. Get moonset AFTER moonrise (not the previous night's moonset).
+      // Pass moonriseTime as the start if available, otherwise searchDate.
+      DateTime? moonset;
+      if (moonrise != null) {
+        moonset = await getRiseSet(
+          planet: Planet.moon,
+          date: moonrise, // start searching from moonrise onward
+          location: location,
+          rsmi: SwissEphConstants.calcSet,
+          searchFromExactTime: true, // use exact moonrise time, not midnight
+        );
+      }
+
+      EclipseType type = EclipseType.lunarPenumbral;
+      if (umbralMag >= 1.0) {
+        type = EclipseType.lunarTotal;
+      } else if (umbralMag > 0) {
+        type = EclipseType.lunarPartial;
+      }
+
+      return EclipseData(
+        date: maxTime,
+        eclipseType: type,
+        magnitude: umbralMag,
+        penumbralMagnitude: penumbralMag,
+        isVisible: true,
+        description:
+            '${type.name} Eclipse (Mag: ${umbralMag.toStringAsFixed(3)})',
+        maxEclipseTime: maxTime,
+        startTime: u1 ?? p1,
+        endTime: u4 ?? p4,
+        partialStartTime: u1,
+        partialEndTime: u4,
+        totalStartTime: u2,
+        totalEndTime: u3,
+        penumbralStartTime: p1,
+        penumbralEndTime: p4,
+        duration: u4 != null && u1 != null ? u4.difference(u1) : null,
+        moonrise: moonrise,
+        moonset: moonset,
+      );
+    } finally {
+      malloc.free(errorBuffer);
+    }
+  }
 }
 
 /// Represents planet visibility information.
@@ -945,38 +1072,158 @@ class EclipseData {
     this.startTime,
     this.endTime,
     this.maxEclipseTime,
+    this.penumbralMagnitude,
+    this.partialStartTime,
+    this.partialEndTime,
+    this.totalStartTime,
+    this.totalEndTime,
+    this.penumbralStartTime,
+    this.penumbralEndTime,
+    this.moonrise,
+    this.moonset,
   });
 
-  /// Date of eclipse
+  /// Date (moment of maximum eclipse – UTC)
   final DateTime date;
 
   /// Type of eclipse
   final EclipseType eclipseType;
 
-  /// Eclipse magnitude (0.0 - 1.0+)
+  /// Umbral magnitude (0 = penumbral only, ≥1.0 = total)
   final double magnitude;
 
-  /// Whether visible from location
+  /// Penumbral magnitude (2.18 for this eclipse)
+  final double? penumbralMagnitude;
+
+  /// Whether globally visible (always true for lunar)
   final bool isVisible;
 
-  /// Description
+  /// Human-readable description
   final String description;
 
-  /// Duration of eclipse
+  // ------------------------------------------------------------------
+  // Global contact times (UTC, independent of observer location)
+  // ------------------------------------------------------------------
+
+  /// Duration of the umbral/partial phase (U1→U4)
   final Duration? duration;
 
-  /// Start time
+  /// Umbral start (U1), or penumbral start (P1) when umbra absent
   final DateTime? startTime;
 
-  /// End time
+  /// Umbral end (U4), or penumbral end (P4) when umbra absent
   final DateTime? endTime;
 
-  /// Maximum eclipse time
+  /// Moment of maximum eclipse
   final DateTime? maxEclipseTime;
+
+  /// First contact with umbra – Partial begins (U1)
+  final DateTime? partialStartTime;
+
+  /// Last contact with umbra – Partial ends (U4)
+  final DateTime? partialEndTime;
+
+  /// Total phase begins – Moon fully in umbra (U2)
+  final DateTime? totalStartTime;
+
+  /// Total phase ends (U3)
+  final DateTime? totalEndTime;
+
+  /// First contact with penumbra (P1)
+  final DateTime? penumbralStartTime;
+
+  /// Last contact with penumbra (P4)
+  final DateTime? penumbralEndTime;
+
+  // ------------------------------------------------------------------
+  // Location-specific fields (set when observer location is provided)
+  // ------------------------------------------------------------------
+
+  /// Moonrise at the observer's location (UTC). Null if Moon doesn't rise.
+  final DateTime? moonrise;
+
+  /// Moonset at the observer's location (UTC). Null if Moon doesn't set.
+  final DateTime? moonset;
+
+  // ------------------------------------------------------------------
+  // Derived convenience getters
+  // ------------------------------------------------------------------
 
   /// Whether it's a total eclipse
   bool get isTotal => magnitude >= 1.0;
 
   /// Whether it's a partial eclipse
   bool get isPartial => magnitude > 0.0 && magnitude < 1.0;
+
+  /// Whether it's penumbral-only
+  bool get isPenumbralOnly => magnitude <= 0.0 && (penumbralMagnitude ?? 0) > 0;
+
+  /// The eclipse start visible from the observer's location.
+  ///
+  /// For lunar eclipses: the later of [partialStartTime] and [moonrise].
+  /// This matches the "Lunar Eclipse Starts (With Moonrise)" field
+  /// shown on astrology sites.
+  DateTime? get localStartTime {
+    final globalStart = partialStartTime ?? penumbralStartTime ?? startTime;
+    if (globalStart == null) return null;
+    if (moonrise == null) return globalStart;
+    return moonrise!.isAfter(globalStart) ? moonrise : globalStart;
+  }
+
+  /// The eclipse end visible from the observer's location.
+  ///
+  /// The earlier of [partialEndTime] and [moonset] (or global end if Moon
+  /// stays above the horizon throughout).
+  DateTime? get localEndTime {
+    final globalEnd = partialEndTime ?? penumbralEndTime ?? endTime;
+    if (globalEnd == null) return null;
+    if (moonset == null) return globalEnd;
+    return moonset!.isBefore(globalEnd) ? moonset : globalEnd;
+  }
+
+  /// Duration of the eclipse as visible from the observer's location.
+  Duration? get localDuration {
+    final s = localStartTime;
+    final e = localEndTime;
+    if (s == null || e == null) return null;
+    final d = e.difference(s);
+    return d.isNegative ? Duration.zero : d;
+  }
+
+  // ------------------------------------------------------------------
+  // Sutak (religious fast / abstinence period)
+  // ------------------------------------------------------------------
+
+  bool get _isSolar =>
+      eclipseType == EclipseType.solar ||
+      eclipseType == EclipseType.solarTotal ||
+      eclipseType == EclipseType.solarPartial ||
+      eclipseType == EclipseType.solarAnnular;
+
+  /// Sutak for healthy adults.
+  ///
+  /// Computed as 9 hours (3 Prahars) before the eclipse becomes visible at
+  /// the observer's location:
+  ///  - Uses [localStartTime] (moonrise if after U1) as the anchor.
+  ///  - Falls back to the global umbral start (U1) when no moon-rise data.
+  /// For Solar Eclipse: 12 hours (4 Prahars) before U1.
+  DateTime? get sutakStartTime {
+    // Use local visibility start if available (accounts for moonrise after U1)
+    final anchor = localStartTime ?? partialStartTime ?? startTime;
+    if (anchor == null) return null;
+    return anchor.subtract(Duration(hours: _isSolar ? 12 : 9));
+  }
+
+  /// Sutak for children, elderly, and the sick.
+  ///
+  /// 3 hours (1 Prahar) before the eclipse becomes visible at the observer's
+  /// location ([localStartTime]), falling back to global U1.
+  DateTime? get sutakForSensitive {
+    final anchor = localStartTime ?? partialStartTime ?? startTime;
+    if (anchor == null) return null;
+    return anchor.subtract(const Duration(hours: 3));
+  }
+
+  /// Sutak ends when the umbral phase ends (U4) – same as [partialEndTime].
+  DateTime? get sutakEndTime => partialEndTime ?? endTime;
 }

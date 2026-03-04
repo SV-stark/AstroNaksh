@@ -28,6 +28,12 @@ export 'src/models/masa.dart';
 export 'src/models/muhurta.dart';
 export 'src/models/gowri_panchangam.dart';
 // New Feature Models
+export 'src/models/graha_avastha.dart';
+export 'src/models/strength_report.dart';
+export 'src/models/event_timing.dart';
+export 'src/models/career_analysis.dart';
+export 'src/models/sarvatobhadra.dart' hide VedhaSeverity;
+export 'src/models/tajaka.dart';
 export 'src/models/nakshatra.dart';
 export 'src/models/panchanga.dart';
 export 'src/models/planet.dart';
@@ -50,6 +56,12 @@ export 'src/services/hora_service.dart';
 export 'src/services/choghadiya_service.dart';
 export 'src/services/gowri_panchangam_service.dart';
 // New Feature Services
+export 'src/services/graha_avastha_service.dart';
+export 'src/services/strength_report_service.dart';
+export 'src/services/event_timing_service.dart';
+export 'src/services/career_analysis_service.dart';
+export 'src/services/sarvatobhadra_service.dart';
+export 'src/services/tajaka_service.dart';
 export 'src/services/gochara_vedha_service.dart';
 export 'src/services/panchanga_service.dart';
 export 'src/services/shadbala_service.dart';
@@ -88,3 +100,16 @@ export 'src/services/progeny_service.dart';
 // Marriage Compatibility
 export 'src/models/compatibility.dart';
 export 'src/services/compatibility_service.dart';
+// Bhava Chalit (Cuspal Chart)
+export 'src/models/bhava_chalit.dart';
+export 'src/services/bhava_chalit_service.dart';
+// Planetary Relationships (Pancha-Vargeeya Maitri)
+export 'src/services/planetary_relationship_service.dart';
+
+// New Panchang Features
+export 'src/models/chandrabalam.dart';
+export 'src/models/tarabalam.dart';
+export 'src/models/ritual_elements.dart';
+export 'src/services/panchang_strength_service.dart';
+export 'src/services/udaya_lagna_service.dart';
+export 'src/services/ritual_service.dart';

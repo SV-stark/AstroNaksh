@@ -15,12 +15,13 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName}
+; Per-user install (no UAC prompt) — installs to %LocalAppData%\Programs\Astronaksh
+DefaultDirName={localappdata}\Programs\{#MyAppName}
+PrivilegesRequired=lowest
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 DisableProgramGroupPage=yes
-; Remove the following line to run in administrative install mode (install for all users.)
-PrivilegesRequired=lowest
+OutputDir=Output
 OutputBaseFilename=astronaksh_setup
 Compression=lzma
 SolidCompression=yes
@@ -33,10 +34,12 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+; Main exe
 Source: "..\build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+; All other build output (DLLs, data folder, etc.)
 Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Include the DLL from root if it exists - useful if untracked DLLs are needed
+; swisseph.dll — prefer the swisseph_src build (newer), fall back to root
+Source: "..\swisseph_src\swisseph.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "..\swisseph.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]

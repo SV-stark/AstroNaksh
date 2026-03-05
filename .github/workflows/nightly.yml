@@ -23,7 +23,7 @@ jobs:
           channel: 'stable'
           cache: true
       - run: flutter pub get
-      - run: flutter build apk --release --no-shrink
+      - run: flutter build apk --release
       # Rename APK to be more descriptive before upload
       - run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/AstroNaksh-Android.apk
       - name: Upload APK

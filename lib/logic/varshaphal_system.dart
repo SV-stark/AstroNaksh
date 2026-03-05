@@ -444,24 +444,7 @@ class VarshaphalSystem {
     );
   }
 
-  static String getSignLord(int sign) {
-    // 0=Aries, 1=Taurus...
-    const lords = [
-      'Mars',
-      'Venus',
-      'Mercury',
-      'Moon',
-      'Sun',
-      'Mercury',
-      'Venus',
-      'Mars',
-      'Jupiter',
-      'Saturn',
-      'Saturn',
-      'Jupiter',
-    ];
-    return lords[sign % 12];
-  }
+  static String getSignLord(int sign) => AstrologyConstants.getSignLord(sign);
 
   // --- Strength Calculation Helpers ---
 

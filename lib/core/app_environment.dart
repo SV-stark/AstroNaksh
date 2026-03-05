@@ -31,7 +31,7 @@ class AppEnvironment {
     try {
       _executableDir = p.dirname(Platform.resolvedExecutable);
     } catch (e) {
-      // Fallback if needed
+      AppEnvironment.log('Core: Failed to get executable directory: $e');
     }
 
     // 3. Check for Portable Marker
@@ -85,7 +85,7 @@ class AppEnvironment {
         );
       }
     } catch (e) {
-      // Cannot log if logging setup fails, just print to debug console
+      AppEnvironment.log('Core: Failed to setup logging: $e');
       if (_isVerbose) debugPrint('Failed to setup logging: $e');
     }
   }
@@ -152,7 +152,12 @@ class AppEnvironment {
       try {
         _logFile!.writeAsStringSync('$logMessage\n', mode: FileMode.append);
       } catch (e) {
-        // Silently fail if file write fails to avoid crash loops
+        // Fallback to stdout if file write fails
+        try {
+          stdout.writeln(logMessage);
+        } catch (e) {
+          // Ignore - cannot log anywhere
+        }
       }
     }
   }

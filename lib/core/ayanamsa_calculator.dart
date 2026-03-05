@@ -60,7 +60,8 @@ class AyanamsaCalculator {
         description: description,
         mode: mode,
       );
-    } catch (_) {
+    } catch (e) {
+      // Invalid system name - return null to indicate not found
       return null;
     }
   }

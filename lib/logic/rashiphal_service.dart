@@ -265,21 +265,5 @@ class RashiphalService {
     }
   }
 
-  String _getSignName(int index) {
-    const signs = [
-      'Aries',
-      'Taurus',
-      'Gemini',
-      'Cancer',
-      'Leo',
-      'Virgo',
-      'Libra',
-      'Scorpio',
-      'Sagittarius',
-      'Capricorn',
-      'Aquarius',
-      'Pisces',
-    ];
-    return signs[index % 12];
-  }
+  String _getSignName(int index) => AstrologyConstants.getSignName(index);
 }

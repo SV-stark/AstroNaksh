@@ -33,12 +33,9 @@ $RELEASE_DIR = "build\windows\x64\runner\Release"
 Get-ChildItem -Path "$RELEASE_DIR\*.exe" | ForEach-Object { Copy-Item $_.FullName -Destination "AstroNaksh\" }
 Get-ChildItem -Path "$RELEASE_DIR\*.dll" | ForEach-Object { Copy-Item $_.FullName -Destination "AstroNaksh\" }
 
-# Copy swisseph.dll (Prefer source version as it is newer)
-if (Test-Path "swisseph_src\swisseph.dll") {
-    Write-Host "Copying swisseph.dll from swisseph_src..." -ForegroundColor Cyan
-    Copy-Item "swisseph_src\swisseph.dll" -Destination "AstroNaksh\"
-} elseif (Test-Path "swisseph.dll") {
-    Write-Host "Copying swisseph.dll from root (fallback)..." -ForegroundColor Yellow
+# Copy swisseph.dll
+if (Test-Path "swisseph.dll") {
+    Write-Host "Copying swisseph.dll..." -ForegroundColor Cyan
     Copy-Item "swisseph.dll" -Destination "AstroNaksh\"
 } else {
     Write-Warning "⚠️ swisseph.dll not found!"

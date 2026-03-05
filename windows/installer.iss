@@ -38,8 +38,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "..\build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 ; All other build output (DLLs, data folder, etc.)
 Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; swisseph.dll — prefer the swisseph_src build (newer), fall back to root
-Source: "..\swisseph_src\swisseph.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+; swisseph.dll — required for planetary calculations
 Source: "..\swisseph.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]

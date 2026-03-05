@@ -30,10 +30,31 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-# 5. Copy DLL to root
-if (Test-Path "$TEMP_DIR/$DLL_NAME") {
-    Write-Host "Copying $DLL_NAME..." -ForegroundColor Cyan
-    Copy-Item "$TEMP_DIR/$DLL_NAME" -Destination "." -Force
+# 5. Get swisseph.dll from the official Windows zip package
+Write-Host "Downloading official Windows DLL package..." -ForegroundColor Cyan
+$zipUrl = "https://raw.githubusercontent.com/aloistr/swisseph/master/windows/sweph.zip"
+$zipPath = "$TEMP_DIR/sweph.zip"
+$zipExtract = "$TEMP_DIR/sweph_win"
+Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
+Expand-Archive -LiteralPath $zipPath -DestinationPath $zipExtract -Force
+
+# The zip contains swedll64.dll (64-bit) and swedll32.dll (32-bit)
+# We need the 64-bit version renamed to swisseph.dll
+$dll64 = Get-ChildItem -Path $zipExtract -Recurse -Filter "swedll64.dll" | Select-Object -First 1
+if ($dll64) {
+    Copy-Item $dll64.FullName -Destination "swisseph.dll" -Force
+    Write-Host "📦 Extracted 64-bit swisseph.dll from sweph.zip" -ForegroundColor Green
+}
+else {
+    # Try any .dll file as fallback
+    $anyDll = Get-ChildItem -Path $zipExtract -Recurse -Filter "*.dll" | Select-Object -First 1
+    if ($anyDll) {
+        Copy-Item $anyDll.FullName -Destination "swisseph.dll" -Force
+        Write-Host "📦 Extracted $($anyDll.Name) → swisseph.dll" -ForegroundColor Yellow
+    }
+    else {
+        Write-Warning "No DLL found in sweph.zip. swisseph.dll will not be available."
+    }
 }
 
 # 6. Copy C sources to Android

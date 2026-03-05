@@ -48,6 +48,7 @@ jobs:
       - name: Setup Swiss Ephemeris
         shell: pwsh
         run: pwsh scripts/setup_swisseph.ps1
+      - run: dart run flutter_launcher_icons
       - run: flutter build windows --release
       - name: Compile Inno Setup Script
         run: iscc windows/installer.iss

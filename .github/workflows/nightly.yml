@@ -23,6 +23,9 @@ jobs:
           channel: 'stable'
           cache: true
       - run: flutter pub get
+      - name: Setup Swiss Ephemeris
+        shell: pwsh
+        run: pwsh scripts/setup_swisseph.ps1
       - run: flutter build apk --release
       # Rename APK to be more descriptive before upload
       - run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/AstroNaksh-Android.apk
@@ -42,6 +45,9 @@ jobs:
           channel: 'stable'
           cache: true
       - run: flutter pub get
+      - name: Setup Swiss Ephemeris
+        shell: pwsh
+        run: pwsh scripts/setup_swisseph.ps1
       - run: flutter build windows --release
       - name: Compile Inno Setup Script
         run: iscc windows/installer.iss

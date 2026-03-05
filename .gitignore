@@ -54,3 +54,8 @@ app.*.map.json
 a-detailed-version.json
 create_cities.dart
 nul
+
+# Swiss Ephemeris dynamic assets
+/swisseph.dll
+/android/app/src/main/cpp/swisseph/
+/assets/ephe/*.se1

@@ -2,7 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../core/birth_time_rectifier.dart';
 import 'package:intl/intl.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class BirthTimeRectifierScreen extends StatefulWidget {
   const BirthTimeRectifierScreen({super.key});

@@ -3,7 +3,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/yoga_dosha_analyzer.dart';
 import '../widgets/strength_meter.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class YogaDoshaScreen extends StatefulWidget {
   final CompleteChartData chartData;

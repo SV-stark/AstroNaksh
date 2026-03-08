@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, FontWeight;
 import 'package:flutter/material.dart' show InkWell, Colors, FontWeight;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
-import '../core/responsive_helper.dart';
+import '../ui/utils/responsive_helper.dart';
 import 'styles.dart';
 import '../core/database_helper.dart';
 import '../data/models.dart';

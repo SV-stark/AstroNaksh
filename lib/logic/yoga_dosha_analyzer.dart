@@ -45,74 +45,60 @@ class YogaDoshaAnalyzer {
     List<String> keyPlanets,
     DateTime now,
   ) {
-    if (keyPlanets.isEmpty) {
-      return ('See chart analysis', '');
-    }
+    if (keyPlanets.isEmpty) return ('See chart analysis', '');
 
-    final fmt = DateFormat('MMM yyyy');
     final mahadashas = chart.dashaData.vimshottari.mahadashas;
+    final fmt = DateFormat('MMM yyyy');
 
-    String? currentPeriod;
-    String? currentDashaLord;
-    String? futurePeriod;
-    String? futureDashaLord;
-
+    // Flatten relevant periods for easier querying
+    final relevantPeriods = <({String mdLord, String adLord, DateTime start, DateTime end})>[];
     for (final md in mahadashas) {
-      final mdName = md.lord;
-      final isMdKey = keyPlanets.contains(mdName);
-
+      final isMdKey = keyPlanets.contains(md.lord);
       for (final ad in md.antardashas) {
-        final adName = ad.lord;
-        final isAdKey = keyPlanets.contains(adName);
-
-        // A period is relevant if either MD or AD lord is a key planet
-        if (!isMdKey && !isAdKey) continue;
-
-        final start = ad.startDate;
-        final end = ad.endDate;
-        final label = '${fmt.format(start)} – ${fmt.format(end)}';
-        final dasha = isMdKey && isAdKey
-            ? '$mdName MD → $adName AD'
-            : isMdKey
-            ? '$mdName MD → $adName AD'
-            : '$mdName MD → $adName AD';
-
-        if (now.isAfter(start) && now.isBefore(end)) {
-          currentPeriod = 'Currently active – until ${fmt.format(end)}';
-          currentDashaLord = dasha;
-          break;
-        } else if (now.isBefore(start) && futurePeriod == null) {
-          futurePeriod = label;
-          futureDashaLord = dasha;
+        if (isMdKey || keyPlanets.contains(ad.lord)) {
+          relevantPeriods.add((
+            mdLord: md.lord,
+            adLord: ad.lord,
+            start: ad.startDate,
+            end: ad.endDate,
+          ));
         }
       }
-      if (currentPeriod != null) break;
     }
 
-    if (currentPeriod != null) {
-      return (currentPeriod, currentDashaLord ?? '');
-    } else if (futurePeriod != null) {
-      return (futurePeriod, futureDashaLord ?? '');
-    } else {
-      // Look for most recent past peak
-      String? pastPeriod;
-      String? pastLord;
-      outer:
-      for (final md in mahadashas.reversed) {
-        for (final ad in md.antardashas.reversed) {
-          if (!keyPlanets.contains(md.lord) && !keyPlanets.contains(ad.lord)) {
-            continue;
-          }
-          if (now.isAfter(ad.endDate)) {
-            pastPeriod =
-                'Peak passed: ${fmt.format(ad.startDate)} – ${fmt.format(ad.endDate)}';
-            pastLord = '${md.lord} MD → ${ad.lord} AD';
-            break outer;
-          }
-        }
+    if (relevantPeriods.isEmpty) return ('See full Dasha chart', '');
+
+    // 1. Current Period
+    for (final p in relevantPeriods) {
+      if (now.isAfter(p.start) && now.isBefore(p.end)) {
+        return (
+          'Currently active – until ${fmt.format(p.end)}',
+          '${p.mdLord} MD → ${p.adLord} AD'
+        );
       }
-      return (pastPeriod ?? 'See full Dasha chart', pastLord ?? '');
     }
+
+    // 2. Future Period
+    for (final p in relevantPeriods) {
+      if (now.isBefore(p.start)) {
+        return (
+          '${fmt.format(p.start)} – ${fmt.format(p.end)}',
+          '${p.mdLord} MD → ${p.adLord} AD'
+        );
+      }
+    }
+
+    // 3. Most Recent Past Peak
+    for (final p in relevantPeriods.reversed) {
+      if (now.isAfter(p.end)) {
+        return (
+          'Peak passed: ${fmt.format(p.start)} – ${fmt.format(p.end)}',
+          '${p.mdLord} MD → ${p.adLord} AD'
+        );
+      }
+    }
+
+    return ('See full Dasha chart', '');
   }
 
   /// Returns key planets that drive a given yoga or dosha by name

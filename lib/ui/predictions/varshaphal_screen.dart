@@ -4,7 +4,7 @@ import '../../data/models.dart';
 import '../../logic/varshaphal_system.dart';
 import '../widgets/chart_widget.dart';
 import 'package:jyotish/jyotish.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class _CombinedVarshaphalData {
   final VarshaphalChart customChart;

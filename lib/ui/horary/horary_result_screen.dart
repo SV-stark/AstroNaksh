@@ -2,7 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../logic/horary_service.dart';
 import 'package:jyotish/jyotish.dart';
 import '../../core/ephemeris_manager.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 import '../../core/settings_manager.dart';
 import '../../data/models.dart';
 import '../widgets/chart_widget.dart';

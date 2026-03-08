@@ -2,7 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../core/chart_customization.dart';
 import '../core/ayanamsa_calculator.dart';
 import '../core/settings_manager.dart';
-import '../core/responsive_helper.dart';
+import '../ui/utils/responsive_helper.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

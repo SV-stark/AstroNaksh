@@ -2,7 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../data/life_prediction_models.dart';
 import '../../logic/life_prediction_service.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 /// Life Predictions Screen
 /// Displays comprehensive life predictions based on Vedic astrology

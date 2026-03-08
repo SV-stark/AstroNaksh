@@ -1,0 +1,71 @@
+{
+  "assessments": {
+    "naming_quality": 85,
+    "logic_clarity": 75,
+    "type_safety": 85,
+    "contract_coherence": 80,
+    "error_consistency": 65,
+    "abstraction_fitness": 70,
+    "ai_generated_debt": 75,
+    "high_level_elegance": 60,
+    "mid_level_elegance": 70,
+    "low_level_elegance": 75,
+    "cross_module_architecture": 60,
+    "initialization_coupling": 80,
+    "convention_outlier": 85,
+    "dependency_health": 75,
+    "test_strategy": 40,
+    "api_surface_coherence": 80,
+    "authorization_consistency": 100,
+    "incomplete_migration": 90,
+    "package_organization": 65,
+    "design_coherence": 65
+  },
+  "issues": [
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "god_module_models",
+      "summary": "lib/data/models.dart is a God Module containing disparate domain models.",
+      "related_files": ["lib/data/models.dart"],
+      "evidence": ["651-line file containing models for basic data, KP system, divisional charts, dasha systems, and results."],
+      "suggestion": "Split into purpose-driven sub-modules (e.g., lib/data/models/kp.dart, lib/data/models/dasha.dart).",
+      "confidence": "high"
+    },
+    {
+      "dimension": "logic_clarity",
+      "identifier": "nested_dasha_loops",
+      "summary": "Complex triple-nested loops in dasha period calculations.",
+      "related_files": ["lib/logic/yoga_dosha_analyzer.dart", "lib/data/models.dart"],
+      "evidence": ["_computeManifestationPeriod and getCurrentDashas use deep loops (MD -> AD -> PD)."],
+      "suggestion": "Flatten logic using search helpers or specialized collection types.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "low_test_coverage",
+      "summary": "Production code vastly outweighs test code.",
+      "related_files": ["lib/"],
+      "evidence": ["169 production files vs 18 test files."],
+      "suggestion": "Implement a testing policy for core logic, especially for the complex Jyotish calculation services.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "mixed_error_strategies",
+      "summary": "Inconsistent error handling (try-catch vs null-returns) across directories.",
+      "related_files": ["lib/core/", "packages/jyotish/lib/src/services/"],
+      "evidence": ["core/ uses mostly try-catch; services/ uses a mix of null-returns and try-catch."],
+      "suggestion": "Standardize on a consistent error strategy (e.g., Result types or consistent Exception usage) per layer.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "straggler_roots",
+      "summary": "Several core files reside in the root lib directory instead of categorized subdirectories.",
+      "related_files": ["lib/core/responsive_helper.dart", "lib/data/models.dart"],
+      "evidence": ["High fan-in files like models.dart are in shallow directories beside deep ones."],
+      "suggestion": "Move root-level data and helper files into Categorized packages.",
+      "confidence": "high"
+    }
+  ]
+}

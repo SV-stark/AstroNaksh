@@ -14,6 +14,8 @@ class SavedChartsHelper {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       return jsonList.map((e) => BirthData.fromJson(e)).toList();
     } catch (e) {
+      // ignore: avoid_print
+      print('SavedChartsHelper: Failed to load charts - $e');
       return [];
     }
   }

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' show Colors;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
-import '../core/responsive_helper.dart';
+import '../ui/utils/responsive_helper.dart';
 import 'widgets/chart_widget.dart';
 import 'widgets/planetary_timeline.dart';
 import '../../data/models.dart';

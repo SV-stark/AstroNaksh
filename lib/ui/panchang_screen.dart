@@ -5,7 +5,7 @@ import '../logic/gowri_panchanga_service.dart';
 import '../data/models.dart';
 import '../data/city_database.dart';
 import 'package:intl/intl.dart';
-import '../core/responsive_helper.dart';
+import '../ui/utils/responsive_helper.dart';
 import '../core/ephemeris_manager.dart';
 
 class PanchangScreen extends StatefulWidget {

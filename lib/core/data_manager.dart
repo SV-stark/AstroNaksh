@@ -28,7 +28,7 @@ class DataManager {
         place: map['place'] ?? '',
       );
     } catch (e) {
-      return null;
+      throw FormatException('Failed to parse chart data object: $e');
     }
   }
 

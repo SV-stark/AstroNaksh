@@ -9,7 +9,7 @@ import '../../logic/matching/matching_models.dart';
 import '../../core/database_helper.dart';
 import '../widgets/chart_widget.dart';
 import '../input_screen.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class ChartComparisonScreen extends StatefulWidget {
   final CompleteChartData? chart1;

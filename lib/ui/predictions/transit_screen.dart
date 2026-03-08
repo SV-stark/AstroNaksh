@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/transit_analysis.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class TransitScreen extends StatefulWidget {
   final CompleteChartData natalChart;

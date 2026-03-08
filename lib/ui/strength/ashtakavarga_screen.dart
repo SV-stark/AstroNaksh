@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 import '../styles.dart';
 
 class AshtakavargaScreen extends StatefulWidget {

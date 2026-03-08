@@ -3,7 +3,7 @@ import 'package:jyotish/jyotish.dart';
 
 import '../../data/city_database.dart';
 import 'horary_result_screen.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class HoraryInputScreen extends StatefulWidget {
   const HoraryInputScreen({super.key});

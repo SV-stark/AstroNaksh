@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import 'package:intl/intl.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 import '../../core/ephemeris_manager.dart';
 import '../../data/city_database.dart';
 import 'package:flutter/material.dart' show showDatePicker;

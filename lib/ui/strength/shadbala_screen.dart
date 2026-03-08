@@ -4,7 +4,7 @@ import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
 import '../../logic/shadbala.dart';
 import '../widgets/strength_meter.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 import '../styles.dart';
 
 class ShadbalaScreen extends StatelessWidget {

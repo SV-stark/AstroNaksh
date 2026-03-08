@@ -3,7 +3,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../core/pdf_report_service.dart';
 import '../../data/models.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class PDFReportScreen extends StatefulWidget {
   final CompleteChartData chartData;

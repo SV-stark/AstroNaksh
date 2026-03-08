@@ -2,7 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
 import '../../logic/bhava_bala.dart';
-import '../../core/responsive_helper.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class BhavaBalaScreen extends StatefulWidget {
   final CompleteChartData chartData;

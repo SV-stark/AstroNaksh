@@ -4,6 +4,7 @@ import '../../data/models.dart';
 import '../../logic/varshaphal_system.dart';
 import '../widgets/chart_widget.dart';
 import 'package:jyotish/jyotish.dart';
+import '../../core/ephemeris_manager.dart';
 import '../../ui/utils/responsive_helper.dart';
 
 class _CombinedVarshaphalData {
@@ -95,11 +96,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
       _selectedYear,
     );
 
-    final ephemerisService = EphemerisService();
-    await ephemerisService.initialize();
-
-    final varshapalService = VarshapalService(ephemerisService);
-    final nativeChart = await varshapalService.calculateVarshapal(
+    final nativeChart = await EphemerisManager.jyotish.getVarshapal(
       birthDateTime: widget.birthData.dateTime,
       varshaDateTime: DateTime(
         _selectedYear,

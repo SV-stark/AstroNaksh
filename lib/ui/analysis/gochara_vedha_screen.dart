@@ -273,7 +273,7 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  result.transitPlanet.displayName,
+                  result.transitPlanet,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,

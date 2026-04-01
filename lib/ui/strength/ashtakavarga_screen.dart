@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
+import '../../core/ephemeris_manager.dart';
 import '../../ui/utils/responsive_helper.dart';
 import '../styles.dart';
 
@@ -18,7 +19,6 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
   String _selectedPlanet = 'Sun';
   bool _showSodhana = false;
 
-  final AshtakavargaService _avService = AshtakavargaService();
   Ashtakavarga? _ashtakavarga;
   ShodhyaPindaResult? _shodhyaPinda;
   Map<int, double>? _allHousesPinda;
@@ -58,25 +58,24 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
 
   Future<void> _calculateData() async {
     try {
-      final av = _avService.calculateAshtakavarga(widget.chartData.baseChart);
-      final shodhya = _avService.calculateShodhyaPinda(av);
-      final allHouses = _avService.calculateAllHousesPinda(av);
+      setState(() => _isLoading = true);
 
-      if (mounted) {
-        setState(() {
-          _ashtakavarga = av;
-          _shodhyaPinda = shodhya;
-          _allHousesPinda = allHouses;
-          _isLoading = false;
-        });
-      }
+      final chart = widget.chartData.baseChart;
+      final jyotish = EphemerisManager.jyotish;
+
+      _ashtakavarga = jyotish.calculateAshtakavarga(chart);
+      _shodhyaPinda = jyotish.calculateShodhyaPinda(_ashtakavarga!);
+      _allHousesPinda = jyotish.calculateAllHousesPinda(_ashtakavarga!);
+
+      setState(() {
+        _isLoading = false;
+        _error = null;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString();
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+        _error = e.toString();
+      });
     }
   }
 
@@ -590,7 +589,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
 
     List<int> favorableSigns = [];
     if (target != null) {
-      favorableSigns = _avService.getFavorableTransitSigns(
+      favorableSigns = EphemerisManager.jyotish.getFavorableTransitSigns(
         _ashtakavarga!,
         target,
       );

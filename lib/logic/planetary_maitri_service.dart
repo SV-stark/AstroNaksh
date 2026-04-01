@@ -1,11 +1,10 @@
 import 'package:jyotish/jyotish.dart';
+import '../core/ephemeris_manager.dart';
 
 /// Planetary Maitri (Friendship) Analysis Service
-/// Calculates Natural, Temporary, and Compound relationships between planets.
-/// Delegates to the jyotish library's [RelationshipCalculator] for all data.
+/// Delegates to the jyotish library's [Jyotish.getPlanetaryRelationshipsMatrix]
+/// for all data instead of manually looping through planets.
 class PlanetaryMaitriService {
-  /// Get natural relationship between two planets.
-  /// Uses [RelationshipCalculator.naturalRelationships] from the library.
   static RelationshipType getNaturalRelationship(
     Planet planet1,
     Planet planet2,
@@ -15,62 +14,38 @@ class PlanetaryMaitriService {
         RelationshipType.neutral;
   }
 
-  /// Calculate temporary (Tatkalika) relationships based on chart positions.
-  /// Uses [RelationshipCalculator.calculateTemporary] from the library.
   static Map<Planet, Map<Planet, RelationshipType>>
   calculateTemporaryRelationships(VedicChart chart) {
+    final matrix = EphemerisManager.jyotish.getPlanetaryRelationshipsMatrix(
+      chart,
+    );
     final Map<Planet, Map<Planet, RelationshipType>> tempRelations = {};
-    final planets = chart.planets.keys.toList();
-
-    for (final planet1 in planets) {
-      tempRelations[planet1] = {};
-      // Use .zodiacSignIndex instead of (longitude / 30).floor()
-      final sign1 = chart.planets[planet1]!.position.zodiacSignIndex;
-
-      for (final planet2 in planets) {
-        if (planet1 == planet2) continue;
-        final sign2 = chart.planets[planet2]!.position.zodiacSignIndex;
-        tempRelations[planet1]![planet2] =
-            RelationshipCalculator.calculateTemporary(sign1, sign2);
-      }
-    }
-
+    matrix.forEach((planet, row) {
+      tempRelations[planet] = {};
+      row.forEach((other, rel) {
+        tempRelations[planet]![other] = rel.temporary;
+      });
+    });
     return tempRelations;
   }
 
-  /// Calculate compound (Panchadha) relationships.
-  /// Uses [RelationshipCalculator.calculateCompound] from the library.
   static Map<Planet, Map<Planet, CompoundRelationship>>
   calculateCompoundRelationships(VedicChart chart) {
-    final tempRelations = calculateTemporaryRelationships(chart);
+    final matrix = EphemerisManager.jyotish.getPlanetaryRelationshipsMatrix(
+      chart,
+    );
     final Map<Planet, Map<Planet, CompoundRelationship>> compoundRelations = {};
-    final planets = chart.planets.keys.toList();
-
-    for (final planet1 in planets) {
-      compoundRelations[planet1] = {};
-
-      for (final planet2 in planets) {
-        if (planet1 == planet2) continue;
-
-        final natural = getNaturalRelationship(planet1, planet2);
-        final temporary =
-            tempRelations[planet1]?[planet2] ?? RelationshipType.neutral;
-
-        final libraryCompound = RelationshipCalculator.calculateCompound(
-          natural,
-          temporary,
+    matrix.forEach((planet, row) {
+      compoundRelations[planet] = {};
+      row.forEach((other, rel) {
+        compoundRelations[planet]![other] = _mapToCompoundRelationship(
+          rel.compound,
         );
-        compoundRelations[planet1]![planet2] = _mapToCompoundRelationship(
-          libraryCompound,
-        );
-      }
-    }
-
+      });
+    });
     return compoundRelations;
   }
 
-  /// Maps the library's 5-value [RelationshipType] to the local 4-value
-  /// [CompoundRelationship] for UI display.
   static CompoundRelationship _mapToCompoundRelationship(
     RelationshipType type,
   ) {
@@ -87,17 +62,34 @@ class PlanetaryMaitriService {
     }
   }
 
-  /// Get all maitri data for a chart.
   static PlanetaryMaitriData getAllMaitriData(VedicChart chart) {
+    final matrix = EphemerisManager.jyotish.getPlanetaryRelationshipsMatrix(
+      chart,
+    );
+
+    final Map<Planet, Map<Planet, RelationshipType>> natural = {};
+    final Map<Planet, Map<Planet, RelationshipType>> temporary = {};
+    final Map<Planet, Map<Planet, CompoundRelationship>> compound = {};
+
+    matrix.forEach((planet, row) {
+      natural[planet] = {};
+      temporary[planet] = {};
+      compound[planet] = {};
+      row.forEach((other, rel) {
+        natural[planet]![other] = rel.natural;
+        temporary[planet]![other] = rel.temporary;
+        compound[planet]![other] = _mapToCompoundRelationship(rel.compound);
+      });
+    });
+
     return PlanetaryMaitriData(
-      natural: RelationshipCalculator.naturalRelationships,
-      temporary: calculateTemporaryRelationships(chart),
-      compound: calculateCompoundRelationships(chart),
+      natural: natural,
+      temporary: temporary,
+      compound: compound,
       chart: chart,
     );
   }
 
-  /// Get relationship description.
   static String getRelationshipDescription(RelationshipType type) {
     switch (type) {
       case RelationshipType.greatFriend:
@@ -113,7 +105,6 @@ class PlanetaryMaitriService {
     }
   }
 
-  /// Get compound relationship description.
   static String getCompoundRelationshipDescription(CompoundRelationship type) {
     switch (type) {
       case CompoundRelationship.bestFriend:

@@ -1,6 +1,4 @@
 import 'package:jyotish/jyotish.dart' as j;
-// ignore: implementation_imports
-import 'package:jyotish/src/services/gochara_vedha_service.dart';
 
 import '../data/models.dart';
 import '../core/ephemeris_manager.dart';
@@ -9,7 +7,7 @@ import '../core/ephemeris_manager.dart';
 /// Analyzes current planetary positions relative to natal chart
 class TransitAnalysis {
   final j.Jyotish _jyotish = EphemerisManager.jyotish;
-  final GocharaVedhaService _vedhaService = GocharaVedhaService();
+  final j.GocharaVedhaService _vedhaService = j.GocharaVedhaService();
 
   /// Calculate transit chart for a specific date
   Future<TransitChart> calculateTransitChart(
@@ -24,29 +22,21 @@ class TransitAnalysis {
       altitude: 0,
     );
 
-    // Calculate transit positions (VedicChart)
     final transitPositions = await _jyotish.calculateVedicChart(
       dateTime: transitDate,
       location: location,
     );
 
-    // Calculate aspects and transit info map using library
     final transitInfoMap = await _jyotish.getTransitPositions(
       natalChart: natalChart.baseChart,
       transitDateTime: transitDate,
       location: location,
     );
 
-    // Map library aspects to local TransitAspect
     final aspects = _mapLibraryAspects(natalChart, transitInfoMap);
-
-    // Gochara positions from natal Moon
     final gochara = _calculateGocharaPositions(natalChart, transitPositions);
-
-    // Moon transit details using Panchanga
     final moonTransit = _analyzeMoonTransit(natalChart, transitPositions);
 
-    // Calculate special transits (Sade Sati, Dhaiya) using library
     final specialTransits = await _jyotish.calculateSpecialTransits(
       natalChart: natalChart.baseChart,
       checkDate: transitDate,
@@ -78,22 +68,20 @@ class TransitAnalysis {
   }
 
   /// Analyze Gochara Vedha (transit obstructions) for all transits
-  /// Returns analysis of which transits are being obstructed by other planets
   VedhaAnalysis analyzeVedha({
     required int moonNakshatra,
     required Map<j.Planet, int> gocharaPositions,
   }) {
-    // Use library's batch calculation
     final libraryResults = _vedhaService.calculateMultipleVedha(
       transits: gocharaPositions,
       moonNakshatra: moonNakshatra,
     );
 
     final affectedTransits = <j.Planet>[];
-
-    for (final result in libraryResults) {
-      if (result.isObstructed) {
-        affectedTransits.add(result.transitPlanet);
+    final planets = gocharaPositions.keys.toList();
+    for (var i = 0; i < libraryResults.length && i < planets.length; i++) {
+      if (libraryResults[i].isObstructed) {
+        affectedTransits.add(planets[i]);
       }
     }
 
@@ -126,7 +114,7 @@ class TransitAnalysis {
           0;
 
       final vedha = analyzeVedha(
-        moonNakshatra: moonNakshatra + 1, // Library uses 1-indexed
+        moonNakshatra: moonNakshatra + 1,
         gocharaPositions: transitChart.gochara.positions,
       );
 
@@ -165,7 +153,7 @@ class TransitAnalysis {
   }
 
   String _generateVedhaSummary(
-    List<VedhaResult> results,
+    List<j.VedhaResult> results,
     List<j.Planet> affected,
   ) {
     if (affected.isEmpty) {
@@ -204,33 +192,32 @@ class TransitAnalysis {
       }
     });
 
-    // Sort by orb
     aspects.sort((a, b) => a.orb.compareTo(b.orb));
     return aspects;
   }
 
-  AspectType _mapAspectType(j.AspectType type) {
+  LocalAspectType _mapAspectType(j.AspectType type) {
     switch (type) {
       case j.AspectType.conjunction:
-        return AspectType.conjunction;
+        return LocalAspectType.conjunction;
       case j.AspectType.opposition:
-        return AspectType.opposition;
+        return LocalAspectType.opposition;
       case j.AspectType.trine5th:
       case j.AspectType.trine9th:
       case j.AspectType.jupiterSpecial5th:
       case j.AspectType.jupiterSpecial9th:
-        return AspectType.trine;
+        return LocalAspectType.trine;
       case j.AspectType.square4th:
       case j.AspectType.square10th:
       case j.AspectType.marsSpecial4th:
       case j.AspectType.saturnSpecial10th:
-        return AspectType.square;
+        return LocalAspectType.square;
       case j.AspectType.sextile3rd:
       case j.AspectType.sextile11th:
       case j.AspectType.saturnSpecial3rd:
-        return AspectType.sextile;
+        return LocalAspectType.sextile;
       case j.AspectType.marsSpecial8th:
-        return AspectType.square;
+        return LocalAspectType.square;
     }
   }
 
@@ -265,15 +252,15 @@ class TransitAnalysis {
     );
   }
 
-  SadeSatiPhase _mapSadeSatiPhase(j.SadeSatiPhase? phase) {
-    if (phase == null) return SadeSatiPhase.none;
+  LocalSadeSatiPhase _mapSadeSatiPhase(j.SadeSatiPhase? phase) {
+    if (phase == null) return LocalSadeSatiPhase.none;
     switch (phase) {
       case j.SadeSatiPhase.rising:
-        return SadeSatiPhase.rising;
+        return LocalSadeSatiPhase.rising;
       case j.SadeSatiPhase.peak:
-        return SadeSatiPhase.peak;
+        return LocalSadeSatiPhase.peak;
       case j.SadeSatiPhase.setting:
-        return SadeSatiPhase.setting;
+        return LocalSadeSatiPhase.setting;
     }
   }
 
@@ -286,7 +273,6 @@ class TransitAnalysis {
     final moonInfo = natalChart.baseChart.planets[j.Planet.moon];
 
     if (moonInfo != null) {
-      // Use .zodiacSignIndex instead of (longitude / 30).floor()
       final moonSign = moonInfo.position.zodiacSignIndex;
 
       transitChart.planets.forEach((planet, info) {
@@ -325,13 +311,8 @@ class TransitAnalysis {
     final natalMoonSign = natalMoonInfo.position.zodiacSignIndex;
     final houseFromMoon = ((transitSign - natalMoonSign + 12) % 12) + 1;
 
-    // Favorable houses: 3, 6, 7, 10, 11
     final favorableHouses = [3, 6, 7, 10, 11];
-
-    // Medium (Madhya) houses: 1, 2, 4, 5, 9
     final mediumHouses = [1, 2, 4, 5, 9];
-
-    // Unfavorable (remaining): 8, 12
 
     TransitQuality quality;
     bool isFavorable = false;
@@ -345,7 +326,7 @@ class TransitAnalysis {
       ];
     } else if (mediumHouses.contains(houseFromMoon)) {
       quality = TransitQuality.medium;
-      isFavorable = true; // Medium tends to be okay/manageable mostly
+      isFavorable = true;
       recommendations = [
         'Mixed influences. Proceed with balance and awareness.',
       ];
@@ -390,7 +371,6 @@ class TransitAnalysis {
     final moonSign = moonInfo.position.zodiacSignIndex;
     final houseFromMoon = ((transitSign - moonSign + 12) % 12) + 1;
 
-    // Jupiter is favorable in 2, 5, 7, 9, 11 from Moon
     final isBenefic = [2, 5, 7, 9, 11].contains(houseFromMoon);
 
     return JupiterTransitAnalysis(
@@ -431,8 +411,7 @@ class TransitAnalysis {
     }
 
     final rahuSign = rahuInfo.position.zodiacSignIndex;
-    final ketuSign = (ketuPos.longitude / 30)
-        .floor(); // ketuPos is a raw PlanetPosition
+    final ketuSign = (ketuPos.longitude / 30).floor();
 
     final affected = <String>[];
     var overNatalRahu = false;
@@ -445,9 +424,6 @@ class TransitAnalysis {
         if (p == j.Planet.meanNode) overNatalRahu = true;
       }
     });
-
-    // Check natal Ketu separately if it was available, but standard chart has Rahu
-    // We'll assume Ketu is always opposite natal Rahu anyway.
 
     return RahuKetuTransitAnalysis(
       rahuSign: rahuSign,
@@ -471,7 +447,7 @@ class TransitAnalysis {
   TransitEffect _calculateAspectEffect(
     j.Planet transitPlanet,
     j.Planet natalPlanet,
-    AspectType aspectType,
+    LocalAspectType aspectType,
     CompleteChartData natalChart,
   ) {
     final isBenefic = [
@@ -522,7 +498,7 @@ class TransitAnalysis {
         0;
 
     final vedha = analyzeVedha(
-      moonNakshatra: moonNakshatra + 1, // Library uses 1-indexed
+      moonNakshatra: moonNakshatra + 1,
       gocharaPositions: transitChart.gochara.positions,
     );
 
@@ -534,7 +510,7 @@ class TransitAnalysis {
       }
     }
 
-    return allRemedies.toSet().toList(); // Remove duplicates
+    return allRemedies.toSet().toList();
   }
 }
 
@@ -592,7 +568,7 @@ class TransitChart {
 class TransitAspect {
   final j.Planet transitPlanet;
   final j.Planet natalPlanet;
-  final AspectType aspectType;
+  final LocalAspectType aspectType;
   final double orb;
   final bool isApplying;
   final TransitEffect effect;
@@ -611,7 +587,7 @@ class TransitAspect {
   }
 }
 
-enum AspectType { conjunction, sextile, square, trine, opposition }
+enum LocalAspectType { conjunction, sextile, square, trine, opposition }
 
 class TransitEffect {
   final TransitStrength strength;
@@ -649,7 +625,7 @@ class GocharaPositions {
       case j.Planet.saturn:
         return [3, 6, 11].contains(house);
       default:
-        return house == 11; // 11th house is generally favorable for all
+        return house == 11;
     }
   }
 }
@@ -677,7 +653,7 @@ class MoonTransitAnalysis {
 class SaturnTransitAnalysis {
   final int transitSign;
   final int houseFromMoon;
-  final SadeSatiPhase sadeSatiPhase;
+  final LocalSadeSatiPhase sadeSatiPhase;
   final bool kantakaShani;
   final bool isRetrograde;
   final List<String> effects;
@@ -693,10 +669,10 @@ class SaturnTransitAnalysis {
     required this.recommendations,
   });
 
-  bool get isSadeSati => sadeSatiPhase != SadeSatiPhase.none;
+  bool get isSadeSati => sadeSatiPhase != LocalSadeSatiPhase.none;
 }
 
-enum SadeSatiPhase { none, rising, peak, setting }
+enum LocalSadeSatiPhase { none, rising, peak, setting }
 
 class JupiterTransitAnalysis {
   final int transitSign;
@@ -736,7 +712,7 @@ class RahuKetuTransitAnalysis {
 
 /// Analysis result for Gochara Vedha calculations
 class VedhaAnalysis {
-  final List<VedhaResult> results;
+  final List<j.VedhaResult> results;
   final List<j.Planet> affectedTransits;
   final String summary;
 
@@ -747,9 +723,9 @@ class VedhaAnalysis {
   });
 
   /// Get vedha result for a specific planet
-  VedhaResult? getResult(j.Planet planet) {
+  j.VedhaResult? getResult(j.Planet planet) {
     for (final result in results) {
-      if (result.transitPlanet == planet) {
+      if (result.transitPlanet == planet.displayName) {
         return result;
       }
     }

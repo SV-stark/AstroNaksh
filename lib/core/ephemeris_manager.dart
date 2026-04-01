@@ -66,6 +66,11 @@ class EphemerisManager {
     // First try to copy from bundled assets
     await _copyBundledAssets(ephemerisPath);
 
+    // Copy swisseph.dll from assets to executable directory (Windows/Linux)
+    if (Platform.isWindows || Platform.isLinux) {
+      await _copyNativeLibrary(ephemerisPath);
+    }
+
     // Verify swisseph.dll existence (Windows only)
     if (Platform.isAndroid) {
       AppEnvironment.log(
@@ -224,6 +229,37 @@ class EphemerisManager {
     }
   }
 
+  /// Copy native library (swisseph.dll / libswisseph.so) from assets to executable directory
+  static Future<void> _copyNativeLibrary(String ephemerisPath) async {
+    final libName = Platform.isWindows ? 'swisseph.dll' : 'libswisseph.so';
+    final assetPath = 'assets/ephe/$libName';
+    final exeDir = p.dirname(Platform.resolvedExecutable);
+    final targetPath = p.join(exeDir, libName);
+    final targetFile = File(targetPath);
+
+    if (await targetFile.exists()) {
+      AppEnvironment.log(
+        'EphemerisManager: Native library already exists at $targetPath',
+      );
+      return;
+    }
+
+    try {
+      AppEnvironment.log(
+        'EphemerisManager: Copying native library from assets: $assetPath',
+      );
+      final data = await rootBundle.load(assetPath);
+      await targetFile.writeAsBytes(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      );
+      AppEnvironment.log(
+        'EphemerisManager: Native library copied to $targetPath',
+      );
+    } catch (e) {
+      AppEnvironment.log('EphemerisManager: Failed to copy native library: $e');
+    }
+  }
+
   /// Check which files are missing
   static Future<List<String>> _getMissingFiles(String path) async {
     final missing = <String>[];
@@ -301,24 +337,8 @@ class EphemerisManager {
 
   /// Initialize the jyotish library with the ephemeris path
   static Future<void> _initializeLibrary(String ephemerisPath) async {
-    try {
-      // Initialize both service wrappers
-      await _jyotish.initialize(ephemerisPath: ephemerisPath);
-      await service.initialize(ephemerisPath: ephemerisPath);
-    } catch (e) {
-      // Fallback: try without parameters
-      try {
-        await _jyotish.initialize();
-        await service.initialize(
-          ephemerisPath: ephemerisPath,
-        ); // Retry service with path
-      } catch (e2) {
-        // If both fail, the library might auto-initialize
-        if (kDebugMode) {
-          print('Library initialization skipped: $e2');
-        }
-      }
-    }
+    await _jyotish.initialize(ephemerisPath: ephemerisPath);
+    await service.initialize(ephemerisPath: ephemerisPath);
   }
 
   /// Check if ephemeris files are available for a date range

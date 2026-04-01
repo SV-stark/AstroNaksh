@@ -419,8 +419,8 @@ class _TransitScreenState extends State<TransitScreen> {
     final favorableAspects = transit.aspects
         .where(
           (a) =>
-              a.aspectType == AspectType.trine ||
-              a.aspectType == AspectType.sextile,
+              a.aspectType == LocalAspectType.trine ||
+              a.aspectType == LocalAspectType.sextile,
         )
         .length;
 
@@ -431,8 +431,8 @@ class _TransitScreenState extends State<TransitScreen> {
     final challengingAspects = transit.aspects
         .where(
           (a) =>
-              a.aspectType == AspectType.square ||
-              a.aspectType == AspectType.opposition,
+              a.aspectType == LocalAspectType.square ||
+              a.aspectType == LocalAspectType.opposition,
         )
         .length;
 
@@ -465,32 +465,32 @@ class _TransitScreenState extends State<TransitScreen> {
     );
   }
 
-  IconData _getAspectIcon(AspectType type) {
+  IconData _getAspectIcon(LocalAspectType type) {
     switch (type) {
-      case AspectType.conjunction:
+      case LocalAspectType.conjunction:
         return FluentIcons.radio_bullet;
-      case AspectType.opposition:
+      case LocalAspectType.opposition:
         return FluentIcons.sync_occurence;
-      case AspectType.square:
+      case LocalAspectType.square:
         return FluentIcons.checkbox;
-      case AspectType.trine:
+      case LocalAspectType.trine:
         return FluentIcons.triangle_solid;
-      case AspectType.sextile:
+      case LocalAspectType.sextile:
         return FluentIcons.hexagon;
     }
   }
 
-  Color _getAspectColor(AspectType type) {
+  Color _getAspectColor(LocalAspectType type) {
     switch (type) {
-      case AspectType.conjunction:
+      case LocalAspectType.conjunction:
         return Colors.purple;
-      case AspectType.opposition:
+      case LocalAspectType.opposition:
         return Colors.red;
-      case AspectType.square:
+      case LocalAspectType.square:
         return Colors.orange;
-      case AspectType.trine:
+      case LocalAspectType.trine:
         return Colors.green;
-      case AspectType.sextile:
+      case LocalAspectType.sextile:
         return Colors.blue;
     }
   }

@@ -1,7 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../data/models.dart';
 import '../../logic/transit_analysis.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/jyotish.dart' as j;
+import 'package:jyotish/src/transit/gochara_vedha_service.dart';
 import 'package:intl/intl.dart';
 
 class GocharaVedhaScreen extends StatefulWidget {
@@ -37,7 +38,7 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
           widget
               .chartData
               .baseChart
-              .planets[Planet.moon]
+              .planets[j.Planet.moon]
               ?.position
               .nakshatraIndex ??
           0;
@@ -164,7 +165,7 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
     final total = vedha.results.length;
     final favorable = vedha.results.where((r) => r.isFavorablePosition).length;
     final obstructed = vedha.results.where((r) => r.isObstructed).length;
-    final clear = vedha.results.where((r) => r.isFullyFavorable).length;
+    final clear = favorable - obstructed;
 
     return Card(
       padding: const EdgeInsets.all(16),
@@ -385,17 +386,17 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
     );
   }
 
-  Widget _buildFavorableHousesRef(Planet planet) {
+  Widget _buildFavorableHousesRef(String planetName) {
     const favorableMap = {
-      Planet.sun: [3, 6, 10, 11],
-      Planet.moon: [1, 3, 6, 7, 10, 11],
-      Planet.mars: [3, 6, 11],
-      Planet.mercury: [2, 4, 6, 8, 10, 11],
-      Planet.jupiter: [2, 5, 7, 9, 11],
-      Planet.venus: [1, 2, 3, 4, 5, 8, 9, 11, 12],
-      Planet.saturn: [3, 6, 11],
+      'Sun': [3, 6, 10, 11],
+      'Moon': [1, 3, 6, 7, 10, 11],
+      'Mars': [3, 6, 11],
+      'Mercury': [2, 4, 6, 8, 10, 11],
+      'Jupiter': [2, 5, 7, 9, 11],
+      'Venus': [1, 2, 3, 4, 5, 8, 9, 11, 12],
+      'Saturn': [3, 6, 11],
     };
-    final houses = favorableMap[planet];
+    final houses = favorableMap[planetName];
     if (houses == null) return const SizedBox.shrink();
 
     return Wrap(

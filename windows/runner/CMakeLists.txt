@@ -38,3 +38,15 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
+
+# Copy swisseph.dll from project assets to build output directory
+if(WIN32)
+  set(SWISSEPH_DLL "${CMAKE_SOURCE_DIR}/../assets/ephe/swisseph.dll")
+  if(EXISTS "${SWISSEPH_DLL}")
+    add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${SWISSEPH_DLL}"
+        "$<TARGET_FILE_DIR:${BINARY_NAME}>/swisseph.dll"
+      COMMENT "Copying swisseph.dll to build output directory")
+  endif()
+endif()

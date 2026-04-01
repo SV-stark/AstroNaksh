@@ -3,26 +3,20 @@ import '../data/models.dart';
 import '../core/ephemeris_manager.dart';
 
 /// Shadbala (Six-Fold Strength) Calculator
-/// Wraps the library's native ShadbalaService
+/// Uses EphemerisManager.jyotish facade for all calculations
 class ShadbalaCalculator {
-  static ShadbalaService? _service;
+  static ShadbalaService? _combustionService;
 
-  /// Calculate complete Shadbala for all planets
   static Future<Map<String, double>> calculateShadbala(
     CompleteChartData chartData,
   ) async {
-    _service ??= ShadbalaService(EphemerisManager.service);
-
-    // Use the native library service
-    final nativeResults = await _service!.calculateShadbala(
+    final nativeResults = await EphemerisManager.jyotish.getShadbala(
       chartData.baseChart,
     );
 
     final Map<String, double> shadbala = {};
 
-    // Map native results to the format expected by the UI
     nativeResults.forEach((planet, result) {
-      // Library includes nodes, but traditional Shadbala is for 7 planets
       if (!Planet.lunarNodes.contains(planet)) {
         shadbala[planet.displayName] = result.totalBala;
       }
@@ -31,24 +25,21 @@ class ShadbalaCalculator {
     return shadbala;
   }
 
-  /// Get detailed Shadbala results if needed
   static Future<Map<Planet, ShadbalaResult>> calculateDetailedShadbala(
     VedicChart chart,
   ) async {
-    _service ??= ShadbalaService(EphemerisManager.service);
-    return await _service!.calculateShadbala(chart);
+    return await EphemerisManager.jyotish.getShadbala(chart);
   }
 
-  /// Get comprehensive screen data combining Shadbala, Vimsopaka, Combustion, and Hora Lords
   static Future<ShadbalaScreenData> getScreenData(
     CompleteChartData chartData,
   ) async {
-    _service ??= ShadbalaService(EphemerisManager.service);
+    final jyotish = EphemerisManager.jyotish;
     final strengthService = StrengthAnalysisService();
 
     final chart = chartData.baseChart;
 
-    final detailedShadbala = await _service!.calculateShadbala(chart);
+    final detailedShadbala = await jyotish.getShadbala(chart);
     final Map<String, double> shadbala = {};
     detailedShadbala.forEach((planet, result) {
       if (!Planet.lunarNodes.contains(planet)) {
@@ -64,9 +55,8 @@ class ShadbalaCalculator {
       if (planet == Planet.sun) continue;
       final info = chart.getPlanet(planet);
       if (info != null) {
-        // Speed is not readily available on VedicPlanetInfo in some implementations,
-        // we omit it or pass 0. By default it assumes direct motion unless speed < 0.
-        combustion[planet] = _service!.checkCombustion(
+        _combustionService ??= ShadbalaService(EphemerisManager.service);
+        combustion[planet] = _combustionService!.checkCombustion(
           planet: planet,
           planetLongitude: info.longitude,
           sunLongitude: sunPos,
@@ -80,7 +70,7 @@ class ShadbalaCalculator {
       altitude: 0,
     );
 
-    final horaLords = await _service!.calculateHoraLordsForDay(
+    final horaLords = await jyotish.calculateHoraLordsForDay(
       date: chart.dateTime,
       location: location,
     );

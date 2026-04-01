@@ -8,6 +8,7 @@ import '../exceptions/jyotish_exception.dart';
 import 'package:jyotish/src/models/calculation_flags.dart';
 import 'package:jyotish/src/models/geographic_location.dart';
 import 'package:jyotish/src/models/planet.dart';
+import 'dart:developer';
 import 'package:jyotish/src/astronomy/planet_position.dart';
 import 'package:jyotish/src/astronomy/astrology_time_service.dart';
 
@@ -243,7 +244,7 @@ class EphemerisService {
       const arcticCircle = 66.5;
       if (absLat >= arcticCircle) {
         throw PolarRegionException(
-          'House system "$houseSystem" is mathematically unstable/undefined above ${arcticCircle} latitude ($absLat requested). '
+          'House system "$houseSystem" is mathematically unstable/undefined above $arcticCircle latitude ($absLat requested). '
           'Switch to Whole Sign ("W"), Campanus ("C"), or Equal ("E").',
           latitude: location.latitude,
           houseSystem: houseSystem,
@@ -655,7 +656,7 @@ class EphemerisService {
       DateTime date, GeographicLocation location) async {
     // Check start and end of day
     final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(Duration(days: 1));
+    final end = start.add(const Duration(days: 1));
 
     final posStartSun = await calculatePlanetPosition(
         planet: Planet.sun,
@@ -679,9 +680,10 @@ class EphemerisService {
         location: location,
         flags: CalculationFlags.defaultFlags());
 
-    double diffStart =
+    final double diffStart =
         (posStartMoon.longitude - posStartSun.longitude + 360) % 360;
-    double diffEnd = (posEndMoon.longitude - posEndSun.longitude + 360) % 360;
+    final double diffEnd =
+        (posEndMoon.longitude - posEndSun.longitude + 360) % 360;
 
     // Check for New Moon (crossing 0/360)
     // If diff goes from ~350 to ~10, or 355 to 5.
@@ -726,7 +728,7 @@ class EphemerisService {
           location: loc,
           flags: CalculationFlags.defaultFlags());
 
-      double diff = (moon.longitude - sun.longitude + 360) % 360;
+      final double diff = (moon.longitude - sun.longitude + 360) % 360;
 
       if (targetDiff == 0) {
         // New Moon
@@ -757,7 +759,7 @@ class EphemerisService {
     final errorBuffer = malloc<ffi.Char>(256);
 
     try {
-      print('Calling findSolarEclipseWhenLoc...');
+      log('Calling findSolarEclipseWhenLoc...');
       // 1. Get precise local maximum and contact times using swe_sol_eclipse_when_loc.
       // We search from 1 day before the global syzygy date.
       final result = _bindings!.findSolarEclipseWhenLoc(
@@ -769,7 +771,7 @@ class EphemerisService {
         backward: false,
         errorBuffer: errorBuffer,
       );
-      print('findSolarEclipseWhenLoc returned successfully.');
+      log('findSolarEclipseWhenLoc returned successfully.');
 
       if (result == null) return null;
 

@@ -1,4 +1,4 @@
-import 'dart:math' as Math;
+import 'dart:math' as math;
 import 'package:jyotish/src/models/calculation_flags.dart';
 import 'package:jyotish/src/models/divisional_chart_type.dart';
 import 'package:jyotish/src/models/geographic_location.dart';
@@ -81,8 +81,8 @@ class ShadbalaService {
         _calculateUchchaBala(planet, planetInfo.position.longitude);
 
     // 8. Ishta & Kashta Phala (BPHS exact formula uses square root)
-    final ishtaPhala = Math.sqrt(uchchaBala * chestaBala);
-    final kashtaPhala = Math.sqrt((60.0 - uchchaBala) * (60.0 - chestaBala));
+    final ishtaPhala = math.sqrt(uchchaBala * chestaBala);
+    final kashtaPhala = math.sqrt((60.0 - uchchaBala) * (60.0 - chestaBala));
     final netPhala = ishtaPhala - kashtaPhala;
 
     return ShadbalaResult(
@@ -115,8 +115,9 @@ class ShadbalaService {
     // Total Weights = 20.
 
     // Check if Nodes (often excluded or treated differently, but usually calculated)
-    if (Planet.lunarNodes.contains(planet))
+    if (Planet.lunarNodes.contains(planet)) {
       return 0.0; // Or standard default mid-range
+    }
 
     double totalWeightedScore = 0.0;
     // The weights themselves sum to 20.
@@ -665,7 +666,7 @@ class ShadbalaService {
     final approxDaysSinceIngress = travelledDegrees / 0.9856;
 
     // Set a search window for the exact ingress time
-    var searchTime = currentDateTime
+    final searchTime = currentDateTime
         .subtract(Duration(hours: (approxDaysSinceIngress * 24).toInt()));
 
     // Binary search to find the exact moment the Sun crossed the sign boundary
@@ -690,7 +691,7 @@ class ShadbalaService {
 
       // We must handle the 360 wrap-around if checking Aries (0)
       var midLong = midSunPos.longitude;
-      var targetLong = signStartLongitude;
+      final targetLong = signStartLongitude;
 
       if (targetLong == 0 && midLong > 340) {
         midLong -= 360;

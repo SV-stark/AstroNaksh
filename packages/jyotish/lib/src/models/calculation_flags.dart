@@ -1,3 +1,7 @@
+import 'package:jyotish/jyotish.dart' show KPService;
+
+import 'package:jyotish/src/systems/kp_service.dart' show KPService;
+
 import '../constants/planet_constants.dart';
 import 'package:jyotish/src/models/planet.dart';
 
@@ -122,7 +126,7 @@ class CalculationFlags {
   ///   ([KPService]) and guard-rail assertions.
   ///
   /// **Important**: pair this with `houseSystem: 'P'` (Placidus) when
-  /// calling [calculateVedicChart], as Placidus is mandatory in KP.
+  /// calling `calculateVedicChart`, as Placidus is mandatory in KP.
   ///
   /// ```dart
   /// final chart = await jyotish.calculateVedicChart(

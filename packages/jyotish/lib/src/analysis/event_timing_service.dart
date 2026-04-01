@@ -58,7 +58,9 @@ class EventTimingService {
       for (final planet in Planet.values) {
         if (planet == Planet.uranus ||
             planet == Planet.neptune ||
-            planet == Planet.pluto) continue;
+            planet == Planet.pluto) {
+          continue;
+        }
 
         final pos = await _ephemerisService.calculatePlanetPosition(
           planet: planet,
@@ -97,7 +99,7 @@ class EventTimingService {
           score -= 0.2;
           final obstructors = vedhaResult.obstructingPlanets
               .map((p) => p.displayName)
-              .join(", ");
+              .join(', ');
           reasons.add(
               'But favorable effects are obstructed (Vedha) by $obstructors.');
         } else {
@@ -112,7 +114,7 @@ class EventTimingService {
           score += 0.1;
           final obstructors = vedhaResult.obstructingPlanets
               .map((p) => p.displayName)
-              .join(", ");
+              .join(', ');
           reasons.add(
               'Harmful effects are mitigated (Vama Vedha) by $obstructors.');
         }

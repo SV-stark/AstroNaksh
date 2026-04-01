@@ -1,20 +1,15 @@
 import 'package:jyotish/jyotish.dart';
 import '../data/models.dart';
+import '../core/ephemeris_manager.dart';
 
 /// Complete Dasha System Implementation
 /// Includes Vimshottari, Yogini, and Chara Dasha
 class DashaSystem {
-  static DashaService? _service;
-
-  /// Calculate Vimshottari Dasha for a birth chart
-  /// Returns the complete Dasha tree (Mahadasha, Antardasha, Pratyantardasha)
-  static VimshottariDasha calculateVimshottariDasha(VedicChart chart) {
-    _service ??= DashaService();
-
-    // Calculate 3 levels (Maha, Antar, Pratyantar)
-    final result = _service!.calculateVimshottariDasha(
-      moonLongitude: chart.getPlanet(Planet.moon)?.longitude ?? 0,
-      birthDateTime: chart.dateTime,
+  static Future<VimshottariDasha> calculateVimshottariDasha(
+    VedicChart chart,
+  ) async {
+    final result = await EphemerisManager.jyotish.getVimshottariDasha(
+      natalChart: chart,
       levels: 3,
     );
 
@@ -60,15 +55,10 @@ class DashaSystem {
     );
   }
 
-  /// Calculate Yogini Dasha
-  /// 36-year cycle with 8 yoginis
-  static YoginiDasha calculateYoginiDasha(VedicChart chart) {
-    _service ??= DashaService();
-
-    final result = _service!.calculateYoginiDasha(
-      moonLongitude: chart.getPlanet(Planet.moon)?.longitude ?? 0,
-      birthDateTime: chart.dateTime,
-      levels: 3, // Enable Antar and Pratyantar
+  static Future<YoginiDasha> calculateYoginiDasha(VedicChart chart) async {
+    final result = await EphemerisManager.jyotish.getYoginiDasha(
+      natalChart: chart,
+      levels: 3,
     );
 
     return YoginiDasha(
@@ -111,19 +101,19 @@ class DashaSystem {
     return yoginiPlanet?.displayName ?? '--';
   }
 
-  /// Calculate Chara Dasha (Jaimini System) using native library
   static Future<CharaDasha> calculateCharaDasha(VedicChart chart) async {
-    _service ??= DashaService();
-    // Library returns CharaDashaResult
-    final result = _service!.calculateCharaDasha(chart, levels: 2);
+    final result = await EphemerisManager.jyotish.getCharaDasha(
+      natalChart: chart,
+      levels: 2,
+    );
     return _mapToCharaDasha(result);
   }
 
-  /// Calculate Narayana Dasha (Jaimini System)
   static Future<NarayanaDasha> calculateNarayanaDasha(VedicChart chart) async {
-    _service ??= DashaService();
-    // Library returns NarayanaDashaResult
-    final result = _service!.getNarayanaDasha(chart, levels: 2);
+    final result = await EphemerisManager.jyotish.getNarayanaDasha(
+      chart: chart,
+      levels: 2,
+    );
     return _mapToNarayanaDasha(result);
   }
 
@@ -169,12 +159,12 @@ class DashaSystem {
     );
   }
 
-  /// Calculate Ashtottari Dasha
   static Future<AshtottariDasha> calculateAshtottariDasha(
     VedicChart chart,
   ) async {
-    _service ??= DashaService();
-    final result = _service!.getAshtottariDasha(chart);
+    final result = await EphemerisManager.jyotish.getAshtottariDasha(
+      natalChart: chart,
+    );
     return AshtottariDasha(
       birthNakshatra: result.birthNakshatra,
       balanceOfFirstDasha: result.balanceOfFirstDasha / 365.25,
@@ -190,12 +180,12 @@ class DashaSystem {
     );
   }
 
-  /// Calculate Kalachakra Dasha
   static Future<KalachakraDasha> calculateKalachakraDasha(
     VedicChart chart,
   ) async {
-    _service ??= DashaService();
-    final result = _service!.getKalachakraDasha(chart);
+    final result = await EphemerisManager.jyotish.getKalachakraDasha(
+      natalChart: chart,
+    );
     return KalachakraDasha(
       birthNakshatra: result.birthNakshatra,
       mahadashas: result.allMahadashas.map((p) {
@@ -210,22 +200,15 @@ class DashaSystem {
     );
   }
 
-  /// Get current running dasha for a date (Vimshottari).
-  /// Delegates to the jyotish library's [DashaService] via the cached service
-  /// so we avoid reimplementing the nested-period search manually.
-  static Map<String, dynamic> getCurrentDashaFromChart(
+  static Future<Map<String, dynamic>> getCurrentDashaFromChart(
     VedicChart natalChart,
     DateTime date,
-  ) {
-    _service ??= DashaService();
-    // Library returns the active DashaPeriod directly
-    final current = _service!.calculateVimshottariDasha(
-      moonLongitude: natalChart.getPlanet(Planet.moon)?.longitude ?? 0,
-      birthDateTime: natalChart.dateTime,
+  ) async {
+    final current = await EphemerisManager.jyotish.getVimshottariDasha(
+      natalChart: natalChart,
       levels: 3,
     );
 
-    // Walk the result to find the active period at [date]
     for (final md in current.allMahadashas) {
       if (date.isBefore(md.startDate) || !date.isBefore(md.endDate)) continue;
       for (final ad in md.subPeriods) {
@@ -251,8 +234,6 @@ class DashaSystem {
     return {};
   }
 
-  /// Get current running dasha from pre-computed [VimshottariDasha] model.
-  /// Use [getCurrentDashaFromChart] when you have a live [VedicChart] instead.
   static Map<String, dynamic> getCurrentDasha(
     VimshottariDasha dasha,
     DateTime date,

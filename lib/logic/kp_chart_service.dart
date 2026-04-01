@@ -265,8 +265,8 @@ class KPChartService {
 
   Future<DashaData> _calculateDashaSystems(VedicChart chart) async {
     // Dasha System (Async mappings)
-    final vimshottari = DashaSystem.calculateVimshottariDasha(chart);
-    final yogini = DashaSystem.calculateYoginiDasha(chart);
+    final vimshottari = await DashaSystem.calculateVimshottariDasha(chart);
+    final yogini = await DashaSystem.calculateYoginiDasha(chart);
     final chara = await DashaSystem.calculateCharaDasha(chart);
     final narayana = await DashaSystem.calculateNarayanaDasha(chart);
     final ashtottari = await DashaSystem.calculateAshtottariDasha(chart);

@@ -372,7 +372,7 @@ class DashaService {
       for (var i = 0; i < 8; i++) {
         final idx = (startingYoginiIndex + i) % 8;
         final yogini = Yogini.values[idx];
-        double durationDays =
+        final double durationDays =
             (cycle == 0 && i == 0) ? balanceDays : yogini.years * 365.25;
         // Use millisecond precision to avoid day-rounding drift (Issue 8)
         final durationMs = (durationDays * 86400000).round();
@@ -540,7 +540,7 @@ class DashaService {
     if (lordPos == null) return 0;
     final lordSign = Rashi.fromLongitude(lordPos.longitude);
 
-    int diff = sign.isOdd
+    final int diff = sign.isOdd
         ? (lordSign.number - sign.number + 12) % 12
         : (sign.number - lordSign.number + 12) % 12;
     return diff == 0 ? 12 : diff;
@@ -870,13 +870,14 @@ class DashaService {
     var currentDate = chart.dateTime;
 
     // Issue 12: Compute balance of first dasha from Moon's position in pada
-    final padaWidth = nakshatraWidth / 4;
+    const padaWidth = nakshatraWidth / 4;
     final posInNakshatra = moonLongitude % nakshatraWidth;
     final posInPada = posInNakshatra % padaWidth;
     final portionRemaining = 1.0 - (posInPada / padaWidth);
     final firstDashaYears = _getKalachakraYears(sequence.first);
     final balanceDays = firstDashaYears * 365.25 * portionRemaining;
-    final totalCycleYears = sequence.map(_getKalachakraYears).reduce((a, b) => a + b);
+    final totalCycleYears =
+        sequence.map(_getKalachakraYears).reduce((a, b) => a + b);
 
     for (var idx = 0; idx < sequence.length; idx++) {
       final sign = sequence[idx];
@@ -884,7 +885,7 @@ class DashaService {
       // First sign uses balance, rest use full duration
       final durationDays = (idx == 0) ? balanceDays : years * 365.25;
       final endDate = currentDate.add(Duration(days: durationDays.round()));
-      
+
       List<DashaPeriod> antardashas = [];
       if (levels >= 2) {
         antardashas = _calculateKalachakraAntardashas(
@@ -897,12 +898,12 @@ class DashaService {
       }
 
       mahadashas.add(DashaPeriod(
-          rashi: sign,
-          startDate: currentDate,
-          endDate: endDate,
-          duration: Duration(days: durationDays.round()),
-          level: 0,
-          subPeriods: antardashas,
+        rashi: sign,
+        startDate: currentDate,
+        endDate: endDate,
+        duration: Duration(days: durationDays.round()),
+        level: 0,
+        subPeriods: antardashas,
       ));
       currentDate = endDate;
     }
@@ -927,7 +928,7 @@ class DashaService {
   }) {
     final periods = <DashaPeriod>[];
     var current = mahadashaStart;
-    
+
     // Antardashas follow the same 9-sign sequence starting from the Mahadasha sign
     final startIndex = sequence.indexOf(mahadashaSign);
     final startIndexToUse = startIndex == -1 ? 0 : startIndex;
@@ -935,13 +936,13 @@ class DashaService {
     for (var i = 0; i < sequence.length; i++) {
       final idx = (startIndexToUse + i) % sequence.length;
       final sign = sequence[idx];
-      
+
       final subLordYears = _getKalachakraYears(sign);
       final days = mahadashaDays * (subLordYears / totalCycleYears);
-      
+
       final ms = (days * 86400000).round();
       final end = current.add(Duration(milliseconds: ms));
-      
+
       periods.add(DashaPeriod(
         rashi: sign,
         startDate: current,
@@ -952,7 +953,7 @@ class DashaService {
       ));
       current = end;
     }
-    
+
     return periods;
   }
 
@@ -1078,8 +1079,9 @@ class DashaService {
     }
     final ak = _getAtmakaraka(chart);
     final akInfo = chart.getPlanet(ak);
-    if (akInfo != null && Rashi.fromLongitude(akInfo.longitude) == sign)
+    if (akInfo != null && Rashi.fromLongitude(akInfo.longitude) == sign) {
       strength += 50.0;
+    }
     return strength;
   }
 

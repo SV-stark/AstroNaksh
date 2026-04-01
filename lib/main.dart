@@ -90,12 +90,13 @@ class AstroNakshApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: SettingsManager(),
+    final settings = SettingsManager();
+    return ListenableBuilder(
+      listenable: settings,
       builder: (context, child) {
         return FluentApp(
           title: 'AstroNaksh',
-          themeMode: SettingsManager().themeMode,
+          themeMode: settings.themeMode,
           theme: AppStyles.lightTheme,
           darkTheme: AppStyles.darkTheme,
           initialRoute: '/loading',

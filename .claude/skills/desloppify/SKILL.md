@@ -231,50 +231,33 @@ When desloppify itself appears wrong or inconsistent:
 
 <!-- desloppify-end -->
 
-## Gemini CLI Overlay
+## Claude Code Overlay
 
-Gemini CLI has experimental subagent support, but subagents currently run
-sequentially (not in parallel). Review dimensions one at a time.
-
-### Setup
-
-Enable subagents in Gemini CLI settings:
-```json
-{
-  "experimental": {
-    "enableAgents": true
-  }
-}
-```
-
-Optionally define a reviewer agent in `.gemini/agents/desloppify-reviewer.md`:
-
-```yaml
----
-name: desloppify-reviewer
-description: Scores subjective codebase quality dimensions for desloppify
-kind: local
-tools:
-  - read_file
-  - search_code
-temperature: 0.2
-max_turns: 10
----
-```
-
-Use the prompt from the "Reviewer agent prompt" section above.
+Use Claude subagents for subjective scoring work. **Do not use `--runner codex`** — use Claude subagents exclusively.
 
 ### Review workflow
 
-Invoke the reviewer agent for each group of dimensions sequentially.
-Even without parallelism, isolating dimensions across separate agent
-invocations prevents score bleed between concerns.
+Run `desloppify review --prepare` first to generate review data, then use Claude subagents:
 
-Merge assessments and findings, then import.
+1. **Prepare**: `desloppify review --prepare` — writes `query.json` and `.desloppify/review_packet_blind.json`.
+2. **Launch subagents**: Split the review across N parallel Claude subagents (one message, multiple Task calls). Each agent reviews a subset of dimensions.
+3. **Merge & import**: Merge agent outputs, then `desloppify review --import merged.json --manual-override --attest "Claude subagents ran blind reviews against review_packet_blind.json" --scan-after-import`.
 
-When Gemini CLI adds parallel subagent execution, split dimensions across
-concurrent agent calls instead.
+#### How to split dimensions across subagents
 
-<!-- desloppify-overlay: gemini -->
+- Read `dimension_prompts` from `query.json` for dimensions with definitions and seed files.
+- Read `.desloppify/review_packet_blind.json` for the blind packet (no score targets, no anchoring data).
+- Group dimensions into 3-4 batches by theme (e.g., architecture, code quality, testing, conventions).
+- Launch one Task agent per batch with `subagent_type: "general-purpose"`. Each agent gets:
+  - The codebase path and list of dimensions to score
+  - The blind packet path to read
+  - Instruction to score from code evidence only, not from targets
+- Each agent writes output to a separate file. Merge assessments (average overlapping dimension scores) and concatenate findings.
+
+### Subagent rules
+
+1. Each agent must be context-isolated — do not pass conversation history or score targets.
+2. Agents must consume `.desloppify/review_packet_blind.json` (not full `query.json`) to avoid score anchoring.
+
+<!-- desloppify-overlay: claude -->
 <!-- desloppify-end -->
-

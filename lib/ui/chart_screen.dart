@@ -421,8 +421,9 @@ class _ChartScreenState extends State<ChartScreen> {
     return NavigationView(
       appBar: NavigationAppBar(
         leading: IconButton(
-          icon: const Icon(FluentIcons.back),
+          icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
           onPressed: () => Navigator.pop(context),
+          tooltip: 'Go back',
         ),
         title: const Text("Vedic Chart"),
         actions: CommandBar(
@@ -436,8 +437,12 @@ class _ChartScreenState extends State<ChartScreen> {
                   _style == ChartStyle.northIndian
                       ? FluentIcons.grid_view_small
                       : FluentIcons.diamond,
+                  semanticLabel: 'Toggle chart style',
                 ),
                 label: const Text('Style'),
+                tooltip: _style == ChartStyle.northIndian
+                    ? 'Currently North Indian style. Tap to switch to South Indian.'
+                    : 'Currently South Indian style. Tap to switch to North Indian.',
                 onPressed: () {
                   setState(() {
                     _style = _style == ChartStyle.northIndian
@@ -447,8 +452,14 @@ class _ChartScreenState extends State<ChartScreen> {
                 },
               ),
               CommandBarButton(
-                icon: Icon(_showAspects ? FluentIcons.view : FluentIcons.hide),
+                icon: Icon(
+                  _showAspects ? FluentIcons.view : FluentIcons.hide,
+                  semanticLabel: _showAspects ? 'Hide planetary aspects' : 'Show planetary aspects',
+                ),
                 label: Text(_showAspects ? 'Aspects On' : 'Aspects Off'),
+                tooltip: _showAspects
+                    ? 'Planetary aspects are visible. Tap to hide.'
+                    : 'Tap to show planetary aspects (drishti).',
                 onPressed: () {
                   setState(() {
                     _showAspects = !_showAspects;

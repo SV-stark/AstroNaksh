@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jyotish/jyotish.dart';
 import 'package:astronaksh/logic/dasha_system.dart';
-import 'package:astronaksh/logic/sudarshan_chakra_service.dart';
 import 'utils/test_chart_builder.dart';
 
 void main() {
@@ -25,12 +25,11 @@ void main() {
   });
 
   test('Verify Sudarshan Chakra Service Instantiation', () async {
-    final service = SudarshanChakraServiceWrapper();
+    final service = SudarshanChakraService();
     final chart = TestChartBuilder().build();
 
     try {
       final result = await service.calculateSudarshanChakra(chart.baseChart);
-      expect(result, isNotNull);
       expect(result, isNotNull);
     } catch (e) {
       // It might fail if library implementation has issues

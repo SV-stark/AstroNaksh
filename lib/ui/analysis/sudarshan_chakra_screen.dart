@@ -2,7 +2,6 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import '../../ui/utils/responsive_helper.dart';
 import '../../data/models.dart';
-import '../../logic/sudarshan_chakra_service.dart';
 
 /// Sudarshan Chakra Analysis Screen
 /// Displays triple-perspective strength analysis from Lagna, Chandra, and Surya
@@ -16,8 +15,7 @@ class SudarshanChakraScreen extends StatefulWidget {
 }
 
 class _SudarshanChakraScreenState extends State<SudarshanChakraScreen> {
-  final SudarshanChakraServiceWrapper _service =
-      SudarshanChakraServiceWrapper();
+  final SudarshanChakraService _service = SudarshanChakraService();
   late Future<SudarshanChakraResult> _resultFuture;
 
   @override

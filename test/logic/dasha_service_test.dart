@@ -6,7 +6,7 @@ void main() {
     late DashaService dashaService;
 
     setUp(() {
-      dashaService = DashaService(EphemerisService());
+      dashaService = DashaService();
     });
 
     test('calculateVimshottariDasha returns correct number of Mahadashas', () {

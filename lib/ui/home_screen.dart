@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, FontWeight;
-import 'package:flutter/material.dart' show InkWell, Colors, FontWeight;
+import 'package:flutter/material.dart' show Colors, FontWeight;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import '../ui/utils/responsive_helper.dart';
 import 'styles.dart';
@@ -707,9 +707,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Card(
       key: key,
       padding: EdgeInsets.all(isMobile ? 12 : 8),
-      child: InkWell(
+      child: GestureDetector(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        behavior: HitTestBehavior.opaque,
         child: Row(
           children: [
             Container(

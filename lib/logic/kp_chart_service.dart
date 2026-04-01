@@ -3,45 +3,23 @@ import '../core/ephemeris_manager.dart';
 import '../data/models.dart';
 import 'dasha_system.dart';
 import 'divisional_charts.dart';
-import 'custom_chart_service.dart'; // New service
-
-import '../core/settings_manager.dart';
-import '../core/ayanamsa_calculator.dart'; // For converting string to mode
 
 class KPChartService {
-  final CustomChartService _chartService = CustomChartService();
-
   Future<CompleteChartData> generateCompleteChart(BirthData birthData) async {
-    // Ensure ephemeris is ready
-    try {
-      await EphemerisManager.ensureEphemerisData();
-    } catch (e) {
-      // Log error but continue - chart generation may still work
-      // Silently continue - jyotish library might already have data
-    }
+    await EphemerisManager.ensureEphemerisData();
 
-    // Get current Ayanamsa setting
-    final ayanamsaName = SettingsManager().chartSettings.ayanamsaSystem;
-    final chartSettings = SettingsManager().chartSettings;
+    final location = GeographicLocation(
+      latitude: birthData.location.latitude,
+      longitude: birthData.location.longitude,
+      altitude: 0,
+    );
 
-    // Use library's ayanamsa implementation for all systems including 'newKP'
-    final ayanamsaSystem = AyanamsaCalculator.getSystem(ayanamsaName);
-    final SiderealMode mode = ayanamsaSystem?.mode ?? SiderealMode.lahiri;
-
-    // Use custom service for base calculations with selected Ayanamsa
-    final chart = await _chartService.calculateChart(
+    // KP system requires CalculationFlags.kp() + Placidus house system
+    final chart = await EphemerisManager.jyotish.calculateVedicChart(
       dateTime: birthData.dateTime,
-      location: GeographicLocation(
-        latitude: birthData.location.latitude,
-        longitude: birthData.location.longitude,
-        altitude: 0,
-      ),
-      ayanamsaMode: mode,
-      timezone: birthData.timezone,
-      useTrueNode: chartSettings.useTrueNode,
-      useTopocentric: chartSettings.useTopocentric,
-      calculateSpeed: chartSettings.calculateSpeed,
-      includeOuterPlanets: chartSettings.includeOuterPlanets,
+      location: location,
+      houseSystem: 'P',
+      flags: CalculationFlags.kp(),
     );
 
     // Use library's native KP calculation

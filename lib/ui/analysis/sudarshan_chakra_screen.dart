@@ -16,14 +16,32 @@ class SudarshanChakraScreen extends StatefulWidget {
 
 class _SudarshanChakraScreenState extends State<SudarshanChakraScreen> {
   final SudarshanChakraService _service = SudarshanChakraService();
-  late Future<SudarshanChakraResult> _resultFuture;
+  SudarshanChakraResult? _result;
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _resultFuture = _service.calculateSudarshanChakra(
-      widget.chartData.baseChart,
-    );
+    _calculateResult();
+  }
+
+  Future<void> _calculateResult() async {
+    try {
+      final result = _service.calculateSudarshanChakra(
+        widget.chartData.baseChart,
+      );
+      setState(() {
+        _result = result;
+        _isLoading = false;
+        _error = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _error = e.toString();
+      });
+    }
   }
 
   static const _signNames = [
@@ -69,11 +87,8 @@ class _SudarshanChakraScreenState extends State<SudarshanChakraScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      content: FutureBuilder<SudarshanChakraResult>(
-        future: _resultFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
+      content: _isLoading
+          ? const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -82,37 +97,35 @@ class _SudarshanChakraScreenState extends State<SudarshanChakraScreen> {
                   Text('Calculating Sudarshan Chakra...'),
                 ],
               ),
-            );
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+            )
+          : _error != null
+          ? Center(child: Text('Error: $_error'))
+          : _buildContent(context, _result!),
+    );
+  }
 
-          final result = snapshot.data!;
-          return SingleChildScrollView(
-            padding: context.responsiveBodyPadding,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Overview card
-                _buildOverviewCard(context, result),
-                const SizedBox(height: 20),
+  Widget _buildContent(BuildContext context, SudarshanChakraResult result) {
+    return SingleChildScrollView(
+      padding: context.responsiveBodyPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Overview card
+          _buildOverviewCard(context, result),
+          const SizedBox(height: 20),
 
-                // Reference signs
-                _buildReferenceSignsCard(context, result),
-                const SizedBox(height: 20),
+          // Reference signs
+          _buildReferenceSignsCard(context, result),
+          const SizedBox(height: 20),
 
-                // House strengths
-                _buildHouseStrengthsCard(context, result),
-                const SizedBox(height: 20),
+          // House strengths
+          _buildHouseStrengthsCard(context, result),
+          const SizedBox(height: 20),
 
-                // Planet strengths
-                _buildPlanetStrengthsCard(context, result),
-                const SizedBox(height: 32),
-              ],
-            ),
-          );
-        },
+          // Planet strengths
+          _buildPlanetStrengthsCard(context, result),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }

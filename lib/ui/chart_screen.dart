@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' show Colors;
-import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import '../ui/utils/responsive_helper.dart';
 import 'widgets/chart_widget.dart';
 import 'widgets/planetary_timeline.dart';
@@ -55,8 +54,6 @@ class _ChartScreenState extends State<ChartScreen> {
   int _dashaTabIndex = 0; // 0 = Vimshottari, 1 = Yogini, 2 = Chara
   bool _showAspects = false; // Toggle for planetary aspects (drishti)
   final GlobalKey _d1ChartKey = GlobalKey();
-  final GlobalKey _analysisMenuKey = GlobalKey();
-  static bool _hasSeenChartTutorialSession = false;
 
   // Timeline state variables
   DateTime _timelineCurrentDate = DateTime.now();
@@ -72,12 +69,6 @@ class _ChartScreenState extends State<ChartScreen> {
       if (args != null) {
         _birthData = args;
         _loadChartData();
-
-        if (!_hasSeenChartTutorialSession) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _showChartTutorial();
-          });
-        }
       } else {
         // Handle missing arguments
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -103,89 +94,6 @@ class _ChartScreenState extends State<ChartScreen> {
         _chartDataFuture = _kpChartService.generateCompleteChart(_birthData!);
       });
     }
-  }
-
-  void _showChartTutorial() {
-    _hasSeenChartTutorialSession = true;
-    List<TargetFocus> targets = [];
-
-    targets.add(
-      TargetFocus(
-        identify: "d1Chart",
-        keyTarget: _d1ChartKey,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            builder: (context, controller) {
-              return const Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Your Birth Chart",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 20,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: Text(
-                      "This is your main D-1 Rashi chart. Scroll down for planetary details and timeline.",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    targets.add(
-      TargetFocus(
-        identify: "analysisMenu",
-        keyTarget: _analysisMenuKey,
-        contents: [
-          TargetContent(
-            align: ContentAlign.bottom,
-            builder: (context, controller) {
-              return const Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Deep Analysis",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 20,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: Text(
-                      "Click here to access advanced tools like KP System, Shadbala, Ashtakavarga and PDF Reports.",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-
-    TutorialCoachMark(
-      targets: targets,
-      colorShadow: Colors.black,
-      textSkip: "SKIP",
-      paddingFocus: 10,
-      opacityShadow: 0.8,
-    ).show(context: context);
   }
 
   void _openAyanamsaSelection() {
@@ -423,7 +331,6 @@ class _ChartScreenState extends State<ChartScreen> {
         leading: IconButton(
           icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
           onPressed: () => Navigator.pop(context),
-          tooltip: 'Go back',
         ),
         title: const Text("Vedic Chart"),
         actions: CommandBar(
@@ -454,7 +361,9 @@ class _ChartScreenState extends State<ChartScreen> {
               CommandBarButton(
                 icon: Icon(
                   _showAspects ? FluentIcons.view : FluentIcons.hide,
-                  semanticLabel: _showAspects ? 'Hide planetary aspects' : 'Show planetary aspects',
+                  semanticLabel: _showAspects
+                      ? 'Hide planetary aspects'
+                      : 'Show planetary aspects',
                 ),
                 label: Text(_showAspects ? 'Aspects On' : 'Aspects Off'),
                 tooltip: _showAspects
@@ -579,7 +488,6 @@ class _ChartScreenState extends State<ChartScreen> {
                   );
                 },
                 wrappedItem: CommandBarButton(
-                  key: _analysisMenuKey,
                   icon: const Icon(FluentIcons.analytics_view),
                   label: const Text('Analysis'),
                   onPressed: () {

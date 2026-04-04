@@ -31,7 +31,7 @@ class AppEnvironment {
     try {
       _executableDir = p.dirname(Platform.resolvedExecutable);
     } catch (e) {
-      AppEnvironment.log('Core: Failed to get executable directory: $e');
+      // Cannot log yet
     }
 
     // 3. Check for Portable Marker
@@ -50,8 +50,6 @@ class AppEnvironment {
       log('Core: Executable directory resolved to: $_executableDir');
       if (_isPortable) {
         log('Core: Portable mode detected (.portable file found)');
-      } else {
-        log('Core: Standard installation mode (no .portable marker)');
       }
     }
 
@@ -79,14 +77,9 @@ class AppEnvironment {
         await _logFile!.writeAsString(
           '--- Log Started: ${DateTime.now()} ---\n',
         );
-      } else {
-        await _logFile!.writeAsString(
-          '--- Log Started: ${DateTime.now()} ---\n',
-        );
       }
     } catch (e) {
-      AppEnvironment.log('Core: Failed to setup logging: $e');
-      if (_isVerbose) debugPrint('Failed to setup logging: $e');
+      // Cannot log
     }
   }
 
@@ -99,8 +92,6 @@ class AppEnvironment {
       }
       return dir;
     } else {
-      // Standard: %USERPROFILE%\Documents on Windows for easier access,
-      // or standard ApplicationDocumentsDirectory
       return await getApplicationDocumentsDirectory();
     }
   }
@@ -114,7 +105,6 @@ class AppEnvironment {
       }
       return dir;
     } else {
-      // Standard: ApplicationSupportDirectory (e.g., AppData/Roaming/Company/App)
       final appSupport = await getApplicationSupportDirectory();
       final dir = Directory(p.join(appSupport.path, 'ephe'));
       if (!await dir.exists()) {
@@ -130,7 +120,6 @@ class AppEnvironment {
       final dir = await getUserDataDirectory();
       return p.join(dir.path, 'astronaksh.db');
     } else {
-      // Use standard getDatabasesPath
       final dbPath = await getDatabasesPath();
       return p.join(dbPath, 'astronaksh.db');
     }
@@ -143,7 +132,6 @@ class AppEnvironment {
 
     // 1. Print to console (stdout) for CLI visibility
     if (_isVerbose) {
-      // Use stdout directly for CLI visibility in some contexts
       stdout.writeln(logMessage);
     }
 
@@ -152,11 +140,11 @@ class AppEnvironment {
       try {
         _logFile!.writeAsStringSync('$logMessage\n', mode: FileMode.append);
       } catch (e) {
-        // Fallback to stdout if file write fails
+        // Fallback to stdout
         try {
           stdout.writeln(logMessage);
         } catch (e) {
-          // Ignore - cannot log anywhere
+          // Ignore
         }
       }
     }

@@ -40,59 +40,61 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   Widget build(BuildContext context) {
     final isError = _status.startsWith("Error:");
-
+    
     return ScaffoldPage(
       content: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (!isError) ...[
-              const ProgressRing(),
-              const SizedBox(height: 20),
-            ] else ...[
-              Icon(FluentIcons.error, size: 48, color: Colors.red),
-              const SizedBox(height: 20),
-            ],
-            Text("AstroNaksh", style: FluentTheme.of(context).typography.title),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                _status,
-                textAlign: TextAlign.center,
+            const Text(
+              "AstroNaksh",
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 32),
+            if (!isError) ...[
+              const ProgressBar(),
+              const SizedBox(height: 16),
+            ] else ...[
+              Icon(
+                FluentIcons.error,
+                color: Colors.red,
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+            ],
+            Text(
+              _status,
+              style: TextStyle(
+                color: isError ? Colors.red : null,
+              ),
+              textAlign: TextAlign.center,
+            ),
             if (isError) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Button(
-                    onPressed: () {
-                      setState(() => _status = "Retrying...");
-                      _initApp();
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    onPressed: () => _initApp(),
+                    child: const Row(
                       children: [
-                        const Icon(FluentIcons.refresh, size: 16),
-                        const SizedBox(width: 8),
-                        const Text("Retry"),
+                        Icon(FluentIcons.refresh),
+                        SizedBox(width: 8),
+                        Text("Retry"),
                       ],
                     ),
                   ),
                   const SizedBox(width: 16),
                   Button(
-                    onPressed: () {
-                      // Exit the application
-                      exit(0);
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    onPressed: () => exit(1),
+                    child: const Row(
                       children: [
-                        const Icon(FluentIcons.cancel, size: 16),
-                        const SizedBox(width: 8),
-                        const Text("Exit"),
+                        Icon(FluentIcons.cancel),
+                        SizedBox(width: 8),
+                        Text("Exit"),
                       ],
                     ),
                   ),

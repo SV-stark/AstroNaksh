@@ -43,7 +43,7 @@ class CityDatabase {
       debugPrint('CityDatabase: Error loading cities: $e');
       // Fallback to a minimal list if load fails
       _cities = [
-        City(
+        const City(
           name: 'New Delhi',
           state: 'Delhi',
           country: 'India',
@@ -51,7 +51,7 @@ class CityDatabase {
           longitude: 77.2090,
           timezone: 'Asia/Kolkata',
         ),
-        City(
+        const City(
           name: 'Mumbai',
           state: 'Maharashtra',
           country: 'India',
@@ -60,134 +60,90 @@ class CityDatabase {
           timezone: 'Asia/Kolkata',
         ),
       ];
+      _initialized = true;
     }
   }
 
   /// Get all cities
-  static List<City> get cities => _cities;
+  static List<City> getAllCities() => _cities;
 
-  /// Search cities by name
+  /// Find cities by name (prefix search)
   static List<City> searchCities(String query) {
     if (query.isEmpty) return [];
-
     final lowerQuery = query.toLowerCase();
-    return _cities.where((city) {
-      return city.name.toLowerCase().contains(lowerQuery) ||
-          city.country.toLowerCase().contains(lowerQuery);
-    }).toList();
-  }
-
-  /// Get city by exact name
-  static City? getCityByName(String name) {
-    try {
-      return _cities.firstWhere(
-        (city) => city.name.toLowerCase() == name.toLowerCase(),
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Get all cities in a country
-  static List<City> getCitiesByCountry(String country) {
     return _cities
-        .where((city) => city.country.toLowerCase() == country.toLowerCase())
+        .where((city) => city.name.toLowerCase().startsWith(lowerQuery))
+        .take(20)
         .toList();
   }
 
-  /// Get current location using GPS
-  static Future<City?> getCurrentLocation() async {
+  /// Find nearest city to coordinates
+  static City findNearestCity(double lat, double lon) {
+    if (_cities.isEmpty) {
+      return const City(
+        name: 'New Delhi',
+        state: 'Delhi',
+        country: 'India',
+        latitude: 28.6139,
+        longitude: 77.2090,
+        timezone: 'Asia/Kolkata',
+      );
+    }
+
+    City nearest = _cities.first;
+    double minDistance = _calculateDistance(lat, lon, nearest.latitude, nearest.longitude);
+
+    for (var i = 1; i < _cities.length; i++) {
+      final dist = _calculateDistance(lat, lon, _cities[i].latitude, _cities[i].longitude);
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearest = _cities[i];
+      }
+    }
+
+    return nearest;
+  }
+
+  /// Haversine formula for distance between coordinates
+  static double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const r = 6371; // Earth radius in km
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(lat1)) * cos(_toRadians(lat2)) * sin(dLon / 2) * sin(dLon / 2);
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return r * c;
+  }
+
+  static double _toRadians(double degree) => degree * pi / 180;
+
+  /// Get current location and find nearest city
+  static Future<City?> getCityFromCurrentPosition() async {
     try {
-      // Check location permissions
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return null;
+
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return null;
-        }
+        if (permission == LocationPermission.denied) return null;
       }
 
-      if (permission == LocationPermission.deniedForever) {
-        return null;
-      }
+      if (permission == LocationPermission.deniedForever) return null;
 
-      // Get current position
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-
-      // Find nearest city
+      final position = await Geolocator.getCurrentPosition();
       return findNearestCity(position.latitude, position.longitude);
     } catch (e) {
+      debugPrint('Error getting current position: $e');
       return null;
     }
   }
 
-  /// Find nearest city to coordinates
-  static City findNearestCity(double latitude, double longitude) {
-    City? nearest;
-    double minDistance = double.infinity;
-
-    for (final city in _cities) {
-      final distance = _calculateDistance(
-        latitude,
-        longitude,
-        city.latitude,
-        city.longitude,
-      );
-
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearest = city;
-      }
-    }
-
-    return nearest!;
-  }
-
-  /// Calculate distance between two coordinates (Haversine formula)
-  static double _calculateDistance(
-    double lat1,
-    double lon1,
-    double lat2,
-    double lon2,
-  ) {
-    const earthRadius = 6371; // kilometers
-
-    final dLat = _toRadians(lat2 - lat1);
-    final dLon = _toRadians(lon2 - lon1);
-
-    final a =
-        sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(lat1)) *
-            cos(_toRadians(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-    return earthRadius * c;
-  }
-
-  static double _toRadians(double degrees) {
-    return degrees * (pi / 180);
-  }
-
-  /// Get all countries
-  static List<String> get countries {
-    return _cities.map((city) => city.country).toSet().toList()..sort();
-  }
-
-  /// Get all cities
-  static List<City> get allCities => List.unmodifiable(_cities);
-
-  /// Get total number of cities
-  static int get cityCount => _cities.length;
+  /// Alias for compatibility
+  static Future<City?> getCurrentLocation() => getCityFromCurrentPosition();
 }
 
-/// City data class
+@immutable
 class City {
   final String name;
   final String state;
@@ -195,6 +151,8 @@ class City {
   final double latitude;
   final double longitude;
   final String timezone;
+
+  String get displayName => '$name, $state, $country';
 
   const City({
     required this.name,
@@ -205,58 +163,25 @@ class City {
     required this.timezone,
   });
 
-  String get displayName => '$name, $state, $country';
+  @override
+  String toString() => '$name, $state, $country';
 
   @override
-  String toString() => displayName;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is City &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          state == other.state &&
+          country == other.country &&
+          latitude == other.latitude &&
+          longitude == other.longitude;
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is City && other.name == name && other.country == country;
-  }
-
-  @override
-  int get hashCode => name.hashCode ^ country.hashCode;
-}
-
-/// Location Service for managing GPS and city selection
-class LocationService {
-  /// Request location permission
-  static Future<bool> requestPermission() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-
-    return permission == LocationPermission.whileInUse ||
-        permission == LocationPermission.always;
-  }
-
-  /// Check if location services are enabled
-  static Future<bool> isLocationServiceEnabled() async {
-    return await Geolocator.isLocationServiceEnabled();
-  }
-
-  /// Get current position
-  static Future<Position?> getCurrentPosition() async {
-    try {
-      return await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Get city from current position
-  static Future<City?> getCityFromCurrentPosition() async {
-    final position = await getCurrentPosition();
-    if (position == null) return null;
-
-    return CityDatabase.findNearestCity(position.latitude, position.longitude);
-  }
+  int get hashCode =>
+      name.hashCode ^
+      state.hashCode ^
+      country.hashCode ^
+      latitude.hashCode ^
+      longitude.hashCode;
 }

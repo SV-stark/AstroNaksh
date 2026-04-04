@@ -17,35 +17,41 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'core/app_environment.dart';
 
-void main(List<String> args) async {
-  runZonedGuarded(
-    () async {
-      WidgetsFlutterBinding.ensureInitialized();
+void main(List<String> args) {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const AstroNakshApp());
+}
 
+class AstroNakshApp extends StatefulWidget {
+  const AstroNakshApp({super.key});
+
+  @override
+  State<AstroNakshApp> createState() => _AstroNakshAppState();
+}
+
+class _AstroNakshAppState extends State<AstroNakshApp> {
+  bool _initialized = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _initApp();
+  }
+
+  Future<void> _initApp() async {
+    try {
       // Initialize App Environment (Portable Mode / Verbose Checks)
-      await AppEnvironment.initialize(args);
-
-      AppEnvironment.log('Main: Starting app initialization...');
-      AppEnvironment.log(
-        'Main: Platform: ${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
-      );
+      // Arguments are lost here, but usually not needed for normal run
+      await AppEnvironment.initialize([]);
 
       if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        try {
-          sqfliteFfiInit();
-          databaseFactory = databaseFactoryFfi;
-          AppEnvironment.log('Main: sqflite_ffi initialized successfully');
-        } catch (e, stack) {
-          AppEnvironment.log(
-            'Main: Failed to initialize sqflite_ffi: $e\n$stack',
-          );
-        }
+        sqfliteFfiInit();
+        databaseFactory = databaseFactoryFfi;
       }
 
       tz.initializeTimeZones();
-      AppEnvironment.log('Main: Timezones initialized');
 
-      // Initialize Window for Acrylic effect (Desktop Only)
       if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
         try {
           await Window.initialize();
@@ -53,43 +59,50 @@ void main(List<String> args) async {
             effect: WindowEffect.acrylic,
             color: const Color(0xCC222222),
           );
-          AppEnvironment.log('Main: Window effect initialized');
         } catch (e) {
-          AppEnvironment.log("Main: Failed to initialize window effect: $e");
+          // Ignore
         }
-      } else {
-        AppEnvironment.log('Main: Window effect skipped on mobile platforms');
       }
 
-      // Initialize settings
-      try {
-        final settings = SettingsManager();
-        AppEnvironment.log(
-          'Main: Loading settings (Portable: ${AppEnvironment.isPortable})...',
-        );
-        await settings.loadSettings();
-        AppEnvironment.log('Main: Settings loaded');
-      } catch (e, stack) {
-        AppEnvironment.log("Main: Failed to load settings: $e\n$stack");
-      }
+      final settings = SettingsManager();
+      await settings.loadSettings();
 
-      runApp(const AstroNakshApp());
-      AppEnvironment.log('Main: runApp called');
-    },
-    (error, stack) {
-      AppEnvironment.log('CRITICAL: Uncaught exception: $error\n$stack');
-      if (AppEnvironment.isVerbose) {
-        stderr.writeln('CRITICAL: Uncaught exception: $error\n$stack');
+      if (mounted) {
+        setState(() {
+          _initialized = true;
+        });
       }
-    },
-  );
-}
-
-class AstroNakshApp extends StatelessWidget {
-  const AstroNakshApp({super.key});
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_error != null) {
+      return FluentApp(
+        home: ScaffoldPage(
+          content: Center(
+            child: Text('Initialization Error: $_error'),
+          ),
+        ),
+      );
+    }
+
+    if (!_initialized) {
+      return const FluentApp(
+        home: ScaffoldPage(
+          content: Center(
+            child: ProgressRing(),
+          ),
+        ),
+      );
+    }
+
     final settings = SettingsManager();
     return ListenableBuilder(
       listenable: settings,

@@ -101,7 +101,7 @@ class SettingsManager extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      AppEnvironment.log("SettingsManager: Error loading from DB: $e");
+      debugPrint("Error loading settings from DB: $e");
     }
   }
 
@@ -161,7 +161,7 @@ class SettingsManager extends ChangeNotifier {
           'value': value,
         }, conflictAlgorithm: ConflictAlgorithm.replace);
       } catch (e) {
-        AppEnvironment.log("SettingsManager: Error saving to DB: $e");
+        debugPrint("Error saving setting to DB: $e");
       }
     } else {
       final prefs = await SharedPreferences.getInstance();

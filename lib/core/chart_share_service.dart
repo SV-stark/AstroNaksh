@@ -1,11 +1,12 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'dart:io';
-
 import 'dart:ui' as ui;
 
-import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 import '../data/models.dart';
 import 'pdf_report_service.dart';
 
@@ -20,7 +21,7 @@ class ChartShareService {
           key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
 
       if (boundary == null) {
-        throw Exception("Could not find render boundary for chart");
+        throw Exception('Could not find render boundary for chart');
       }
 
       // Convert layout to image
@@ -29,7 +30,7 @@ class ChartShareService {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData == null) {
-        throw Exception("Failed to capture image data");
+        throw Exception('Failed to capture image data');
       }
 
       final pngBytes = byteData.buffer.asUint8List();
@@ -43,7 +44,7 @@ class ChartShareService {
         XFile(file.path),
       ], text: 'Shared from AstroNaksh');
     } catch (e) {
-      debugPrint("Error sharing image: $e");
+      debugPrint('Error sharing image: $e');
       rethrow;
     }
   }
@@ -71,10 +72,10 @@ class ChartShareService {
           XFile(path),
         ], text: 'Vedic Astrology Report from AstroNaksh');
       } else {
-        throw Exception("PDF generation failed: File not found");
+        throw Exception('PDF generation failed: File not found');
       }
     } catch (e) {
-      debugPrint("Error sharing PDF: $e");
+      debugPrint('Error sharing PDF: $e');
       rethrow;
     }
   }

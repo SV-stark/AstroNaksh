@@ -1,6 +1,7 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
-import '../../../data/models.dart';
+import '../../../logic/panchang_service.dart';
 
 /// Reusable helper widgets for the Panchang screen.
 /// Extracted to eliminate duplication and reduce the main screen's size.

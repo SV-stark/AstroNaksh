@@ -1,16 +1,16 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../data/models.dart';
 import 'package:intl/intl.dart';
 
-class DailyPredictionCard extends StatelessWidget {
-  final DailyRashiphal prediction;
-  final bool isToday;
+import '../../data/models.dart';
 
+class DailyPredictionCard extends StatelessWidget {
   const DailyPredictionCard({
     super.key,
     required this.prediction,
     this.isToday = false,
   });
+  final DailyRashiphal prediction;
+  final bool isToday;
 
   @override
   Widget build(BuildContext context) {

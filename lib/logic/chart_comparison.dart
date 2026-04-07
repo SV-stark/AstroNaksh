@@ -229,28 +229,28 @@ class ChartComparison {
     }
 
     // 1. Varna (1 pt)
-    double varna = _calculateVarna(rashi1, rashi2);
+    final varna = _calculateVarna(rashi1, rashi2);
 
     // 2. Vashya (2 pts)
-    double vashya = _calculateVashya(rashi1, rashi2);
+    final vashya = _calculateVashya(rashi1, rashi2);
 
     // 3. Tara (3 pts)
-    double tara = _calculateTara(nak1, nak2);
+    final tara = _calculateTara(nak1, nak2);
 
     // 4. Yoni (4 pts)
-    double yoni = _calculateYoniScore(nak1, nak2);
+    final yoni = _calculateYoniScore(nak1, nak2);
 
     // 5. Graha Maitri (5 pts)
-    double maitri = _calculateMaitri(rashi1, rashi2);
+    final maitri = _calculateMaitri(rashi1, rashi2);
 
     // 6. Gana (6 pts)
-    double gana = _calculateGanaScore(nak1, nak2);
+    final gana = _calculateGanaScore(nak1, nak2);
 
     // 7. Bhakoot (7 pts)
-    double bhakoot = _calculateBhakoot(rashi1, rashi2);
+    final bhakoot = _calculateBhakoot(rashi1, rashi2);
 
     // 8. Nadi (8 pts)
-    double nadi = _calculateNadiScore(nak1, nak2);
+    final nadi = _calculateNadiScore(nak1, nak2);
 
     final total = varna + vashya + tara + yoni + maitri + gana + bhakoot + nadi;
 
@@ -292,8 +292,8 @@ class ChartComparison {
       return 3;
     }
 
-    int v1 = getVarna(r1);
-    int v2 = getVarna(r2);
+    final v1 = getVarna(r1);
+    final v2 = getVarna(r2);
 
     // Bride should be equal or lower caste than Groom? Or just compatibility.
     // Rule: Groom >= Bride in grade (0 is highest, 3 lowest)
@@ -306,7 +306,7 @@ class ChartComparison {
 
   static double _calculateVashya(int r1, int r2) {
     // Full Vashya table: which signs are controlled by which
-    final Map<int, List<int>> vashyaControl = {
+    final vashyaControl = <int, List<int>>{
       0: [0, 4, 7], // Aries controls: Aries, Leo, Scorpio
       1: [1, 3, 6], // Taurus: Taurus, Cancer, Libra
       2: [2, 5], // Gemini: Gemini, Virgo
@@ -336,15 +336,15 @@ class ChartComparison {
 
   static double _calculateTara(int n1, int n2) {
     // Bidirectional check as per tradition
-    int dist1 = (n1 - n2 + 27) % 27;
-    int dist2 = (n2 - n1 + 27) % 27;
+    final dist1 = (n1 - n2 + 27) % 27;
+    final dist2 = (n2 - n1 + 27) % 27;
 
-    int rem1 = dist1 % 9;
-    int rem2 = dist2 % 9;
+    final rem1 = dist1 % 9;
+    final rem2 = dist2 % 9;
 
     // Bad remainders: 3-Vipat, 5-Pratyak, 7-Naidhana
-    bool bad1 = [3, 5, 7].contains(rem1);
-    bool bad2 = [3, 5, 7].contains(rem2);
+    final bad1 = [3, 5, 7].contains(rem1);
+    final bad2 = [3, 5, 7].contains(rem2);
 
     // Both bad = 0, one bad = 1.5, both good = 3
     if (bad1 && bad2) return 0.0;
@@ -354,7 +354,7 @@ class ChartComparison {
 
   static double _calculateYoniScore(int n1, int n2) {
     // Using string helper previously
-    String res = _calculateYoni(n1, n2);
+    final res = _calculateYoni(n1, n2);
     if (res.contains('Excellent')) return 4.0;
     if (res.contains('Good')) return 3.0; // Friendly
     if (res.contains('moderate')) return 2.0;
@@ -365,13 +365,13 @@ class ChartComparison {
 
   static double _calculateMaitri(int r1, int r2) {
     // Graha Maitri based on planetary friendship
-    String l1 = _getHouseLord(1, (r1 * 30.0));
-    String l2 = _getHouseLord(1, (r2 * 30.0));
+    final l1 = _getHouseLord(1, r1 * 30.0);
+    final l2 = _getHouseLord(1, r2 * 30.0);
 
     if (l1 == l2) return 5.0; // Same lord = maximum points
 
     // Full planetary friendship table
-    final Map<String, Map<String, String>> friendshipTable = {
+    final friendshipTable = <String, Map<String, String>>{
       'Sun': {
         'Moon': 'friend',
         'Mars': 'friend',
@@ -430,7 +430,7 @@ class ChartComparison {
       },
     };
 
-    String relationship = friendshipTable[l1]?[l2] ?? 'neutral';
+    final relationship = friendshipTable[l1]?[l2] ?? 'neutral';
 
     if (relationship == 'friend') return 5.0;
     if (relationship == 'neutral') return 3.0;
@@ -438,14 +438,14 @@ class ChartComparison {
   }
 
   static double _calculateGanaScore(int n1, int n2) {
-    String res = _calculateGana(n1, n2);
+    final res = _calculateGana(n1, n2);
     if (res.contains('Excellent')) return 6.0;
     if (res.contains('Good')) return 3.0; // Or 5
     return 0.0; // Rakshasa-Deva/Manushya mismatch often 0 or 1
   }
 
   static double _calculateBhakoot(int r1, int r2) {
-    int dist = (r1 - r2 + 12) % 12; // r2 to r1
+    var dist = (r1 - r2 + 12) % 12; // r2 to r1
     dist = dist + 1; // 1-based count
 
     // Bad: 2-12, 6-8, 5-9 (sometimes 9-5 is good, but 2-12 etc bad)
@@ -470,7 +470,7 @@ class ChartComparison {
   }
 
   static double _calculateNadiScore(int n1, int n2) {
-    String res = _calculateNadi(n1, n2);
+    final res = _calculateNadi(n1, n2);
     if (res.contains('Compatible')) return 8.0;
     return 0.0;
   }
@@ -695,10 +695,10 @@ class ChartComparison {
     final p1Name = p1.toString().toLowerCase();
     final p2Name = p2.toString().toLowerCase();
 
-    final p1IsBenefic = benefics.any((b) => p1Name.contains(b));
-    final p2IsBenefic = benefics.any((b) => p2Name.contains(b));
-    final p1IsMalefic = malefics.any((m) => p1Name.contains(m));
-    final p2IsMalefic = malefics.any((m) => p2Name.contains(m));
+    final p1IsBenefic = benefics.any(p1Name.contains);
+    final p2IsBenefic = benefics.any(p2Name.contains);
+    final p1IsMalefic = malefics.any(p1Name.contains);
+    final p2IsMalefic = malefics.any(p2Name.contains);
 
     if (type == AspectType.trine || type == AspectType.sextile) {
       if (p1IsBenefic || p2IsBenefic) {
@@ -894,14 +894,6 @@ class ChartComparison {
 
 /// Synastry Analysis Result
 class SynastryAnalysis {
-  final String chart1Name;
-  final String chart2Name;
-  final List<SynastryAspect> aspects;
-  final List<HouseOverlay> houseOverlays;
-  final NakshatraAnalysis nakshatraAnalysis;
-  final NavamsaCompatibility navamsaCompatibility;
-  final double overallScore;
-  final String summary;
 
   SynastryAnalysis({
     required this.chart1Name,
@@ -913,6 +905,14 @@ class SynastryAnalysis {
     required this.overallScore,
     required this.summary,
   });
+  final String chart1Name;
+  final String chart2Name;
+  final List<SynastryAspect> aspects;
+  final List<HouseOverlay> houseOverlays;
+  final NakshatraAnalysis nakshatraAnalysis;
+  final NavamsaCompatibility navamsaCompatibility;
+  final double overallScore;
+  final String summary;
 
   String get compatibilityLevel {
     if (overallScore >= 80) return 'Excellent';
@@ -931,11 +931,6 @@ class SynastryAnalysis {
 
 /// Synastry Aspect
 class SynastryAspect {
-  final Planet planet1;
-  final Planet planet2;
-  final AspectType aspectType;
-  final double orb;
-  final AspectEffect effect;
 
   SynastryAspect({
     required this.planet1,
@@ -944,6 +939,11 @@ class SynastryAspect {
     required this.orb,
     required this.effect,
   });
+  final Planet planet1;
+  final Planet planet2;
+  final AspectType aspectType;
+  final double orb;
+  final AspectEffect effect;
 
   String get description {
     final p1 = planet1.toString().split('.').last;
@@ -967,11 +967,6 @@ enum AspectEffect {
 
 /// House Overlay
 class HouseOverlay {
-  final Planet planet;
-  final int house;
-  final String houseLord;
-  final String significance;
-  final int chart;
 
   HouseOverlay({
     required this.planet,
@@ -980,21 +975,15 @@ class HouseOverlay {
     required this.significance,
     required this.chart,
   });
+  final Planet planet;
+  final int house;
+  final String houseLord;
+  final String significance;
+  final int chart;
 }
 
 /// Nakshatra Analysis (Kuta Matching)
 class NakshatraAnalysis {
-  final String moon1Nakshatra;
-  final String moon2Nakshatra;
-  final double varna;
-  final double vashya;
-  final double tara;
-  final double yoni;
-  final double maitri;
-  final double gana;
-  final double bhakoot;
-  final double nadi;
-  final double totalScore;
 
   NakshatraAnalysis({
     required this.moon1Nakshatra,
@@ -1009,6 +998,17 @@ class NakshatraAnalysis {
     required this.nadi,
     required this.totalScore,
   });
+  final String moon1Nakshatra;
+  final String moon2Nakshatra;
+  final double varna;
+  final double vashya;
+  final double tara;
+  final double yoni;
+  final double maitri;
+  final double gana;
+  final double bhakoot;
+  final double nadi;
+  final double totalScore;
 
   /// Deprecated getters for backward compat if needed, simplified
   String get score => totalScore.toStringAsFixed(1);
@@ -1016,10 +1016,6 @@ class NakshatraAnalysis {
 
 /// Navamsa Compatibility
 class NavamsaCompatibility {
-  final String ascendantCompatibility;
-  final String moonSignCompatibility;
-  final String venusSignCompatibility;
-  final double score;
 
   NavamsaCompatibility({
     required this.ascendantCompatibility,
@@ -1027,4 +1023,8 @@ class NavamsaCompatibility {
     required this.venusSignCompatibility,
     required this.score,
   });
+  final String ascendantCompatibility;
+  final String moonSignCompatibility;
+  final String venusSignCompatibility;
+  final double score;
 }

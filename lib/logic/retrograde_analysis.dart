@@ -19,7 +19,7 @@ class RetrogradeAnalysis {
   static Map<String, RetrogradeInfo> analyzeRetrogrades(
     CompleteChartData chart,
   ) {
-    final Map<String, RetrogradeInfo> analysis = {};
+    final analysis = <String, RetrogradeInfo>{};
 
     for (final planet in _retroPlanets) {
       // Type-safe lookup — no string matching needed
@@ -107,13 +107,12 @@ class RetrogradeAnalysis {
 
 /// Data class for retrograde information
 class RetrogradeInfo {
-  final String planetName;
-  final bool isRetrograde;
-  final String interpretation;
-
   RetrogradeInfo({
     required this.planetName,
     required this.isRetrograde,
     required this.interpretation,
   });
+  final String planetName;
+  final bool isRetrograde;
+  final String interpretation;
 }

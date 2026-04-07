@@ -2,8 +2,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 
 import '../../data/city_database.dart';
-import 'horary_result_screen.dart';
 import '../../ui/utils/responsive_helper.dart';
+import 'horary_result_screen.dart';
 
 class HoraryInputScreen extends StatefulWidget {
   const HoraryInputScreen({super.key});
@@ -159,7 +159,7 @@ class _HoraryInputScreenState extends State<HoraryInputScreen> {
         );
         return;
       }
-      locName = "Custom: ${lat.toStringAsFixed(2)}, ${long.toStringAsFixed(2)}";
+      locName = 'Custom: ${lat.toStringAsFixed(2)}, ${long.toStringAsFixed(2)}';
     } else {
       lat = _selectedCity!.latitude;
       long = _selectedCity!.longitude;
@@ -304,7 +304,10 @@ class _HoraryInputScreenState extends State<HoraryInputScreen> {
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
                         'Selected: ${_selectedCity!.displayName}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                 ],

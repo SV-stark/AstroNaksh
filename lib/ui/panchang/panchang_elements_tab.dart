@@ -1,21 +1,20 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
-import '../../../data/models.dart';
+import '../../../logic/panchang_service.dart';
 import '../../../ui/utils/responsive_helper.dart';
 import 'panchang_helpers.dart';
 
 /// Tab 0: Panchang Elements (Tithi, Nakshatra, Yoga, Karana, Vara)
 class PanchangElementsTab extends StatelessWidget {
-  final PanchangResult? result;
-  final DateTime? tithiJunction;
-  final bool isLoading;
-
   const PanchangElementsTab({
     super.key,
     this.result,
     this.tithiJunction,
     this.isLoading = false,
   });
+  final PanchangResult? result;
+  final DateTime? tithiJunction;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {

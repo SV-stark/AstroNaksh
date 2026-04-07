@@ -1,17 +1,4 @@
 class DailyRashiphal {
-  final DateTime date;
-  final String moonSign;
-  final String nakshatra;
-  final String tithi;
-  final String overallPrediction;
-  final List<String> keyHighlights;
-  final List<String> auspiciousPeriods;
-  final List<String> cautions;
-  final String recommendation;
-  final double favorableScore;
-  final List<String> transitContext;
-  final String dashaContext;
-
   DailyRashiphal({
     required this.date,
     required this.moonSign,
@@ -26,21 +13,6 @@ class DailyRashiphal {
     this.transitContext = const [],
     this.dashaContext = '',
   });
-
-  Map<String, dynamic> toJson() => {
-    'date': date.toIso8601String(),
-    'moonSign': moonSign,
-    'nakshatra': nakshatra,
-    'tithi': tithi,
-    'overallPrediction': overallPrediction,
-    'keyHighlights': keyHighlights,
-    'auspiciousPeriods': auspiciousPeriods,
-    'cautions': cautions,
-    'recommendation': recommendation,
-    'favorableScore': favorableScore,
-    'transitContext': transitContext,
-    'dashaContext': dashaContext,
-  };
 
   factory DailyRashiphal.fromJson(Map<String, dynamic> json) {
     return DailyRashiphal(
@@ -60,6 +32,33 @@ class DailyRashiphal {
       dashaContext: json['dashaContext'] as String? ?? '',
     );
   }
+  final DateTime date;
+  final String moonSign;
+  final String nakshatra;
+  final String tithi;
+  final String overallPrediction;
+  final List<String> keyHighlights;
+  final List<String> auspiciousPeriods;
+  final List<String> cautions;
+  final String recommendation;
+  final double favorableScore;
+  final List<String> transitContext;
+  final String dashaContext;
+
+  Map<String, dynamic> toJson() => {
+    'date': date.toIso8601String(),
+    'moonSign': moonSign,
+    'nakshatra': nakshatra,
+    'tithi': tithi,
+    'overallPrediction': overallPrediction,
+    'keyHighlights': keyHighlights,
+    'auspiciousPeriods': auspiciousPeriods,
+    'cautions': cautions,
+    'recommendation': recommendation,
+    'favorableScore': favorableScore,
+    'transitContext': transitContext,
+    'dashaContext': dashaContext,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -85,21 +84,11 @@ class DailyRashiphal {
 }
 
 class RashiphalDashboard {
-  final DailyRashiphal today;
-  final DailyRashiphal tomorrow;
-  final List<DailyRashiphal> weeklyOverview;
-
   RashiphalDashboard({
     required this.today,
     required this.tomorrow,
     required this.weeklyOverview,
   });
-
-  Map<String, dynamic> toJson() => {
-    'today': today.toJson(),
-    'tomorrow': tomorrow.toJson(),
-    'weeklyOverview': weeklyOverview.map((e) => e.toJson()).toList(),
-  };
 
   factory RashiphalDashboard.fromJson(Map<String, dynamic> json) {
     return RashiphalDashboard(
@@ -110,6 +99,15 @@ class RashiphalDashboard {
           .toList(),
     );
   }
+  final DailyRashiphal today;
+  final DailyRashiphal tomorrow;
+  final List<DailyRashiphal> weeklyOverview;
+
+  Map<String, dynamic> toJson() => {
+    'today': today.toJson(),
+    'tomorrow': tomorrow.toJson(),
+    'weeklyOverview': weeklyOverview.map((e) => e.toJson()).toList(),
+  };
 
   @override
   bool operator ==(Object other) {

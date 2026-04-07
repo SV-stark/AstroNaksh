@@ -1,11 +1,11 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/core/rashiphal_rules.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('RashiphalRules Tests', () {
     test('Moon Sign Predictions', () {
       // Test all 12 houses
-      for (int i = 1; i <= 12; i++) {
+      for (var i = 1; i <= 12; i++) {
         final prediction = RashiphalRules.getMoonSignPrediction(0, i);
         expect(prediction, isNotEmpty);
         expect(prediction, isNot(contains('neutral'))); // Unless default
@@ -14,7 +14,7 @@ void main() {
 
     test('Nakshatra Predictions', () {
       // Test all 27 nakshatras
-      for (int i = 0; i < 27; i++) {
+      for (var i = 0; i < 27; i++) {
         final prediction = RashiphalRules.getNakshatraPrediction(i);
         expect(prediction, isNotEmpty);
       }

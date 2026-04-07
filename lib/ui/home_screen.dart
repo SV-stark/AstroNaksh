@@ -1,12 +1,13 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, FontWeight;
 import 'package:flutter/material.dart' show Colors, FontWeight;
-import '../ui/utils/responsive_helper.dart';
-import 'styles.dart';
+
 import '../core/database_helper.dart';
 import '../data/models.dart';
 import '../data/sample_charts.dart';
-import '../core/settings_manager.dart';
+import '../ui/utils/responsive_helper.dart';
 import 'horary/horary_input_screen.dart';
+import 'styles.dart';
 import 'widgets/panchang_daily_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -120,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return ScaffoldPage(
       header: PageHeader(
-        title: const Text("AstroNaksh"),
+        title: const Text('AstroNaksh'),
         commandBar: CommandBar(
           overflowBehavior: ResponsiveHelper.useMobileLayout(context)
               ? CommandBarOverflowBehavior.dynamicOverflow
@@ -167,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Quick Actions",
+                    'Quick Actions',
                     style: FluentTheme.of(context).typography.subtitle,
                   ),
                   const SizedBox(height: 16),
@@ -215,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      "Create New Chart",
+                                      'Create New Chart',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -224,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      "Calculate birth data and explore detailed horoscopes",
+                                      'Calculate birth data and explore detailed horoscopes',
                                       style: TextStyle(
                                         color: Colors.black.withValues(
                                           alpha: 0.7,
@@ -263,8 +264,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       _buildQuickAction(
                         icon: FluentIcons.heart_fill,
-                        title: "Compare",
-                        subtitle: "Chart compatibility",
+                        title: 'Compare',
+                        subtitle: 'Chart compatibility',
                         color: Colors.purple,
                         onTap: () {
                           Navigator.pushNamed(context, '/comparison');
@@ -272,8 +273,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       _buildQuickAction(
                         icon: FluentIcons.calendar,
-                        title: "Panchang",
-                        subtitle: "Daily almanac",
+                        title: 'Panchang',
+                        subtitle: 'Daily almanac',
                         color: Colors.orange,
                         onTap: () {
                           Navigator.pushNamed(context, '/panchang');
@@ -281,8 +282,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       _buildQuickAction(
                         icon: FluentIcons.chat,
-                        title: "Horary (Prashna)",
-                        subtitle: "Ask a question",
+                        title: 'Horary (Prashna)',
+                        subtitle: 'Ask a question',
                         color: Colors.teal,
                         onTap: () {
                           Navigator.push(
@@ -295,8 +296,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       _buildQuickAction(
                         icon: FluentIcons.diamond,
-                        title: "Muhurta Finder",
-                        subtitle: "Auspicious times",
+                        title: 'Muhurta Finder',
+                        subtitle: 'Auspicious times',
                         color: Colors.blue,
                         onTap: () {
                           Navigator.pushNamed(context, '/muhurta');
@@ -310,22 +311,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SliverPadding(
             padding: EdgeInsets.symmetric(
-              horizontal: ResponsiveHelper.useMobileLayout(context) ? 16.0 : 24.0,
+              horizontal: ResponsiveHelper.useMobileLayout(context)
+                  ? 16.0
+                  : 24.0,
             ),
             sliver: SliverToBoxAdapter(
               child: Row(
                 children: [
                   Text(
-                    "Recent Charts",
+                    'Recent Charts',
                     style: FluentTheme.of(context).typography.subtitle,
                   ),
                   const Spacer(),
                   SizedBox(
-                    width: ResponsiveHelper.useMobileLayout(context) ? 200 : 250,
+                    width: ResponsiveHelper.useMobileLayout(context)
+                        ? 200
+                        : 250,
                     height: ResponsiveHelper.useMobileLayout(context) ? 44 : 36,
                     child: TextBox(
                       controller: _searchController,
-                      placeholder: "Search...",
+                      placeholder: 'Search...',
                       prefix: const Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(FluentIcons.search),
@@ -337,166 +342,173 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
-          _isLoading
-              ? const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 100),
-                    child: Center(child: ProgressRing()),
-                  ),
-                )
-              : _filteredCharts.isEmpty
-                  ? SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 100),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                FluentIcons.contact_list,
-                                size: 64,
-                                color: Colors.grey.withAlpha(128),
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 100),
+                child: Center(child: ProgressRing()),
+              ),
+            )
+          else
+            _filteredCharts.isEmpty
+                ? SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 100),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              FluentIcons.contact_list,
+                              size: 64,
+                              color: Colors.grey.withAlpha(128),
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              'No saved charts yet',
+                              style: FluentTheme.of(context).typography.title,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Create your first chart to get started',
+                              style: TextStyle(color: Colors.grey[100]),
+                            ),
+                            const SizedBox(height: 24),
+                            FilledButton(
+                              onPressed: () async {
+                                await Navigator.pushNamed(context, '/input');
+                                _loadCharts();
+                              },
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(FluentIcons.add),
+                                  SizedBox(width: 8),
+                                  Text('Create New Chart'),
+                                ],
                               ),
-                              const SizedBox(height: 24),
-                              Text(
-                                "No saved charts yet",
-                                style: FluentTheme.of(context).typography.title,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Create your first chart to get started",
-                                style: TextStyle(color: Colors.grey[100]),
-                              ),
-                              const SizedBox(height: 24),
-                              FilledButton(
-                                onPressed: () async {
-                                  await Navigator.pushNamed(context, '/input');
-                                  _loadCharts();
-                                },
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(FluentIcons.add),
-                                    SizedBox(width: 8),
-                                    Text("Create New Chart"),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 48),
-                              Text(
-                                "Or explore famous charts:",
-                                style: FluentTheme.of(context).typography.subtitle,
-                              ),
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                width: 400,
-                                child: Column(
-                                  children: SampleCharts.samples
-                                      .map(
-                                        (sample) => Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 4.0,
-                                          ),
-                                          child: Card(
-                                            padding: EdgeInsets.zero,
-                                            child: ListTile.selectable(
-                                              leading: const Padding(
-                                                padding: EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  FluentIcons.contact_info,
-                                                  color: AppStyles.primaryColor,
-                                                ),
+                            ),
+                            const SizedBox(height: 48),
+                            Text(
+                              'Or explore famous charts:',
+                              style: FluentTheme.of(
+                                context,
+                              ).typography.subtitle,
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: 400,
+                              child: Column(
+                                children: SampleCharts.samples
+                                    .map(
+                                      (sample) => Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0,
+                                        ),
+                                        child: Card(
+                                          padding: EdgeInsets.zero,
+                                          child: ListTile.selectable(
+                                            leading: const Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Icon(
+                                                FluentIcons.contact_info,
+                                                color: AppStyles.primaryColor,
                                               ),
-                                              title: Text(
-                                                sample.name,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              subtitle: Text(sample.place),
-                                              onPressed: () {
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  '/chart',
-                                                  arguments: sample,
-                                                );
-                                              },
                                             ),
+                                            title: Text(
+                                              sample.name,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            subtitle: Text(sample.place),
+                                            onPressed: () {
+                                              Navigator.pushNamed(
+                                                context,
+                                                '/chart',
+                                                arguments: sample,
+                                              );
+                                            },
                                           ),
                                         ),
-                                      )
-                                      .toList(),
-                                ),
+                                      ),
+                                    )
+                                    .toList(),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    )
-                  : SliverPadding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ResponsiveHelper.useMobileLayout(context) ? 16.0 : 24.0,
-                      ),
-                      sliver: SliverList.builder(
-                        itemCount: _filteredCharts.length,
-                        itemBuilder: (context, index) {
-                          final chart = _filteredCharts[index];
-                          final isMobile = ResponsiveHelper.useMobileLayout(context);
-                          return Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: isMobile ? 8 : 4,
-                            ),
-                            child: Card(
-                              padding: EdgeInsets.zero,
-                              child: ListTile.selectable(
-                                onPressed: () => _openChart(chart),
-                                leading: Container(
-                                  width: isMobile ? 48 : 40,
-                                  height: isMobile ? 48 : 40,
-                                  margin: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppStyles.primaryColor.withAlpha(25),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    FluentIcons.contact,
-                                    color: AppStyles.primaryColor,
-                                    size: isMobile ? 24 : 20,
-                                  ),
+                    ),
+                  )
+                : SliverPadding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveHelper.useMobileLayout(context)
+                          ? 16.0
+                          : 24.0,
+                    ),
+                    sliver: SliverList.builder(
+                      itemCount: _filteredCharts.length,
+                      itemBuilder: (context, index) {
+                        final chart = _filteredCharts[index];
+                        final isMobile = ResponsiveHelper.useMobileLayout(
+                          context,
+                        );
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: isMobile ? 8 : 4,
+                          ),
+                          child: Card(
+                            padding: EdgeInsets.zero,
+                            child: ListTile.selectable(
+                              onPressed: () => _openChart(chart),
+                              leading: Container(
+                                width: isMobile ? 48 : 40,
+                                height: isMobile ? 48 : 40,
+                                margin: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppStyles.primaryColor.withAlpha(25),
+                                  shape: BoxShape.circle,
                                 ),
-                                title: Text(
-                                  chart['name'] ?? 'Unknown',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: isMobile ? 16 : 14,
-                                  ),
+                                child: Icon(
+                                  FluentIcons.contact,
+                                  color: AppStyles.primaryColor,
+                                  size: isMobile ? 24 : 20,
                                 ),
-                                subtitle: Text(
-                                  '${_formatDateTime(chart['dateTime'])}'
-                                  '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
-                                  style: TextStyle(fontSize: isMobile ? 13 : 12),
+                              ),
+                              title: Text(
+                                chart['name'] ?? 'Unknown',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: isMobile ? 16 : 14,
                                 ),
-                                trailing: SizedBox(
-                                  width: isMobile ? 48 : 40,
-                                  height: isMobile ? 48 : 40,
-                                  child: IconButton(
-                                    icon: Icon(
-                                      FluentIcons.delete,
-                                      color: Colors.red,
-                                      size: isMobile ? 24 : 16,
-                                    ),
-                                    onPressed: () async {
-                                      await _dbHelper.deleteChart(chart['id']);
-                                      _loadCharts();
-                                    },
+                              ),
+                              subtitle: Text(
+                                '${_formatDateTime(chart['dateTime'])}'
+                                '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
+                                style: TextStyle(fontSize: isMobile ? 13 : 12),
+                              ),
+                              trailing: SizedBox(
+                                width: isMobile ? 48 : 40,
+                                height: isMobile ? 48 : 40,
+                                child: IconButton(
+                                  icon: Icon(
+                                    FluentIcons.delete,
+                                    color: Colors.red,
+                                    size: isMobile ? 24 : 16,
                                   ),
+                                  onPressed: () async {
+                                    await _dbHelper.deleteChart(chart['id']);
+                                    _loadCharts();
+                                  },
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
+                  ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),

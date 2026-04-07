@@ -1,10 +1,12 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:flutter/material.dart' show showDatePicker;
 import 'package:intl/intl.dart';
-import '../../ui/utils/responsive_helper.dart';
+import 'package:jyotish/jyotish.dart';
+
 import '../../core/ephemeris_manager.dart';
 import '../../data/city_database.dart';
-import 'package:flutter/material.dart' show showDatePicker;
+import '../../ui/utils/responsive_helper.dart';
 
 class MuhurtaFinderScreen extends StatefulWidget {
   const MuhurtaFinderScreen({super.key});
@@ -41,7 +43,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedCity = City(
+    _selectedCity = const City(
       name: 'New Delhi',
       state: 'Delhi',
       country: 'India',
@@ -77,7 +79,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
 
       if (sunriseSunset.$1 == null || sunriseSunset.$2 == null) {
         throw Exception(
-          "Could not determine sunrise/sunset for this location and date.",
+          'Could not determine sunrise/sunset for this location and date.',
         );
       }
 
@@ -181,7 +183,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                 padding: const EdgeInsets.only(right: 12.0),
                 child: Text(
                   _selectedCity!.name,
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             IconButton(
@@ -474,7 +476,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
     return Column(
       children: allPeriods.map((period) {
         final isInauspicious = _muhurta!.inauspiciousPeriods.isInauspicious(
-          period.startTime.add(Duration(minutes: 5)),
+          period.startTime.add(const Duration(minutes: 5)),
         );
 
         Color indicatorColor = Colors.grey;
@@ -514,7 +516,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                     ),
                     Text(
                       period is HoraPeriod ? 'Hora' : 'Choghadiya',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),

@@ -1,15 +1,17 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'dart:io';
+
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
 import 'app_environment.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper _instance = DatabaseHelper._internal();
-  static Database? _database;
-
   factory DatabaseHelper() => _instance;
 
   DatabaseHelper._internal();
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  static Database? _database;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -108,8 +110,8 @@ class DatabaseHelper {
 }
 
 class DatabaseException implements Exception {
-  final String message;
   DatabaseException(this.message);
+  final String message;
   @override
   String toString() => 'DatabaseException: $message';
 }

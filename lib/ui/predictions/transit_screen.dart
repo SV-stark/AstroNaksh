@@ -4,9 +4,8 @@ import '../../logic/transit_analysis.dart';
 import '../../ui/utils/responsive_helper.dart';
 
 class TransitScreen extends StatefulWidget {
-  final CompleteChartData natalChart;
-
   const TransitScreen({super.key, required this.natalChart});
+  final CompleteChartData natalChart;
 
   @override
   State<TransitScreen> createState() => _TransitScreenState();
@@ -97,7 +96,7 @@ class _TransitScreenState extends State<TransitScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text('Date: ', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           DatePicker(
             selected: _selectedDate,
@@ -111,7 +110,7 @@ class _TransitScreenState extends State<TransitScreen> {
     }
     return Row(
       children: [
-        const Text("Date: ", style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('Date: ', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(width: 8),
         ConstrainedBox(
           constraints: const BoxConstraints(minWidth: 200),

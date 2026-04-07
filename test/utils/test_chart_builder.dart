@@ -3,6 +3,7 @@ import 'package:jyotish/jyotish.dart';
 
 /// A builder class to create [CompleteChartData] for testing purposes.
 class TestChartBuilder {
+  TestChartBuilder();
   final Map<Planet, PlanetInput> _planets = {};
   double _ascendant = 0; // default to Aries rising
   final DateTime _dateTime = DateTime.utc(
@@ -16,8 +17,6 @@ class TestChartBuilder {
 
   // Rahu longitude. Ketu will be opposite.
   double? _rahuLongitude;
-
-  TestChartBuilder();
 
   /// Set the Ascendant (Lagna) sign (1-12)
   TestChartBuilder withAscendantSign(int sign) {
@@ -208,7 +207,7 @@ class TestChartBuilder {
 
   int _getHouse(double longitude, double ascendant) {
     // Equal house system
-    double adjusted = (longitude - ascendant + 360) % 360;
+    final adjusted = (longitude - ascendant + 360) % 360;
     return (adjusted / 30).floor() + 1;
   }
 
@@ -263,7 +262,7 @@ class TestChartBuilder {
 }
 
 class PlanetInput {
+  PlanetInput({required this.longitude, required this.speed});
   final double longitude;
   final double speed;
-  PlanetInput({required this.longitude, required this.speed});
 }

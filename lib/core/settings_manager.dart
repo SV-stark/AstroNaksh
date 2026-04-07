@@ -1,19 +1,20 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
+
 import 'app_environment.dart';
-import 'database_helper.dart';
 import 'chart_customization.dart';
+import 'database_helper.dart';
 
 class SettingsManager extends ChangeNotifier {
-  static final SettingsManager _instance = SettingsManager._internal();
-
   factory SettingsManager() {
     return _instance;
   }
 
   SettingsManager._internal();
+  static final SettingsManager _instance = SettingsManager._internal();
 
   ChartCustomization _chartSettings = ChartCustomization();
   ThemeMode _themeMode = ThemeMode.system;
@@ -53,7 +54,7 @@ class SettingsManager extends ChangeNotifier {
         final Map<String, dynamic> json = jsonDecode(chartSettingsString);
         _chartSettings = ChartCustomization.fromJson(json);
       } catch (e) {
-        debugPrint("Error loading chart settings: $e");
+        debugPrint('Error loading chart settings: $e');
       }
     }
 
@@ -67,7 +68,9 @@ class SettingsManager extends ChangeNotifier {
     try {
       final db = await DatabaseHelper().database;
       final List<Map<String, dynamic>> maps = await db.query('settings');
-      final settingsMap = {for (var m in maps) m['key'] as String: m['value']};
+      final settingsMap = {
+        for (final m in maps) m['key'] as String: m['value'],
+      };
 
       // Theme
       if (settingsMap.containsKey(_themeModeKey)) {
@@ -89,7 +92,7 @@ class SettingsManager extends ChangeNotifier {
             _chartSettings = ChartCustomization.fromJson(json);
           }
         } catch (e) {
-          debugPrint("Error loading chart settings from DB: $e");
+          debugPrint('Error loading chart settings from DB: $e');
         }
       }
 
@@ -101,7 +104,7 @@ class SettingsManager extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint("Error loading settings from DB: $e");
+      debugPrint('Error loading settings from DB: $e');
     }
   }
 
@@ -161,7 +164,7 @@ class SettingsManager extends ChangeNotifier {
           'value': value,
         }, conflictAlgorithm: ConflictAlgorithm.replace);
       } catch (e) {
-        debugPrint("Error saving setting to DB: $e");
+        debugPrint('Error saving setting to DB: $e');
       }
     } else {
       final prefs = await SharedPreferences.getInstance();

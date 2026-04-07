@@ -2,15 +2,14 @@ import 'package:jyotish/jyotish.dart';
 
 /// Vimshottari Dasha data class
 class VimshottariDasha {
-  final String birthLord;
-  final double balanceAtBirth;
-  final List<Mahadasha> mahadashas;
-
   VimshottariDasha({
     required this.birthLord,
     required this.balanceAtBirth,
     required this.mahadashas,
   });
+  final String birthLord;
+  final double balanceAtBirth;
+  final List<Mahadasha> mahadashas;
 
   String get formattedBalanceAtBirth {
     final years = balanceAtBirth.floor();
@@ -22,12 +21,6 @@ class VimshottariDasha {
 
 /// Mahadasha data class
 class Mahadasha {
-  final String lord;
-  final DateTime startDate;
-  final DateTime endDate;
-  final double periodYears;
-  final List<Antardasha> antardashas;
-
   Mahadasha({
     required this.lord,
     required this.startDate,
@@ -35,6 +28,11 @@ class Mahadasha {
     required this.periodYears,
     required this.antardashas,
   });
+  final String lord;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
+  final List<Antardasha> antardashas;
 
   String get formattedPeriod {
     final years = periodYears.floor();
@@ -45,12 +43,6 @@ class Mahadasha {
 
 /// Antardasha data class
 class Antardasha {
-  final String lord;
-  final DateTime startDate;
-  final DateTime endDate;
-  final double periodYears;
-  final List<Pratyantardasha> pratyantardashas;
-
   Antardasha({
     required this.lord,
     required this.startDate,
@@ -58,17 +50,15 @@ class Antardasha {
     required this.periodYears,
     required this.pratyantardashas,
   });
-}
-
-/// Pratyantardasha data class
-class Pratyantardasha {
-  final String mahadashaLord;
-  final String antardashaLord;
   final String lord;
   final DateTime startDate;
   final DateTime endDate;
   final double periodYears;
+  final List<Pratyantardasha> pratyantardashas;
+}
 
+/// Pratyantardasha data class
+class Pratyantardasha {
   Pratyantardasha({
     required this.mahadashaLord,
     required this.antardashaLord,
@@ -77,25 +67,23 @@ class Pratyantardasha {
     required this.endDate,
     required this.periodYears,
   });
-}
-
-/// Yogini Dasha data class
-class YoginiDasha {
-  final String startYogini;
-  final List<YoginiMahadasha> mahadashas;
-
-  YoginiDasha({required this.startYogini, required this.mahadashas});
-}
-
-/// Yogini Mahadasha data class
-class YoginiMahadasha {
-  final String name;
+  final String mahadashaLord;
+  final String antardashaLord;
   final String lord;
   final DateTime startDate;
   final DateTime endDate;
   final double periodYears;
-  final List<YoginiAntardasha> antardashas;
+}
 
+/// Yogini Dasha data class
+class YoginiDasha {
+  YoginiDasha({required this.startYogini, required this.mahadashas});
+  final String startYogini;
+  final List<YoginiMahadasha> mahadashas;
+}
+
+/// Yogini Mahadasha data class
+class YoginiMahadasha {
   YoginiMahadasha({
     required this.name,
     required this.lord,
@@ -104,15 +92,15 @@ class YoginiMahadasha {
     required this.periodYears,
     this.antardashas = const [],
   });
-}
-
-class YoginiAntardasha {
   final String name;
   final String lord;
   final DateTime startDate;
   final DateTime endDate;
-  final List<YoginiPratyantardasha> pratyantardashas;
+  final double periodYears;
+  final List<YoginiAntardasha> antardashas;
+}
 
+class YoginiAntardasha {
   YoginiAntardasha({
     required this.name,
     required this.lord,
@@ -120,39 +108,35 @@ class YoginiAntardasha {
     required this.endDate,
     this.pratyantardashas = const [],
   });
-}
-
-class YoginiPratyantardasha {
   final String name;
   final String lord;
   final DateTime startDate;
   final DateTime endDate;
+  final List<YoginiPratyantardasha> pratyantardashas;
+}
 
+class YoginiPratyantardasha {
   YoginiPratyantardasha({
     required this.name,
     required this.lord,
     required this.startDate,
     required this.endDate,
   });
+  final String name;
+  final String lord;
+  final DateTime startDate;
+  final DateTime endDate;
 }
 
 /// Chara Dasha data class
 class CharaDasha {
+  CharaDasha({required this.startSign, required this.periods});
   final int startSign;
   final List<CharaDashaPeriod> periods;
-
-  CharaDasha({required this.startSign, required this.periods});
 }
 
 /// Chara Dasha Period data class
 class CharaDashaPeriod {
-  final int sign;
-  final String signName;
-  final String lord;
-  final DateTime startDate;
-  final DateTime endDate;
-  final double periodYears;
-
   CharaDashaPeriod({
     required this.sign,
     required this.signName,
@@ -161,25 +145,23 @@ class CharaDashaPeriod {
     required this.endDate,
     required this.periodYears,
   });
-}
-
-/// Narayana Dasha data class
-class NarayanaDasha {
-  final int startSign;
-  final List<NarayanaDashaPeriod> periods;
-
-  NarayanaDasha({required this.startSign, required this.periods});
-}
-
-/// Narayana Dasha Period data class
-class NarayanaDashaPeriod {
   final int sign;
   final String signName;
   final String lord;
   final DateTime startDate;
   final DateTime endDate;
   final double periodYears;
+}
 
+/// Narayana Dasha data class
+class NarayanaDasha {
+  NarayanaDasha({required this.startSign, required this.periods});
+  final int startSign;
+  final List<NarayanaDashaPeriod> periods;
+}
+
+/// Narayana Dasha Period data class
+class NarayanaDashaPeriod {
   NarayanaDashaPeriod({
     required this.sign,
     required this.signName,
@@ -188,29 +170,28 @@ class NarayanaDashaPeriod {
     required this.endDate,
     required this.periodYears,
   });
+  final int sign;
+  final String signName;
+  final String lord;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
 }
 
 /// Ashtottari Dasha data class
 class AshtottariDasha {
-  final List<AshtottariMahadasha> mahadashas;
-  final String birthNakshatra;
-  final double balanceOfFirstDasha;
-
   AshtottariDasha({
     required this.mahadashas,
     required this.birthNakshatra,
     required this.balanceOfFirstDasha,
   });
+  final List<AshtottariMahadasha> mahadashas;
+  final String birthNakshatra;
+  final double balanceOfFirstDasha;
 }
 
 /// Ashtottari Mahadasha data class
 class AshtottariMahadasha {
-  final Planet lord;
-  final String lordName;
-  final DateTime startDate;
-  final DateTime endDate;
-  final double periodYears;
-
   AshtottariMahadasha({
     required this.lord,
     required this.lordName,
@@ -218,24 +199,22 @@ class AshtottariMahadasha {
     required this.endDate,
     required this.periodYears,
   });
+  final Planet lord;
+  final String lordName;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
 }
 
 /// Kalachakra Dasha data class
 class KalachakraDasha {
+  KalachakraDasha({required this.mahadashas, required this.birthNakshatra});
   final List<KalachakraMahadasha> mahadashas;
   final String birthNakshatra;
-
-  KalachakraDasha({required this.mahadashas, required this.birthNakshatra});
 }
 
 /// Kalachakra Mahadasha data class
 class KalachakraMahadasha {
-  final Rashi rashi;
-  final String signName;
-  final DateTime startDate;
-  final DateTime endDate;
-  final double periodYears;
-
   KalachakraMahadasha({
     required this.rashi,
     required this.signName,
@@ -243,17 +222,15 @@ class KalachakraMahadasha {
     required this.endDate,
     required this.periodYears,
   });
+  final Rashi rashi;
+  final String signName;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
 }
 
 /// Combined Dasha data
 class DashaData {
-  final VimshottariDasha vimshottari;
-  final YoginiDasha yogini;
-  final CharaDasha chara;
-  final NarayanaDasha narayana;
-  final AshtottariDasha ashtottari;
-  final KalachakraDasha kalachakra;
-
   DashaData({
     required this.vimshottari,
     required this.yogini,
@@ -262,4 +239,10 @@ class DashaData {
     required this.ashtottari,
     required this.kalachakra,
   });
+  final VimshottariDasha vimshottari;
+  final YoginiDasha yogini;
+  final CharaDasha chara;
+  final NarayanaDasha narayana;
+  final AshtottariDasha ashtottari;
+  final KalachakraDasha kalachakra;
 }

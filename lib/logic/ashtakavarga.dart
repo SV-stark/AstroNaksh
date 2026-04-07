@@ -11,7 +11,7 @@ class AshtakavargaSystem {
     final av = _service!.calculateAshtakavarga(chart);
 
     final result = <int, int>{};
-    for (int i = 0; i < 12; i++) {
+    for (var i = 0; i < 12; i++) {
       result[i] = av.sarvashtakavarga.bindus[i];
     }
     return result;
@@ -39,7 +39,7 @@ class AshtakavargaSystem {
     final av = shodhya.ekadhipatiReducedAshtakavarga;
 
     final result = <int, int>{};
-    for (int i = 0; i < 12; i++) {
+    for (var i = 0; i < 12; i++) {
       result[i] = av.sarvashtakavarga.bindus[i];
     }
     return result;
@@ -71,7 +71,7 @@ class AshtakavargaSystem {
     if (bav == null) return {};
 
     final result = <int, int>{};
-    for (int i = 0; i < 12; i++) {
+    for (var i = 0; i < 12; i++) {
       result[i] = bav.bindus[i];
     }
     return result;

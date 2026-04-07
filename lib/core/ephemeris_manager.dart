@@ -1,11 +1,14 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
+import 'dart:ffi';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as p;
 import 'package:jyotish/jyotish.dart';
-import 'dart:ffi';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
 import 'app_environment.dart';
 
 /// Manages Swiss Ephemeris data files for planetary calculations
@@ -173,7 +176,7 @@ class EphemerisManager {
     } catch (e, stack) {
       _initialized = false;
       AppEnvironment.log(
-        "EphemerisManager: Error initializing Jyotish: $e\n$stack",
+        'EphemerisManager: Error initializing Jyotish: $e\n$stack',
       );
       // propagate error so UI can handle it
       throw EphemerisException('Failed to initialize astrology engine: $e');
@@ -294,7 +297,7 @@ class EphemerisManager {
       0,
       (sum, file) => sum + (_fileSizes[file] ?? 0),
     );
-    int downloadedSize = 0;
+    var downloadedSize = 0;
 
     for (final file in files) {
       try {
@@ -375,7 +378,7 @@ class EphemerisManager {
 
     if (hasExtended) {
       return {
-        'start': DateTime(1800, 1, 1).add(Duration(days: -3000 * 365)),
+        'start': DateTime(1800, 1, 1).add(const Duration(days: -3000 * 365)),
         'end': DateTime(3000, 12, 31),
       };
     } else if (hasStandard) {
@@ -461,8 +464,8 @@ class EphemerisManager {
 }
 
 class EphemerisException implements Exception {
-  final String message;
   EphemerisException(this.message);
+  final String message;
   @override
   String toString() => 'EphemerisException: $message';
 }

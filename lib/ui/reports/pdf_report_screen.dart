@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:path_provider/path_provider.dart';
@@ -6,9 +7,8 @@ import '../../data/models.dart';
 import '../../ui/utils/responsive_helper.dart';
 
 class PDFReportScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const PDFReportScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<PDFReportScreen> createState() => _PDFReportScreenState();
@@ -269,7 +269,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
       final sanitized = '$name - $place'
           .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
           .trim()
-          .replaceAll(RegExp(r'_+'), '_');
+          .replaceAll(RegExp('_+'), '_');
 
       final filename = '$sanitized.pdf';
 

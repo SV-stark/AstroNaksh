@@ -1,16 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../data/city_database.dart';
+
 import '../../core/error_handler.dart';
+import '../../data/city_database.dart';
 
 /// Reusable city search widget that eliminates duplication across
 /// input_screen, panchang_screen, muhurta_finder_screen, and horary screens (DP8).
 class CitySearchField extends StatefulWidget {
-  final ValueChanged<City>? onCitySelected;
-  final City? initialCity;
-  final String? hintText;
-  final bool showCurrentLocationButton;
-  final EdgeInsetsGeometry? padding;
-
   const CitySearchField({
     super.key,
     this.onCitySelected,
@@ -19,6 +14,11 @@ class CitySearchField extends StatefulWidget {
     this.showCurrentLocationButton = true,
     this.padding,
   });
+  final ValueChanged<City>? onCitySelected;
+  final City? initialCity;
+  final String? hintText;
+  final bool showCurrentLocationButton;
+  final EdgeInsetsGeometry? padding;
 
   @override
   State<CitySearchField> createState() => _CitySearchFieldState();
@@ -87,7 +87,7 @@ class _CitySearchFieldState extends State<CitySearchField> {
 
   Future<void> _useCurrentLocation() async {
     final city = await errorHandler.safeAsync(
-      () => CityDatabase.getCurrentLocation(),
+      CityDatabase.getCurrentLocation,
       context: 'CitySearchField.gps',
       userMessage: 'Unable to get your location',
     );
@@ -123,8 +123,8 @@ class _CitySearchFieldState extends State<CitySearchField> {
             if (widget.showCurrentLocationButton) ...[
               const SizedBox(width: 8),
               Button(
-                child: const Icon(FluentIcons.location, size: 16),
                 onPressed: _useCurrentLocation,
+                child: const Icon(FluentIcons.location, size: 16),
               ),
             ],
           ],

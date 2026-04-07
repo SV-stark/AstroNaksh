@@ -3,9 +3,8 @@ import '../../data/models.dart';
 import '../../logic/nadi_service.dart';
 
 class NadiScreen extends StatelessWidget {
-  final CompleteChartData chartData;
-
   const NadiScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +12,7 @@ class NadiScreen extends StatelessWidget {
     final analysis = service.analyzeNadi(chartData);
 
     return ScaffoldPage(
-      header: const PageHeader(
-        title: Text('Nadi Analysis'),
-      ),
+      header: const PageHeader(title: Text('Nadi Analysis')),
       content: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -28,7 +25,10 @@ class NadiScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   analysis.nadiType,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 if (analysis.nakshatra != null) ...[
                   const SizedBox(height: 8),
@@ -115,7 +115,10 @@ class NadiScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('Nadi Strength'),
-            Text('$strength%', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+            Text(
+              '$strength%',
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -140,7 +143,12 @@ class NadiScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNadiInfoCard(String name, String type, String description, Color color) {
+  Widget _buildNadiInfoCard(
+    String name,
+    String type,
+    String description,
+    Color color,
+  ) {
     return Card(
       padding: const EdgeInsets.all(12),
       child: Row(
@@ -161,7 +169,10 @@ class NadiScreen extends StatelessWidget {
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(type, style: TextStyle(color: color, fontSize: 12)),
                 const SizedBox(height: 4),
-                Text(description, style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                Text(
+                  description,
+                  style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                ),
               ],
             ),
           ),

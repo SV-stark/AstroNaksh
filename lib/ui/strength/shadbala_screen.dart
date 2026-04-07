@@ -1,16 +1,16 @@
-import 'package:fluent_ui/fluent_ui.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
+
 import '../../data/models.dart';
 import '../../logic/shadbala.dart';
-import '../widgets/strength_meter.dart';
 import '../../ui/utils/responsive_helper.dart';
 import '../styles.dart';
+import '../widgets/strength_meter.dart';
 
 class ShadbalaScreen extends StatelessWidget {
-  final CompleteChartData chartData;
-
   const ShadbalaScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class ShadbalaScreen extends StatelessWidget {
 
         if (snapshot.hasError) {
           return ScaffoldPage(
-            header: PageHeader(title: const Text('Shadbala Analysis')),
+            header: const PageHeader(title: Text('Shadbala Analysis')),
             content: Center(
               child: InfoBar(
                 title: const Text('Calculation Error'),
@@ -316,9 +316,9 @@ class ShadbalaScreen extends StatelessWidget {
                 Text(
                   '${vimsopaka.totalScore.toStringAsFixed(1)} / 20.0 (${vimsopaka.strengthCategory.name})',
                 ),
-                Text(
+                const Text(
                   'Based on dignity in D-1, D-2, D-3, D-9, D-12, D-30 charts.',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
               if (combustion != null) ...[

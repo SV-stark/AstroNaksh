@@ -1,12 +1,12 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../data/models.dart';
-import '../../logic/jaimini_service.dart';
 import 'package:jyotish/jyotish.dart';
 
-class JaiminiScreen extends StatefulWidget {
-  final CompleteChartData chartData;
+import '../../data/models.dart';
+import '../../logic/jaimini_service.dart';
 
+class JaiminiScreen extends StatefulWidget {
   const JaiminiScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<JaiminiScreen> createState() => _JaiminiScreenState();
@@ -510,7 +510,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                         style: TextStyle(color: Colors.grey),
                       ),
                     )
-                  : Column(children: list.map((a) => _argalaRow(a)).toList()),
+                  : Column(children: list.map(_argalaRow).toList()),
             ),
           );
         }),

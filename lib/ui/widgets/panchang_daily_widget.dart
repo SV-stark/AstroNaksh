@@ -1,12 +1,13 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' show Colors;
-import '../../logic/panchang_service.dart';
-import '../../data/models.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/models.dart';
+import '../../logic/panchang_service.dart';
+
 class PanchangDailyWidget extends StatefulWidget {
-  final Location? currentLocation;
   const PanchangDailyWidget({super.key, this.currentLocation});
+  final Location? currentLocation;
 
   @override
   State<PanchangDailyWidget> createState() => _PanchangDailyWidgetState();
@@ -106,10 +107,10 @@ class _PanchangDailyWidgetState extends State<PanchangDailyWidget> {
                     spacing: 24,
                     runSpacing: 12,
                     children: [
-                      _buildInfoItem("Tithi", p.tithi),
-                      _buildInfoItem("Nakshatra", p.nakshatra),
-                      _buildInfoItem("Yoga", p.yoga),
-                      _buildInfoItem("Karana", p.karana),
+                      _buildInfoItem('Tithi', p.tithi),
+                      _buildInfoItem('Nakshatra', p.nakshatra),
+                      _buildInfoItem('Yoga', p.yoga),
+                      _buildInfoItem('Karana', p.karana),
                     ],
                   ),
                 ],

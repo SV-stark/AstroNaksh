@@ -1,25 +1,18 @@
 import 'package:jyotish/jyotish.dart';
-import 'kp.dart';
+
 import 'dasha.dart';
 import 'divisional_chart.dart';
+import 'kp.dart';
 import 'location.dart';
 
 class ChartData {
+  ChartData({required this.baseChart, required this.kpData});
   final VedicChart baseChart;
   final KPData kpData;
-
-  ChartData({required this.baseChart, required this.kpData});
 }
 
 /// Complete chart data with all systems
 class CompleteChartData {
-  final VedicChart baseChart;
-  final KPData kpData;
-  final DashaData dashaData;
-  final Map<String, DivisionalChartData> divisionalCharts;
-  final Map<String, Map<String, dynamic>> significatorTable;
-  final BirthData birthData;
-
   CompleteChartData({
     required this.baseChart,
     required this.kpData,
@@ -28,6 +21,12 @@ class CompleteChartData {
     required this.significatorTable,
     required this.birthData,
   });
+  final VedicChart baseChart;
+  final KPData kpData;
+  final DashaData dashaData;
+  final Map<String, DivisionalChartData> divisionalCharts;
+  final Map<String, Map<String, dynamic>> significatorTable;
+  final BirthData birthData;
 
   /// Get planet info with KP data
   Map<String, dynamic>? getPlanetInfo(String planetName) {

@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../core/chart_customization.dart';
+
 import '../core/ayanamsa_calculator.dart';
+import '../core/chart_customization.dart';
 import '../core/settings_manager.dart';
 import '../ui/utils/responsive_helper.dart';
 
@@ -736,7 +737,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _formatEnumName(String name) {
     // Convert camelCase to Title Case
     return name
-        .replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m.group(1)}')
+        .replaceAllMapped(RegExp('([A-Z])'), (m) => ' ${m.group(1)}')
         .trim()
         .split(' ')
         .map(

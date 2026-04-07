@@ -1,7 +1,7 @@
 import 'package:jyotish/jyotish.dart';
 
-import '../data/models.dart';
 import '../core/ephemeris_manager.dart';
+import '../data/models.dart';
 import 'shadbala.dart';
 
 /// Bhava Bala (House Strength) Calculation
@@ -44,8 +44,8 @@ class BhavaBala {
     );
 
     // Map library results to local BhavaStrength model
-    final Map<int, BhavaStrength> bhavaStrengths = {};
-    for (int house = 1; house <= 12; house++) {
+    final bhavaStrengths = <int, BhavaStrength>{};
+    for (var house = 1; house <= 12; house++) {
       final strength = libraryResults[house] ?? 50.0;
       bhavaStrengths[house] = BhavaStrength(
         house: house,
@@ -179,17 +179,16 @@ class BhavaBala {
 
 /// Bhava Strength data class (preserved for backward compatibility)
 class BhavaStrength {
-  final int house;
-  final double totalStrength;
-  final Map<String, double> components;
-  final String interpretation;
-
   BhavaStrength({
     required this.house,
     required this.totalStrength,
     required this.components,
     required this.interpretation,
   });
+  final int house;
+  final double totalStrength;
+  final Map<String, double> components;
+  final String interpretation;
 
   String get grade {
     if (totalStrength >= 80) return 'A';

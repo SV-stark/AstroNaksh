@@ -1,6 +1,7 @@
+import 'dart:io';
+
 import 'package:fluent_ui/fluent_ui.dart'
     hide Colors; // Hide material Colors to avoid conflict
-import 'dart:io';
 
 /// Utility class for responsive design
 /// Optimizes UI for mobile portrait mode while preserving desktop experience

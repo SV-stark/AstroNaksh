@@ -3,16 +3,6 @@ import 'package:fluent_ui/fluent_ui.dart';
 /// A video-editor style timeline scrubber for planetary animation
 /// Allows users to drag to move forward/backward in time
 class PlanetaryTimeline extends StatefulWidget {
-  final DateTime startDate;
-  final DateTime endDate;
-  final DateTime currentDate;
-  final ValueChanged<DateTime> onDateChanged;
-  final VoidCallback? onPlayPressed;
-  final VoidCallback? onPausePressed;
-  final bool isPlaying;
-  final double playbackSpeed;
-  final ValueChanged<double>? onSpeedChanged;
-
   const PlanetaryTimeline({
     super.key,
     required this.startDate,
@@ -25,6 +15,15 @@ class PlanetaryTimeline extends StatefulWidget {
     this.playbackSpeed = 1.0,
     this.onSpeedChanged,
   });
+  final DateTime startDate;
+  final DateTime endDate;
+  final DateTime currentDate;
+  final ValueChanged<DateTime> onDateChanged;
+  final VoidCallback? onPlayPressed;
+  final VoidCallback? onPausePressed;
+  final bool isPlaying;
+  final double playbackSpeed;
+  final ValueChanged<double>? onSpeedChanged;
 
   @override
   State<PlanetaryTimeline> createState() => _PlanetaryTimelineState();
@@ -308,9 +307,8 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
 
 /// Painter for timeline tick marks
 class _TimelineTicksPainter extends CustomPainter {
-  final Color color;
-
   _TimelineTicksPainter({required this.color});
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -319,7 +317,7 @@ class _TimelineTicksPainter extends CustomPainter {
       ..strokeWidth = 1;
 
     // Draw major ticks every 10%
-    for (int i = 0; i <= 10; i++) {
+    for (var i = 0; i <= 10; i++) {
       final x = (size.width / 10) * i;
       canvas.drawLine(
         Offset(x, size.height * 0.2),
@@ -329,7 +327,7 @@ class _TimelineTicksPainter extends CustomPainter {
     }
 
     // Draw minor ticks every 2%
-    for (int i = 0; i <= 50; i++) {
+    for (var i = 0; i <= 50; i++) {
       if (i % 5 == 0) continue; // Skip major ticks
       final x = (size.width / 50) * i;
       canvas.drawLine(

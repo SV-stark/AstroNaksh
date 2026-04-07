@@ -1,16 +1,17 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../../data/models.dart';
+import '../../../logic/panchang_service.dart';
 import 'panchang_helpers.dart';
 
 /// Tab 5: Choghadiya
 class PanchangChoghadiyaTab extends StatelessWidget {
-  final List<PanchangChoghadiya> choghadiya;
   const PanchangChoghadiyaTab({super.key, this.choghadiya = const []});
+  final List<PanchangChoghadiya> choghadiya;
 
   @override
   Widget build(BuildContext context) {
-    if (choghadiya.isEmpty)
+    if (choghadiya.isEmpty) {
       return const Center(child: Text('No Choghadiya data'));
+    }
 
     final day = choghadiya.where((c) => c.isDay).toList();
     final night = choghadiya.where((c) => !c.isDay).toList();

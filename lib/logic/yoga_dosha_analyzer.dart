@@ -11,15 +11,15 @@ class YogaDoshaAnalyzer {
     DateTime? referenceDate,
   }) {
     final now = referenceDate ?? DateTime.now();
-    var yogas = _findYogas(chart, now);
+    final yogas = _findYogas(chart, now);
     final doshas = _findDoshas(chart, now);
 
     // Score calculation (only active items affect score)
-    double score = 50.0;
-    for (var y in yogas) {
+    var score = 50.0;
+    for (final y in yogas) {
       score += (y.strength / 100.0) * 5;
     }
-    for (var d in doshas) {
+    for (final d in doshas) {
       score -= (d.strength / 100.0) * 5;
     }
     score = score.clamp(0.0, 100.0);
@@ -161,7 +161,7 @@ class YogaDoshaAnalyzer {
   // --- Dosha Detection ---
 
   static List<BhangaResult> _findDoshas(CompleteChartData chart, DateTime now) {
-    List<BhangaResult> results = [];
+    final results = <BhangaResult>[];
 
     // Basic Checks — only add if the dosha is actually detected
     if (_hasKaalSarpDosha(chart)) {
@@ -274,7 +274,7 @@ class YogaDoshaAnalyzer {
     }
 
     // Advanced Checks (Text based conversion)
-    List<String> textDoshas = [];
+    final textDoshas = <String>[];
     _checkConjunctionDoshas(chart, textDoshas);
     _checkHousePlacementDoshas(chart, textDoshas);
     _checkStateStrengthDoshas(chart, textDoshas);
@@ -282,7 +282,7 @@ class YogaDoshaAnalyzer {
     _checkBirthTimeDoshas(chart, textDoshas);
     _checkCurseDoshas(chart, textDoshas);
 
-    for (var d in textDoshas) {
+    for (final d in textDoshas) {
       BhangaResult r;
       if (d.contains('Guru Chandal')) {
         r = _checkGuruChandalBhanga(chart);
@@ -331,10 +331,10 @@ class YogaDoshaAnalyzer {
     // Note: Ketu is exactly 180 degrees from Rahu.
     // We check if all planets lie within the arc Rahu->Ketu or Ketu->Rahu.
 
-    bool side1 = true;
-    bool side2 = true;
+    var side1 = true;
+    var side2 = true;
 
-    for (var p in [
+    for (final p in [
       'Sun',
       'Moon',
       'Mars',
@@ -359,17 +359,17 @@ class YogaDoshaAnalyzer {
     final venusSign = _getPlanetSign(chart, 'Venus');
 
     // Check from all three
-    bool fromLagna = _isMarsInBadHouse(marsSign, lagnaSign);
-    bool fromMoon = _isMarsInBadHouse(marsSign, moonSign);
-    bool fromVenus = _isMarsInBadHouse(marsSign, venusSign);
+    final fromLagna = _isMarsInBadHouse(marsSign, lagnaSign);
+    final fromMoon = _isMarsInBadHouse(marsSign, moonSign);
+    final fromVenus = _isMarsInBadHouse(marsSign, venusSign);
 
     // Traditional: 2 out of 3 confirms Manglik
-    int count = [fromLagna, fromMoon, fromVenus].where((x) => x).length;
+    final count = [fromLagna, fromMoon, fromVenus].where((x) => x).length;
     return count >= 2;
   }
 
   static bool _isMarsInBadHouse(int marsSign, int refSign) {
-    int house = (marsSign - refSign + 12) % 12 + 1;
+    final house = (marsSign - refSign + 12) % 12 + 1;
     return [1, 2, 4, 7, 8, 12].contains(house);
   }
 
@@ -380,10 +380,10 @@ class YogaDoshaAnalyzer {
     final rahuSign = _getPlanetSign(chart, 'Rahu');
     final ketuSign = _getPlanetSign(chart, 'Ketu');
 
-    return (sunSign == rahuSign ||
+    return sunSign == rahuSign ||
         sunSign == ketuSign ||
         moonSign == rahuSign ||
-        moonSign == ketuSign);
+        moonSign == ketuSign;
   }
 
   static bool _hasKemadrumaDosha(CompleteChartData chart) {
@@ -392,8 +392,8 @@ class YogaDoshaAnalyzer {
     final nextSign = (moonSign + 1) % 12;
 
     // Check if any planet (except Sun, Rahu, Ketu) is in prev or next sign
-    bool hasSupport = false;
-    for (var p in ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']) {
+    var hasSupport = false;
+    for (final p in ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']) {
       final sign = _getPlanetSign(chart, p);
       if (sign == prevSign || sign == nextSign || sign == moonSign) {
         // Conjunction counts too often
@@ -408,7 +408,7 @@ class YogaDoshaAnalyzer {
   // --- Yoga Detection ---
 
   static List<BhangaResult> _findYogas(CompleteChartData chart, DateTime now) {
-    List<String> yogas = [];
+    final yogas = <String>[];
 
     // 1. Gajakesari Yoga
     if (_hasGajakesariYoga(chart)) {
@@ -547,7 +547,7 @@ class YogaDoshaAnalyzer {
 
   // --- Dhana Yogas (Wealth) ---
   static List<String> _findDhanaYogas(CompleteChartData chart) {
-    List<String> yogas = [];
+    final yogas = <String>[];
 
     // 2nd and 11th lords conjunction/exchange
     final secondLord = _getHouseLord(chart, 2);
@@ -577,7 +577,7 @@ class YogaDoshaAnalyzer {
 
   // --- Vipreet Raj Yogas (Adversity turned to advantage) ---
   static List<String> _findVipreetRajYogas(CompleteChartData chart) {
-    List<String> yogas = [];
+    final yogas = <String>[];
 
     final sixthLord = _getHouseLord(chart, 6);
     final eighthLord = _getHouseLord(chart, 8);
@@ -606,9 +606,9 @@ class YogaDoshaAnalyzer {
 
   // --- Neecha Bhanga Raj Yogas (Debilitation cancellation) ---
   static List<String> _findNeechaBhangaYogas(CompleteChartData chart) {
-    List<String> yogas = [];
+    final yogas = <String>[];
 
-    for (var planet in [
+    for (final planet in [
       'Sun',
       'Moon',
       'Mars',
@@ -623,8 +623,8 @@ class YogaDoshaAnalyzer {
         // Check if debilitation is cancelled
         final debilSignLord = _getSignLord(sign);
         final exaltSignLord = _getExaltationSignLord(planet);
-        bool hasCancellation = false;
-        List<String> cancellationReasons = [];
+        var hasCancellation = false;
+        final cancellationReasons = <String>[];
 
         // Cancellation 1: Debilitation sign lord in kendra from Lagna/Moon
         if (_isPlanetInKendra(chart, debilSignLord)) {
@@ -646,7 +646,7 @@ class YogaDoshaAnalyzer {
         }
 
         // Cancellation 4: Conjunction with exalted planet or planet in own sign
-        for (var otherPlanet in [
+        for (final otherPlanet in [
           'Sun',
           'Moon',
           'Mars',
@@ -713,11 +713,11 @@ class YogaDoshaAnalyzer {
 
   // --- Parivartana Yogas (Mutual exchange) ---
   static List<String> _findParivartanaYogas(CompleteChartData chart) {
-    List<String> yogas = [];
+    final yogas = <String>[];
 
     // Check all house lord pairs for mutual exchange
-    for (int h1 = 1; h1 <= 12; h1++) {
-      for (int h2 = h1 + 1; h2 <= 12; h2++) {
+    for (var h1 = 1; h1 <= 12; h1++) {
+      for (var h2 = h1 + 1; h2 <= 12; h2++) {
         final lord1 = _getHouseLord(chart, h1);
         final lord2 = _getHouseLord(chart, h2);
 
@@ -764,8 +764,8 @@ class YogaDoshaAnalyzer {
     final house7 = (moonSign + 6) % 12;
     final house8 = (moonSign + 7) % 12;
 
-    int beneficCount = 0;
-    for (var planet in ['Jupiter', 'Venus', 'Mercury']) {
+    var beneficCount = 0;
+    for (final planet in ['Jupiter', 'Venus', 'Mercury']) {
       final pSign = _getPlanetSign(chart, planet);
       if ([house6, house7, house8].contains(pSign)) beneficCount++;
     }
@@ -789,16 +789,16 @@ class YogaDoshaAnalyzer {
     // All three in kendras, trikonas, or 2nd house
     final goodHouses = [0, 1, 3, 4, 6, 8, 9]; // Houses 1,2,4,5,7,9,10
 
-    return goodHouses.contains((jupiterSign) % 12) &&
-        goodHouses.contains((venusSign) % 12) &&
-        goodHouses.contains((mercurySign) % 12);
+    return goodHouses.contains(jupiterSign % 12) &&
+        goodHouses.contains(venusSign % 12) &&
+        goodHouses.contains(mercurySign % 12);
   }
 
   static bool _hasAmalaYoga(CompleteChartData chart) {
     // Benefic in 10th house from Lagna
     final tenthSign = _getHouse(chart, 10);
 
-    for (var planet in ['Jupiter', 'Venus', 'Mercury']) {
+    for (final planet in ['Jupiter', 'Venus', 'Mercury']) {
       final pSign = _getPlanetSign(chart, planet);
       if (pSign == tenthSign) return true;
     }
@@ -808,16 +808,16 @@ class YogaDoshaAnalyzer {
 
   static bool _hasParvataYoga(CompleteChartData chart) {
     // Benefics in all kendras, no malefics in kendras
-    int beneficsInKendra = 0;
+    var beneficsInKendra = 0;
 
-    for (int kendra in [1, 4, 7, 10]) {
+    for (final kendra in [1, 4, 7, 10]) {
       final kendraSign = _getHouse(chart, kendra);
 
-      for (var malefic in ['Mars', 'Saturn', 'Sun']) {
+      for (final malefic in ['Mars', 'Saturn', 'Sun']) {
         if (_getPlanetSign(chart, malefic) == kendraSign) return false;
       }
 
-      for (var benefic in ['Jupiter', 'Venus', 'Mercury']) {
+      for (final benefic in ['Jupiter', 'Venus', 'Mercury']) {
         if (_getPlanetSign(chart, benefic) == kendraSign) beneficsInKendra++;
       }
     }
@@ -903,7 +903,7 @@ class YogaDoshaAnalyzer {
   }
 
   static bool _isInDusthaHouse(CompleteChartData chart, int sign) {
-    for (int house in [6, 8, 12]) {
+    for (final house in [6, 8, 12]) {
       if (_getHouse(chart, house) == sign) return true;
     }
     return false;
@@ -979,7 +979,7 @@ class YogaDoshaAnalyzer {
     final moonSign = _getPlanetSign(chart, 'Moon');
     final jupSign = _getPlanetSign(chart, 'Jupiter');
 
-    int houseFromMoon = (jupSign - moonSign + 12) % 12 + 1;
+    final houseFromMoon = (jupSign - moonSign + 12) % 12 + 1;
     return [1, 4, 7, 10].contains(houseFromMoon);
   }
 
@@ -1035,17 +1035,17 @@ class YogaDoshaAnalyzer {
       }, // Cap(9), Aqu(10), Lib(6)
     ];
 
-    for (var check in checks) {
+    for (final check in checks) {
       final pSign = _getPlanetSign(chart, check['planet'] as String);
       final own = check['own'] as List<int>;
       final exalt = check['exalt'] as int;
 
       // Check if planet is in Own Sign or Exaltation
-      bool strong = own.contains(pSign) || pSign == exalt;
+      final strong = own.contains(pSign) || pSign == exalt;
 
       if (strong) {
         // Check if in Kendra from Lagna
-        int house = (pSign - lagnaSign + 12) % 12 + 1;
+        final house = (pSign - lagnaSign + 12) % 12 + 1;
         if ([1, 4, 7, 10].contains(house)) {
           yogas.add(check['yoga'] as String);
         }
@@ -1059,25 +1059,25 @@ class YogaDoshaAnalyzer {
 
     // Kendra houses: 1, 4, 7, 10
     final kendraLords = <String>{};
-    for (var house in [1, 4, 7, 10]) {
-      int sign = (lagnaSign + house - 1) % 12;
+    for (final house in [1, 4, 7, 10]) {
+      final sign = (lagnaSign + house - 1) % 12;
       kendraLords.add(_getSignLord(sign));
     }
 
     // Trikona houses: 1, 5, 9
     final trikonaLords = <String>{};
-    for (var house in [1, 5, 9]) {
-      int sign = (lagnaSign + house - 1) % 12;
+    for (final house in [1, 5, 9]) {
+      final sign = (lagnaSign + house - 1) % 12;
       trikonaLords.add(_getSignLord(sign));
     }
 
     // Check for conjunction
-    for (var kl in kendraLords) {
-      for (var tl in trikonaLords) {
+    for (final kl in kendraLords) {
+      for (final tl in trikonaLords) {
         if (kl == tl) continue;
 
-        int klSign = _getPlanetSign(chart, kl);
-        int tlSign = _getPlanetSign(chart, tl);
+        final klSign = _getPlanetSign(chart, kl);
+        final tlSign = _getPlanetSign(chart, tl);
 
         if (klSign == tlSign) return true;
       }
@@ -1172,7 +1172,7 @@ class YogaDoshaAnalyzer {
       'Saturn',
     ];
 
-    for (var p in visiblePlanets) {
+    for (final p in visiblePlanets) {
       final sign = _getPlanetSign(chart, p);
       final house = _getPlanetHouse(chart, p);
       planetSigns[p] = sign;
@@ -1182,11 +1182,11 @@ class YogaDoshaAnalyzer {
     }
 
     // --- Ashraya Yogas (Sign containment) ---
-    bool allMovable = true;
-    bool allFixed = true;
-    bool allDual = true;
+    var allMovable = true;
+    var allFixed = true;
+    var allDual = true;
 
-    for (var sign in planetSigns.values) {
+    for (final sign in planetSigns.values) {
       if (![0, 3, 6, 9].contains(sign)) allMovable = false;
       if (![1, 4, 7, 10].contains(sign)) allFixed = false;
       if (![2, 5, 8, 11].contains(sign)) allDual = false;
@@ -1204,16 +1204,16 @@ class YogaDoshaAnalyzer {
     // Mala: All in 3 consecutive kendras (1,4,7 or 4,7,10 etc - simplified to any 3 kendras?)
     // User says: "All planets in 3 consecutive kendras"
     // Checking strict consecutive kendras
-    List<Set<int>> consecutiveKendras = [
+    final consecutiveKendras = <Set<int>>[
       {1, 4, 7},
       {4, 7, 10},
       {7, 10, 1},
       {10, 1, 4},
     ];
 
-    bool isMala = false;
-    for (var set in consecutiveKendras) {
-      if (planetHouses.values.every((h) => set.contains(h))) {
+    var isMala = false;
+    for (final set in consecutiveKendras) {
+      if (planetHouses.values.every(set.contains)) {
         // Must occupy all 3? User says "All planets in...". Usually implies covering the houses.
         // If they are just clumped in 1 and 4, is it Mala?
         // Strict definition: occupy the 3 houses.
@@ -1227,15 +1227,15 @@ class YogaDoshaAnalyzer {
     }
 
     // Sarpa: 3 consecutive panaparas (2,5,8 etc)
-    List<Set<int>> consecutivePanaparas = [
+    final consecutivePanaparas = <Set<int>>[
       {2, 5, 8},
       {5, 8, 11},
       {8, 11, 2},
       {11, 2, 5},
     ];
-    bool isSarpa = false;
-    for (var set in consecutivePanaparas) {
-      if (planetHouses.values.every((h) => set.contains(h))) {
+    var isSarpa = false;
+    for (final set in consecutivePanaparas) {
+      if (planetHouses.values.every(set.contains)) {
         isSarpa = true;
         break;
       }
@@ -1245,15 +1245,15 @@ class YogaDoshaAnalyzer {
     }
 
     // Gadha: 2 consecutive kendras
-    List<Set<int>> consecutive2Kendras = [
+    final consecutive2Kendras = <Set<int>>[
       {1, 4},
       {4, 7},
       {7, 10},
       {10, 1},
     ];
-    bool isGadha = false;
-    for (var set in consecutive2Kendras) {
-      if (planetHouses.values.every((h) => set.contains(h))) {
+    var isGadha = false;
+    for (final set in consecutive2Kendras) {
+      if (planetHouses.values.every(set.contains)) {
         isGadha = true;
         break;
       }
@@ -1264,13 +1264,13 @@ class YogaDoshaAnalyzer {
 
     // --- Akriti Yogas (Shape) ---
     // Defined by house placement constraints
-    Set<int> k = {1, 4, 7, 10}; // Kendras
-    Set<int> p = {2, 5, 8, 11}; // Panaparas
-    Set<int> a = {3, 6, 9, 12}; // Apoklimas
+    final k = <int>{1, 4, 7, 10}; // Kendras
+    final p = <int>{2, 5, 8, 11}; // Panaparas
+    final a = <int>{3, 6, 9, 12}; // Apoklimas
 
-    bool inKendras = planetHouses.values.every((h) => k.contains(h));
-    bool inPanaparas = planetHouses.values.every((h) => p.contains(h));
-    bool inApoklimas = planetHouses.values.every((h) => a.contains(h));
+    final inKendras = planetHouses.values.every(k.contains);
+    final inPanaparas = planetHouses.values.every(p.contains);
+    final inApoklimas = planetHouses.values.every(a.contains);
 
     // Gola: One kendra only (from user desc: "Planets in one kendra only")
     if (inKendras && distinctHouses.length == 1) {
@@ -1326,14 +1326,14 @@ class YogaDoshaAnalyzer {
     // 55. Hala Yoga (Planets in Trikonas to each other, e.g. 2,6,10 or 3,7,11)
     // Usually means all planets are in a set of trines.
     // Trikona sets: {1,5,9}, {2,6,10}, {3,7,11}, {4,8,12}
-    List<Set<int>> trineSets = [
+    final trineSets = <Set<int>>[
       {1, 5, 9},
       {2, 6, 10},
       {3, 7, 11},
       {4, 8, 12},
     ];
-    for (var set in trineSets) {
-      if (planetHouses.values.every((h) => set.contains(h))) {
+    for (final set in trineSets) {
+      if (planetHouses.values.every(set.contains)) {
         yogas.add('Hala Yoga (Akriti - Planets in mutual trines)');
       }
     }
@@ -1361,16 +1361,16 @@ class YogaDoshaAnalyzer {
     }
 
     // Vajra: Benefics 1,7; Malefics 4,10
-    List<String> benefics = [
+    final benefics = <String>[
       'Jupiter',
       'Venus',
       'Mercury',
       'Moon',
     ]; // Broad benefic definition
-    List<String> malefics = ['Sun', 'Mars', 'Saturn'];
+    final malefics = <String>['Sun', 'Mars', 'Saturn'];
 
-    bool vajraKendra = true;
-    for (var planet in planetHouses.keys) {
+    var vajraKendra = true;
+    for (final planet in planetHouses.keys) {
       if (benefics.contains(planet)) {
         if (![1, 7].contains(planetHouses[planet])) vajraKendra = false;
       } else if (malefics.contains(planet)) {
@@ -1382,8 +1382,8 @@ class YogaDoshaAnalyzer {
     }
 
     // Yava: Malefics 1,7; Benefics 4,10
-    bool yavaKendra = true;
-    for (var planet in planetHouses.keys) {
+    var yavaKendra = true;
+    for (final planet in planetHouses.keys) {
       if (malefics.contains(planet)) {
         if (![1, 7].contains(planetHouses[planet])) yavaKendra = false;
       } else if (benefics.contains(planet)) {
@@ -1431,7 +1431,7 @@ class YogaDoshaAnalyzer {
     // ... logic for Ardha Chandra ...
 
     // --- Sankhya Yogas (Number based) ---
-    int count = distinctSigns.length;
+    final count = distinctSigns.length;
     switch (count) {
       case 7:
         yogas.add('Vallaki Yoga (Sankhya - 7 signs occupied)');
@@ -1462,17 +1462,17 @@ class YogaDoshaAnalyzer {
     final secondFromMoon = (moonSign + 1) % 12;
     final twelfthFromMoon = (moonSign + 11) % 12;
 
-    bool hasSunapha = false;
-    bool hasAnapha = false;
+    var hasSunapha = false;
+    var hasAnapha = false;
 
     // Check planets in 2nd
-    for (var p in _visiblePlanets) {
+    for (final p in _visiblePlanets) {
       if (p == 'Sun' || p == 'Moon' || p == 'Rahu' || p == 'Ketu') continue;
       if (_getPlanetSign(chart, p) == secondFromMoon) hasSunapha = true;
     }
 
     // Check planets in 12th
-    for (var p in _visiblePlanets) {
+    for (final p in _visiblePlanets) {
       if (p == 'Sun' || p == 'Moon' || p == 'Rahu' || p == 'Ketu') continue;
       if (_getPlanetSign(chart, p) == twelfthFromMoon) hasAnapha = true;
     }
@@ -1491,10 +1491,10 @@ class YogaDoshaAnalyzer {
     final secondFromSun = (sunSign + 1) % 12;
     final twelfthFromSun = (sunSign + 11) % 12;
 
-    bool hasVesi = false;
-    bool hasVasi = false;
+    var hasVesi = false;
+    var hasVasi = false;
 
-    for (var p in _visiblePlanets) {
+    for (final p in _visiblePlanets) {
       if (p == 'Sun' || p == 'Moon' || p == 'Rahu' || p == 'Ketu') continue;
       if (_getPlanetSign(chart, p) == secondFromSun) hasVesi = true;
       if (_getPlanetSign(chart, p) == twelfthFromSun) hasVasi = true;
@@ -1520,22 +1520,22 @@ class YogaDoshaAnalyzer {
       10,
     ]; // Indices for houses 3, 6, 10, 11 (0-based)
 
-    bool vasumathiLagna = true;
-    bool vasumathiMoon = true;
+    var vasumathiLagna = true;
+    var vasumathiMoon = true;
 
     // Check if ALL benefics are in Upachayas? Or at least one?
     // "Benefics in upachayas" usually implies multiple benefics occupying these houses.
     // Strict: Jup, Ven, Merc must be in Upachayas.
 
-    for (var b in ['Jupiter', 'Venus', 'Mercury']) {
+    for (final b in ['Jupiter', 'Venus', 'Mercury']) {
       final pSign = _getPlanetSign(chart, b);
 
       // From Lagna
-      int houseL = (pSign - lagnaSign + 12) % 12;
+      final houseL = (pSign - lagnaSign + 12) % 12;
       if (!upachayas.contains(houseL)) vasumathiLagna = false;
 
       // From Moon
-      int houseM = (pSign - moonSign + 12) % 12;
+      final houseM = (pSign - moonSign + 12) % 12;
       if (!upachayas.contains(houseM)) vasumathiMoon = false;
     }
 
@@ -1575,8 +1575,8 @@ class YogaDoshaAnalyzer {
     final l9Sign = _getPlanetSign(chart, l9);
     if (_isOwnSign(l9, l9Sign) || _isExalted(l9, l9Sign)) {
       // Check visible planets in 1, 2, 7, 12
-      bool allInHouses = true;
-      for (var p in _visiblePlanets) {
+      var allInHouses = true;
+      for (final p in _visiblePlanets) {
         final h = _getPlanetHouse(chart, p);
         if (![1, 2, 7, 12].contains(h)) {
           allInHouses = false;
@@ -1597,22 +1597,22 @@ class YogaDoshaAnalyzer {
       final l9_2 = _getHouseLord(chart, 9);
       final l11 = _getHouseLord(chart, 11);
 
-      bool conditionMet = false;
+      var conditionMet = false;
       final moonSign = _getPlanetSign(chart, 'Moon');
 
       // Check l2
-      int l2Sign = _getPlanetSign(chart, l2);
-      int d2 = (l2Sign - moonSign + 12) % 12;
+      final l2Sign = _getPlanetSign(chart, l2);
+      final d2 = (l2Sign - moonSign + 12) % 12;
       if ([0, 3, 6, 9].contains(d2)) conditionMet = true;
 
       // Check l9
-      int l9Sign2 = _getPlanetSign(chart, l9_2);
-      int d9 = (l9Sign2 - moonSign + 12) % 12;
+      final l9Sign2 = _getPlanetSign(chart, l9_2);
+      final d9 = (l9Sign2 - moonSign + 12) % 12;
       if ([0, 3, 6, 9].contains(d9)) conditionMet = true;
 
       // Check l11
-      int l11Sign = _getPlanetSign(chart, l11);
-      int d11 = (l11Sign - moonSign + 12) % 12;
+      final l11Sign = _getPlanetSign(chart, l11);
+      final d11 = (l11Sign - moonSign + 12) % 12;
       if ([0, 3, 6, 9].contains(d11)) conditionMet = true;
 
       if (conditionMet) yogas.add('Akhanda Samrajya Yoga (Unbroken Wealth)');
@@ -1659,7 +1659,7 @@ class YogaDoshaAnalyzer {
     // Check degrees
     final sunLong = _getPlanetLongitude(chart, 'Sun');
     final mercLong = _getPlanetLongitude(chart, 'Mercury');
-    double diff = (sunLong - mercLong).abs();
+    var diff = (sunLong - mercLong).abs();
     if (diff > 180) diff = 360 - diff;
 
     if (diff <= 10) {
@@ -1697,9 +1697,9 @@ class YogaDoshaAnalyzer {
     // Using _isStrong to check for Exalted / Own Sign / Kendra
     if (_isStrong(chart, 'Jupiter') || _isStrong(chart, 'Venus')) {
       // Check strength of 4, 10, 11 lords
-      bool l4Strong = _isStrong(chart, l4);
-      bool l10Strong = _isStrong(chart, l10);
-      bool l11Strong = _isStrong(chart, l11);
+      final l4Strong = _isStrong(chart, l4);
+      final l10Strong = _isStrong(chart, l10);
+      final l11Strong = _isStrong(chart, l11);
 
       if (l4Strong && l10Strong && l11Strong) {
         yogas.add('Brahma Yoga (Strong benefic influence on 4/10/11)');
@@ -1729,8 +1729,8 @@ class YogaDoshaAnalyzer {
     final p12 = _getPlanetsInHouseFrom(chart, 12, lagna);
 
     if (p2.isNotEmpty && p12.isNotEmpty) {
-      bool allBenefic = p2.every(_isBenefic) && p12.every(_isBenefic);
-      bool allMalefic = p2.every(_isMalefic) && p12.every(_isMalefic);
+      final allBenefic = p2.every(_isBenefic) && p12.every(_isBenefic);
+      final allMalefic = p2.every(_isMalefic) && p12.every(_isMalefic);
 
       if (allBenefic) {
         yogas.add('Shubha Kartari Yoga (Special - Benefics flanking Lagna)');
@@ -1832,7 +1832,7 @@ class YogaDoshaAnalyzer {
     }
 
     // 147. Sanyasa Yoga (4+ planets in one house)
-    for (int h = 1; h <= 12; h++) {
+    for (var h = 1; h <= 12; h++) {
       final planets = _getPlanetsInHouseFrom(
         chart,
         h,
@@ -1879,7 +1879,7 @@ class YogaDoshaAnalyzer {
   ) {
     final targetSign = (fromSign + targetHouse - 1) % 12;
     final planets = <String>[];
-    for (var p in _visiblePlanets) {
+    for (final p in _visiblePlanets) {
       if (_getPlanetSign(chart, p) == targetSign) {
         planets.add(p);
       }
@@ -1933,7 +1933,7 @@ class YogaDoshaAnalyzer {
   // --- Kala Sarpa Specifics ---
 
   static List<String> _findKalaSarpaYogas(CompleteChartData chart) {
-    List<String> yogas = [];
+    final yogas = <String>[];
     if (!_hasKaalSarpDosha(chart)) return yogas;
 
     final rahuHouse = _getPlanetHouse(chart, 'Rahu');
@@ -2036,7 +2036,7 @@ class YogaDoshaAnalyzer {
     // Kendradhipati: Benefics owning Kendra
     final lagna = _getAscendantSign(chart);
     final kendras = [1, 4, 7, 10];
-    for (var k in kendras) {
+    for (final k in kendras) {
       final lord = _getHouseLord(chart, k);
       if (_isBenefic(lord)) {
         if (!doshas.any((d) => d.contains('Kendradhipati'))) {
@@ -2129,14 +2129,14 @@ class YogaDoshaAnalyzer {
     _checkGandanta(chart, 'Moon', doshas);
 
     // Combustion
-    for (var p in ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']) {
+    for (final p in ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']) {
       if (_isCombust(chart, p)) {
         doshas.add('Moudhya Dosha (Combust $p)');
       }
     }
 
     // Neecha (Debilitated)
-    for (var p in _visiblePlanets) {
+    for (final p in _visiblePlanets) {
       if (_isDebilitated(p, _getPlanetSign(chart, p))) {
         doshas.add('Neecha Dosha (Debilitated $p)');
       }
@@ -2192,7 +2192,7 @@ class YogaDoshaAnalyzer {
 
     // 2. Amavasya Dosha
     // Tithi 30 (Amavasya) or separation < 12 degrees
-    double diff = (moonLong - sunLong);
+    var diff = moonLong - sunLong;
     if (diff < 0) diff += 360;
     if (diff < 12.0) {
       doshas.add('Amavasya Dosha (Birth on New Moon)');
@@ -2213,12 +2213,12 @@ class YogaDoshaAnalyzer {
     // Tuesday (2) + 7th Tithi + Shatabhisha (23)
     // Saturday (6) + 12th Tithi + Krittika (2)
     // Note: ISO weekday 7=Sunday, 6=Saturday, 2=Tuesday.
-    bool vishaKanya = false;
-    int tithi = tithiInfo['index'];
+    var vishaKanya = false;
+    final int tithi = tithiInfo['index'];
     // Adjust Tithi to 1-15 scale? Usually texts say "2nd Tithi" (Dwitiya), implies of either Paksha generally
     // but often specific. Assuming specific Tithi number (1-30) logic:
     // "2nd Tithi" usually means 2 (Shukla) or 17 (Krishna). Let's assume generic Tithi number (1-15).
-    int tithiDay = (tithi - 1) % 15 + 1;
+    final tithiDay = (tithi - 1) % 15 + 1;
 
     if (weekday == 7 && tithiDay == 2 && nakshatraIndex == 8) {
       vishaKanya = true;
@@ -2268,7 +2268,7 @@ class YogaDoshaAnalyzer {
     // 5th House occupied/aspected by Rahu/Ketu OR Mars/Saturn
     // Simplified: 5th house affliction by Malefics
     final p5 = _getPlanetsInHouseFrom(chart, 5, _getAscendantSign(chart));
-    bool maleficIn5 = p5.any(
+    final maleficIn5 = p5.any(
       (p) => ['Rahu', 'Ketu', 'Mars', 'Saturn'].contains(p),
     );
     // Check aspect on 5th?
@@ -2281,7 +2281,7 @@ class YogaDoshaAnalyzer {
   // --- Bhanga (Cancellation) Rules ---
 
   static BhangaResult _checkManglikBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // 1. Mars in Own Sign or Exaltation
     final marsSign = _getPlanetSign(chart, 'Mars');
@@ -2361,7 +2361,7 @@ class YogaDoshaAnalyzer {
     }
 
     // Calculate status
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.isNotEmpty) {
       // Strong cancellations (reduce to 0)
       if (cancellations.any((c) => c.contains('Yogakaraka')) ||
@@ -2376,7 +2376,7 @@ class YogaDoshaAnalyzer {
       }
     }
 
-    String status = 'Active';
+    var status = 'Active';
     if (strength == 0.0) {
       status = 'Fully Cancelled';
     } else if (strength < 30.0) {
@@ -2396,11 +2396,11 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkKaalSarpBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // 1. Planet with Rahu/Ketu (conjunction breaks the axis)
     // Check if any visible planet is conjunct Rahu or Ketu
-    for (var p in _visiblePlanets) {
+    for (final p in _visiblePlanets) {
       if (_areConjunct(chart, p, 'Rahu') || _areConjunct(chart, p, 'Ketu')) {
         cancellations.add('Axis broken: $p is conjunct with Nodes');
       }
@@ -2409,7 +2409,7 @@ class YogaDoshaAnalyzer {
     // 2. Degree-based check: Planet in same house as Rahu/Ketu but outside axis by degrees
     final rahuLong = _getPlanetLongitude(chart, 'Rahu');
     final ketuLong = _getPlanetLongitude(chart, 'Ketu');
-    for (var p in _visiblePlanets) {
+    for (final p in _visiblePlanets) {
       final pLong = _getPlanetLongitude(chart, p);
       final rahuHouse = _getPlanetHouse(chart, 'Rahu');
       final ketuHouse = _getPlanetHouse(chart, 'Ketu');
@@ -2452,7 +2452,7 @@ class YogaDoshaAnalyzer {
     }
 
     // 7. Benefic planet in Kendra in exalted/own sign
-    for (var benefic in ['Jupiter', 'Venus', 'Mercury']) {
+    for (final benefic in ['Jupiter', 'Venus', 'Mercury']) {
       if (_isPlanetInKendra(chart, benefic)) {
         final bSign = _getPlanetSign(chart, benefic);
         if (_isExalted(benefic, bSign) || _isOwnSign(benefic, bSign)) {
@@ -2470,7 +2470,7 @@ class YogaDoshaAnalyzer {
       cancellations.add('Lagna outside Rahu-Ketu axis');
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.isNotEmpty) {
       // Strong cancellations
       if (cancellations.any((c) => c.contains('Gaja Kesari')) ||
@@ -2499,12 +2499,12 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkPitraDoshaBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // 1. Jupiter influence
     // If Jupiter aspects the affliction (Sun/Moon/Nodes)
-    bool jupAspect = false;
-    for (var p in ['Sun', 'Moon', 'Rahu', 'Ketu']) {
+    var jupAspect = false;
+    for (final p in ['Sun', 'Moon', 'Rahu', 'Ketu']) {
       if (_isAspecting(chart, 'Jupiter', p, [5, 7, 9]) ||
           _areConjunct(chart, 'Jupiter', p)) {
         jupAspect = true;
@@ -2516,7 +2516,7 @@ class YogaDoshaAnalyzer {
     final l9 = _getHouseLord(chart, 9);
     if (_isStrong(chart, l9)) cancellations.add('9th House Lord is strong');
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.isNotEmpty) {
       strength -= (cancellations.length * 40).clamp(0, 100);
     }
@@ -2534,12 +2534,12 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkKemadrumaBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
     final moonSign = _getPlanetSign(chart, 'Moon');
 
     // 1. Planet in Kendra from Moon
-    bool planetInKendraFromMoon = false;
-    for (var p in _visiblePlanets) {
+    var planetInKendraFromMoon = false;
+    for (final p in _visiblePlanets) {
       if (p == 'Moon' || p == 'Sun') continue;
       final pSign = _getPlanetSign(chart, p);
       final dist = (pSign - moonSign + 12) % 12;
@@ -2550,8 +2550,8 @@ class YogaDoshaAnalyzer {
     if (planetInKendraFromMoon) cancellations.add('Planet in Kendra from Moon');
 
     // 2. Planet in Kendra from Lagna
-    bool planetInKendraFromLagna = false;
-    for (var p in _visiblePlanets) {
+    var planetInKendraFromLagna = false;
+    for (final p in _visiblePlanets) {
       if (p == 'Moon' || p == 'Sun') continue;
       if (_isPlanetInKendra(chart, p)) planetInKendraFromLagna = true;
     }
@@ -2565,7 +2565,7 @@ class YogaDoshaAnalyzer {
       cancellations.add('Moon is in Own/Exalted sign');
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.isNotEmpty) strength = 0.0; // Usually fully cancelled
 
     return BhangaResult(
@@ -2579,7 +2579,7 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkGuruChandalBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
     final jupSign = _getPlanetSign(chart, 'Jupiter');
 
     if (_isOwnSign('Jupiter', jupSign) || _isExalted('Jupiter', jupSign)) {
@@ -2592,7 +2592,7 @@ class YogaDoshaAnalyzer {
       cancellations.add('Benefic aspect on Jupiter');
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.isNotEmpty) strength = 50.0;
 
     return BhangaResult(
@@ -2606,7 +2606,7 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkSakatBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // Moon in Kendra from Lagna
     if (_isPlanetInKendra(chart, 'Moon')) {
@@ -2618,7 +2618,7 @@ class YogaDoshaAnalyzer {
       cancellations.add('Jupiter is in Kendra from Lagna');
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.isNotEmpty) strength = 0.0;
 
     return BhangaResult(
@@ -2632,13 +2632,13 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkGrahanDoshaBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // Check if Sun or Moon is with nodes
-    bool sunWithNode =
+    final sunWithNode =
         _areConjunct(chart, 'Sun', 'Rahu') ||
         _areConjunct(chart, 'Sun', 'Ketu');
-    bool moonWithNode =
+    final moonWithNode =
         _areConjunct(chart, 'Moon', 'Rahu') ||
         _areConjunct(chart, 'Moon', 'Ketu');
 
@@ -2688,7 +2688,7 @@ class YogaDoshaAnalyzer {
       cancellations.add('Nodes in friendly signs');
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.length >= 2) {
       strength = 0.0;
     } else if (cancellations.length == 1) {
@@ -2708,7 +2708,7 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkVishDoshaBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // Check if Saturn-Moon conjunction exists
     if (!_areConjunct(chart, 'Saturn', 'Moon')) {
@@ -2740,7 +2740,7 @@ class YogaDoshaAnalyzer {
       cancellations.add('4th house lord is strong');
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.length >= 2) {
       strength = 20.0;
     } else if (cancellations.length == 1) {
@@ -2760,7 +2760,7 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkAngarakDoshaBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // Check if Mars-Rahu conjunction exists
     if (!_areConjunct(chart, 'Mars', 'Rahu')) {
@@ -2788,7 +2788,7 @@ class YogaDoshaAnalyzer {
 
     // Benefic in Lagna
     final lagnaSign = _getAscendantSign(chart);
-    for (var benefic in ['Jupiter', 'Venus', 'Mercury']) {
+    for (final benefic in ['Jupiter', 'Venus', 'Mercury']) {
       final bSign = _getPlanetSign(chart, benefic);
       if (bSign == lagnaSign) {
         cancellations.add('Benefic $benefic in Lagna');
@@ -2796,7 +2796,7 @@ class YogaDoshaAnalyzer {
       }
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.length >= 2) {
       strength = 10.0;
     } else if (cancellations.length == 1) {
@@ -2816,7 +2816,7 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkShrapitDoshaBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // Check if Saturn-Rahu conjunction exists
     if (!_areConjunct(chart, 'Saturn', 'Rahu')) {
@@ -2848,7 +2848,7 @@ class YogaDoshaAnalyzer {
       cancellations.add('9th house lord is strong');
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.length >= 2) {
       strength = 20.0;
     } else if (cancellations.length == 1) {
@@ -2868,7 +2868,7 @@ class YogaDoshaAnalyzer {
   }
 
   static BhangaResult _checkDaridraDoshaBhanga(CompleteChartData chart) {
-    List<String> cancellations = [];
+    final cancellations = <String>[];
 
     // Check if 11th lord is in dusthana (6, 8, 12)
     final l11 = _getHouseLord(chart, 11);
@@ -2909,7 +2909,7 @@ class YogaDoshaAnalyzer {
       cancellations.add('Strong 2nd lord (exalted/own)');
     }
 
-    double strength = 100.0;
+    var strength = 100.0;
     if (cancellations.length >= 2) {
       strength = 10.0;
     } else if (cancellations.length == 1) {
@@ -2934,11 +2934,11 @@ class YogaDoshaAnalyzer {
     String yogaName,
     String description,
   ) {
-    List<String> weaknesses = [];
-    double strength = 100.0;
+    final weaknesses = <String>[];
+    var strength = 100.0;
 
     // Identify key planets based on yoga name
-    List<String> keyPlanets = [];
+    final keyPlanets = <String>[];
     if (yogaName.contains('Gajakesari')) keyPlanets.addAll(['Jupiter', 'Moon']);
     if (yogaName.contains('Budhaditya')) keyPlanets.addAll(['Sun', 'Mercury']);
     if (yogaName.contains('Chandra Mangala')) {
@@ -2951,7 +2951,7 @@ class YogaDoshaAnalyzer {
     if (yogaName.contains('Sasa')) keyPlanets.add('Saturn');
 
     // Check if key planets are weak
-    for (var p in keyPlanets) {
+    for (final p in keyPlanets) {
       // Debilitated
       if (_isDebilitated(p, _getPlanetSign(chart, p)) &&
           !yogaName.contains('Neecha Bhanga')) {
@@ -2965,7 +2965,7 @@ class YogaDoshaAnalyzer {
         strength -= 30;
       }
       // In Dusthana (6, 8, 12) - Context dependent, but generally weak for benefic yogas
-      int house = _getPlanetHouse(chart, p);
+      final house = _getPlanetHouse(chart, p);
       if ([6, 8, 12].contains(house) && !yogaName.contains('Vipreet')) {
         weaknesses.add('$p is in Dusthana house ($house)');
         strength -= 20;
@@ -2973,7 +2973,7 @@ class YogaDoshaAnalyzer {
     }
 
     strength = strength.clamp(0.0, 100.0);
-    String status = 'Active';
+    var status = 'Active';
     if (strength < 40) {
       status = 'Weak';
     } else if (strength < 80) {
@@ -2999,9 +2999,9 @@ class YogaDoshaAnalyzer {
   // --- Logic Helpers ---
 
   static Map<String, dynamic> _calculateTithi(double moonLong, double sunLong) {
-    double diff = moonLong - sunLong;
+    var diff = moonLong - sunLong;
     if (diff < 0) diff += 360;
-    int index = (diff / 12).floor() + 1; // 1-30
+    final index = (diff / 12).floor() + 1; // 1-30
     return {
       'index': index,
       // 'isShukla': index <= 15
@@ -3032,7 +3032,7 @@ class YogaDoshaAnalyzer {
     String planet,
     List<String> malefics,
   ) {
-    for (var m in malefics) {
+    for (final m in malefics) {
       if (_areConjunct(chart, planet, m)) return true;
       // Aspects
       if (m == 'Saturn' && _isAspecting(chart, m, planet, [3, 7, 10])) {
@@ -3051,7 +3051,7 @@ class YogaDoshaAnalyzer {
   static bool _isHouseAfflicted(CompleteChartData chart, int house) {
     final lagna = _getAscendantSign(chart);
     final planets = _getPlanetsInHouseFrom(chart, house, lagna);
-    bool maleficInHouse = planets.any(_isMalefic);
+    final maleficInHouse = planets.any(_isMalefic);
     // Aspect on house
     // Simplified: just occupancy for now to avoid complexity of computing aspect on empty space
     return maleficInHouse;

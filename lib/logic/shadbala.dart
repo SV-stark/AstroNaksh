@@ -1,6 +1,7 @@
 import 'package:jyotish/jyotish.dart';
-import '../data/models.dart';
+
 import '../core/ephemeris_manager.dart';
+import '../data/models.dart';
 
 /// Shadbala (Six-Fold Strength) Calculator
 /// Uses EphemerisManager.jyotish facade for all calculations
@@ -14,7 +15,7 @@ class ShadbalaCalculator {
       chartData.baseChart,
     );
 
-    final Map<String, double> shadbala = {};
+    final shadbala = <String, double>{};
 
     nativeResults.forEach((planet, result) {
       if (!Planet.lunarNodes.contains(planet)) {
@@ -28,7 +29,7 @@ class ShadbalaCalculator {
   static Future<Map<Planet, ShadbalaResult>> calculateDetailedShadbala(
     VedicChart chart,
   ) async {
-    return await EphemerisManager.jyotish.getShadbala(chart);
+    return EphemerisManager.jyotish.getShadbala(chart);
   }
 
   static Future<ShadbalaScreenData> getScreenData(
@@ -40,7 +41,7 @@ class ShadbalaCalculator {
     final chart = chartData.baseChart;
 
     final detailedShadbala = await jyotish.getShadbala(chart);
-    final Map<String, double> shadbala = {};
+    final shadbala = <String, double>{};
     detailedShadbala.forEach((planet, result) {
       if (!Planet.lunarNodes.contains(planet)) {
         shadbala[planet.displayName] = result.totalBala;
@@ -50,7 +51,7 @@ class ShadbalaCalculator {
     final vimsopaka = strengthService.getAllPlanetsVimshopakBala(chart);
 
     final sunPos = chart.getPlanet(Planet.sun)?.longitude ?? 0.0;
-    final Map<Planet, CombustionInfo> combustion = {};
+    final combustion = <Planet, CombustionInfo>{};
     for (final planet in Planet.traditionalPlanets) {
       if (planet == Planet.sun) continue;
       final info = chart.getPlanet(planet);
@@ -86,12 +87,6 @@ class ShadbalaCalculator {
 }
 
 class ShadbalaScreenData {
-  final Map<String, double> shadbala;
-  final Map<Planet, ShadbalaResult> detailedShadbala;
-  final Map<Planet, VimshopakBala> vimsopaka;
-  final Map<Planet, CombustionInfo> combustion;
-  final List<Planet> horaLords;
-
   ShadbalaScreenData({
     required this.shadbala,
     required this.detailedShadbala,
@@ -99,4 +94,9 @@ class ShadbalaScreenData {
     required this.combustion,
     required this.horaLords,
   });
+  final Map<String, double> shadbala;
+  final Map<Planet, ShadbalaResult> detailedShadbala;
+  final Map<Planet, VimshopakBala> vimsopaka;
+  final Map<Planet, CombustionInfo> combustion;
+  final List<Planet> horaLords;
 }

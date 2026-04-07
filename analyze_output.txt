@@ -1,0 +1,74 @@
+Analyzing AstroNaksh...
+
+  error - lib\ui\panchang\panchang_hora_tab.dart:6:14 - The name 'PanchangHora' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'PanchangHora'. - non_type_as_type_argument
+  error - lib\ui\panchang\panchang_hora_tab.dart:16:25 - The property 'isDay' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - lib\ui\panchang\panchang_hora_tab.dart:22:62 - The getter 'moon' isn't defined for the type 'FluentIcons'. Try importing the library that defines 'moon', correcting the name to the name of an existing getter, or defining a getter or field named 'moon'. - undefined_getter
+  error - lib\ui\panchang\panchang_hora_tab.dart:29:27 - The property 'planet' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - lib\ui\panchang\panchang_hora_tab.dart:40:24 - The property 'startTime' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - lib\ui\panchang\panchang_hora_tab.dart:40:41 - The property 'endTime' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - lib\ui\panchang\panchang_inauspicious_tab.dart:6:14 - The name 'PanchangInauspicious' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'PanchangInauspicious'. - non_type_as_type_argument
+  error - lib\ui\panchang\panchang_inauspicious_tab.dart:19:17 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - lib\ui\panchang\panchang_inauspicious_tab.dart:22:32 - The property 'startTime' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - lib\ui\panchang\panchang_inauspicious_tab.dart:22:50 - The property 'endTime' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - lib\ui\panchang\panchang_muhurta_tab.dart:8:9 - Undefined class 'AbhijitMuhurta'. Try changing the name to the name of an existing class, or creating a class with the name 'AbhijitMuhurta'. - undefined_class
+  error - lib\ui\panchang\panchang_muhurta_tab.dart:9:9 - Undefined class 'BrahmaMuhurta'. Try changing the name to the name of an existing class, or creating a class with the name 'BrahmaMuhurta'. - undefined_class
+  error - lib\ui\panchang\panchang_sun_moon_tab.dart:14:9 - Undefined class 'PanchangResult'. Try changing the name to the name of an existing class, or creating a class with the name 'PanchangResult'. - undefined_class
+  error - lib\ui\panchang\panchang_sun_moon_tab.dart:15:9 - Undefined class 'MoonPhaseDetails'. Try changing the name to the name of an existing class, or creating a class with the name 'MoonPhaseDetails'. - undefined_class
+  error - lib\ui\panchang\panchang_sun_moon_tab.dart:16:9 - Undefined class 'EclipseData'. Try changing the name to the name of an existing class, or creating a class with the name 'EclipseData'. - undefined_class
+  error - lib\ui\panchang\panchang_sun_moon_tab.dart:50:29 - The getter 'sunset' isn't defined for the type 'FluentIcons'. Try importing the library that defines 'sunset', correcting the name to the name of an existing getter, or defining a getter or field named 'sunset'. - undefined_getter
+  error - lib\ui\panchang\panchang_transits_tab.dart:8:9 - Undefined class 'PanchakStatus'. Try changing the name to the name of an existing class, or creating a class with the name 'PanchakStatus'. - undefined_class
+  error - lib\ui\panchang\panchang_transits_tab.dart:41:50 - Invalid constant value. - invalid_constant
+  error - lib\ui\panchang\panchang_transits_tab.dart:73:47 - Invalid constant value. - invalid_constant
+   info - lib\core\app_environment.dart:40:17 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\app_environment.dart:69:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\app_environment.dart:76:17 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\app_environment.dart:90:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\app_environment.dart:103:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\app_environment.dart:110:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\chart_share_service.dart:69:17 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\database_helper.dart:32:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\ephemeris_manager.dart:63:16 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\ephemeris_manager.dart:207:17 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\ephemeris_manager.dart:242:15 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\ephemeris_manager.dart:273:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\ephemeris_manager.dart:395:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\ephemeris_manager.dart:411:15 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\core\ephemeris_manager.dart:450:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\data\life_prediction_models.dart:186:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib\ui\analysis\gochara_vedha_screen.dart:4:8 - Import of a library in the 'lib/src' directory of another package. Try importing a public library that exports this library, or removing the import. - implementation_imports
+   info - lib\ui\analysis\gochara_vedha_screen.dart:59:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\chart_screen.dart:256:5 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\chart_screen.dart:639:33 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\chart_screen.dart:667:35 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\chart_screen.dart:1035:15 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\comparison\chart_comparison_screen.dart:1167:29 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\comparison\chart_comparison_screen.dart:1767:7 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\comparison\chart_comparison_screen.dart:1799:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\home_screen.dart:59:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\home_screen.dart:134:17 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\home_screen.dart:177:23 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\home_screen.dart:379:33 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\home_screen.dart:501:37 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\input_screen.dart:65:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\input_screen.dart:77:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\input_screen.dart:93:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\input_screen.dart:117:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\input_screen.dart:143:11 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\input_screen.dart:163:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\input_screen.dart:230:19 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\loading_screen.dart:33:19 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\panchang\panchang_helpers.dart:42:26 - 'ButtonState' is deprecated and shouldn't be used. Use WidgetStateProperty instead. Will be removed in the next version. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\ui\panchang_screen.dart:188:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\panchang_screen.dart:244:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\panchang_screen.dart:246:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\panchang_screen.dart:258:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\panchang_screen.dart:274:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\reports\pdf_report_screen.dart:275:18 - Use of an async 'dart:io' method. Try using the synchronous version of the method. - avoid_slow_async_io
+   info - lib\ui\reports\pdf_report_screen.dart:318:7 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\reports\pdf_report_screen.dart:365:7 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\tools\birth_time_rectifier_screen.dart:51:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\tools\muhurta_finder_screen.dart:106:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\tools\muhurta_finder_screen.dart:161:9 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+   info - lib\ui\tools\muhurta_finder_screen.dart:268:29 - Missing an 'await' for the 'Future' computed by this expression. Try adding an 'await' or wrapping the expression with 'unawaited'. - unawaited_futures
+
+70 issues found.

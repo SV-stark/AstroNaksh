@@ -1,14 +1,14 @@
-import 'package:flutter/services.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/services.dart';
+
 import '../../data/models.dart';
 import '../../logic/yoga_dosha_analyzer.dart';
-import '../widgets/strength_meter.dart';
 import '../../ui/utils/responsive_helper.dart';
+import '../widgets/strength_meter.dart';
 
 class YogaDoshaScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const YogaDoshaScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<YogaDoshaScreen> createState() => _YogaDoshaScreenState();
@@ -62,7 +62,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                 Icon(FluentIcons.error, size: 48, color: Colors.red),
                 const SizedBox(height: 16),
                 Text(
-                  "Failed to analyze chart:\n$_error",
+                  'Failed to analyze chart:\n$_error',
                   textAlign: TextAlign.center,
                   style: FluentTheme.of(context).typography.bodyLarge,
                 ),
@@ -72,19 +72,19 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                   children: [
                     Button(
                       onPressed: _analyzeChart,
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(FluentIcons.refresh, size: 16),
-                          const SizedBox(width: 8),
-                          const Text("Retry"),
+                          Icon(FluentIcons.refresh, size: 16),
+                          SizedBox(width: 8),
+                          Text('Retry'),
                         ],
                       ),
                     ),
                     const SizedBox(width: 12),
                     Button(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text("Go Back"),
+                      child: const Text('Go Back'),
                     ),
                   ],
                 ),
@@ -260,7 +260,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          ...notableYogas.take(3).map((yoga) => _buildQuickYogaCard(yoga)),
+          ...notableYogas.take(3).map(_buildQuickYogaCard),
         ],
 
         if (criticalDoshas.isNotEmpty) ...[
@@ -270,7 +270,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          ...criticalDoshas.map((dosha) => _buildQuickDoshaCard(dosha)),
+          ...criticalDoshas.map(_buildQuickDoshaCard),
         ],
       ],
     );
@@ -298,7 +298,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
 
     // Group yogas by type
     final groupedYogas = <String, List<BhangaResult>>{};
-    for (var yoga in yogas) {
+    for (final yoga in yogas) {
       final type = _getYogaType(yoga.name);
       groupedYogas.putIfAbsent(type, () => []);
       groupedYogas[type]!.add(yoga);
@@ -340,7 +340,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
                   ),
                 ),
               ),
-              ...entry.value.map((yoga) => _buildYogaCard(yoga)),
+              ...entry.value.map(_buildYogaCard),
               const SizedBox(height: 8),
             ],
           );
@@ -418,7 +418,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ),
-          ...activeDoshas.map((d) => _buildDoshaCard(d)),
+          ...activeDoshas.map(_buildDoshaCard),
         ],
         if (cancelledDoshas.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -429,7 +429,7 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ),
-          ...cancelledDoshas.map((d) => _buildDoshaCard(d)),
+          ...cancelledDoshas.map(_buildDoshaCard),
         ],
       ],
     );

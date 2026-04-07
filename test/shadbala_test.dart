@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/logic/shadbala.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// Tests for Shadbala calculations
 /// Focuses on verifying that the new Sthana Bala sub-components are integrated

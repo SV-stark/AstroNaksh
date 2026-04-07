@@ -1,13 +1,13 @@
-import 'package:flutter/services.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/services.dart';
+
 import '../../data/models.dart';
 import '../../logic/retrograde_analysis.dart';
 import '../../ui/utils/responsive_helper.dart';
 
 class RetrogradeScreen extends StatelessWidget {
-  final CompleteChartData chartData;
-
   const RetrogradeScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +97,10 @@ class RetrogradeScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           'Frequency: ${RetrogradeAnalysis.getRetrogradeFrequency(planet)}',
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),

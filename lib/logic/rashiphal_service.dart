@@ -1,8 +1,9 @@
 import 'package:jyotish/jyotish.dart';
-import '../data/models.dart';
+
 import '../core/rashiphal_rules.dart';
-import 'transit_analysis.dart';
+import '../data/models.dart';
 import 'panchang_service.dart';
+import 'transit_analysis.dart';
 
 class RashiphalService {
   final TransitAnalysis _transitAnalysis = TransitAnalysis();
@@ -21,7 +22,7 @@ class RashiphalService {
 
     // Generate weekly overview (next 7 days starting from today)
     final weekly = <DailyRashiphal>[];
-    for (int i = 0; i < 7; i++) {
+    for (var i = 0; i < 7; i++) {
       // Optimization: For weekly overview we might want a lighter version,
       // but for now we'll reuse the main generator as it's not too heavy yet.
       final prediction = await generateDailyPrediction(
@@ -130,7 +131,7 @@ class RashiphalService {
 
     // Normalize and Clamp (35% to 95%)
     // Raw score range is approx -30 to 100
-    double normalizedScore = score / 100;
+    final normalizedScore = score / 100;
     final finalScore = normalizedScore.clamp(0.35, 0.95);
 
     // 6. Synthesize Highlights and Cautions
@@ -187,7 +188,7 @@ class RashiphalService {
     // Saturn position
     final saturnTransit = transitChart.saturnTransit;
     final saturnSignName = _getSignName(saturnTransit.transitSign);
-    String saturnNote =
+    var saturnNote =
         'Saturn: $saturnSignName (${_getOrdinal(saturnTransit.houseFromMoon)} house from natal Moon)';
     if (saturnTransit.isSadeSati) {
       saturnNote += ' — Sade Sati ${saturnTransit.sadeSatiPhase.name} phase';
@@ -204,7 +205,7 @@ class RashiphalService {
     transitContext.add('Rahu: $rahuSignName | Ketu: $ketuSignName');
 
     // 8. Build Dasha Context — current running Dasha period
-    String dashaContext = '';
+    var dashaContext = '';
     final currentDashas = chartData.getCurrentDashas(date);
     if (currentDashas.isNotEmpty) {
       final md = currentDashas['mahadasha'] ?? '';

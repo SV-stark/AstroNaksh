@@ -8,25 +8,27 @@ class AyanamsaCalculator {
   /// Get all available ayanamsa systems
   static List<AyanamsaSystem> get systems {
     // Define custom order: Lahiri first, then KP Old, then KP New, then rest
-    final List<SiderealMode> orderedModes = [
+    final orderedModes = <SiderealMode>[
       SiderealMode.lahiri,
       SiderealMode.krishnamurti,
       SiderealMode.krishnamurtiVP291,
-      ...SiderealMode.values.where((m) =>
-          m != SiderealMode.lahiri &&
-          m != SiderealMode.krishnamurti &&
-          m != SiderealMode.krishnamurtiVP291),
+      ...SiderealMode.values.where(
+        (m) =>
+            m != SiderealMode.lahiri &&
+            m != SiderealMode.krishnamurti &&
+            m != SiderealMode.krishnamurtiVP291,
+      ),
     ];
 
     return orderedModes.map((mode) {
-      String name = mode.name;
-      String description = mode.toString();
+      var name = mode.name;
+      var description = mode.toString();
 
       // Custom names for KP systems with consistent naming
       if (mode == SiderealMode.krishnamurti) {
-        description = "Krishnamurti (Old)";
+        description = 'Krishnamurti (Old)';
       } else if (mode == SiderealMode.krishnamurtiVP291) {
-        description = "Krishnamurti (New)";
+        description = 'Krishnamurti (New)';
         // Map 'newKP' identifier to this mode for backward compatibility
         name = 'newKP';
       }
@@ -50,9 +52,9 @@ class AyanamsaCalculator {
         (m) => m.name.toLowerCase() == name.toLowerCase(),
       );
 
-      String description = mode.toString();
+      var description = mode.toString();
       if (mode == SiderealMode.krishnamurti) {
-        description = "KP Old";
+        description = 'KP Old';
       }
 
       return AyanamsaSystem(
@@ -74,7 +76,10 @@ class AyanamsaCalculator {
 
     try {
       await EphemerisManager.ensureEphemerisData();
-      return await EphemerisManager.service.getAyanamsa(dateTime: date, mode: system.mode!);
+      return await EphemerisManager.service.getAyanamsa(
+        dateTime: date,
+        mode: system.mode!,
+      );
     } catch (e) {
       throw Exception('Failed to calculate ayanamsa: $e');
     }
@@ -115,15 +120,14 @@ class AyanamsaCalculator {
 
 /// Ayanamsa System Definition
 class AyanamsaSystem {
-  final String name;
-  final String description;
-  final SiderealMode? mode;
-
   const AyanamsaSystem({
     required this.name,
     required this.description,
     required this.mode,
   });
+  final String name;
+  final String description;
+  final SiderealMode? mode;
 }
 
 /// Settings manager for ayanamsa preferences

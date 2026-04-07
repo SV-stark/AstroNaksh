@@ -1,12 +1,12 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../../data/models.dart';
+import 'package:jyotish/jyotish.dart';
 import 'panchang_helpers.dart';
 
 /// Tab 3: Muhurta
 class PanchangMuhurtaTab extends StatelessWidget {
+  const PanchangMuhurtaTab({super.key, this.abhijit, this.brahma});
   final AbhijitMuhurta? abhijit;
   final BrahmaMuhurta? brahma;
-  const PanchangMuhurtaTab({super.key, this.abhijit, this.brahma});
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +16,20 @@ class PanchangMuhurtaTab extends StatelessWidget {
         if (abhijit != null)
           buildMuhurtaCard(
             'Abhijit Muhurta',
-            abhijit!.start,
-            abhijit!.end,
-            FluentIcons.diamond,
-            Colors.green,
+            abhijit!.startTime,
+            abhijit!.endTime,
+            FluentIcons.starburst,
+            Colors.orange,
             abhijit!.description,
           ),
         if (brahma != null) ...[
           const SizedBox(height: 8),
           buildMuhurtaCard(
             'Brahma Muhurta',
-            brahma!.start,
-            brahma!.end,
-            FluentIcons.lightbulb,
-            Colors.blue,
+            brahma!.startTime,
+            brahma!.endTime,
+            FluentIcons.clear_night,
+            Colors.purple,
             brahma!.description,
           ),
         ],

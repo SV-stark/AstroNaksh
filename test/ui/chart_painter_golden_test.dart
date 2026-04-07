@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:astronaksh/core/chart_customization.dart';
 import 'package:astronaksh/ui/painters/north_indian_chart_painter.dart';
 import 'package:astronaksh/ui/painters/south_indian_chart_painter.dart';
-import 'package:astronaksh/core/chart_customization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// Golden tests for chart painters (E11).
 void main() {

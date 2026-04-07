@@ -1,6 +1,7 @@
+import 'package:astronaksh/logic/dasha_system.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jyotish/jyotish.dart';
-import 'package:astronaksh/logic/dasha_system.dart';
+
 import 'utils/test_chart_builder.dart';
 
 void main() {
@@ -29,7 +30,7 @@ void main() {
     final chart = TestChartBuilder().build();
 
     try {
-      final result = await service.calculateSudarshanChakra(chart.baseChart);
+      final result = service.calculateSudarshanChakra(chart.baseChart);
       expect(result, isNotNull);
     } catch (e) {
       // It might fail if library implementation has issues

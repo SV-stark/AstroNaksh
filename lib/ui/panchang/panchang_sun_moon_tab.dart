@@ -1,38 +1,29 @@
+import 'package:astronaksh/logic/panchang_service.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
-import '../../../data/models.dart';
+import 'package:jyotish/jyotish.dart';
+
 import 'panchang_helpers.dart';
 
 /// Tab 1: Sun & Moon Times
 class PanchangSunMoonTab extends StatelessWidget {
-  final PanchangResult? result;
-  final MoonPhaseDetails? moonPhase;
-  final EclipseData? eclipseData;
-
   const PanchangSunMoonTab({
     super.key,
     this.result,
     this.moonPhase,
     this.eclipseData,
   });
+  final PanchangResult? result;
+  final MoonPhaseDetails? moonPhase;
+  final EclipseData? eclipseData;
 
   @override
   Widget build(BuildContext context) {
     if (result == null) return const Center(child: ProgressRing());
 
-    final timeFormat = DateFormat('HH:mm');
-    final sunrise = result!.sunrise != null
-        ? timeFormat.format(result!.sunrise!)
-        : 'N/A';
-    final sunset = result!.sunset != null
-        ? timeFormat.format(result!.sunset!)
-        : 'N/A';
-    final moonrise = result!.moonrise != null
-        ? timeFormat.format(result!.moonrise!)
-        : 'N/A';
-    final moonset = result!.moonset != null
-        ? timeFormat.format(result!.moonset!)
-        : 'N/A';
+    final sunrise = result!.sunrise ?? 'N/A';
+    final sunset = result!.sunset ?? 'N/A';
+    final moonrise = result!.moonrise ?? 'N/A';
+    final moonset = result!.moonset ?? 'N/A';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +39,7 @@ class PanchangSunMoonTab extends StatelessWidget {
         buildTimeCard(
           title: 'Sunset',
           time: sunset,
-          icon: FluentIcons.sunset,
+          icon: FluentIcons.lower_brightness,
           color: Colors.red,
           description: 'Last light of the day',
         ),
@@ -102,7 +93,7 @@ class PanchangSunMoonTab extends StatelessWidget {
           const SizedBox(height: 16),
           InfoBar(
             title: const Text('Eclipse Alert'),
-            content: Text('${eclipseData!.type} eclipse detected'),
+            content: Text('${eclipseData!.eclipseType.name} eclipse detected'),
             severity: InfoBarSeverity.warning,
           ),
         ],

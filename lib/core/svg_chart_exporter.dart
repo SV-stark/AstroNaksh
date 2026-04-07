@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:path_provider/path_provider.dart';
 
 /// SVG chart export service (E8).
@@ -190,7 +189,7 @@ class SvgChartExporter {
 }
 
 class _Pt {
+  const _Pt(this.x, this.y);
   final double x;
   final double y;
-  const _Pt(this.x, this.y);
 }

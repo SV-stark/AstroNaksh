@@ -3,9 +3,8 @@ import '../../data/models.dart';
 import '../../logic/progeny_service.dart';
 
 class ProgenyScreen extends StatelessWidget {
-  final CompleteChartData chartData;
-
   const ProgenyScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +12,7 @@ class ProgenyScreen extends StatelessWidget {
     final analysis = service.analyzeProgeny(chartData);
 
     return ScaffoldPage(
-      header: const PageHeader(
-        title: Text('Progeny Analysis'),
-      ),
+      header: const PageHeader(title: Text('Progeny Analysis')),
       content: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -26,13 +23,13 @@ class ProgenyScreen extends StatelessWidget {
               children: [
                 Text(
                   '${analysis.overallScore}%',
-                  style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  analysis.prospects,
-                  style: const TextStyle(fontSize: 20),
-                ),
+                Text(analysis.prospects, style: const TextStyle(fontSize: 20)),
                 const SizedBox(height: 16),
                 _buildProgressBar(analysis.overallScore),
               ],
@@ -46,7 +43,7 @@ class ProgenyScreen extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 8),
-          ...analysis.factors.map((f) => _buildFactorCard(f)),
+          ...analysis.factors.map(_buildFactorCard),
           const SizedBox(height: 16),
 
           // Recommendations
@@ -59,16 +56,20 @@ class ProgenyScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: analysis.recommendations.map((r) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('• ', style: TextStyle(fontSize: 16)),
-                    Expanded(child: Text(r)),
-                  ],
-                ),
-              )).toList(),
+              children: analysis.recommendations
+                  .map(
+                    (r) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('• ', style: TextStyle(fontSize: 16)),
+                          Expanded(child: Text(r)),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           ),
         ],
@@ -124,8 +125,14 @@ class ProgenyScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(factor.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(factor.description, style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                Text(
+                  factor.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  factor.description,
+                  style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                ),
               ],
             ),
           ),

@@ -51,8 +51,8 @@ class ProgenyService {
       }
     }
 
-    int score = 50;
-    String description = '5th house has ${planetsIn5th.length} planet(s)';
+    var score = 50;
+    var description = '5th house has ${planetsIn5th.length} planet(s)';
 
     if (planetsIn5th.contains(Planet.jupiter)) {
       score += 20;
@@ -93,8 +93,8 @@ class ProgenyService {
     }
 
     final signIndex = (jupiter.position.longitude / 30).floor();
-    int score = 50;
-    String desc = 'Jupiter in ${jupiter.position.zodiacSign}';
+    var score = 50;
+    var desc = 'Jupiter in ${jupiter.position.zodiacSign}';
 
     // Exalted/Debilitated
     if (signIndex == 2 || signIndex == 4) {
@@ -128,8 +128,8 @@ class ProgenyService {
     }
 
     final signIndex = (venus.position.longitude / 30).floor();
-    int score = 50;
-    String desc = 'Venus in ${venus.position.zodiacSign}';
+    var score = 50;
+    final desc = 'Venus in ${venus.position.zodiacSign}';
 
     if (signIndex == 0 || signIndex == 6) {
       // Aries, Libra
@@ -153,8 +153,8 @@ class ProgenyService {
       );
     }
 
-    int score = 50;
-    String desc = 'Mars in ${mars.position.zodiacSign}';
+    var score = 50;
+    var desc = 'Mars in ${mars.position.zodiacSign}';
 
     // Manglik in 1, 4, 7, 8, 12 can affect progeny
     final signIndex = (mars.position.longitude / 30).floor();
@@ -180,8 +180,8 @@ class ProgenyService {
       );
     }
 
-    int score = 50;
-    String desc = 'Moon in ${moon.position.zodiacSign}';
+    var score = 50;
+    final desc = 'Moon in ${moon.position.zodiacSign}';
 
     // Check for Chandra Mantas
     final signIndex = (moon.position.longitude / 30).floor();
@@ -228,27 +228,25 @@ class ProgenyService {
 }
 
 class ProgenyAnalysis {
-  final List<ProgenyFactor> factors;
-  final int overallScore;
-  final String prospects;
-  final List<String> recommendations;
-
   ProgenyAnalysis({
     required this.factors,
     required this.overallScore,
     required this.prospects,
     required this.recommendations,
   });
+  final List<ProgenyFactor> factors;
+  final int overallScore;
+  final String prospects;
+  final List<String> recommendations;
 }
 
 class ProgenyFactor {
-  final String name;
-  final int score;
-  final String description;
-
   ProgenyFactor({
     required this.name,
     required this.score,
     required this.description,
   });
+  final String name;
+  final int score;
+  final String description;
 }

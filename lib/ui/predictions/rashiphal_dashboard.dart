@@ -4,9 +4,8 @@ import '../../logic/rashiphal_service.dart';
 import '../widgets/daily_prediction_card.dart';
 
 class RashiphalDashboardScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const RashiphalDashboardScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<RashiphalDashboardScreen> createState() =>
@@ -72,7 +71,7 @@ class _RashiphalDashboardScreenState extends State<RashiphalDashboardScreen> {
                     items: const [
                       ComboBoxItem(value: 0, child: Text("Today's Guidance")),
                       ComboBoxItem(value: 1, child: Text("Tomorrow's Preview")),
-                      ComboBoxItem(value: 2, child: Text("Weekly Overview")),
+                      ComboBoxItem(value: 2, child: Text('Weekly Overview')),
                     ],
                     onChanged: (value) {
                       setState(() {

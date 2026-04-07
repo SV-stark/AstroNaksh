@@ -3,70 +3,6 @@ import 'package:fluent_ui/fluent_ui.dart';
 /// Chart Customization Settings
 /// Manages user preferences for chart display
 class ChartCustomization {
-  // Chart Style Settings
-  ChartStyle chartStyle = ChartStyle.northIndian;
-  ColorScheme colorScheme = ColorScheme.classic;
-  bool showHouses = true;
-  bool showSigns = true;
-  bool showDegrees = true;
-  bool showNakshatras = false;
-
-  // Planet Display Settings
-  bool showRetrograde = true;
-  bool showCombust = true;
-  bool showExaltedDebilitated = true;
-  PlanetSize planetSize = PlanetSize.medium;
-
-  // House System Settings
-  HouseSystem houseSystem = HouseSystem.placidus;
-  bool showHouseCusps = true;
-  bool showHouseNumbers = true;
-
-  // Chart Information Settings
-  bool showBirthDetails = true;
-  bool showAyanamsa = true;
-  bool showCurrentDasha = true;
-
-  // PDF Report Settings
-  bool pdfIncludeD1 = true;
-  bool pdfIncludeD9 = true;
-  bool pdfIncludeDasha = true;
-  bool pdfIncludeKP = true;
-  bool pdfIncludeVargas = false;
-  bool pdfIncludeInterpretations = false;
-
-  // Dasha Settings
-  int dashaYearsToShow = 20;
-  bool showAntardasha = true;
-  bool showPratyantardasha = false;
-
-  // Transit Settings
-  bool showTransits = true;
-  int transitDaysToShow = 30;
-
-  // Ayanamsa Settings
-  String ayanamsaSystem = 'newKP';
-  
-  // Node Type (Rahu/Ketu) - Mean vs True Node
-  bool useTrueNode = false;
-  
-  // Position Calculation
-  bool useTopocentric = false;
-  bool calculateSpeed = true;
-  
-  // Aspect Calculation
-  bool includeSpecialAspects = true;
-  bool includeNodesInAspects = true;
-  
-  // Outer Planets
-  bool includeOuterPlanets = false;
-
-  // Notification Settings
-  bool dailyTransitNotifications = true;
-  // Using hours and minutes instead of TimeOfDay to remove Material dependency
-  int notificationHour = 8;
-  int notificationMinute = 0;
-
   ChartCustomization();
 
   /// Create from JSON
@@ -141,6 +77,69 @@ class ChartCustomization {
 
     return settings;
   }
+  // Chart Style Settings
+  ChartStyle chartStyle = ChartStyle.northIndian;
+  ColorScheme colorScheme = ColorScheme.classic;
+  bool showHouses = true;
+  bool showSigns = true;
+  bool showDegrees = true;
+  bool showNakshatras = false;
+
+  // Planet Display Settings
+  bool showRetrograde = true;
+  bool showCombust = true;
+  bool showExaltedDebilitated = true;
+  PlanetSize planetSize = PlanetSize.medium;
+
+  // House System Settings
+  HouseSystem houseSystem = HouseSystem.placidus;
+  bool showHouseCusps = true;
+  bool showHouseNumbers = true;
+
+  // Chart Information Settings
+  bool showBirthDetails = true;
+  bool showAyanamsa = true;
+  bool showCurrentDasha = true;
+
+  // PDF Report Settings
+  bool pdfIncludeD1 = true;
+  bool pdfIncludeD9 = true;
+  bool pdfIncludeDasha = true;
+  bool pdfIncludeKP = true;
+  bool pdfIncludeVargas = false;
+  bool pdfIncludeInterpretations = false;
+
+  // Dasha Settings
+  int dashaYearsToShow = 20;
+  bool showAntardasha = true;
+  bool showPratyantardasha = false;
+
+  // Transit Settings
+  bool showTransits = true;
+  int transitDaysToShow = 30;
+
+  // Ayanamsa Settings
+  String ayanamsaSystem = 'newKP';
+
+  // Node Type (Rahu/Ketu) - Mean vs True Node
+  bool useTrueNode = false;
+
+  // Position Calculation
+  bool useTopocentric = false;
+  bool calculateSpeed = true;
+
+  // Aspect Calculation
+  bool includeSpecialAspects = true;
+  bool includeNodesInAspects = true;
+
+  // Outer Planets
+  bool includeOuterPlanets = false;
+
+  // Notification Settings
+  bool dailyTransitNotifications = true;
+  // Using hours and minutes instead of TimeOfDay to remove Material dependency
+  int notificationHour = 8;
+  int notificationMinute = 0;
 
   /// Convert to JSON
   Map<String, dynamic> toJson() {
@@ -320,16 +319,6 @@ extension ColorSchemeColors on ColorScheme {
 
 /// Chart Colors Configuration
 class ChartColors {
-  final Color background;
-  final Color houseBorder;
-  final Color houseFill;
-  final Color planetText;
-  final Color retrogradeIndicator;
-  final Color ascendantMarker;
-  final Color beneficPlanet;
-  final Color maleficPlanet;
-  final Color neutralPlanet;
-
   const ChartColors({
     required this.background,
     required this.houseBorder,
@@ -341,6 +330,15 @@ class ChartColors {
     required this.maleficPlanet,
     required this.neutralPlanet,
   });
+  final Color background;
+  final Color houseBorder;
+  final Color houseFill;
+  final Color planetText;
+  final Color retrogradeIndicator;
+  final Color ascendantMarker;
+  final Color beneficPlanet;
+  final Color maleficPlanet;
+  final Color neutralPlanet;
 }
 
 /// Chart Presets

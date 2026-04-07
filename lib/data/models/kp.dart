@@ -1,10 +1,4 @@
 class KPSubLord {
-  final String starLord;
-  final String subLord;
-  final String subSubLord;
-  final int nakshatraIndex;
-  final String nakshatraName;
-
   KPSubLord({
     required this.starLord,
     required this.subLord,
@@ -12,14 +6,6 @@ class KPSubLord {
     this.nakshatraIndex = 0,
     this.nakshatraName = '',
   });
-
-  Map<String, dynamic> toJson() => {
-    'starLord': starLord,
-    'subLord': subLord,
-    'subSubLord': subSubLord,
-    'nakshatraIndex': nakshatraIndex,
-    'nakshatraName': nakshatraName,
-  };
 
   factory KPSubLord.fromJson(Map<String, dynamic> json) {
     return KPSubLord(
@@ -30,6 +16,19 @@ class KPSubLord {
       nakshatraName: json['nakshatraName'] as String? ?? '',
     );
   }
+  final String starLord;
+  final String subLord;
+  final String subSubLord;
+  final int nakshatraIndex;
+  final String nakshatraName;
+
+  Map<String, dynamic> toJson() => {
+    'starLord': starLord,
+    'subLord': subLord,
+    'subSubLord': subSubLord,
+    'nakshatraIndex': nakshatraIndex,
+    'nakshatraName': nakshatraName,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -47,21 +46,11 @@ class KPSubLord {
 }
 
 class KPData {
-  final List<KPSubLord> subLords;
-  final List<String> significators;
-  final List<String> rulingPlanets;
-
   KPData({
     required this.subLords,
     required this.significators,
     required this.rulingPlanets,
   });
-
-  Map<String, dynamic> toJson() => {
-    'subLords': subLords.map((e) => e.toJson()).toList(),
-    'significators': significators,
-    'rulingPlanets': rulingPlanets,
-  };
 
   factory KPData.fromJson(Map<String, dynamic> json) {
     return KPData(
@@ -72,6 +61,15 @@ class KPData {
       rulingPlanets: (json['rulingPlanets'] as List).cast<String>(),
     );
   }
+  final List<KPSubLord> subLords;
+  final List<String> significators;
+  final List<String> rulingPlanets;
+
+  Map<String, dynamic> toJson() => {
+    'subLords': subLords.map((e) => e.toJson()).toList(),
+    'significators': significators,
+    'rulingPlanets': rulingPlanets,
+  };
 
   @override
   bool operator ==(Object other) {

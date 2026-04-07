@@ -19,7 +19,7 @@ class PlanetaryMaitriService {
     final matrix = EphemerisManager.jyotish.getPlanetaryRelationshipsMatrix(
       chart,
     );
-    final Map<Planet, Map<Planet, RelationshipType>> tempRelations = {};
+    final tempRelations = <Planet, Map<Planet, RelationshipType>>{};
     matrix.forEach((planet, row) {
       tempRelations[planet] = {};
       row.forEach((other, rel) {
@@ -34,7 +34,7 @@ class PlanetaryMaitriService {
     final matrix = EphemerisManager.jyotish.getPlanetaryRelationshipsMatrix(
       chart,
     );
-    final Map<Planet, Map<Planet, CompoundRelationship>> compoundRelations = {};
+    final compoundRelations = <Planet, Map<Planet, CompoundRelationship>>{};
     matrix.forEach((planet, row) {
       compoundRelations[planet] = {};
       row.forEach((other, rel) {
@@ -67,9 +67,9 @@ class PlanetaryMaitriService {
       chart,
     );
 
-    final Map<Planet, Map<Planet, RelationshipType>> natural = {};
-    final Map<Planet, Map<Planet, RelationshipType>> temporary = {};
-    final Map<Planet, Map<Planet, CompoundRelationship>> compound = {};
+    final natural = <Planet, Map<Planet, RelationshipType>>{};
+    final temporary = <Planet, Map<Planet, RelationshipType>>{};
+    final compound = <Planet, Map<Planet, CompoundRelationship>>{};
 
     matrix.forEach((planet, row) {
       natural[planet] = {};
@@ -129,15 +129,14 @@ enum CompoundRelationship {
 
 /// Complete maitri data for a chart.
 class PlanetaryMaitriData {
-  final Map<Planet, Map<Planet, RelationshipType>> natural;
-  final Map<Planet, Map<Planet, RelationshipType>> temporary;
-  final Map<Planet, Map<Planet, CompoundRelationship>> compound;
-  final VedicChart chart;
-
   PlanetaryMaitriData({
     required this.natural,
     required this.temporary,
     required this.compound,
     required this.chart,
   });
+  final Map<Planet, Map<Planet, RelationshipType>> natural;
+  final Map<Planet, Map<Planet, RelationshipType>> temporary;
+  final Map<Planet, Map<Planet, CompoundRelationship>> compound;
+  final VedicChart chart;
 }

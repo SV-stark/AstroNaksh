@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:jyotish/jyotish.dart' as j;
-import '../../logic/planetary_aspect_service.dart';
+
 import '../../core/chart_customization.dart';
+import '../../logic/planetary_aspect_service.dart';
 
 /// Painter for drawing planetary aspect (drishti) lines on charts
 class AspectPainter extends CustomPainter {
-  final List<PlanetaryAspect> aspects;
-  final Map<int, List<String>> planetsBySign;
-  final int ascendantSign;
-  final ChartColors colors;
-  final double lineOpacity;
-
   AspectPainter({
     required this.aspects,
     required this.planetsBySign,
@@ -18,6 +13,11 @@ class AspectPainter extends CustomPainter {
     required this.colors,
     this.lineOpacity = 0.4,
   });
+  final List<PlanetaryAspect> aspects;
+  final Map<int, List<String>> planetsBySign;
+  final int ascendantSign;
+  final ChartColors colors;
+  final double lineOpacity;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -44,7 +44,7 @@ class AspectPainter extends CustomPainter {
     ];
 
     // Map planets to their positions
-    for (int houseIndex = 0; houseIndex < 12; houseIndex++) {
+    for (var houseIndex = 0; houseIndex < 12; houseIndex++) {
       final signIndex = ((ascendantSign - 1) + houseIndex) % 12;
       final signNumber = signIndex + 1; // 1-12
       final planets = planetsBySign[signNumber] ?? [];
@@ -54,7 +54,7 @@ class AspectPainter extends CustomPainter {
         final center = centers[houseIndex];
 
         // Position planets in this house
-        for (int i = 0; i < planets.length; i++) {
+        for (var i = 0; i < planets.length; i++) {
           final planetName = planets[i].toLowerCase();
           final planet = _getPlanetFromName(planetName);
 

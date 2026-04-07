@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/data/models.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AstrologyConstants Tests', () {
@@ -43,7 +43,23 @@ void main() {
       // Dart's % operator can return negative values for negative inputs
       // So -1 % 12 = -1, not 11
       // Test the actual behavior
-      expect(AstrologyConstants.getSignName(-1), isIn(['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']));
+      expect(
+        AstrologyConstants.getSignName(-1),
+        isIn([
+          'Aries',
+          'Taurus',
+          'Gemini',
+          'Cancer',
+          'Leo',
+          'Virgo',
+          'Libra',
+          'Scorpio',
+          'Sagittarius',
+          'Capricorn',
+          'Aquarius',
+          'Pisces',
+        ]),
+      );
     });
 
     test('getSignLord returns correct lord for each sign', () {
@@ -55,7 +71,10 @@ void main() {
       expect(AstrologyConstants.getSignLord(5), equals('Mercury')); // Virgo
       expect(AstrologyConstants.getSignLord(6), equals('Venus')); // Libra
       expect(AstrologyConstants.getSignLord(7), equals('Mars')); // Scorpio
-      expect(AstrologyConstants.getSignLord(8), equals('Jupiter')); // Sagittarius
+      expect(
+        AstrologyConstants.getSignLord(8),
+        equals('Jupiter'),
+      ); // Sagittarius
       expect(AstrologyConstants.getSignLord(9), equals('Saturn')); // Capricorn
       expect(AstrologyConstants.getSignLord(10), equals('Saturn')); // Aquarius
       expect(AstrologyConstants.getSignLord(11), equals('Jupiter')); // Pisces
@@ -168,7 +187,10 @@ void main() {
         balanceAtBirth: 10.5,
         mahadashas: [],
       );
-      expect(dasha.formattedBalanceAtBirth, equals('10 years, 6 months, 0 days'));
+      expect(
+        dasha.formattedBalanceAtBirth,
+        equals('10 years, 6 months, 0 days'),
+      );
     });
 
     test('formattedBalanceAtBirth handles zero', () {
@@ -177,7 +199,10 @@ void main() {
         balanceAtBirth: 0,
         mahadashas: [],
       );
-      expect(dasha.formattedBalanceAtBirth, equals('0 years, 0 months, 0 days'));
+      expect(
+        dasha.formattedBalanceAtBirth,
+        equals('0 years, 0 months, 0 days'),
+      );
     });
   });
 
@@ -212,9 +237,11 @@ void main() {
         name: 'Lagna',
         description: 'Birth Chart',
         positions: {
-          'Sun': 45.0, // 45 degrees = 1st sign (0-30) + 15 = starts Taurus (index 1)
+          'Sun':
+              45.0, // 45 degrees = 1st sign (0-30) + 15 = starts Taurus (index 1)
           'Moon': 15.0, // 15 degrees = Aries (index 0)
-          'Mars': 90.0, // 90 degrees = starts Libra (index 6, because 90/30 = 3)
+          'Mars':
+              90.0, // 90 degrees = starts Libra (index 6, because 90/30 = 3)
         },
       );
       expect(chart.getPlanetSign('Sun'), equals(1));

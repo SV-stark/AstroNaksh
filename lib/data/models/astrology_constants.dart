@@ -1,4 +1,3 @@
-
 class AstrologyConstants {
   static const List<String> nakshatraNames = [
     'Ashwini',

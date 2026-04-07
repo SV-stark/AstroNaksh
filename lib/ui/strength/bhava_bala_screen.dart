@@ -5,9 +5,8 @@ import '../../logic/bhava_bala.dart';
 import '../../ui/utils/responsive_helper.dart';
 
 class BhavaBalaScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const BhavaBalaScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<BhavaBalaScreen> createState() => _BhavaBalaScreenState();
@@ -30,8 +29,8 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
 
         if (snapshot.hasError) {
           return ScaffoldPage(
-            header: PageHeader(
-              title: const Text('Bhava Bala (House Strength)'),
+            header: const PageHeader(
+              title: Text('Bhava Bala (House Strength)'),
             ),
             content: Center(
               child: InfoBar(
@@ -48,9 +47,7 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
         final bhavaBalaData = snapshot.data ?? {};
 
         // Convert to list for sorting
-        List<MapEntry<int, EnhancedBhavaBalaResult>> houses = bhavaBalaData
-            .entries
-            .toList();
+        final houses = bhavaBalaData.entries.toList();
 
         if (_sortByStrength) {
           houses.sort(

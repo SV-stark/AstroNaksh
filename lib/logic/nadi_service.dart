@@ -33,7 +33,7 @@ class NadiService {
   }
 
   int _calculateNadiStrength(int nakshatraIndex, CompleteChartData chartData) {
-    int strength = 50;
+    var strength = 50;
 
     // Check Moon's strength
     final moon = chartData.baseChart.planets[Planet.moon];
@@ -65,12 +65,6 @@ class NadiService {
 }
 
 class NadiAnalysis {
-  final String nadiType;
-  final String? nakshatra;
-  final int pada;
-  final int strength;
-  final String description;
-
   NadiAnalysis({
     required this.nadiType,
     this.nakshatra,
@@ -78,4 +72,9 @@ class NadiAnalysis {
     required this.strength,
     required this.description,
   });
+  final String nadiType;
+  final String? nakshatra;
+  final int pada;
+  final int strength;
+  final String description;
 }

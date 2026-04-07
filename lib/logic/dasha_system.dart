@@ -1,6 +1,7 @@
 import 'package:jyotish/jyotish.dart';
-import '../data/models.dart';
+
 import '../core/ephemeris_manager.dart';
+import '../data/models.dart';
 
 /// Complete Dasha System Implementation
 /// Includes Vimshottari, Yogini, and Chara Dasha
@@ -102,6 +103,7 @@ class DashaSystem {
   }
 
   static Future<CharaDasha> calculateCharaDasha(VedicChart chart) async {
+    await EphemerisManager.ensureEphemerisData();
     final result = await EphemerisManager.jyotish.getCharaDasha(
       natalChart: chart,
       levels: 2,
@@ -110,6 +112,7 @@ class DashaSystem {
   }
 
   static Future<NarayanaDasha> calculateNarayanaDasha(VedicChart chart) async {
+    await EphemerisManager.ensureEphemerisData();
     final result = await EphemerisManager.jyotish.getNarayanaDasha(
       chart: chart,
       levels: 2,

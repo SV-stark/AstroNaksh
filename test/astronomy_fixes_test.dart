@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/core/rashiphal_rules.dart';
+import 'package:astronaksh/data/models.dart';
 import 'package:astronaksh/logic/horary_service.dart';
 import 'package:astronaksh/logic/yoga_dosha_analyzer.dart';
-import 'package:astronaksh/data/models.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:jyotish/jyotish.dart';
 
 // Mock or stub classes if necessary, but we try to use real logic where possible
@@ -21,8 +21,8 @@ void main() {
         sunset: sunset,
       );
 
-      bool foundRahu = false;
-      for (var t in timings) {
+      var foundRahu = false;
+      for (final t in timings) {
         if (t.contains('Rahu Kalam')) {
           foundRahu = true;
           // Expected: 07:30 - 09:00
@@ -150,7 +150,9 @@ void main() {
       // In `_findDoshas`:
       // if (_hasKaalSarpDosha(chart)) { doshas.add(BhangaResult(name: 'Kaal Sarp Dosha', ...)); }
 
-      bool hasKaalSarp = result.doshas.any((d) => d.name.contains('Kaal Sarp'));
+      final hasKaalSarp = result.doshas.any(
+        (d) => d.name.contains('Kaal Sarp'),
+      );
       expect(hasKaalSarp, true, reason: 'Kaal Sarp Dosha should be detected');
     });
 

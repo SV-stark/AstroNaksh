@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/core/ayanamsa_calculator.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:jyotish/jyotish.dart';
 
 void main() {
@@ -44,7 +44,7 @@ void main() {
 
     test('SiderealMode names should act as keys', () {
       // Verify that we can resolve every mode from string
-      for (var mode in SiderealMode.values) {
+      for (final mode in SiderealMode.values) {
         final system = AyanamsaCalculator.getSystem(mode.name);
         expect(system, isNotNull, reason: 'Could not resolve ${mode.name}');
         expect(system!.mode, equals(mode));

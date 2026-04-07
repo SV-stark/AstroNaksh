@@ -1,9 +1,10 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:astronaksh/main.dart';
-import 'package:astronaksh/core/settings_manager.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+
+import 'package:astronaksh/core/settings_manager.dart';
+import 'package:astronaksh/main.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   setUpAll(() async {

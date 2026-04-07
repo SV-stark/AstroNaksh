@@ -2,11 +2,6 @@ import 'package:fluent_ui/fluent_ui.dart';
 
 /// Reusable widget to display strength as a visual meter
 class StrengthMeter extends StatelessWidget {
-  final double value; // 0-100
-  final String label;
-  final Color? color;
-  final bool showPercentage;
-
   const StrengthMeter({
     super.key,
     required this.value,
@@ -14,6 +9,10 @@ class StrengthMeter extends StatelessWidget {
     this.color,
     this.showPercentage = true,
   });
+  final double value; // 0-100
+  final String label;
+  final Color? color;
+  final bool showPercentage;
 
   Color _getStrengthColor() {
     if (color != null) return color!;
@@ -88,10 +87,9 @@ class StrengthMeter extends StatelessWidget {
 
 /// Grade badge (A, B, C, D, F)
 class GradeBadge extends StatelessWidget {
+  const GradeBadge({super.key, required this.grade, this.size});
   final String grade;
   final double? size;
-
-  const GradeBadge({super.key, required this.grade, this.size});
 
   Color _getGradeColor() {
     switch (grade) {
@@ -135,12 +133,6 @@ class GradeBadge extends StatelessWidget {
 
 /// Expandable info card using Expander
 class ExpandableInfoCard extends StatelessWidget {
-  final String title;
-  final String summary;
-  final Widget details;
-  final IconData? icon;
-  final Color? color;
-
   const ExpandableInfoCard({
     super.key,
     required this.title,
@@ -149,6 +141,11 @@ class ExpandableInfoCard extends StatelessWidget {
     this.icon,
     this.color,
   });
+  final String title;
+  final String summary;
+  final Widget details;
+  final IconData? icon;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +155,7 @@ class ExpandableInfoCard extends StatelessWidget {
         header: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon!, color: color),
+              Icon(icon, color: color),
               const SizedBox(width: 12),
             ],
             Expanded(
@@ -188,16 +185,15 @@ class ExpandableInfoCard extends StatelessWidget {
 
 /// Score indicator with circular progress
 class CircularScoreIndicator extends StatelessWidget {
-  final double score; // 0-100
-  final String label;
-  final double size;
-
   const CircularScoreIndicator({
     super.key,
     required this.score,
     required this.label,
     this.size = 80,
   });
+  final double score; // 0-100
+  final String label;
+  final double size;
 
   Color _getScoreColor() {
     if (score >= 80) return Colors.green;

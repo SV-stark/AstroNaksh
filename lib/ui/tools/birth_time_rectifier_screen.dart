@@ -1,7 +1,9 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../data/models.dart';
-import '../../core/birth_time_rectifier.dart';
 import 'package:intl/intl.dart';
+
+import '../../core/birth_time_rectifier.dart';
+import '../../data/models.dart';
 import '../../ui/utils/responsive_helper.dart';
 
 class BirthTimeRectifierScreen extends StatefulWidget {
@@ -83,13 +85,13 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
 
     return ScaffoldPage(
       header: PageHeader(
-        title: const Text("Birth Time Rectification"),
+        title: const Text('Birth Time Rectification'),
         commandBar: CommandBar(
           mainAxisAlignment: MainAxisAlignment.end,
           primaryItems: [
             CommandBarButton(
               icon: const Icon(FluentIcons.cancel),
-              label: const Text("Cancel"),
+              label: const Text('Cancel'),
               onPressed: () => Navigator.pop(context),
             ),
             CommandBarButton(
@@ -104,7 +106,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                 );
                 Navigator.pop(context, newData);
               },
-              label: const Text("Apply New Time"),
+              label: const Text('Apply New Time'),
             ),
           ],
         ),
@@ -122,7 +124,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                 child: Column(
                   children: [
                     Text(
-                      "Original: ${formatter.format(originalData.dateTime)}",
+                      'Original: ${formatter.format(originalData.dateTime)}',
                       style: FluentTheme.of(context).typography.caption,
                     ),
                     const SizedBox(height: 16),
@@ -148,7 +150,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                         ),
                       ),
                       child: Text(
-                        "Shift: ${_adjustment.inMinutes}m ${_adjustment.inSeconds % 60}s",
+                        'Shift: ${_adjustment.inMinutes}m ${_adjustment.inSeconds % 60}s',
                         style: TextStyle(
                           color: _adjustment.isNegative
                               ? Colors.red
@@ -167,17 +169,17 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                         // Negative Controls
                         _buildGroup([
                           _buildControlButton(
-                            "-1m",
+                            '-1m',
                             const Duration(minutes: -1),
                             isNegative: true,
                           ),
                           _buildControlButton(
-                            "-10s",
+                            '-10s',
                             const Duration(seconds: -10),
                             isNegative: true,
                           ),
                           _buildControlButton(
-                            "-1s",
+                            '-1s',
                             const Duration(seconds: -1),
                             isNegative: true,
                           ),
@@ -188,17 +190,17 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                         // Positive Controls
                         _buildGroup([
                           _buildControlButton(
-                            "+1s",
+                            '+1s',
                             const Duration(seconds: 1),
                             isNegative: false,
                           ),
                           _buildControlButton(
-                            "+10s",
+                            '+10s',
                             const Duration(seconds: 10),
                             isNegative: false,
                           ),
                           _buildControlButton(
-                            "+1m",
+                            '+1m',
                             const Duration(minutes: 1),
                             isNegative: false,
                           ),
@@ -220,33 +222,33 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                 ),
               )
             else if (_currentData == null)
-              const Center(child: Text("Error calculating data"))
+              const Center(child: Text('Error calculating data'))
             else
               Column(
                 children: [
-                  _buildSectionHeader("Analysis"),
-                  _buildDataCard("Ascendants (Lagna)", [
-                    _buildDataRow("D-1 (Rashi)", _currentData!.d1Ascendant),
+                  _buildSectionHeader('Analysis'),
+                  _buildDataCard('Ascendants (Lagna)', [
+                    _buildDataRow('D-1 (Rashi)', _currentData!.d1Ascendant),
                     _buildDataRow(
-                      "D-9 (Navamsa)",
+                      'D-9 (Navamsa)',
                       _currentData!.d9Ascendant,
                       highlight: true,
                     ),
                     _buildDataRow(
-                      "D-60 (Shashtyamsa)",
+                      'D-60 (Shashtyamsa)',
                       _currentData!.d60Ascendant,
                     ),
                   ]),
                   const SizedBox(height: 16),
-                  _buildDataCard("Key Positions", [
-                    _buildDataRow("Moon Sign", _currentData!.moonSign),
-                    _buildDataRow("Navamsa Moon", _currentData!.d9MoonSign),
+                  _buildDataCard('Key Positions', [
+                    _buildDataRow('Moon Sign', _currentData!.moonSign),
+                    _buildDataRow('Navamsa Moon', _currentData!.d9MoonSign),
                   ]),
                   const SizedBox(height: 24),
-                  InfoBar(
-                    title: const Text("Rectification Tip"),
-                    content: const Text(
-                      "Watch for changes in D-9 and D-60 Lagna. These are most sensitive to time. "
+                  const InfoBar(
+                    title: Text('Rectification Tip'),
+                    content: Text(
+                      'Watch for changes in D-9 and D-60 Lagna. These are most sensitive to time. '
                       "Matching D-9 Lagna with native's appearance/nature is a common rectification technique.",
                     ),
                     severity: InfoBarSeverity.info,

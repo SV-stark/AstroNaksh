@@ -1,12 +1,5 @@
 class Location {
-  final double latitude;
-  final double longitude;
   Location({required this.latitude, required this.longitude});
-
-  Map<String, dynamic> toJson() => {
-    'latitude': latitude,
-    'longitude': longitude,
-  };
 
   factory Location.fromJson(Map<String, dynamic> json) {
     return Location(
@@ -14,6 +7,13 @@ class Location {
       longitude: (json['longitude'] as num).toDouble(),
     );
   }
+  final double latitude;
+  final double longitude;
+
+  Map<String, dynamic> toJson() => {
+    'latitude': latitude,
+    'longitude': longitude,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -28,12 +28,6 @@ class Location {
 }
 
 class BirthData {
-  final DateTime dateTime;
-  final Location location;
-  final String name;
-  final String place;
-  final String timezone;
-
   BirthData({
     required this.dateTime,
     required this.location,
@@ -42,22 +36,14 @@ class BirthData {
     this.timezone = '',
   });
 
-  Map<String, dynamic> toJson() => {
-    'dateTime': dateTime.toIso8601String(),
-    'location': location.toJson(),
-    'name': name,
-    'place': place,
-    'timezone': timezone,
-  };
-
   factory BirthData.fromJson(Map<String, dynamic> json) {
     final dateTimeStr = json['dateTime'] as String?;
     if (dateTimeStr == null || dateTimeStr.isEmpty) {
-      throw FormatException('Missing or empty dateTime in BirthData');
+      throw const FormatException('Missing or empty dateTime in BirthData');
     }
     final locationJson = json['location'];
     if (locationJson == null || locationJson is! Map) {
-      throw FormatException('Missing or invalid location in BirthData');
+      throw const FormatException('Missing or invalid location in BirthData');
     }
     return BirthData(
       dateTime: DateTime.parse(dateTimeStr),
@@ -67,6 +53,19 @@ class BirthData {
       timezone: json['timezone'] as String? ?? '',
     );
   }
+  final DateTime dateTime;
+  final Location location;
+  final String name;
+  final String place;
+  final String timezone;
+
+  Map<String, dynamic> toJson() => {
+    'dateTime': dateTime.toIso8601String(),
+    'location': location.toJson(),
+    'name': name,
+    'place': place,
+    'timezone': timezone,
+  };
 
   @override
   bool operator ==(Object other) {

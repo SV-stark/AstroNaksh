@@ -85,14 +85,6 @@ class JaiminiAnalysisService {
 }
 
 class JaiminiAnalysis {
-  final Planet atmakaraka;
-  final KarakamsaInfo karakamsa;
-  final List<RashiDrishtiInfo> rashiDrishti;
-  final ArudhaPadaResult arudhaPadas;
-  final ArudhaPadaInfo arudhaLagna;
-  final ArudhaPadaInfo upapada;
-  final Map<int, List<ArgalaInfo>> argalas;
-
   JaiminiAnalysis({
     required this.atmakaraka,
     required this.karakamsa,
@@ -102,4 +94,11 @@ class JaiminiAnalysis {
     required this.upapada,
     required this.argalas,
   });
+  final Planet atmakaraka;
+  final KarakamsaInfo karakamsa;
+  final List<RashiDrishtiInfo> rashiDrishti;
+  final ArudhaPadaResult arudhaPadas;
+  final ArudhaPadaInfo arudhaLagna;
+  final ArudhaPadaInfo upapada;
+  final Map<int, List<ArgalaInfo>> argalas;
 }

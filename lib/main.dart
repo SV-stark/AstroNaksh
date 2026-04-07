@@ -1,21 +1,22 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
-import 'ui/styles.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:timezone/data/latest.dart' as tz;
+
+import 'core/app_environment.dart';
+import 'core/settings_manager.dart';
+import 'ui/chart_screen.dart';
+import 'ui/comparison/chart_comparison_screen.dart';
 import 'ui/home_screen.dart';
 import 'ui/input_screen.dart';
-import 'ui/chart_screen.dart';
-import 'ui/settings_screen.dart';
 import 'ui/loading_screen.dart';
 import 'ui/panchang_screen.dart';
-import 'ui/comparison/chart_comparison_screen.dart';
+import 'ui/settings_screen.dart';
+import 'ui/styles.dart';
 import 'ui/tools/muhurta_finder_screen.dart';
-import 'core/settings_manager.dart';
-import 'dart:io';
-import 'dart:async';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-import 'package:timezone/data/latest.dart' as tz;
-import 'core/app_environment.dart';
 
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
@@ -86,20 +87,14 @@ class _AstroNakshAppState extends State<AstroNakshApp> {
     if (_error != null) {
       return FluentApp(
         home: ScaffoldPage(
-          content: Center(
-            child: Text('Initialization Error: $_error'),
-          ),
+          content: Center(child: Text('Initialization Error: $_error')),
         ),
       );
     }
 
     if (!_initialized) {
       return const FluentApp(
-        home: ScaffoldPage(
-          content: Center(
-            child: ProgressRing(),
-          ),
-        ),
+        home: ScaffoldPage(content: Center(child: ProgressRing())),
       );
     }
 

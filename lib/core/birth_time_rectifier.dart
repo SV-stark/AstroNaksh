@@ -1,7 +1,8 @@
 import 'package:jyotish/jyotish.dart';
+
 import '../data/models.dart';
-import '../logic/kp_chart_service.dart';
 import '../logic/divisional_charts.dart';
+import '../logic/kp_chart_service.dart';
 
 /// Birth Time Rectification Utility
 /// Allows simulating chart changes with time adjustments.
@@ -41,11 +42,11 @@ class BirthTimeRectifier {
       return RectificationData(
         adjustedTime: newTime,
         adjustment: adjustment,
-        d1Ascendant: "-",
-        d9Ascendant: "-",
-        d60Ascendant: "-",
-        moonSign: "-",
-        d9MoonSign: "-",
+        d1Ascendant: '-',
+        d9Ascendant: '-',
+        d60Ascendant: '-',
+        moonSign: '-',
+        d9MoonSign: '-',
       );
     }
 
@@ -61,14 +62,14 @@ class BirthTimeRectifier {
   }
 
   String _getFormattedAscendant(VedicChart chart) {
-    if (chart.houses.cusps.isEmpty) return "Unknown";
-    double asc = chart.houses.cusps[0];
+    if (chart.houses.cusps.isEmpty) return 'Unknown';
+    final asc = chart.houses.cusps[0];
     return _formatPosition(asc);
   }
 
   String _getDivisionalAscendant(CompleteChartData data, String div) {
-    var chart = data.divisionalCharts[div];
-    if (chart == null || chart.ascendantSign == null) return "-";
+    final chart = data.divisionalCharts[div];
+    if (chart == null || chart.ascendantSign == null) return '-';
     // We need exact degree if possible? DivisionalCharts model stores int sign usually?
     // Let's check DivisionalChartData model. It stores positions as Map<String, double>.
     // Ascendant sign is stored as int? ascendantSign.
@@ -78,18 +79,18 @@ class BirthTimeRectifier {
   }
 
   String _formatPosition(double longitude) {
-    int sign = (longitude / 30).floor();
-    double degree = longitude % 30;
-    return "${degree.toStringAsFixed(2)}° ${DivisionalCharts.getSignName(sign)}";
+    final sign = (longitude / 30).floor();
+    final degree = longitude % 30;
+    return '${degree.toStringAsFixed(2)}° ${DivisionalCharts.getSignName(sign)}';
   }
 
   String _getPlanetSign(CompleteChartData data, String planet) {
-    for (var entry in data.baseChart.planets.entries) {
+    for (final entry in data.baseChart.planets.entries) {
       if (entry.key.toString().toLowerCase().contains(planet.toLowerCase())) {
         return _formatPosition(entry.value.longitude);
       }
     }
-    return "-";
+    return '-';
   }
 
   String _getDivisionalPlanetSign(
@@ -97,28 +98,20 @@ class BirthTimeRectifier {
     String div,
     String planet,
   ) {
-    var chart = data.divisionalCharts[div];
-    if (chart == null) return "-";
+    final chart = data.divisionalCharts[div];
+    if (chart == null) return '-';
     // positions is Map<String, double>
     // We need to find key that matches planet
-    for (var key in chart.positions.keys) {
+    for (final key in chart.positions.keys) {
       if (key.toLowerCase().contains(planet.toLowerCase())) {
         return _formatPosition(chart.positions[key]!);
       }
     }
-    return "-";
+    return '-';
   }
 }
 
 class RectificationData {
-  final DateTime adjustedTime;
-  final Duration adjustment;
-  final String d1Ascendant;
-  final String d9Ascendant;
-  final String d60Ascendant;
-  final String moonSign;
-  final String d9MoonSign;
-
   RectificationData({
     required this.adjustedTime,
     required this.adjustment,
@@ -128,4 +121,11 @@ class RectificationData {
     required this.moonSign,
     required this.d9MoonSign,
   });
+  final DateTime adjustedTime;
+  final Duration adjustment;
+  final String d1Ascendant;
+  final String d9Ascendant;
+  final String d60Ascendant;
+  final String moonSign;
+  final String d9MoonSign;
 }

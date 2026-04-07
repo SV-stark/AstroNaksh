@@ -1,15 +1,15 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../data/models.dart';
+
 import '../../data/life_prediction_models.dart';
+import '../../data/models.dart';
 import '../../logic/life_prediction_service.dart';
 import '../../ui/utils/responsive_helper.dart';
 
 /// Life Predictions Screen
 /// Displays comprehensive life predictions based on Vedic astrology
 class LifePredictionsScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const LifePredictionsScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<LifePredictionsScreen> createState() => _LifePredictionsScreenState();

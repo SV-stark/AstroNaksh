@@ -1,11 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../../data/models.dart';
+import 'package:jyotish/jyotish.dart';
 import 'panchang_helpers.dart';
 
 /// Tab 6: Gowri Panchanga
 class PanchangGowriTab extends StatelessWidget {
-  final GowriPanchangamInfo? gowri;
   const PanchangGowriTab({super.key, this.gowri});
+  final GowriPanchangamInfo? gowri;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class PanchangGowriTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                gowri!.name,
+                gowri!.type.name,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -28,9 +28,12 @@ class PanchangGowriTab extends StatelessWidget {
               const SizedBox(height: 8),
               Text(gowri!.description),
               const SizedBox(height: 8),
-              buildInfoRow('Time of Day', gowri!.timeOfDay),
+              buildInfoRow('Time of Day', gowri!.isDaytime ? 'Day' : 'Night'),
               buildInfoRow('Period', '${gowri!.periodNumber}'),
-              buildInfoRow('Auspicious', gowri!.isAuspicious ? 'Yes' : 'No'),
+              buildInfoRow(
+                'Auspicious',
+                gowri!.type.isAuspicious ? 'Yes' : 'No',
+              ),
             ],
           ),
         ),

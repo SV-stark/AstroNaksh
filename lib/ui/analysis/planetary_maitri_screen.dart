@@ -5,9 +5,8 @@ import '../../logic/planetary_maitri_service.dart';
 import '../../ui/utils/responsive_helper.dart';
 
 class PlanetaryMaitriScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const PlanetaryMaitriScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<PlanetaryMaitriScreen> createState() => _PlanetaryMaitriScreenState();
@@ -201,7 +200,7 @@ class _PlanetaryMaitriScreenState extends State<PlanetaryMaitriScreen> {
             const SizedBox(height: 8),
             Text(
               description,
-              style: TextStyle(color: Colors.grey, fontSize: 13),
+              style: const TextStyle(color: Colors.grey, fontSize: 13),
             ),
           ],
         ),

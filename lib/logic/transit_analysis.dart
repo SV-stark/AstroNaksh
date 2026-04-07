@@ -1,7 +1,7 @@
 import 'package:jyotish/jyotish.dart' as j;
 
-import '../data/models.dart';
 import '../core/ephemeris_manager.dart';
+import '../data/models.dart';
 
 /// Transit Analysis (Gochara) System
 /// Analyzes current planetary positions relative to natal chart
@@ -315,8 +315,8 @@ class TransitAnalysis {
     final mediumHouses = [1, 2, 4, 5, 9];
 
     TransitQuality quality;
-    bool isFavorable = false;
-    List<String> recommendations = [];
+    var isFavorable = false;
+    var recommendations = <String>[];
 
     if (favorableHouses.contains(houseFromMoon)) {
       quality = TransitQuality.favorable;
@@ -378,9 +378,10 @@ class TransitAnalysis {
       houseFromMoon: houseFromMoon,
       isBenefic: isBenefic,
       effects: [
-        isBenefic
-            ? 'Benefic Jupiter transit (Guru Gochara)'
-            : 'Neutral/Challenging Jupiter transit',
+        if (isBenefic)
+          'Benefic Jupiter transit (Guru Gochara)'
+        else
+          'Neutral/Challenging Jupiter transit',
         'Impacts expansion and wisdom in house $houseFromMoon',
       ],
       recommendations: [
@@ -415,7 +416,7 @@ class TransitAnalysis {
 
     final affected = <String>[];
     var overNatalRahu = false;
-    var overNatalKetu = false;
+    const overNatalKetu = false;
 
     natalChart.baseChart.planets.forEach((p, info) {
       final sign = info.position.zodiacSignIndex;
@@ -459,7 +460,7 @@ class TransitAnalysis {
     return TransitEffect(
       strength: TransitStrength.moderate,
       nature: [
-        isBenefic ? 'Supportive energy' : 'Challenging energy',
+        if (isBenefic) 'Supportive energy' else 'Challenging energy',
         'Focus on house matters',
       ],
     );
@@ -516,16 +517,6 @@ class TransitAnalysis {
 
 /// Transit Chart data class
 class TransitChart {
-  final DateTime transitDate;
-  final CompleteChartData natalChart;
-  final j.VedicChart transitPositions;
-  final List<TransitAspect> aspects;
-  final GocharaPositions gochara;
-  final MoonTransitAnalysis moonTransit;
-  final SaturnTransitAnalysis saturnTransit;
-  final JupiterTransitAnalysis jupiterTransit;
-  final RahuKetuTransitAnalysis rahuKetuTransit;
-
   TransitChart({
     required this.transitDate,
     required this.natalChart,
@@ -537,6 +528,15 @@ class TransitChart {
     required this.jupiterTransit,
     required this.rahuKetuTransit,
   });
+  final DateTime transitDate;
+  final CompleteChartData natalChart;
+  final j.VedicChart transitPositions;
+  final List<TransitAspect> aspects;
+  final GocharaPositions gochara;
+  final MoonTransitAnalysis moonTransit;
+  final SaturnTransitAnalysis saturnTransit;
+  final JupiterTransitAnalysis jupiterTransit;
+  final RahuKetuTransitAnalysis rahuKetuTransit;
 
   String getSummary() {
     final buffer = StringBuffer();
@@ -566,13 +566,6 @@ class TransitChart {
 
 /// Transit Aspect model
 class TransitAspect {
-  final j.Planet transitPlanet;
-  final j.Planet natalPlanet;
-  final LocalAspectType aspectType;
-  final double orb;
-  final bool isApplying;
-  final TransitEffect effect;
-
   TransitAspect({
     required this.transitPlanet,
     required this.natalPlanet,
@@ -581,6 +574,12 @@ class TransitAspect {
     required this.isApplying,
     required this.effect,
   });
+  final j.Planet transitPlanet;
+  final j.Planet natalPlanet;
+  final LocalAspectType aspectType;
+  final double orb;
+  final bool isApplying;
+  final TransitEffect effect;
 
   String get description {
     return '${transitPlanet.displayName} ${aspectType.name} ${natalPlanet.displayName} (${orb.toStringAsFixed(1)}° orb)';
@@ -590,9 +589,9 @@ class TransitAspect {
 enum LocalAspectType { conjunction, sextile, square, trine, opposition }
 
 class TransitEffect {
+  TransitEffect({required this.strength, required this.nature});
   final TransitStrength strength;
   final List<String> nature;
-  TransitEffect({required this.strength, required this.nature});
 }
 
 enum TransitStrength { strong, moderate, supportive, neutral, challenging }
@@ -600,9 +599,9 @@ enum TransitStrength { strong, moderate, supportive, neutral, challenging }
 enum TransitQuality { favorable, medium, challenging }
 
 class GocharaPositions {
+  GocharaPositions({required this.positions, required this.moonSign});
   final Map<j.Planet, int> positions;
   final int moonSign;
-  GocharaPositions({required this.positions, required this.moonSign});
 
   /// Check if a planet transit is favorable from natal Moon
   bool isFavorable(j.Planet planet) {
@@ -631,14 +630,6 @@ class GocharaPositions {
 }
 
 class MoonTransitAnalysis {
-  final int transitSign;
-  final int houseFromNatalMoon;
-  final int tithi;
-  final String nakshatra;
-  final bool isFavorable;
-  final TransitQuality quality;
-  final List<String> recommendations;
-
   MoonTransitAnalysis({
     required this.transitSign,
     required this.houseFromNatalMoon,
@@ -648,17 +639,16 @@ class MoonTransitAnalysis {
     required this.quality,
     required this.recommendations,
   });
+  final int transitSign;
+  final int houseFromNatalMoon;
+  final int tithi;
+  final String nakshatra;
+  final bool isFavorable;
+  final TransitQuality quality;
+  final List<String> recommendations;
 }
 
 class SaturnTransitAnalysis {
-  final int transitSign;
-  final int houseFromMoon;
-  final LocalSadeSatiPhase sadeSatiPhase;
-  final bool kantakaShani;
-  final bool isRetrograde;
-  final List<String> effects;
-  final List<String> recommendations;
-
   SaturnTransitAnalysis({
     required this.transitSign,
     required this.houseFromMoon,
@@ -668,6 +658,13 @@ class SaturnTransitAnalysis {
     required this.effects,
     required this.recommendations,
   });
+  final int transitSign;
+  final int houseFromMoon;
+  final LocalSadeSatiPhase sadeSatiPhase;
+  final bool kantakaShani;
+  final bool isRetrograde;
+  final List<String> effects;
+  final List<String> recommendations;
 
   bool get isSadeSati => sadeSatiPhase != LocalSadeSatiPhase.none;
 }
@@ -675,12 +672,6 @@ class SaturnTransitAnalysis {
 enum LocalSadeSatiPhase { none, rising, peak, setting }
 
 class JupiterTransitAnalysis {
-  final int transitSign;
-  final int houseFromMoon;
-  final bool isBenefic;
-  final List<String> effects;
-  final List<String> recommendations;
-
   JupiterTransitAnalysis({
     required this.transitSign,
     required this.houseFromMoon,
@@ -688,17 +679,14 @@ class JupiterTransitAnalysis {
     required this.effects,
     required this.recommendations,
   });
+  final int transitSign;
+  final int houseFromMoon;
+  final bool isBenefic;
+  final List<String> effects;
+  final List<String> recommendations;
 }
 
 class RahuKetuTransitAnalysis {
-  final int rahuSign;
-  final int ketuSign;
-  final bool isRahuTransitingNatalPlanet;
-  final bool isKetuTransitingNatalPlanet;
-  final List<String> affectedNatalPlanets;
-  final List<String> effects;
-  final List<String> recommendations;
-
   RahuKetuTransitAnalysis({
     required this.rahuSign,
     required this.ketuSign,
@@ -708,19 +696,25 @@ class RahuKetuTransitAnalysis {
     required this.effects,
     required this.recommendations,
   });
+  final int rahuSign;
+  final int ketuSign;
+  final bool isRahuTransitingNatalPlanet;
+  final bool isKetuTransitingNatalPlanet;
+  final List<String> affectedNatalPlanets;
+  final List<String> effects;
+  final List<String> recommendations;
 }
 
 /// Analysis result for Gochara Vedha calculations
 class VedhaAnalysis {
-  final List<j.VedhaResult> results;
-  final List<j.Planet> affectedTransits;
-  final String summary;
-
   VedhaAnalysis({
     required this.results,
     required this.affectedTransits,
     required this.summary,
   });
+  final List<j.VedhaResult> results;
+  final List<j.Planet> affectedTransits;
+  final String summary;
 
   /// Get vedha result for a specific planet
   j.VedhaResult? getResult(j.Planet planet) {
@@ -739,17 +733,16 @@ class VedhaAnalysis {
 
 /// Local favorable period model for date range tracking
 class LocalFavorablePeriod {
-  final j.Planet planet;
-  final DateTime startDate;
-  final DateTime endDate;
-  final String reason;
-
   LocalFavorablePeriod({
     required this.planet,
     required this.startDate,
     required this.endDate,
     required this.reason,
   });
+  final j.Planet planet;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String reason;
 
   /// Duration of the favorable period
   Duration get duration => endDate.difference(startDate);

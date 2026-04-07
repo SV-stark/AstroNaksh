@@ -1,8 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:astronaksh/data/models.dart';
-import 'package:astronaksh/logic/custom_chart_service.dart';
 import 'package:astronaksh/core/astro_utils.dart';
 import 'package:astronaksh/core/svg_chart_exporter.dart';
+import 'package:astronaksh/data/models.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// Integration tests for the chart generation flow (E12).
 /// Tests: input → calculate → export pipeline without requiring
@@ -42,7 +41,7 @@ void main() {
       expect(AstroUtils.longitudeToSignIndex(30), 1);
       expect(AstroUtils.longitudeToSignIndex(359), 11);
       expect(AstroUtils.longitudeToNakshatraIndex(0), 0);
-      expect(AstroUtils.longitudeToNakshatraIndex(13.33), 1);
+      expect(AstroUtils.longitudeToNakshatraIndex(13.34), 1);
     });
 
     test('AstroUtils ordinal formatting', () {

@@ -1,16 +1,15 @@
+import 'package:astronaksh/logic/panchang_service.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../../data/models.dart';
-import 'panchang_helpers.dart';
-
 /// Tab 4: Hora
 class PanchangHoraTab extends StatelessWidget {
-  final List<PanchangHora> horas;
   const PanchangHoraTab({super.key, this.horas = const []});
+  final List<PanchangHora> horas;
 
   @override
   Widget build(BuildContext context) {
-    if (horas.isEmpty)
+    if (horas.isEmpty) {
       return const Center(child: Text('No Hora data available'));
+    }
 
     return Column(
       children: horas.map((h) {
@@ -20,7 +19,7 @@ class PanchangHoraTab extends StatelessWidget {
           child: Card(
             child: Row(
               children: [
-                Icon(isDay ? FluentIcons.sunny : FluentIcons.moon, size: 16),
+                Icon(isDay ? FluentIcons.sunny : FluentIcons.clear_night, size: 16),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(

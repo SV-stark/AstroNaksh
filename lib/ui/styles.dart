@@ -55,7 +55,7 @@ class AppStyles {
       cardColor: darkSurface,
       typography: Typography.fromBrightness(brightness: Brightness.dark),
       iconTheme: const IconThemeData(color: white),
-      navigationPaneTheme: NavigationPaneThemeData(
+      navigationPaneTheme: const NavigationPaneThemeData(
         backgroundColor: darkSurface,
         highlightColor: primaryColor,
       ),
@@ -74,9 +74,9 @@ class AppStyles {
       cardColor: oledSurface,
       typography: Typography.fromBrightness(brightness: Brightness.dark),
       iconTheme: const IconThemeData(color: white),
-      navigationPaneTheme: NavigationPaneThemeData(
+      navigationPaneTheme: const NavigationPaneThemeData(
         backgroundColor: oledSurface,
-        highlightColor: const Color(0xFFBB86FC),
+        highlightColor: Color(0xFFBB86FC),
       ),
     );
   }
@@ -91,7 +91,7 @@ class AppStyles {
       cardColor: lightSurface,
       typography: Typography.fromBrightness(brightness: Brightness.light),
       iconTheme: const IconThemeData(color: Colors.black),
-      navigationPaneTheme: NavigationPaneThemeData(
+      navigationPaneTheme: const NavigationPaneThemeData(
         backgroundColor: lightBorder,
         highlightColor: primaryColor,
       ),

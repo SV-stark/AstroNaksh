@@ -1,41 +1,42 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'dart:async';
+
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' show Colors;
-import '../ui/utils/responsive_helper.dart';
-import 'widgets/chart_widget.dart';
-import 'widgets/planetary_timeline.dart';
+import 'package:jyotish/jyotish.dart';
+
+import '../../core/ayanamsa_calculator.dart';
+import '../../core/chart_share_service.dart';
+import '../../core/constants.dart';
+import '../../core/database_helper.dart';
+import '../../core/saved_charts_helper.dart';
+import '../../core/settings_manager.dart';
 import '../../data/models.dart';
 import '../../logic/kp_chart_service.dart';
-
-import 'package:jyotish/jyotish.dart';
-import '../../core/ayanamsa_calculator.dart';
-import '../../core/constants.dart';
-
-import '../../core/settings_manager.dart';
-import 'tools/birth_time_rectifier_screen.dart';
-import '../../core/saved_charts_helper.dart';
-import '../../core/database_helper.dart';
-// New analysis screens
-import 'strength/ashtakavarga_screen.dart';
-import 'strength/shadbala_screen.dart';
-import 'strength/bhava_bala_screen.dart';
-import 'analysis/yoga_dosha_screen.dart';
-import 'analysis/planetary_maitri_screen.dart';
-import 'predictions/transit_screen.dart';
 import '../../logic/planetary_aspect_service.dart';
-import 'predictions/varshaphal_screen.dart';
+import '../../logic/shadbala.dart';
+import '../ui/utils/responsive_helper.dart';
+import 'analysis/gochara_vedha_screen.dart';
+import 'analysis/jaimini_screen.dart';
+import 'analysis/nadi_screen.dart';
+import 'analysis/planetary_maitri_screen.dart';
+import 'analysis/progeny_screen.dart';
 import 'analysis/retrograde_screen.dart';
 import 'analysis/sudarshan_chakra_screen.dart';
+import 'analysis/yoga_dosha_screen.dart';
 import 'comparison/chart_comparison_screen.dart';
-import 'predictions/rashiphal_dashboard.dart';
 import 'predictions/life_predictions_screen.dart';
+import 'predictions/rashiphal_dashboard.dart';
+import 'predictions/transit_screen.dart';
+import 'predictions/varshaphal_screen.dart';
 import 'reports/pdf_report_screen.dart';
-import '../../core/chart_share_service.dart';
-import 'analysis/jaimini_screen.dart';
-import 'analysis/progeny_screen.dart';
-import 'analysis/nadi_screen.dart';
-import 'analysis/gochara_vedha_screen.dart';
-import '../../logic/shadbala.dart';
+// New analysis screens
+import 'strength/ashtakavarga_screen.dart';
+import 'strength/bhava_bala_screen.dart';
+import 'strength/shadbala_screen.dart';
+import 'tools/birth_time_rectifier_screen.dart';
+import 'widgets/chart_widget.dart';
+import 'widgets/planetary_timeline.dart';
 
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
@@ -75,9 +76,9 @@ class _ChartScreenState extends State<ChartScreen> {
           if (mounted) {
             displayInfoBar(
               context,
-              builder: (context, close) => InfoBar(
-                title: const Text('Error'),
-                content: const Text('No birth data provided'),
+              builder: (context, close) => const InfoBar(
+                title: Text('Error'),
+                content: Text('No birth data provided'),
                 severity: InfoBarSeverity.error,
               ),
             );
@@ -100,7 +101,7 @@ class _ChartScreenState extends State<ChartScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        String searchQuery = '';
+        var searchQuery = '';
         return StatefulBuilder(
           builder: (context, setState) {
             final allSystems = AyanamsaCalculator.systems;
@@ -125,7 +126,7 @@ class _ChartScreenState extends State<ChartScreen> {
                 child: Column(
                   children: [
                     TextBox(
-                      placeholder: "Search Ayanamsa...",
+                      placeholder: 'Search Ayanamsa...',
                       prefix: const Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(FluentIcons.search),
@@ -212,16 +213,16 @@ class _ChartScreenState extends State<ChartScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Name: ${_birthData!.name}"),
+              Text('Name: ${_birthData!.name}'),
               Text(
-                "Date: ${_birthData!.dateTime.day}/${_birthData!.dateTime.month}/${_birthData!.dateTime.year}",
+                'Date: ${_birthData!.dateTime.day}/${_birthData!.dateTime.month}/${_birthData!.dateTime.year}',
               ),
               Text(
                 "Time: ${_birthData!.dateTime.hour.toString().padLeft(2, '0')}:${_birthData!.dateTime.minute.toString().padLeft(2, '0')}",
               ),
-              Text("Place: ${_birthData!.place}"),
+              Text('Place: ${_birthData!.place}'),
               Text(
-                "Lat: ${_birthData!.location.latitude.toStringAsFixed(4)}, Lon: ${_birthData!.location.longitude.toStringAsFixed(4)}",
+                'Lat: ${_birthData!.location.latitude.toStringAsFixed(4)}, Lon: ${_birthData!.location.longitude.toStringAsFixed(4)}',
               ),
             ],
           ),
@@ -332,7 +333,7 @@ class _ChartScreenState extends State<ChartScreen> {
           icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Vedic Chart"),
+        title: const Text('Vedic Chart'),
         actions: CommandBar(
           overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
           mainAxisAlignment: MainAxisAlignment.end,
@@ -896,38 +897,38 @@ class _ChartScreenState extends State<ChartScreen> {
           PaneItemHeader(header: const Text('Main Charts')),
           PaneItem(
             icon: const Icon(FluentIcons.contact_card),
-            title: const Text("D-1 Rashi"),
+            title: const Text('D-1 Rashi'),
             body: _buildBody(_buildD1Tab),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.grid_view_large),
-            title: const Text("Vargas"),
+            title: const Text('Vargas'),
             body: _buildBody(_buildVargasTab),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.scatter_chart),
-            title: const Text("KP System"),
+            title: const Text('KP System'),
             body: _buildBody(_buildKPTab),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.timer),
-            title: const Text("Dasha Periods"),
+            title: const Text('Dasha Periods'),
             body: _buildBody(_buildDashaTab),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.list),
-            title: const Text("Planet Details"),
+            title: const Text('Planet Details'),
             body: _buildBody(_buildDetailsTab),
           ),
           PaneItemHeader(header: const Text('Analysis')),
           PaneItem(
             icon: const Icon(FluentIcons.heart),
-            title: const Text("Life Predictions"),
+            title: const Text('Life Predictions'),
             body: _buildBody((data) => LifePredictionsScreen(chartData: data)),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.lightbulb),
-            title: const Text("Daily Rashiphal"),
+            title: const Text('Daily Rashiphal'),
             body: _buildBody(
               (data) => RashiphalDashboardScreen(chartData: data),
             ),
@@ -935,7 +936,7 @@ class _ChartScreenState extends State<ChartScreen> {
           PaneItemSeparator(),
           PaneItem(
             icon: const Icon(FluentIcons.scale_volume),
-            title: const Text("Planetary Strength"),
+            title: const Text('Planetary Strength'),
             body: _buildBody(_buildStrengthTab),
           ),
         ],
@@ -1046,10 +1047,10 @@ class _ChartScreenState extends State<ChartScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(FluentIcons.error, size: 48, color: Colors.red),
+                const Icon(FluentIcons.error, size: 48, color: Colors.red),
                 const SizedBox(height: 16),
                 Text(
-                  "Error: ${snapshot.error}",
+                  'Error: ${snapshot.error}',
                   textAlign: TextAlign.center,
                   style: FluentTheme.of(context).typography.bodyLarge,
                 ),
@@ -1059,19 +1060,19 @@ class _ChartScreenState extends State<ChartScreen> {
                   children: [
                     Button(
                       onPressed: _loadChartData,
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(FluentIcons.refresh, size: 16),
-                          const SizedBox(width: 8),
-                          const Text("Retry"),
+                          Icon(FluentIcons.refresh, size: 16),
+                          SizedBox(width: 8),
+                          Text('Retry'),
                         ],
                       ),
                     ),
                     const SizedBox(width: 12),
                     Button(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text("Go Back"),
+                      child: const Text('Go Back'),
                     ),
                   ],
                 ),
@@ -1079,7 +1080,7 @@ class _ChartScreenState extends State<ChartScreen> {
             ),
           );
         } else if (!snapshot.hasData) {
-          return const Center(child: Text("No Data"));
+          return const Center(child: Text('No Data'));
         }
         return builder(snapshot.data!);
       },
@@ -1097,12 +1098,12 @@ class _ChartScreenState extends State<ChartScreen> {
       child: Column(
         children: [
           Text(
-            "Rashi Chart (D-1)",
+            'Rashi Chart (D-1)',
             style: FluentTheme.of(context).typography.subtitle,
           ),
           const SizedBox(height: 8),
           Text(
-            "Lagna: ${_getAscendantSign(data.baseChart)}",
+            'Lagna: ${_getAscendantSign(data.baseChart)}',
             style: FluentTheme.of(context).typography.body,
           ),
           const SizedBox(height: 16),
@@ -1215,7 +1216,7 @@ class _ChartScreenState extends State<ChartScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Divisional Charts (Vargas)",
+            'Divisional Charts (Vargas)',
             style: FluentTheme.of(context).typography.subtitle,
           ),
           const SizedBox(height: 16),
@@ -1292,7 +1293,7 @@ class _ChartScreenState extends State<ChartScreen> {
       return const Card(
         child: Padding(
           padding: EdgeInsets.all(16),
-          child: Text("Chart data not available"),
+          child: Text('Chart data not available'),
         ),
       );
     }
@@ -1303,7 +1304,7 @@ class _ChartScreenState extends State<ChartScreen> {
         child: Column(
           children: [
             Text(
-              "${chart.name} (${chart.code})",
+              '${chart.name} (${chart.code})',
               style: FluentTheme.of(context).typography.subtitle,
             ),
             Text(
@@ -1313,7 +1314,7 @@ class _ChartScreenState extends State<ChartScreen> {
             if (chart.ascendantSign != null) ...[
               const SizedBox(height: 4),
               Text(
-                "Ascendant: ${_getSignName(chart.ascendantSign! + 1)}",
+                'Ascendant: ${_getSignName(chart.ascendantSign! + 1)}',
                 style: FluentTheme.of(context).typography.body,
               ),
             ],
@@ -1336,7 +1337,7 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Widget _buildDivisionalPlanetPositionsTable(DivisionalChartData chart) {
     final positions = chart.positions;
-    final nakshatras = AppConstants.nakshatras;
+    const nakshatras = AppConstants.nakshatras;
 
     return SizedBox(
       width: double.infinity,
@@ -1484,7 +1485,7 @@ class _ChartScreenState extends State<ChartScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("KP System", style: FluentTheme.of(context).typography.subtitle),
+          Text('KP System', style: FluentTheme.of(context).typography.subtitle),
           const SizedBox(height: 16),
           _buildKPSubLordsCard(data),
           const SizedBox(height: 16),
@@ -1504,7 +1505,7 @@ class _ChartScreenState extends State<ChartScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "KP Sub Lords",
+              'KP Sub Lords',
               style: FluentTheme.of(context).typography.subtitle,
             ),
             const SizedBox(height: 16),
@@ -1523,19 +1524,19 @@ class _ChartScreenState extends State<ChartScreen> {
                     runSpacing: 12,
                     children: [
                       _buildKPDetailItem(
-                        "Nakshatra",
+                        'Nakshatra',
                         info['nakshatra']?.toString() ?? '-',
                       ),
                       _buildKPDetailItem(
-                        "Star Lord",
+                        'Star Lord',
                         info['starLord']?.toString() ?? '-',
                       ),
                       _buildKPDetailItem(
-                        "Sub Lord",
+                        'Sub Lord',
                         info['subLord']?.toString() ?? '-',
                       ),
                       _buildKPDetailItem(
-                        "Sub-Sub",
+                        'Sub-Sub',
                         info['subSubLord']?.toString() ?? '-',
                       ),
                     ],
@@ -1568,7 +1569,7 @@ class _ChartScreenState extends State<ChartScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Significations",
+              'Significations',
               style: FluentTheme.of(context).typography.subtitle,
             ),
             const SizedBox(height: 16),
@@ -1608,7 +1609,7 @@ class _ChartScreenState extends State<ChartScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Ruling Planets",
+              'Ruling Planets',
               style: FluentTheme.of(context).typography.subtitle,
             ),
             const SizedBox(height: 10),
@@ -1759,7 +1760,10 @@ class _ChartScreenState extends State<ChartScreen> {
                         ),
                         Text(
                           'Balance at Birth: ${dasha.formattedBalanceAtBirth}',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -2928,7 +2932,7 @@ class _ChartScreenState extends State<ChartScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Planetary Details",
+                    'Planetary Details',
                     style: FluentTheme.of(context).typography.subtitle,
                   ),
                   const SizedBox(height: 16),
@@ -2954,7 +2958,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Text(
-                              "Planet",
+                              'Planet',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: FluentTheme.of(context).accentColor,
@@ -2964,21 +2968,21 @@ class _ChartScreenState extends State<ChartScreen> {
                           const Padding(
                             padding: EdgeInsets.only(bottom: 8),
                             child: Text(
-                              "Sign",
+                              'Sign',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           const Padding(
                             padding: EdgeInsets.only(bottom: 8),
                             child: Text(
-                              "Long",
+                              'Long',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           const Padding(
                             padding: EdgeInsets.only(bottom: 8),
                             child: Text(
-                              "R",
+                              'R',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -3022,8 +3026,8 @@ class _ChartScreenState extends State<ChartScreen> {
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(
-                                info.isRetrograde ? "R" : "",
-                                style: TextStyle(
+                                info.isRetrograde ? 'R' : '',
+                                style: const TextStyle(
                                   color: Colors.orange,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -3035,13 +3039,11 @@ class _ChartScreenState extends State<ChartScreen> {
                       // Add Rahu
                       TableRow(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6),
                             child: Text(
                               'Rahu',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w500),
                             ),
                           ),
                           Padding(
@@ -3069,13 +3071,11 @@ class _ChartScreenState extends State<ChartScreen> {
                       // Add Ketu
                       TableRow(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 6),
                             child: Text(
                               'Ketu',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w500),
                             ),
                           ),
                           Padding(
@@ -3115,7 +3115,7 @@ class _ChartScreenState extends State<ChartScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Navamsa (D-9) Summary",
+                      'Navamsa (D-9) Summary',
                       style: FluentTheme.of(context).typography.subtitle,
                     ),
                     const SizedBox(height: 16),
@@ -3136,7 +3136,7 @@ class _ChartScreenState extends State<ChartScreen> {
                             Padding(
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Text(
-                                "Planet",
+                                'Planet',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: FluentTheme.of(context).accentColor,
@@ -3146,7 +3146,7 @@ class _ChartScreenState extends State<ChartScreen> {
                             const Padding(
                               padding: EdgeInsets.only(bottom: 8),
                               child: Text(
-                                "Sign",
+                                'Sign',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -3197,7 +3197,7 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Widget _buildPlanetPositionsTable(CompleteChartData data) {
     final planets = data.baseChart.planets;
-    final nakshatras = AppConstants.nakshatras;
+    const nakshatras = AppConstants.nakshatras;
 
     return Card(
       child: Padding(
@@ -3313,7 +3313,7 @@ class _ChartScreenState extends State<ChartScreen> {
                   final house = ((signIndex + 1) - ascSign + 12) % 12 + 1;
 
                   // Status
-                  List<String> status = [];
+                  final status = <String>[];
                   if (info.isRetrograde) status.add('R');
                   // Add more status if available in the data
 
@@ -3385,28 +3385,28 @@ class _ChartScreenState extends State<ChartScreen> {
     chart.planets.forEach((planet, info) {
       final sign = (info.longitude / 30).floor() + 1; // 1-12
       final planetName = planet.toString().split('.').last;
-      String abbr = AppConstants.getPlanetAbbreviation(planetName);
+      final abbr = AppConstants.getPlanetAbbreviation(planetName);
 
       map
           .putIfAbsent(sign, () => [])
-          .add(abbr + (info.isRetrograde ? "(R)" : ""));
+          .add(abbr + (info.isRetrograde ? '(R)' : ''));
     });
 
     // Add Rahu
     {
       final rahuSign = (chart.rahu.longitude / 30).floor() + 1;
-      map.putIfAbsent(rahuSign, () => []).add("Ra");
+      map.putIfAbsent(rahuSign, () => []).add('Ra');
     }
 
     // Add Ketu
     {
       final ketuSign = (chart.ketu.longitude / 30).floor() + 1;
-      map.putIfAbsent(ketuSign, () => []).add("Ke");
+      map.putIfAbsent(ketuSign, () => []).add('Ke');
     }
 
     // Ascendant
     final ascSign = _getAscendantSignInt(chart);
-    map.putIfAbsent(ascSign, () => []).add("Asc");
+    map.putIfAbsent(ascSign, () => []).add('Asc');
     return map;
   }
 
@@ -3415,7 +3415,7 @@ class _ChartScreenState extends State<ChartScreen> {
     chart.positions.forEach((planetName, longitude) {
       final sign = (longitude / 30).floor() + 1; // 1-12
 
-      String abbr = planetName.length > 2
+      var abbr = planetName.length > 2
           ? planetName.substring(0, 2)
           : planetName;
       if (planetName == 'Mars') abbr = 'Ma';
@@ -3433,7 +3433,7 @@ class _ChartScreenState extends State<ChartScreen> {
     // Ascendant
     if (chart.ascendantSign != null) {
       // ascendantSign is likely 1-12 usually.
-      map.putIfAbsent(chart.ascendantSign!, () => []).add("Asc");
+      map.putIfAbsent(chart.ascendantSign!, () => []).add('Asc');
     }
     return map;
   }
@@ -3451,7 +3451,7 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   String _formatDate(DateTime dt) {
-    return "${dt.day}/${dt.month}/${dt.year}";
+    return '${dt.day}/${dt.month}/${dt.year}';
   }
 
   TableRow _buildRahuKetuTableRow(
@@ -3541,21 +3541,21 @@ class _ChartScreenState extends State<ChartScreen> {
   String _getCurrentTabTitle(int index) {
     switch (index) {
       case 0:
-        return "D-1 Rashi";
+        return 'D-1 Rashi';
       case 1:
-        return "Vargas";
+        return 'Vargas';
       case 2:
-        return "KP System";
+        return 'KP System';
       case 3:
-        return "Dasha Periods";
+        return 'Dasha Periods';
       case 4:
-        return "Planet Details";
+        return 'Planet Details';
       case 5:
-        return "Daily Rashiphal";
+        return 'Daily Rashiphal';
       case 6:
-        return "Planetary Strength";
+        return 'Planetary Strength';
       default:
-        return "Chart Views";
+        return 'Chart Views';
     }
   }
 
@@ -3696,14 +3696,14 @@ class _ChartScreenState extends State<ChartScreen> {
                                 flex: 2,
                                 child: Text(
                                   '${(ishta * 100).toStringAsFixed(0)}%',
-                                  style: TextStyle(color: Colors.green),
+                                  style: const TextStyle(color: Colors.green),
                                 ),
                               ),
                               Expanded(
                                 flex: 2,
                                 child: Text(
                                   '${(kashta * 100).toStringAsFixed(0)}%',
-                                  style: TextStyle(color: Colors.orange),
+                                  style: const TextStyle(color: Colors.orange),
                                 ),
                               ),
                               Expanded(
@@ -3932,12 +3932,6 @@ class _ChartScreenState extends State<ChartScreen> {
 }
 
 class _DashaPeriodAdapter {
-  final String? signName;
-  final String? lord;
-  final DateTime startDate;
-  final DateTime endDate;
-  final double periodYears;
-
   _DashaPeriodAdapter({
     this.signName,
     this.lord,
@@ -3945,4 +3939,9 @@ class _DashaPeriodAdapter {
     required this.endDate,
     required this.periodYears,
   });
+  final String? signName;
+  final String? lord;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double periodYears;
 }

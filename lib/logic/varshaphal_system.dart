@@ -1,6 +1,7 @@
 import 'package:jyotish/jyotish.dart';
-import '../data/models.dart';
+
 import '../core/settings_manager.dart';
+import '../data/models.dart';
 import 'custom_chart_service.dart';
 
 /// Varshaphal (Annual Chart) System
@@ -13,7 +14,7 @@ class VarshaphalSystem {
     int year,
   ) async {
     final chartSettings = SettingsManager().chartSettings;
-    
+
     // 1. Calculate rigorous Solar Return Time (High Precision)
     final solarReturnTime = await calculateSolarReturn(birthData, year);
 
@@ -126,7 +127,7 @@ class VarshaphalSystem {
     final natalSunLong = getPlanetLongitude(natalChart, Planet.sun);
 
     // Initial Guess: Same day/month as birth
-    DateTime searchDate = DateTime(
+    final searchDate = DateTime(
       year,
       birthData.dateTime.month,
       birthData.dateTime.day,
@@ -135,15 +136,15 @@ class VarshaphalSystem {
     );
 
     // Binary Search Window: +/- 2 days
-    DateTime start = searchDate.subtract(const Duration(days: 2));
-    DateTime end = searchDate.add(const Duration(days: 2));
+    var start = searchDate.subtract(const Duration(days: 2));
+    var end = searchDate.add(const Duration(days: 2));
 
     // Iterative refinement for < 1 second precision
     // 20 iterations is more than enough for seconds precision over 4 days
-    for (int i = 0; i < 20; i++) {
-      int midMillis =
+    for (var i = 0; i < 20; i++) {
+      final midMillis =
           (start.millisecondsSinceEpoch + end.millisecondsSinceEpoch) ~/ 2;
-      DateTime mid = DateTime.fromMillisecondsSinceEpoch(midMillis);
+      final mid = DateTime.fromMillisecondsSinceEpoch(midMillis);
 
       final testChart = await chartService.calculateChart(
         dateTime: mid,
@@ -157,7 +158,7 @@ class VarshaphalSystem {
       final testSunLong = getPlanetLongitude(testChart, Planet.sun);
 
       // Calculate difference accounting for 360 wrap
-      double diff = testSunLong - natalSunLong;
+      var diff = testSunLong - natalSunLong;
       while (diff > 180) {
         diff -= 360;
       }
@@ -189,7 +190,7 @@ class VarshaphalSystem {
   static int calculateMuntha(int natalAscSign, int birthYear, int targetYear) {
     // Formula: (Natal Asc + (Target Year - Birth Year)) % 12
     // Signs are 0-indexed (Aries=0)
-    int age = targetYear - birthYear;
+    final age = targetYear - birthYear;
     return (natalAscSign + age) % 12;
   }
 
@@ -211,26 +212,26 @@ class VarshaphalSystem {
       'Saturn',
     ];
 
-    for (var planet in planets) {
+    for (final planet in planets) {
       final pEnum = getPlanetFromString(planet);
       final pLong = getPlanetLongitude(chart, pEnum);
       final pSign = (pLong / 30).floor();
 
       // 1. Kshetra Bala (Residential Strength)
       // Based on relationship with house lord (Friend/Enemy/Own)
-      double kshetra = calculateKshetraBala(pEnum, pSign, chart);
+      final kshetra = calculateKshetraBala(pEnum, pSign, chart);
 
       // 2. Uchcha Bala (Exaltation Strength)
-      double uchcha = calculateUchchaBala(pEnum, pLong);
+      final uchcha = calculateUchchaBala(pEnum, pLong);
 
       // 3. Hadda (Term) Bala
-      double hadda = calculateHaddaBala(pEnum, pLong, chart);
+      final hadda = calculateHaddaBala(pEnum, pLong, chart);
 
       // 4. Drekkana Bala
-      double drekkana = calculateDrekkanaBala(pEnum, pLong, chart);
+      final drekkana = calculateDrekkanaBala(pEnum, pLong, chart);
 
       // 5. Navamas Bala
-      double navamas = calculateNavamsaBala(pEnum, pLong, chart);
+      final navamas = calculateNavamsaBala(pEnum, pLong, chart);
 
       strengths[planet] = PanchavargiyaStrength(
         kshetra: kshetra,
@@ -258,10 +259,10 @@ class VarshaphalSystem {
     final varshaSign = (varshaAsc / 30).floor();
 
     // Tri-Rashi Lord Calculation
-    String triRashiLord = getTriRashiLord(varshaSign, isDayBirth);
+    final triRashiLord = getTriRashiLord(varshaSign, isDayBirth);
 
     // Din-Ratri Lord
-    String dinRatriLord = isDayBirth ? 'Sun' : 'Moon';
+    final dinRatriLord = isDayBirth ? 'Sun' : 'Moon';
 
     final candidates = {
       'Muntha Lord': munthaLord,
@@ -275,18 +276,18 @@ class VarshaphalSystem {
     // Exception: If Moon is Munthapati, it can be Varshesh even without aspect (some schools).
     // We enforce Aspect rule strictly as per standard Tajik.
 
-    String bestCandidate = 'None';
-    double maxStrength = -1.0;
+    var bestCandidate = 'None';
+    var maxStrength = -1.0;
 
     // Track candidates list for UI
-    List<String> candList = [];
+    final candList = <String>[];
 
     candidates.forEach((role, planetName) {
       final pEnum = getPlanetFromString(planetName);
       final pLong = getPlanetLongitude(chart, pEnum);
-      bool aspectsLagna = checkTajikAspect(pLong, varshaAsc);
+      final aspectsLagna = checkTajikAspect(pLong, varshaAsc);
 
-      double strength = strengths[planetName]?.total ?? 0;
+      final strength = strengths[planetName]?.total ?? 0;
       candList.add(
         '$role ($planetName): ${strength.toStringAsFixed(1)} ${aspectsLagna ? "[Aspects]" : "[No Aspect]"}',
       );
@@ -346,13 +347,13 @@ class VarshaphalSystem {
     };
 
     // Find starting dasha
-    int startIndex = dashaOrder.indexOf(nakshatraLord);
+    final startIndex = dashaOrder.indexOf(nakshatraLord);
 
     // Balance at birth (proportion of nakshatra remaining)
-    double remainingFactor = 1.0 - moonProgress;
+    final remainingFactor = 1.0 - moonProgress;
 
     final periods = <VarshikDashaPeriod>[];
-    DateTime current = returnTime;
+    var current = returnTime;
 
     // Total Year days = 365.25 (Solar Year)
     // Scale: 120 Vimshottari Years = 365.25 Days
@@ -360,7 +361,7 @@ class VarshaphalSystem {
     const dayFactor = 365.25 / 120.0;
 
     // First period (Remainder)
-    double firstPeriodDays =
+    final firstPeriodDays =
         dashaYears[nakshatraLord]! * dayFactor * remainingFactor;
 
     // We add periods until we cover 365.25 days.
@@ -369,12 +370,12 @@ class VarshaphalSystem {
 
     double totalDaysCovered = 0;
 
-    for (int i = 0; i < 9; i++) {
+    for (var i = 0; i < 9; i++) {
       // Max 9 periods ensures full cycle check
-      String planet = dashaOrder[(startIndex + i) % 9];
-      double fullDuration = dashaYears[planet]! * dayFactor;
+      final planet = dashaOrder[(startIndex + i) % 9];
+      final fullDuration = dashaYears[planet]! * dayFactor;
 
-      double duration = (i == 0) ? firstPeriodDays : fullDuration;
+      final duration = (i == 0) ? firstPeriodDays : fullDuration;
 
       // Stop if we exceeded 365 days significantly?
       // Standard Mudda simply runs through.
@@ -424,7 +425,7 @@ class VarshaphalSystem {
   }
 
   static int getHouseNumber(double asc, double long) {
-    double diff = long - asc;
+    var diff = long - asc;
     if (diff < 0) diff += 360;
     return (diff / 30).floor() + 1;
   }
@@ -496,11 +497,11 @@ class VarshaphalSystem {
       p2Long,
     ); // House of p2 relative to p1
 
-    bool isTempFriend = [2, 3, 4, 10, 11, 12].contains(houseDiff);
-    int tempScore = isTempFriend ? 1 : -1;
+    final isTempFriend = [2, 3, 4, 10, 11, 12].contains(houseDiff);
+    final tempScore = isTempFriend ? 1 : -1;
 
     // 3. Combined
-    int total = natural + tempScore;
+    final total = natural + tempScore;
 
     if (total == 2) return 'Great Friend';
     if (total == 1) return 'Friend';
@@ -585,8 +586,8 @@ class VarshaphalSystem {
       Planet.saturn: 200.0, // Libra 20
     };
 
-    double exalt = exaltPoints[planet] ?? 0.0;
-    double diff = (longitude - exalt).abs();
+    final exalt = exaltPoints[planet] ?? 0.0;
+    var diff = (longitude - exalt).abs();
     if (diff > 180) diff = 360 - diff;
 
     // Formula: (180 - diff) / 9
@@ -609,10 +610,10 @@ class VarshaphalSystem {
 
     final terms = _getEgyptianTerms(sign);
 
-    String termLord = 'None';
+    var termLord = 'None';
     double currentLimit = 0;
 
-    for (var term in terms) {
+    for (final term in terms) {
       currentLimit += term.degrees;
       if (degreeInSign < currentLimit) {
         termLord = term.planetName;
@@ -860,10 +861,10 @@ class VarshaphalSystem {
 
   static bool checkTajikAspect(double p1, double p2) {
     // Forward Aspect
-    double diff = p2 - p1;
+    var diff = p2 - p1;
     if (diff < 0) diff += 360;
 
-    int orb = 12; // Simplified orb
+    const orb = 12; // Simplified orb
     // Conjunction
     if (diff < orb || diff > 360 - orb) return true;
     // Sextile (3/11) - 60, 300
@@ -889,7 +890,7 @@ class VarshaphalSystem {
     // 1. Punya Saham (Fortune)
     // Day: Asc + Moon - Sun
     // Night: Asc + Sun - Moon
-    double punyaLong = isDay ? (asc + moon - sun) : (asc + sun - moon);
+    var punyaLong = isDay ? (asc + moon - sun) : (asc + sun - moon);
     punyaLong = (punyaLong + 360) % 360;
 
     sahams['Punya (Fortune)'] = SahamPoint(
@@ -906,7 +907,7 @@ class VarshaphalSystem {
     // 2. Vidya Saham (Education/Knowledge)
     // Day: Asc + Sun - Jupiter
     // Night: Asc + Jupiter - Sun
-    double vidyaLong = isDay ? (asc + sun - jupiter) : (asc + jupiter - sun);
+    var vidyaLong = isDay ? (asc + sun - jupiter) : (asc + jupiter - sun);
     vidyaLong = (vidyaLong + 360) % 360;
     sahams['Vidya (Education)'] = SahamPoint(
       name: 'Vidya Saham',
@@ -917,7 +918,7 @@ class VarshaphalSystem {
     // 3. Yasha Saham (Fame/Success)
     // Day: Asc + Jupiter - Sun
     // Night: Asc + Sun - Jupiter
-    double yashaLong = isDay ? (asc + jupiter - sun) : (asc + sun - jupiter);
+    var yashaLong = isDay ? (asc + jupiter - sun) : (asc + sun - jupiter);
     yashaLong = (yashaLong + 360) % 360;
     sahams['Yasha (Fame)'] = SahamPoint(
       name: 'Yasha Saham',
@@ -928,7 +929,7 @@ class VarshaphalSystem {
     // 4. Raja Saham (Authority/Power)
     // Day: Asc + Saturn - Sun
     // Night: Asc + Sun - Saturn
-    double rajaLong = isDay ? (asc + saturn - sun) : (asc + sun - saturn);
+    var rajaLong = isDay ? (asc + saturn - sun) : (asc + sun - saturn);
     rajaLong = (rajaLong + 360) % 360;
     sahams['Raja (Authority)'] = SahamPoint(
       name: 'Raja Saham',
@@ -939,7 +940,7 @@ class VarshaphalSystem {
     // 5. Putra Saham (Children)
     // Day: Asc + Jupiter - Moon
     // Night: Asc + Moon - Jupiter
-    double putraLong = isDay ? (asc + jupiter - moon) : (asc + moon - jupiter);
+    var putraLong = isDay ? (asc + jupiter - moon) : (asc + moon - jupiter);
     putraLong = (putraLong + 360) % 360;
     sahams['Putra (Children)'] = SahamPoint(
       name: 'Putra Saham',
@@ -950,7 +951,7 @@ class VarshaphalSystem {
     // 6. Mitra Saham (Friends)
     // Day: Asc + Mercury - Moon
     // Night: Asc + Moon - Mercury
-    double mitraLong = isDay ? (asc + mercury - moon) : (asc + moon - mercury);
+    var mitraLong = isDay ? (asc + mercury - moon) : (asc + moon - mercury);
     mitraLong = (mitraLong + 360) % 360;
     sahams['Mitra (Friends)'] = SahamPoint(
       name: 'Mitra Saham',
@@ -961,7 +962,7 @@ class VarshaphalSystem {
     // 7. Karma Saham (Career)
     // Day: Asc + Mars - Sun
     // Night: Asc + Sun - Mars
-    double karmaLong = isDay ? (asc + mars - sun) : (asc + sun - mars);
+    var karmaLong = isDay ? (asc + mars - sun) : (asc + sun - mars);
     karmaLong = (karmaLong + 360) % 360;
     sahams['Karma (Career)'] = SahamPoint(
       name: 'Karma Saham',
@@ -991,7 +992,7 @@ class VarshaphalSystem {
       {'p1': munthaLord, 'p2': yearLord, 'label': 'Munthesh-Varshesh'},
     ];
 
-    for (var pair in pairs) {
+    for (final pair in pairs) {
       final p1Name = pair['p1']!;
       final p2Name = pair['p2']!;
 
@@ -1011,7 +1012,7 @@ class VarshaphalSystem {
       // Orbs are critical in Tajik (Depta/Deptamsa).
       // Simplified here: 12 degree orb for general check
 
-      bool aspects = checkTajikAspect(p1Long, p2Long);
+      final aspects = checkTajikAspect(p1Long, p2Long);
 
       if (aspects) {
         // Determine applying (Ithasala) or separating (Easarapha)
@@ -1102,7 +1103,7 @@ class VarshaphalSystem {
 
     // --- Base Score Calculation (35-95 scale) ---
     // Base: 65 (neutral)
-    double score = 65.0;
+    var score = 65.0;
 
     // 1. Dignity Modifier (-15 to +15)
     final dignity = _getPlanetDignity(pEnum, pSign);
@@ -1216,7 +1217,7 @@ class VarshaphalSystem {
     if (houseNum == 12) cautions.add('Expenses likely');
 
     // Generate main prediction
-    String main = _generateMainPrediction(planet, dignity, houseNum, score);
+    final main = _generateMainPrediction(planet, dignity, houseNum, score);
 
     return {
       'main': main,
@@ -1275,10 +1276,10 @@ class VarshaphalSystem {
     int house,
     double score,
   ) {
-    String quality = score >= 75
+    final quality = score >= 75
         ? 'favorable'
         : (score >= 55 ? 'moderate' : 'challenging');
-    String dignityDesc = dignity == 'Exalted'
+    final dignityDesc = dignity == 'Exalted'
         ? 'strongly placed'
         : dignity == 'Debilitated'
         ? 'weakly placed'
@@ -1322,35 +1323,21 @@ class VarshaphalSystem {
     Map<String, SahamPoint> sahams,
     String yearLord,
   ) {
-    return "Year ruled by $yearLord. Muntha in ${getSignName(muntha)}.";
+    return 'Year ruled by $yearLord. Muntha in ${getSignName(muntha)}.';
   }
 
   static String getSignName(int sign) => AstrologyConstants.getSignName(sign);
 }
 
 class NakshatraInfo {
+  NakshatraInfo(this.name, this.lord, this.progress);
   final String name;
   final String lord;
   final double progress;
-  NakshatraInfo(this.name, this.lord, this.progress);
 }
 
 /// Varshaphal Chart data
 class VarshaphalChart {
-  final int year;
-  final DateTime solarReturnTime;
-  final VedicChart chart;
-  final int muntha;
-  final String munthaLord;
-  final List<VarshikDashaPeriod> varshikDasha;
-  final Map<String, SahamPoint> sahams;
-  final String yearLord;
-  final Map<String, PanchavargiyaStrength> panchavargiyaBala;
-  final List<String> varsheshCandidates;
-  final List<String> tajikYogas;
-  final bool isDayBirth;
-  final String interpretation;
-
   VarshaphalChart({
     required this.year,
     required this.solarReturnTime,
@@ -1366,18 +1353,22 @@ class VarshaphalChart {
     required this.isDayBirth,
     required this.interpretation,
   });
+  final int year;
+  final DateTime solarReturnTime;
+  final VedicChart chart;
+  final int muntha;
+  final String munthaLord;
+  final List<VarshikDashaPeriod> varshikDasha;
+  final Map<String, SahamPoint> sahams;
+  final String yearLord;
+  final Map<String, PanchavargiyaStrength> panchavargiyaBala;
+  final List<String> varsheshCandidates;
+  final List<String> tajikYogas;
+  final bool isDayBirth;
+  final String interpretation;
 }
 
 class VarshikDashaPeriod {
-  final String planet;
-  final DateTime startDate;
-  final DateTime endDate;
-  final double durationDays;
-  final String prediction;
-  final List<String> keyThemes;
-  final List<String> cautions;
-  final double favorableScore;
-
   VarshikDashaPeriod({
     required this.planet,
     required this.startDate,
@@ -1388,30 +1379,31 @@ class VarshikDashaPeriod {
     required this.cautions,
     this.favorableScore = 0.5,
   });
+  final String planet;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double durationDays;
+  final String prediction;
+  final List<String> keyThemes;
+  final List<String> cautions;
+  final double favorableScore;
 }
 
 class SahamPoint {
-  final String name;
-  final double longitude;
-  final String interpretation;
-
   SahamPoint({
     required this.name,
     required this.longitude,
     required this.interpretation,
   });
+  final String name;
+  final double longitude;
+  final String interpretation;
 
   int get sign => (longitude / 30).floor();
   double get degreeInSign => longitude % 30;
 }
 
 class PanchavargiyaStrength {
-  final double kshetra;
-  final double uchcha;
-  final double hadda;
-  final double drekkana;
-  final double navamsa;
-
   PanchavargiyaStrength({
     required this.kshetra,
     required this.uchcha,
@@ -1419,12 +1411,17 @@ class PanchavargiyaStrength {
     required this.drekkana,
     required this.navamsa,
   });
+  final double kshetra;
+  final double uchcha;
+  final double hadda;
+  final double drekkana;
+  final double navamsa;
 
   double get total => kshetra + uchcha + hadda + drekkana + navamsa;
 }
 
 class _Term {
+  _Term(this.planetName, this.degrees);
   final String planetName;
   final double degrees;
-  _Term(this.planetName, this.degrees);
 }

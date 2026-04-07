@@ -2,15 +2,14 @@ import 'package:fluent_ui/fluent_ui.dart';
 import '../../core/chart_customization.dart';
 
 class NorthIndianChartPainter extends CustomPainter {
-  final Map<int, List<String>> planetsBySign;
-  final int ascendantSign;
-  final ChartColors colors;
-
   NorthIndianChartPainter({
     required this.planetsBySign,
     required this.ascendantSign,
     required this.colors,
   });
+  final Map<int, List<String>> planetsBySign;
+  final int ascendantSign;
+  final ChartColors colors;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -26,7 +25,7 @@ class NorthIndianChartPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, width, height), paint);
 
     // 2. Draw Diagonals
-    canvas.drawLine(Offset(0, 0), Offset(width, height), paint);
+    canvas.drawLine(const Offset(0, 0), Offset(width, height), paint);
     canvas.drawLine(Offset(width, 0), Offset(0, height), paint);
 
     // 3. Draw Inner Diamond
@@ -50,7 +49,7 @@ class NorthIndianChartPainter extends CustomPainter {
 
       // 1. Draw Sign Number (Small, secondary color)
       final signSpan = TextSpan(
-        text: "$signNumber\n",
+        text: '$signNumber\n',
         style: TextStyle(
           color: colors.planetText.withValues(alpha: 0.7),
           fontSize: fontSize * 0.8,
@@ -62,7 +61,7 @@ class NorthIndianChartPainter extends CustomPainter {
       final planets = planetsBySign[signIndex + 1] ?? [];
 
       // Group planets into lines if there are many to prevent overflow
-      final List<String> lines = [];
+      final lines = <String>[];
       if (planets.length > 3) {
         for (var i = 0; i < planets.length; i += 3) {
           lines.add(
@@ -80,7 +79,7 @@ class NorthIndianChartPainter extends CustomPainter {
           signSpan,
           ...lines.map(
             (line) => TextSpan(
-              text: "$line\n",
+              text: '$line\n',
               style: TextStyle(
                 color: colors.planetText,
                 fontSize: fontSize,
@@ -122,7 +121,7 @@ class NorthIndianChartPainter extends CustomPainter {
       Offset(width * 0.75, height / 8), // 12th
     ];
 
-    for (int i = 0; i < 12; i++) {
+    for (var i = 0; i < 12; i++) {
       drawContent(i, centers[i]);
     }
   }

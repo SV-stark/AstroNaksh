@@ -1,14 +1,14 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
-import '../../data/models.dart';
+
 import '../../core/ephemeris_manager.dart';
+import '../../data/models.dart';
 import '../../ui/utils/responsive_helper.dart';
 import '../styles.dart';
 
 class AshtakavargaScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const AshtakavargaScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<AshtakavargaScreen> createState() => _AshtakavargaScreenState();
@@ -157,7 +157,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
       final bindus = _showSodhana
           ? _shodhyaPinda!.ekadhipatiReducedAshtakavarga.sarvashtakavarga.bindus
           : _ashtakavarga!.sarvashtakavarga.bindus;
-      for (int i = 0; i < 12; i++) {
+      for (var i = 0; i < 12; i++) {
         sarva[i] = bindus[i];
       }
     }
@@ -244,7 +244,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
       if (target != null &&
           _ashtakavarga!.bhinnashtakavarga.containsKey(target)) {
         final bindus = _ashtakavarga!.bhinnashtakavarga[target]!.bindus;
-        for (int i = 0; i < 12; i++) {
+        for (var i = 0; i < 12; i++) {
           bhinna[i] = bindus[i];
         }
       }
@@ -335,14 +335,14 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
     final trikona = <int, int>{};
     final trikonaB =
         _shodhyaPinda!.trikonaReducedAshtakavarga.sarvashtakavarga.bindus;
-    for (int i = 0; i < 12; i++) {
+    for (var i = 0; i < 12; i++) {
       trikona[i] = trikonaB[i];
     }
 
     final ekadhipati = <int, int>{};
     final ekadhipatiB =
         _shodhyaPinda!.ekadhipatiReducedAshtakavarga.sarvashtakavarga.bindus;
-    for (int i = 0; i < 12; i++) {
+    for (var i = 0; i < 12; i++) {
       ekadhipati[i] = ekadhipatiB[i];
     }
 
@@ -587,7 +587,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
       }
     }
 
-    List<int> favorableSigns = [];
+    var favorableSigns = <int>[];
     if (target != null) {
       favorableSigns = EphemerisManager.jyotish.getFavorableTransitSigns(
         _ashtakavarga!,

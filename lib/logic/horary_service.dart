@@ -35,7 +35,7 @@ class HoraryService {
     String ayanamsaName = 'KP',
   }) async {
     if (seedNumber < 1 || seedNumber > 249) {
-      throw Exception("Seed number must be between 1 and 249");
+      throw Exception('Seed number must be between 1 and 249');
     }
 
     final targetAscendant = _getAscendantForSeed(seedNumber);
@@ -87,9 +87,9 @@ class HoraryService {
     required GeographicLocation location,
     required SiderealMode ayanamsaMode,
   }) async {
-    DateTime currentTime = approxTime;
+    var currentTime = approxTime;
 
-    for (int i = 0; i < 30; i++) {
+    for (var i = 0; i < 30; i++) {
       final chartT = await EphemerisManager.jyotish.calculateVedicChart(
         dateTime: currentTime,
         location: location,
@@ -99,11 +99,11 @@ class HoraryService {
           nodeType: NodeType.meanNode,
         ),
       );
-      double currentAsc = chartT.houses.ascendant;
+      final currentAsc = chartT.houses.ascendant;
 
-      final deltaSeconds = 60;
+      const deltaSeconds = 60;
       final chartTPlus = await EphemerisManager.jyotish.calculateVedicChart(
-        dateTime: currentTime.add(Duration(seconds: deltaSeconds)),
+        dateTime: currentTime.add(const Duration(seconds: deltaSeconds)),
         location: location,
         houseSystem: 'P',
         flags: CalculationFlags(
@@ -111,19 +111,19 @@ class HoraryService {
           nodeType: NodeType.meanNode,
         ),
       );
-      double nextAsc = chartTPlus.houses.ascendant;
+      final nextAsc = chartTPlus.houses.ascendant;
 
-      double ascDiff = nextAsc - currentAsc;
+      var ascDiff = nextAsc - currentAsc;
       if (ascDiff < -180) ascDiff += 360;
       if (ascDiff > 180) ascDiff -= 360;
 
-      double rate = ascDiff / deltaSeconds;
+      var rate = ascDiff / deltaSeconds;
 
       if (rate.abs() < 1e-6) {
         rate = 1.0 / 240.0;
       }
 
-      double diff = targetAscendant - currentAsc;
+      var diff = targetAscendant - currentAsc;
 
       while (diff > 180) {
         diff -= 360;
@@ -136,7 +136,7 @@ class HoraryService {
         return currentTime;
       }
 
-      double correctionSeconds = diff / rate;
+      final correctionSeconds = diff / rate;
 
       currentTime = currentTime.add(
         Duration(milliseconds: (correctionSeconds * 1000).round()),
@@ -147,19 +147,19 @@ class HoraryService {
   }
 
   double _getAscendantForSeed(int seed) {
-    int currentSeed = 1;
-    double currentLongitude = 0.0;
+    var currentSeed = 1;
+    var currentLongitude = 0.0;
 
-    const int vimshottariTotal = 120;
+    const vimshottariTotal = 120;
 
-    for (int nakshatraIdx = 0; nakshatraIdx < 27; nakshatraIdx++) {
-      String starLord = _getNakshatraLord(nakshatraIdx);
-      int startIdx = vimshottariLords.indexOf(starLord);
+    for (var nakshatraIdx = 0; nakshatraIdx < 27; nakshatraIdx++) {
+      final starLord = _getNakshatraLord(nakshatraIdx);
+      final startIdx = vimshottariLords.indexOf(starLord);
 
-      for (int i = 0; i < 9; i++) {
-        String subLord = vimshottariLords[(startIdx + i) % 9];
+      for (var i = 0; i < 9; i++) {
+        final subLord = vimshottariLords[(startIdx + i) % 9];
 
-        double span =
+        final span =
             (periodYears[subLord]! / vimshottariTotal) * (13 + (20 / 60));
 
         if (currentSeed == seed) {

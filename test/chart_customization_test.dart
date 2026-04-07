@@ -1,11 +1,11 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/core/chart_customization.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ChartCustomization Tests', () {
     test('default constructor creates instance with default values', () {
       final settings = ChartCustomization();
-      
+
       expect(settings.chartStyle, equals(ChartStyle.northIndian));
       expect(settings.colorScheme, equals(ColorScheme.classic));
       expect(settings.showHouses, isTrue);
@@ -16,15 +16,15 @@ void main() {
 
     test('resetToDefaults restores all defaults', () {
       final settings = ChartCustomization();
-      
+
       // Modify some values
       settings.chartStyle = ChartStyle.western;
       settings.colorScheme = ColorScheme.night;
       settings.showHouses = false;
-      
+
       // Reset
       settings.resetToDefaults();
-      
+
       expect(settings.chartStyle, equals(ChartStyle.northIndian));
       expect(settings.colorScheme, equals(ColorScheme.classic));
       expect(settings.showHouses, isTrue);
@@ -33,7 +33,7 @@ void main() {
     test('toJson creates valid JSON map', () {
       final settings = ChartCustomization();
       final json = settings.toJson();
-      
+
       expect(json, isA<Map<String, dynamic>>());
       expect(json.containsKey('chartStyle'), isTrue);
       expect(json.containsKey('colorScheme'), isTrue);
@@ -49,9 +49,9 @@ void main() {
         'showDegrees': true,
         'showNakshatras': true,
       };
-      
+
       final settings = ChartCustomization.fromJson(json);
-      
+
       expect(settings.chartStyle, equals(ChartStyle.southIndian));
       expect(settings.colorScheme, equals(ColorScheme.vedic));
       expect(settings.showHouses, isFalse);
@@ -60,9 +60,9 @@ void main() {
 
     test('fromJson uses defaults for missing keys', () {
       final json = <String, dynamic>{};
-      
+
       final settings = ChartCustomization.fromJson(json);
-      
+
       expect(settings.chartStyle, equals(ChartStyle.northIndian));
       expect(settings.colorScheme, equals(ColorScheme.classic));
     });
@@ -73,10 +73,10 @@ void main() {
       original.colorScheme = ColorScheme.oled;
       original.showNakshatras = true;
       original.dashaYearsToShow = 25;
-      
+
       final json = original.toJson();
       final restored = ChartCustomization.fromJson(json);
-      
+
       expect(restored.chartStyle, equals(original.chartStyle));
       expect(restored.colorScheme, equals(original.colorScheme));
       expect(restored.showNakshatras, equals(original.showNakshatras));
@@ -87,7 +87,7 @@ void main() {
   group('ChartPresets Tests', () {
     test('beginner preset has expected values', () {
       final preset = ChartPresets.beginner;
-      
+
       expect(preset.chartStyle, equals(ChartStyle.northIndian));
       expect(preset.colorScheme, equals(ColorScheme.modern));
       expect(preset.showHouses, isTrue);
@@ -97,7 +97,7 @@ void main() {
 
     test('professional preset has expected values', () {
       final preset = ChartPresets.professional;
-      
+
       expect(preset.chartStyle, equals(ChartStyle.northIndian));
       expect(preset.colorScheme, equals(ColorScheme.vedic));
       expect(preset.showDegrees, isTrue);
@@ -107,7 +107,7 @@ void main() {
 
     test('minimal preset has expected values', () {
       final preset = ChartPresets.minimal;
-      
+
       expect(preset.chartStyle, equals(ChartStyle.southIndian));
       expect(preset.colorScheme, equals(ColorScheme.print));
       expect(preset.showSigns, isFalse);
@@ -117,7 +117,7 @@ void main() {
 
     test('printFriendly preset has expected values', () {
       final preset = ChartPresets.printFriendly;
-      
+
       expect(preset.colorScheme, equals(ColorScheme.print));
       expect(preset.showDegrees, isTrue);
     });
@@ -126,7 +126,7 @@ void main() {
   group('ChartColors Tests', () {
     test('classic colors are defined correctly', () {
       final colors = ColorScheme.classic.colors;
-      
+
       expect(colors.background, isNotNull);
       expect(colors.houseBorder, isNotNull);
       expect(colors.houseFill, isNotNull);

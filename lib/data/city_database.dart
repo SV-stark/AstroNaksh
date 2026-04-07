@@ -1,5 +1,6 @@
-import 'dart:math';
 import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -18,7 +19,7 @@ class CityDatabase {
     if (_initialized) return;
 
     try {
-      final String jsonString = await rootBundle.loadString(
+      final jsonString = await rootBundle.loadString(
         'assets/data/cities2.json',
       );
       final List<dynamic> jsonList = json.decode(jsonString);
@@ -90,11 +91,21 @@ class CityDatabase {
       );
     }
 
-    City nearest = _cities.first;
-    double minDistance = _calculateDistance(lat, lon, nearest.latitude, nearest.longitude);
+    var nearest = _cities.first;
+    var minDistance = _calculateDistance(
+      lat,
+      lon,
+      nearest.latitude,
+      nearest.longitude,
+    );
 
     for (var i = 1; i < _cities.length; i++) {
-      final dist = _calculateDistance(lat, lon, _cities[i].latitude, _cities[i].longitude);
+      final dist = _calculateDistance(
+        lat,
+        lon,
+        _cities[i].latitude,
+        _cities[i].longitude,
+      );
       if (dist < minDistance) {
         minDistance = dist;
         nearest = _cities[i];
@@ -105,12 +116,21 @@ class CityDatabase {
   }
 
   /// Haversine formula for distance between coordinates
-  static double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  static double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const r = 6371; // Earth radius in km
     final dLat = _toRadians(lat2 - lat1);
     final dLon = _toRadians(lon2 - lon1);
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(lat1)) * cos(_toRadians(lat2)) * sin(dLon / 2) * sin(dLon / 2);
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(lat1)) *
+            cos(_toRadians(lat2)) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
     final c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return r * c;
   }
@@ -120,10 +140,10 @@ class CityDatabase {
   /// Get current location and find nearest city
   static Future<City?> getCityFromCurrentPosition() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return null;
 
-      LocationPermission permission = await Geolocator.checkPermission();
+      var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) return null;
@@ -145,15 +165,6 @@ class CityDatabase {
 
 @immutable
 class City {
-  final String name;
-  final String state;
-  final String country;
-  final double latitude;
-  final double longitude;
-  final String timezone;
-
-  String get displayName => '$name, $state, $country';
-
   const City({
     required this.name,
     required this.state,
@@ -162,6 +173,14 @@ class City {
     required this.longitude,
     required this.timezone,
   });
+  final String name;
+  final String state;
+  final String country;
+  final double latitude;
+  final double longitude;
+  final String timezone;
+
+  String get displayName => '$name, $state, $country';
 
   @override
   String toString() => '$name, $state, $country';

@@ -15,7 +15,7 @@ linter:
     prefer_void_to_null: true
     throw_in_finally: true
     unnecessary_statements: true
-    use_key_in_widget_constructers: true
+    use_key_in_widget_constructors: true
 
     # Style & consistency
     prefer_const_constructors: true
@@ -67,13 +67,11 @@ linter:
     non_constant_identifier_names: true
     null_closures: true
     omit_local_variable_types: true
-    package_api_docs: true
     package_prefixed_library_names: true
     prefer_adjacent_string_concatenation: true
     prefer_collection_literals: true
     prefer_conditional_assignment: true
     prefer_contains: true
-    prefer_equal_for_default_values: true
     prefer_for_elements_to_map_fromIterable: true
     prefer_function_declarations_over_variables: true
     prefer_generic_function_type_aliases: true

@@ -1,20 +1,21 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart' hide AspectType;
+
+import '../../core/database_helper.dart';
+import '../../core/pdf_report_service.dart';
 import '../../data/models.dart';
 import '../../logic/chart_comparison.dart';
 import '../../logic/kp_chart_service.dart';
-import '../../logic/matching/matching_service.dart';
-import '../../core/pdf_report_service.dart';
 import '../../logic/matching/matching_models.dart';
-import '../../core/database_helper.dart';
-import '../widgets/chart_widget.dart';
-import '../input_screen.dart';
+import '../../logic/matching/matching_service.dart';
 import '../../ui/utils/responsive_helper.dart';
+import '../input_screen.dart';
+import '../widgets/chart_widget.dart';
 
 class ChartComparisonScreen extends StatefulWidget {
-  final CompleteChartData? chart1;
-
   const ChartComparisonScreen({super.key, this.chart1});
+  final CompleteChartData? chart1;
 
   @override
   State<ChartComparisonScreen> createState() => _ChartComparisonScreenState();
@@ -98,7 +99,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             CommandBarButton(
               icon: const Icon(FluentIcons.side_panel_mirrored),
               label: const Text('Charts'),
-              onPressed: () => _showSideBySideView(),
+              onPressed: _showSideBySideView,
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.pdf),
@@ -230,37 +231,34 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             ),
             const SizedBox(height: 20),
             // Partner Info Cards
-            context.isMobile
-                ? Column(
-                    children: [
-                      _buildPartnerCard('Groom', _selectedChart1!, Colors.blue),
-                      const SizedBox(height: 16),
-                      _buildPartnerCard(
-                        'Bride',
-                        _selectedChart2!,
-                        Colors.purple,
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      Expanded(
-                        child: _buildPartnerCard(
-                          'Groom',
-                          _selectedChart1!,
-                          Colors.blue,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildPartnerCard(
-                          'Bride',
-                          _selectedChart2!,
-                          Colors.purple,
-                        ),
-                      ),
-                    ],
+            if (context.isMobile)
+              Column(
+                children: [
+                  _buildPartnerCard('Groom', _selectedChart1!, Colors.blue),
+                  const SizedBox(height: 16),
+                  _buildPartnerCard('Bride', _selectedChart2!, Colors.purple),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildPartnerCard(
+                      'Groom',
+                      _selectedChart1!,
+                      Colors.blue,
+                    ),
                   ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildPartnerCard(
+                      'Bride',
+                      _selectedChart2!,
+                      Colors.purple,
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 20),
             // Key Highlights
             Text(
@@ -449,7 +447,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             ),
             const SizedBox(height: 16),
             // Individual Kootas
-            ...report.kootaResults.map((koota) => _buildKootaCard(koota)),
+            ...report.kootaResults.map(_buildKootaCard),
           ],
         ),
       ),
@@ -550,7 +548,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(FluentIcons.info, size: 16, color: Colors.grey),
+                  const Icon(FluentIcons.info, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -646,41 +644,42 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 16),
-                    context.isMobile
-                        ? Column(
-                            children: [
-                              _buildDoshaStatusCard(
-                                'Groom',
-                                report.manglikMatch.maleManglik,
-                                Colors.blue,
-                              ),
-                              const SizedBox(height: 16),
-                              _buildDoshaStatusCard(
-                                'Bride',
-                                report.manglikMatch.femaleManglik,
-                                Colors.purple,
-                              ),
-                            ],
-                          )
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: _buildDoshaStatusCard(
-                                  'Groom',
-                                  report.manglikMatch.maleManglik,
-                                  Colors.blue,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _buildDoshaStatusCard(
-                                  'Bride',
-                                  report.manglikMatch.femaleManglik,
-                                  Colors.purple,
-                                ),
-                              ),
-                            ],
+                    if (context.isMobile)
+                      Column(
+                        children: [
+                          _buildDoshaStatusCard(
+                            'Groom',
+                            report.manglikMatch.maleManglik,
+                            Colors.blue,
                           ),
+                          const SizedBox(height: 16),
+                          _buildDoshaStatusCard(
+                            'Bride',
+                            report.manglikMatch.femaleManglik,
+                            Colors.purple,
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDoshaStatusCard(
+                              'Groom',
+                              report.manglikMatch.maleManglik,
+                              Colors.blue,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildDoshaStatusCard(
+                              'Bride',
+                              report.manglikMatch.femaleManglik,
+                              Colors.purple,
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -692,7 +691,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               style: FluentTheme.of(context).typography.bodyLarge,
             ),
             const SizedBox(height: 12),
-            ...report.extraChecks.map((check) => _buildExtraCheckCard(check)),
+            ...report.extraChecks.map(_buildExtraCheckCard),
           ],
         ),
       ),
@@ -971,11 +970,11 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                     horizontal: 48,
                     vertical: 16,
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(FluentIcons.heart_fill, size: 20),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Text(
                         'Analyze Compatibility',
                         style: TextStyle(
@@ -1095,13 +1094,13 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                     final chart = await _showChartPicker();
                     if (chart != null) onSelect(chart);
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(FluentIcons.add, size: 18),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text('Select Chart'),
                       ],
                     ),
@@ -1502,7 +1501,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   }
 
   int _getAscendantSignInt(VedicChart chart) {
-    return ((chart.houses.cusps[0] / 30).floor() + 1);
+    return (chart.houses.cusps[0] / 30).floor() + 1;
   }
 
   Widget _buildSynastryTab(SynastryAnalysis compatibility) {
@@ -1522,7 +1521,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               style: FluentTheme.of(context).typography.caption,
             ),
             const SizedBox(height: 16),
-            ...compatibility.aspects.map((aspect) => _buildAspectCard(aspect)),
+            ...compatibility.aspects.map(_buildAspectCard),
           ],
         ),
       ),
@@ -1657,7 +1656,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             const SizedBox(height: 12),
             ...compatibility.houseOverlays
                 .where((o) => o.chart == 1)
-                .map((o) => _buildOverlayItem(o)),
+                .map(_buildOverlayItem),
             const SizedBox(height: 24),
             // Chart 2 in Chart 1
             Card(
@@ -1704,7 +1703,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
             const SizedBox(height: 12),
             ...compatibility.houseOverlays
                 .where((o) => o.chart == 2)
-                .map((o) => _buildOverlayItem(o)),
+                .map(_buildOverlayItem),
           ],
         ),
       ),
@@ -1768,12 +1767,12 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
     try {
       showDialog(
         context: context,
-        builder: (context) => ContentDialog(
-          title: const Text('Exporting PDF'),
+        builder: (context) => const ContentDialog(
+          title: Text('Exporting PDF'),
           content: Row(
             children: [
-              const ProgressRing(),
-              const SizedBox(width: 20),
+              ProgressRing(),
+              SizedBox(width: 20),
               Text('Generating report...'),
             ],
           ),

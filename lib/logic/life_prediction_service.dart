@@ -1,8 +1,9 @@
 import 'package:jyotish/jyotish.dart';
-import '../data/models.dart';
+
 import '../data/life_prediction_models.dart';
-import 'shadbala.dart';
+import '../data/models.dart';
 import 'bhava_bala.dart';
+import 'shadbala.dart';
 
 /// Life Prediction Service
 /// Generates comprehensive life predictions based on Vedic astrology principles
@@ -43,7 +44,7 @@ class LifePredictionService {
     // Collect planetary influences
     final influences = <PlanetaryInfluence>[];
     double totalInfluenceScore = 0;
-    int influenceCount = 0;
+    var influenceCount = 0;
 
     // Analyze primary planets for this aspect
     for (final planetName in aspect.primaryPlanets) {
@@ -95,7 +96,7 @@ class LifePredictionService {
     houseScore = houseScore / aspect.houses.length;
 
     // Calculate final score (combining planetary and house influences)
-    double rawScore = influenceCount > 0
+    final rawScore = influenceCount > 0
         ? (totalInfluenceScore / influenceCount) * 0.6 + houseScore * 0.4
         : houseScore;
 
@@ -470,7 +471,7 @@ class LifePredictionService {
         final houseDesc = _getHouseSignificance(house);
         final houseLord = _getHouseLord(chartData, house);
         final lordSign = _findPlanet(chartData, houseLord);
-        String lordPosition = '';
+        var lordPosition = '';
         if (lordSign != null) {
           final lordSignIdx = lordSign.position.zodiacSignIndex;
           final lordHouse = _getHouseFromSign(chartData, lordSignIdx);

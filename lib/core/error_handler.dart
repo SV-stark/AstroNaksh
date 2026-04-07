@@ -1,17 +1,9 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'app_environment.dart';
 
 enum ErrorSeverity { info, warning, error, critical }
 
 class AppError {
-  final String message;
-  final ErrorSeverity severity;
-  final dynamic originalError;
-  final StackTrace? stackTrace;
-  final String? context;
-  final DateTime timestamp;
-
   AppError({
     required this.message,
     this.severity = ErrorSeverity.error,
@@ -20,6 +12,12 @@ class AppError {
     this.context,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
+  final String message;
+  final ErrorSeverity severity;
+  final dynamic originalError;
+  final StackTrace? stackTrace;
+  final String? context;
+  final DateTime timestamp;
 
   @override
   String toString() {
@@ -37,9 +35,9 @@ class AppError {
 typedef ErrorCallback = void Function(AppError error);
 
 class AppErrorHandler {
-  static final AppErrorHandler _instance = AppErrorHandler._internal();
   factory AppErrorHandler() => _instance;
   AppErrorHandler._internal();
+  static final AppErrorHandler _instance = AppErrorHandler._internal();
 
   final List<ErrorCallback> _listeners = [];
   final List<AppError> _recentErrors = [];

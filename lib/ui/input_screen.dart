@@ -1,13 +1,14 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
 
-import '../ui/utils/responsive_helper.dart';
-import '../../data/models.dart';
-import '../../data/city_database.dart';
 import '../../core/database_helper.dart';
+import '../../data/city_database.dart';
+import '../../data/models.dart';
+import '../ui/utils/responsive_helper.dart';
 
 class InputScreen extends StatefulWidget {
-  final bool onSelectionMode;
   const InputScreen({super.key, this.onSelectionMode = false});
+  final bool onSelectionMode;
 
   @override
   State<InputScreen> createState() => _InputScreenState();
@@ -244,7 +245,7 @@ class _InputScreenState extends State<InputScreen> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
-      header: const PageHeader(title: Text("New Chart")),
+      header: const PageHeader(title: Text('New Chart')),
       content: SingleChildScrollView(
         child: Padding(
           padding: ResponsiveHelper.getResponsivePadding(context),
@@ -263,23 +264,23 @@ class _InputScreenState extends State<InputScreen> {
                           const Icon(FluentIcons.personalize, size: 20),
                           const SizedBox(width: 8),
                           Text(
-                            "Personal Details",
+                            'Personal Details',
                             style: FluentTheme.of(context).typography.subtitle,
                           ),
                         ],
                       ),
                       const SizedBox(height: 24),
                       InfoLabel(
-                        label: "Full Name",
+                        label: 'Full Name',
                         child: TextFormBox(
                           controller: _nameController,
-                          placeholder: "Enter Name",
+                          placeholder: 'Enter Name',
                           prefix: const Padding(
                             padding: EdgeInsets.only(left: 8.0),
                             child: Icon(FluentIcons.contact),
                           ),
                           validator: (value) => value == null || value.isEmpty
-                              ? "Required"
+                              ? 'Required'
                               : null,
                         ),
                       ),
@@ -299,59 +300,60 @@ class _InputScreenState extends State<InputScreen> {
                           const Icon(FluentIcons.calendar, size: 20),
                           const SizedBox(width: 8),
                           Text(
-                            "Birth Date & Time",
+                            'Birth Date & Time',
                             style: FluentTheme.of(context).typography.subtitle,
                           ),
                         ],
                       ),
                       const SizedBox(height: 24),
-                      ResponsiveHelper.useMobileLayout(context)
-                          ? Column(
-                              children: [
-                                InfoLabel(
-                                  label: "Date",
-                                  child: DatePicker(
-                                    selected: _selectedDate,
-                                    onChanged: (v) =>
-                                        setState(() => _selectedDate = v),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                InfoLabel(
-                                  label: "Time",
-                                  child: TimePicker(
-                                    selected: _selectedTime,
-                                    onChanged: (v) =>
-                                        setState(() => _selectedTime = v),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Row(
-                              children: [
-                                Expanded(
-                                  child: InfoLabel(
-                                    label: "Date",
-                                    child: DatePicker(
-                                      selected: _selectedDate,
-                                      onChanged: (v) =>
-                                          setState(() => _selectedDate = v),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: InfoLabel(
-                                    label: "Time",
-                                    child: TimePicker(
-                                      selected: _selectedTime,
-                                      onChanged: (v) =>
-                                          setState(() => _selectedTime = v),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                      if (ResponsiveHelper.useMobileLayout(context))
+                        Column(
+                          children: [
+                            InfoLabel(
+                              label: 'Date',
+                              child: DatePicker(
+                                selected: _selectedDate,
+                                onChanged: (v) =>
+                                    setState(() => _selectedDate = v),
+                              ),
                             ),
+                            const SizedBox(height: 16),
+                            InfoLabel(
+                              label: 'Time',
+                              child: TimePicker(
+                                selected: _selectedTime,
+                                onChanged: (v) =>
+                                    setState(() => _selectedTime = v),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InfoLabel(
+                                label: 'Date',
+                                child: DatePicker(
+                                  selected: _selectedDate,
+                                  onChanged: (v) =>
+                                      setState(() => _selectedDate = v),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: InfoLabel(
+                                label: 'Time',
+                                child: TimePicker(
+                                  selected: _selectedTime,
+                                  onChanged: (v) =>
+                                      setState(() => _selectedTime = v),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
@@ -368,7 +370,7 @@ class _InputScreenState extends State<InputScreen> {
                           const Icon(FluentIcons.location, size: 20),
                           const SizedBox(width: 8),
                           Text(
-                            "Birth Place",
+                            'Birth Place',
                             style: FluentTheme.of(context).typography.subtitle,
                           ),
                         ],
@@ -394,10 +396,10 @@ class _InputScreenState extends State<InputScreen> {
                             ? Column(
                                 children: [
                                   InfoLabel(
-                                    label: "Latitude (-90 to 90)",
+                                    label: 'Latitude (-90 to 90)',
                                     child: TextFormBox(
                                       controller: _latitudeController,
-                                      placeholder: "e.g., 28.6139",
+                                      placeholder: 'e.g., 28.6139',
                                       prefix: const Padding(
                                         padding: EdgeInsets.only(left: 8.0),
                                         child: Icon(FluentIcons.globe),
@@ -410,14 +412,14 @@ class _InputScreenState extends State<InputScreen> {
                                       validator: (value) {
                                         if (!_useManualCoordinates) return null;
                                         if (value == null || value.isEmpty) {
-                                          return "Required";
+                                          return 'Required';
                                         }
                                         final lat = double.tryParse(value);
                                         if (lat == null) {
-                                          return "Invalid number";
+                                          return 'Invalid number';
                                         }
                                         if (lat < -90 || lat > 90) {
-                                          return "Must be -90 to 90";
+                                          return 'Must be -90 to 90';
                                         }
                                         return null;
                                       },
@@ -425,10 +427,10 @@ class _InputScreenState extends State<InputScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   InfoLabel(
-                                    label: "Longitude (-180 to 180)",
+                                    label: 'Longitude (-180 to 180)',
                                     child: TextFormBox(
                                       controller: _longitudeController,
-                                      placeholder: "e.g., 77.2090",
+                                      placeholder: 'e.g., 77.2090',
                                       prefix: const Padding(
                                         padding: EdgeInsets.only(left: 8.0),
                                         child: Icon(FluentIcons.globe),
@@ -441,14 +443,14 @@ class _InputScreenState extends State<InputScreen> {
                                       validator: (value) {
                                         if (!_useManualCoordinates) return null;
                                         if (value == null || value.isEmpty) {
-                                          return "Required";
+                                          return 'Required';
                                         }
                                         final long = double.tryParse(value);
                                         if (long == null) {
-                                          return "Invalid number";
+                                          return 'Invalid number';
                                         }
                                         if (long < -180 || long > 180) {
-                                          return "Must be -180 to 180";
+                                          return 'Must be -180 to 180';
                                         }
                                         return null;
                                       },
@@ -460,10 +462,10 @@ class _InputScreenState extends State<InputScreen> {
                                 children: [
                                   Expanded(
                                     child: InfoLabel(
-                                      label: "Latitude (-90 to 90)",
+                                      label: 'Latitude (-90 to 90)',
                                       child: TextFormBox(
                                         controller: _latitudeController,
-                                        placeholder: "e.g., 28.6139",
+                                        placeholder: 'e.g., 28.6139',
                                         prefix: const Padding(
                                           padding: EdgeInsets.only(left: 8.0),
                                           child: Icon(FluentIcons.globe),
@@ -478,14 +480,14 @@ class _InputScreenState extends State<InputScreen> {
                                             return null;
                                           }
                                           if (value == null || value.isEmpty) {
-                                            return "Required";
+                                            return 'Required';
                                           }
                                           final lat = double.tryParse(value);
                                           if (lat == null) {
-                                            return "Invalid number";
+                                            return 'Invalid number';
                                           }
                                           if (lat < -90 || lat > 90) {
-                                            return "Must be -90 to 90";
+                                            return 'Must be -90 to 90';
                                           }
                                           return null;
                                         },
@@ -495,10 +497,10 @@ class _InputScreenState extends State<InputScreen> {
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: InfoLabel(
-                                      label: "Longitude (-180 to 180)",
+                                      label: 'Longitude (-180 to 180)',
                                       child: TextFormBox(
                                         controller: _longitudeController,
-                                        placeholder: "e.g., 77.2090",
+                                        placeholder: 'e.g., 77.2090',
                                         prefix: const Padding(
                                           padding: EdgeInsets.only(left: 8.0),
                                           child: Icon(FluentIcons.globe),
@@ -513,14 +515,14 @@ class _InputScreenState extends State<InputScreen> {
                                             return null;
                                           }
                                           if (value == null || value.isEmpty) {
-                                            return "Required";
+                                            return 'Required';
                                           }
                                           final long = double.tryParse(value);
                                           if (long == null) {
-                                            return "Invalid number";
+                                            return 'Invalid number';
                                           }
                                           if (long < -180 || long > 180) {
-                                            return "Must be -180 to 180";
+                                            return 'Must be -180 to 180';
                                           }
                                           return null;
                                         },
@@ -546,7 +548,7 @@ class _InputScreenState extends State<InputScreen> {
                                           _selectedCity = item.value;
                                         });
                                       },
-                                      placeholder: "Search city...",
+                                      placeholder: 'Search city...',
                                       leadingIcon: const Padding(
                                         padding: EdgeInsets.all(8.0),
                                         child: Icon(FluentIcons.city_next),
@@ -598,7 +600,7 @@ class _InputScreenState extends State<InputScreen> {
                                             _selectedCity = item.value;
                                           });
                                         },
-                                        placeholder: "Search city...",
+                                        placeholder: 'Search city...',
                                         leadingIcon: const Padding(
                                           padding: EdgeInsets.all(8.0),
                                           child: Icon(FluentIcons.city_next),
@@ -650,7 +652,7 @@ class _InputScreenState extends State<InputScreen> {
                   child: FilledButton(
                     onPressed: _generateChart,
                     child: const Text(
-                      "Generate Chart",
+                      'Generate Chart',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

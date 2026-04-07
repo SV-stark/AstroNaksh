@@ -9,7 +9,7 @@ class GowriPanchangaService {
     Location location,
   ) async {
     await EphemerisManager.ensureEphemerisData();
-    return await EphemerisManager.jyotish.getCurrentGowriPanchangam(
+    return EphemerisManager.jyotish.getCurrentGowriPanchangam(
       dateTime: dateTime,
       location: _toGeoLocation(location),
     );
@@ -23,7 +23,7 @@ class GowriPanchangaService {
     await EphemerisManager.ensureEphemerisData();
     final results = <GowriPanchangamInfo>[];
 
-    for (int hour = 0; hour < 24; hour++) {
+    for (var hour = 0; hour < 24; hour++) {
       final dt = DateTime(date.year, date.month, date.day, hour);
       final gowri = await getCurrentGowriPanchanga(dt, location);
       results.add(gowri);
@@ -43,7 +43,7 @@ class GowriPanchangaService {
     final favorable = <MuhurtaPeriod>[];
     DateTime? startTime;
 
-    for (int i = 0; i < gowriList.length; i++) {
+    for (var i = 0; i < gowriList.length; i++) {
       final gowri = gowriList[i];
       final isFavorable = _isFavorableForActivity(gowri, activity);
 
@@ -109,15 +109,14 @@ class GowriPanchangaService {
 }
 
 class MuhurtaPeriod {
-  final DateTime start;
-  final DateTime end;
-  final String quality;
-
   MuhurtaPeriod({
     required this.start,
     required this.end,
     required this.quality,
   });
+  final DateTime start;
+  final DateTime end;
+  final String quality;
 
   Duration get duration => end.difference(start);
 }

@@ -1,25 +1,10 @@
-import 'package:jyotish/jyotish.dart';
 import 'package:intl/intl.dart';
-import '../data/models.dart';
+import 'package:jyotish/jyotish.dart';
+
 import '../core/ephemeris_manager.dart';
+import '../data/models.dart';
 
 class PanchangResult {
-  final String date;
-  final String tithi;
-  final int tithiNumber;
-  final String nakshatra;
-  final int nakshatraNumber;
-  final String yoga;
-  final int yogaNumber;
-  final String? yogaNature;
-  final String? yogaRecommendations;
-  final String karana;
-  final String vara;
-  final String? sunrise;
-  final String? sunset;
-  final String? moonrise;
-  final String? moonset;
-
   PanchangResult({
     required this.date,
     required this.tithi,
@@ -37,41 +22,48 @@ class PanchangResult {
     this.moonrise,
     this.moonset,
   });
+  final String date;
+  final String tithi;
+  final int tithiNumber;
+  final String nakshatra;
+  final int nakshatraNumber;
+  final String yoga;
+  final int yogaNumber;
+  final String? yogaNature;
+  final String? yogaRecommendations;
+  final String karana;
+  final String vara;
+  final String? sunrise;
+  final String? sunset;
+  final String? moonrise;
+  final String? moonset;
 }
 
 class PanchangInauspicious {
-  final String name;
-  final String startTime;
-  final String endTime;
-
   PanchangInauspicious({
     required this.name,
     required this.startTime,
     required this.endTime,
   });
+  final String name;
+  final String startTime;
+  final String endTime;
 }
 
 class PanchangHora {
-  final String planet;
-  final String startTime;
-  final String endTime;
-  final bool isDay;
-
   PanchangHora({
     required this.planet,
     required this.startTime,
     required this.endTime,
     required this.isDay,
   });
-}
-
-class PanchangChoghadiya {
-  final String name;
-  final String type; // Auspicious, Inauspicious, Neutral
+  final String planet;
   final String startTime;
   final String endTime;
   final bool isDay;
+}
 
+class PanchangChoghadiya {
   PanchangChoghadiya({
     required this.name,
     required this.type,
@@ -79,6 +71,11 @@ class PanchangChoghadiya {
     required this.endTime,
     required this.isDay,
   });
+  final String name;
+  final String type; // Auspicious, Inauspicious, Neutral
+  final String startTime;
+  final String endTime;
+  final bool isDay;
 }
 
 class PanchangService {
@@ -320,7 +317,7 @@ class PanchangService {
     if (sr == null || ss == null) return [];
 
     // Use typed InauspiciousPeriods return instead of dynamic cast
-    final InauspiciousPeriods periods = _jyotish.getInauspiciousPeriods(
+    final periods = _jyotish.getInauspiciousPeriods(
       date: date,
       sunrise: sr,
       sunset: ss,
@@ -368,7 +365,7 @@ class PanchangService {
       longitude: location.longitude,
     );
 
-    final List<dynamic> rawHoras = await _jyotish.getHorasForDay(
+    final rawHoras = await _jyotish.getHorasForDay(
       date: date,
       location: geoLoc,
     );
@@ -376,10 +373,10 @@ class PanchangService {
     final timeFormat = DateFormat('HH:mm');
     return rawHoras.map((h) {
       return PanchangHora(
-        planet: h.planet.displayName,
-        startTime: timeFormat.format(h.start.toLocal()),
-        endTime: timeFormat.format(h.end.toLocal()),
-        isDay: h.isDay,
+        planet: h.lord.displayName,
+        startTime: timeFormat.format(h.startTime.toLocal()),
+        endTime: timeFormat.format(h.endTime.toLocal()),
+        isDay: h.isDaytime,
       );
     }).toList();
   }
@@ -403,11 +400,7 @@ class PanchangService {
     if (sr == null || ss == null) return [];
 
     // Use typed ChoghadiyaPeriods return instead of dynamic cast
-    final ChoghadiyaPeriods result = _jyotish.getChoghadiya(
-      date: date,
-      sunrise: sr,
-      sunset: ss,
-    );
+    final result = _jyotish.getChoghadiya(date: date, sunrise: sr, sunset: ss);
 
     final timeFormat = DateFormat('HH:mm');
     return result.allPeriods.map<PanchangChoghadiya>((c) {

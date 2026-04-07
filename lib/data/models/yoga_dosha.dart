@@ -1,13 +1,4 @@
 class BhangaResult {
-  final String name;
-  final String description;
-  final bool isActive;
-  final List<String> cancellationReasons;
-  final double strength;
-  final String status;
-  final String manifestationPeriod;
-  final String peakDashaLord;
-
   BhangaResult({
     required this.name,
     required this.description,
@@ -18,17 +9,6 @@ class BhangaResult {
     this.manifestationPeriod = '',
     this.peakDashaLord = '',
   });
-
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'description': description,
-    'isActive': isActive,
-    'cancellationReasons': cancellationReasons,
-    'strength': strength,
-    'status': status,
-    'manifestationPeriod': manifestationPeriod,
-    'peakDashaLord': peakDashaLord,
-  };
 
   factory BhangaResult.fromJson(Map<String, dynamic> json) {
     return BhangaResult(
@@ -44,6 +24,25 @@ class BhangaResult {
       peakDashaLord: json['peakDashaLord'] as String? ?? '',
     );
   }
+  final String name;
+  final String description;
+  final bool isActive;
+  final List<String> cancellationReasons;
+  final double strength;
+  final String status;
+  final String manifestationPeriod;
+  final String peakDashaLord;
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'description': description,
+    'isActive': isActive,
+    'cancellationReasons': cancellationReasons,
+    'strength': strength,
+    'status': status,
+    'manifestationPeriod': manifestationPeriod,
+    'peakDashaLord': peakDashaLord,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -60,12 +59,6 @@ class BhangaResult {
 }
 
 class YogaDoshaAnalysisResult {
-  final List<BhangaResult> yogas;
-  final List<BhangaResult> doshas;
-  final double overallScore;
-  final String qualityLabel;
-  final String qualityDescription;
-
   YogaDoshaAnalysisResult({
     required this.yogas,
     required this.doshas,
@@ -73,14 +66,6 @@ class YogaDoshaAnalysisResult {
     required this.qualityLabel,
     required this.qualityDescription,
   });
-
-  Map<String, dynamic> toJson() => {
-    'yogas': yogas.map((e) => e.toJson()).toList(),
-    'doshas': doshas.map((e) => e.toJson()).toList(),
-    'overallScore': overallScore,
-    'qualityLabel': qualityLabel,
-    'qualityDescription': qualityDescription,
-  };
 
   factory YogaDoshaAnalysisResult.fromJson(Map<String, dynamic> json) {
     return YogaDoshaAnalysisResult(
@@ -95,6 +80,19 @@ class YogaDoshaAnalysisResult {
       qualityDescription: json['qualityDescription'] as String,
     );
   }
+  final List<BhangaResult> yogas;
+  final List<BhangaResult> doshas;
+  final double overallScore;
+  final String qualityLabel;
+  final String qualityDescription;
+
+  Map<String, dynamic> toJson() => {
+    'yogas': yogas.map((e) => e.toJson()).toList(),
+    'doshas': doshas.map((e) => e.toJson()).toList(),
+    'overallScore': overallScore,
+    'qualityLabel': qualityLabel,
+    'qualityDescription': qualityDescription,
+  };
 
   @override
   bool operator ==(Object other) {

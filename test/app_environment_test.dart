@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/core/app_environment.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AppEnvironment Tests', () {

@@ -1,14 +1,14 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
-import '../../ui/utils/responsive_helper.dart';
+
 import '../../data/models.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 /// Sudarshan Chakra Analysis Screen
 /// Displays triple-perspective strength analysis from Lagna, Chandra, and Surya
 class SudarshanChakraScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const SudarshanChakraScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<SudarshanChakraScreen> createState() => _SudarshanChakraScreenState();
@@ -347,11 +347,11 @@ class _SudarshanChakraScreenState extends State<SudarshanChakraScreen> {
         children: [
           Icon(icon, size: 20, color: color),
           const SizedBox(height: 8),
-          Text(label, style: TextStyle(fontSize: 11, color: Colors.grey)),
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
           const SizedBox(height: 2),
           Text(
             sign,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             textAlign: TextAlign.center,
           ),
         ],
@@ -553,8 +553,8 @@ class _SudarshanChakraScreenState extends State<SudarshanChakraScreen> {
 
 // Helper table cell widgets
 class _HeaderCell extends StatelessWidget {
-  final String text;
   const _HeaderCell(this.text);
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -569,9 +569,9 @@ class _HeaderCell extends StatelessWidget {
 }
 
 class _DataCell extends StatelessWidget {
+  const _DataCell(this.text, {this.bold = false});
   final String text;
   final bool bold;
-  const _DataCell(this.text, {this.bold = false});
 
   @override
   Widget build(BuildContext context) {
@@ -589,9 +589,9 @@ class _DataCell extends StatelessWidget {
 }
 
 class _CategoryCell extends StatelessWidget {
+  const _CategoryCell(this.text, this.color);
   final String text;
   final Color color;
-  const _CategoryCell(this.text, this.color);
 
   @override
   Widget build(BuildContext context) {
@@ -610,9 +610,9 @@ class _CategoryCell extends StatelessWidget {
 }
 
 class _BarCell extends StatelessWidget {
+  const _BarCell(this.value, this.color);
   final double value;
   final Color color;
-  const _BarCell(this.value, this.color);
 
   @override
   Widget build(BuildContext context) {

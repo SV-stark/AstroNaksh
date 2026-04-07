@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/data/city_database.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +39,7 @@ void main() {
 
       // Verification of the code correctness, not necessarily the data content:
       // The class should compile and have methods.
-      expect(CityDatabase.cities, isNotNull);
+      expect(CityDatabase.getAllCities(), isNotNull);
     });
 
     test('calculateDistance works', () {

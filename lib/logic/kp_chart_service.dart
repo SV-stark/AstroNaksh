@@ -40,7 +40,7 @@ class KPChartService {
       // If birth time is before sunrise, it belongs to previous day
       // Note: birthData.dateTime and sunrise should be in same timezone context
       // Assuming straightforward comparison
-      DateTime effectiveDate = birthData.dateTime;
+      var effectiveDate = birthData.dateTime;
       if (birthData.dateTime.isBefore(sunrise)) {
         effectiveDate = birthData.dateTime.subtract(const Duration(days: 1));
       }
@@ -81,7 +81,7 @@ class KPChartService {
     Planet? dayLord,
   }) {
     // Map planetary data to our KPSubLord model
-    final List<KPSubLord> subLords = [];
+    final subLords = <KPSubLord>[];
 
     chart.planets.forEach((planet, info) {
       final planetKP = nativeKPData.planetDivisions[planet];
@@ -100,7 +100,7 @@ class KPChartService {
 
     // significators and ruling planets from native data
     // Map significations to string list
-    final List<String> significators = [];
+    final significators = <String>[];
     nativeKPData.planetSignificators.forEach((planet, sigs) {
       // Add 'Planet: Houses' string as a summary
       final houses = sigs.allSignificators.join(', ');
@@ -155,7 +155,7 @@ class KPChartService {
     KPCalculations nativeKPData,
     VedicChart chart,
   ) {
-    final Map<String, Map<String, dynamic>> table = {};
+    final table = <String, Map<String, dynamic>>{};
 
     chart.planets.forEach((planet, info) {
       final planetName = planet.toString().split('.').last;

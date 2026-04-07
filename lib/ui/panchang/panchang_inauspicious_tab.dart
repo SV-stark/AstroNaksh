@@ -1,11 +1,9 @@
+import 'package:astronaksh/logic/panchang_service.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../../data/models.dart';
-import 'panchang_helpers.dart';
-
 /// Tab 2: Inauspicious Periods
 class PanchangInauspiciousTab extends StatelessWidget {
-  final List<PanchangInauspicious> inauspicious;
   const PanchangInauspiciousTab({super.key, this.inauspicious = const []});
+  final List<PanchangInauspicious> inauspicious;
 
   @override
   Widget build(BuildContext context) {

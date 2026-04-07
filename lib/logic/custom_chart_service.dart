@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:jyotish/jyotish.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter/foundation.dart';
-import '../core/ephemeris_manager.dart';
+
 import '../core/ayanamsa_calculator.dart';
+import '../core/ephemeris_manager.dart';
 
 /// Service for calculating Vedic astrology charts with custom Ayanamsa.
 /// Replicates logic from [VedicChartService] but allows configurable SiderealMode.
@@ -32,7 +33,7 @@ class CustomChartService {
       final ephemerisService = await _getEphemerisService();
 
       // Convert time to UTC based on location timezone
-      DateTime utcDateTime = dateTime;
+      var utcDateTime = dateTime;
       if (timezone != null && timezone.isNotEmpty) {
         try {
           final locationTz = tz.getLocation(timezone);

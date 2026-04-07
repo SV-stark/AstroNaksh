@@ -1,12 +1,14 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
-import '../logic/panchang_service.dart';
-import '../logic/gowri_panchanga_service.dart';
-import '../data/models.dart';
-import '../data/city_database.dart';
 import 'package:intl/intl.dart';
-import '../ui/utils/responsive_helper.dart';
+import 'package:jyotish/jyotish.dart';
+
 import '../core/ephemeris_manager.dart';
+import '../data/city_database.dart';
+import '../data/models.dart';
+import '../logic/gowri_panchanga_service.dart';
+import '../logic/panchang_service.dart';
+import '../ui/utils/responsive_helper.dart';
 
 class PanchangScreen extends StatefulWidget {
   const PanchangScreen({super.key});
@@ -45,7 +47,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedCity = City(
+    _selectedCity = const City(
       name: 'New Delhi',
       state: 'Delhi',
       country: 'India',
@@ -362,7 +364,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
       content: _isLoading
           ? const Center(child: ProgressRing())
           : _result == null
-          ? const Center(child: Text("No Data"))
+          ? const Center(child: Text('No Data'))
           : CustomScrollView(
               slivers: [
                 // Date Navigation Header
@@ -438,7 +440,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               FluentIcons.location,
                               size: 14,
                               color: Colors.grey,
@@ -704,7 +706,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   children: [
                     Icon(FluentIcons.warning, color: Colors.red, size: 16),
                     const SizedBox(width: 12),
-                    Text(p.name, style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      p.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const Spacer(),
                     Text(
                       '${p.startTime} - ${p.endTime}',
@@ -782,7 +787,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
               ),
               title: Text('${h.planet} Hora'),
               subtitle: Text('${h.startTime} - ${h.endTime}'),
-              trailing: h.isDay ? Text('Day') : Text('Night'),
+              trailing: h.isDay ? const Text('Day') : const Text('Night'),
             ),
           ),
         ]),
@@ -858,7 +863,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                     children: [
                       Text(
                         c.name,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         c.type,
@@ -869,7 +874,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 ),
                 Text(
                   '${c.startTime} - ${c.endTime}',
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
             ),
@@ -893,7 +898,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
         children: [
           Icon(icon, color: color, size: 16),
           const SizedBox(width: 12),
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
           const Spacer(),
           Text(
             '${format.format(start.toLocal())} - ${format.format(end.toLocal())}',
@@ -921,11 +926,11 @@ class _PanchangScreenState extends State<PanchangScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   children: [
-                    const Icon(FluentIcons.favorite_star, size: 24),
-                    const SizedBox(width: 8),
-                    const Text(
+                    Icon(FluentIcons.favorite_star, size: 24),
+                    SizedBox(width: 8),
+                    Text(
                       'Gowri Panchanga',
                       style: TextStyle(
                         fontSize: 18,
@@ -1335,7 +1340,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
               const SizedBox(height: 12),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: Colors.grey,
                   fontSize: 12,
@@ -1344,7 +1349,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
               const SizedBox(height: 4),
               Text(
                 time,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
               ),
             ],
           ),
@@ -1427,7 +1435,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                       children: [
                         Text(
                           title,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             color: Colors.grey,
                             fontSize: 10,
@@ -1449,7 +1457,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
               const SizedBox(height: 4),
               Text(
                 value,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1512,9 +1523,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
   Widget _buildPanchakCard() {
     final panchak = _panchak;
     if (panchak == null) {
-      return Card(
-        padding: const EdgeInsets.all(16),
-        child: const Row(
+      return const Card(
+        padding: EdgeInsets.all(16),
+        child: Row(
           children: [
             Icon(FluentIcons.sync_occurence),
             SizedBox(width: 12),

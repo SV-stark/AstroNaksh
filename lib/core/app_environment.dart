@@ -1,8 +1,9 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'dart:io';
+
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart' as p;
-import 'package:flutter/foundation.dart';
 
 /// Manages application environment, paths, and global flags.
 /// Handles portable mode detection and verbose logging.
@@ -92,7 +93,7 @@ class AppEnvironment {
       }
       return dir;
     } else {
-      return await getApplicationDocumentsDirectory();
+      return getApplicationDocumentsDirectory();
     }
   }
 

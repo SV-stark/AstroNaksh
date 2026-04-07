@@ -1,11 +1,5 @@
 /// Data class for divisional chart information
 class DivisionalChartData {
-  final String code; // e.g., 'D-9'
-  final String name;
-  final String description;
-  final Map<String, double> positions; // planet name -> longitude
-  final int? ascendantSign;
-
   DivisionalChartData({
     required this.code,
     required this.name,
@@ -13,6 +7,11 @@ class DivisionalChartData {
     required this.positions,
     this.ascendantSign,
   });
+  final String code; // e.g., 'D-9'
+  final String name;
+  final String description;
+  final Map<String, double> positions; // planet name -> longitude
+  final int? ascendantSign;
 
   /// Get planet's sign in this divisional chart
   int getPlanetSign(String planet) {

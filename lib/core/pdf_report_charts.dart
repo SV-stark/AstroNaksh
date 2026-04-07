@@ -10,7 +10,7 @@ class PdfReportCharts {
   }) {
     // Prepare data: Map Sign (1-12) -> List of Planet Names
     final planetsBySign = <int, List<String>>{};
-    for (int i = 1; i <= 12; i++) {
+    for (var i = 1; i <= 12; i++) {
       planetsBySign[i] = [];
     }
 
@@ -108,7 +108,7 @@ class PdfReportCharts {
 
     // Prepare data
     final planetsBySign = <int, List<String>>{};
-    for (int i = 1; i <= 12; i++) {
+    for (var i = 1; i <= 12; i++) {
       planetsBySign[i] = [];
     }
 
@@ -135,21 +135,21 @@ class PdfReportCharts {
     // House 12: Top Right -> (0.75w, 0.875h)
 
     final centers = [
-      PdfPoint(0.5, 0.75), // 1
-      PdfPoint(0.25, 0.875), // 2
-      PdfPoint(0.125, 0.75), // 3
-      PdfPoint(0.25, 0.5), // 4
-      PdfPoint(0.125, 0.25), // 5
-      PdfPoint(0.25, 0.125), // 6
-      PdfPoint(0.5, 0.25), // 7
-      PdfPoint(0.75, 0.125), // 8
-      PdfPoint(0.875, 0.25), // 9
-      PdfPoint(0.75, 0.5), // 10
-      PdfPoint(0.875, 0.75), // 11
-      PdfPoint(0.75, 0.875), // 12
+      const PdfPoint(0.5, 0.75), // 1
+      const PdfPoint(0.25, 0.875), // 2
+      const PdfPoint(0.125, 0.75), // 3
+      const PdfPoint(0.25, 0.5), // 4
+      const PdfPoint(0.125, 0.25), // 5
+      const PdfPoint(0.25, 0.125), // 6
+      const PdfPoint(0.5, 0.25), // 7
+      const PdfPoint(0.75, 0.125), // 8
+      const PdfPoint(0.875, 0.25), // 9
+      const PdfPoint(0.75, 0.5), // 10
+      const PdfPoint(0.875, 0.75), // 11
+      const PdfPoint(0.75, 0.875), // 12
     ];
 
-    for (int i = 0; i < 12; i++) {
+    for (var i = 0; i < 12; i++) {
       // House Index i (0-11) -> 1st House is i=0
       // Sign in this house = (Asc + i) % 12
       // If Asc is 0 (Aries), House 0 has Sign 0 (Aries).
@@ -179,7 +179,7 @@ class PdfReportCharts {
             alignment: pw.Alignment.center,
             child: pw.Text(
               '$signNumber',
-              style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
             ),
           ),
         ),

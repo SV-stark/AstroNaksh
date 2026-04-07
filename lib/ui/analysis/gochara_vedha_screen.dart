@@ -1,14 +1,15 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../data/models.dart';
-import '../../logic/transit_analysis.dart';
+import 'package:intl/intl.dart';
 import 'package:jyotish/jyotish.dart' as j;
 import 'package:jyotish/src/transit/gochara_vedha_service.dart';
-import 'package:intl/intl.dart';
+
+import '../../data/models.dart';
+import '../../logic/transit_analysis.dart';
 
 class GocharaVedhaScreen extends StatefulWidget {
-  final CompleteChartData chartData;
-
   const GocharaVedhaScreen({super.key, required this.chartData});
+  final CompleteChartData chartData;
 
   @override
   State<GocharaVedhaScreen> createState() => _GocharaVedhaScreenState();

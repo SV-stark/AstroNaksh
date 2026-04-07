@@ -122,12 +122,6 @@ class PlanetaryAspectService {
 
 /// Planetary Aspect Model
 class PlanetaryAspect {
-  final j.Planet aspectingPlanet;
-  final j.Planet aspectedPlanet;
-  final AspectType type;
-  final double orb;
-  final bool isApplying;
-
   PlanetaryAspect({
     required this.aspectingPlanet,
     required this.aspectedPlanet,
@@ -135,6 +129,11 @@ class PlanetaryAspect {
     required this.orb,
     required this.isApplying,
   });
+  final j.Planet aspectingPlanet;
+  final j.Planet aspectedPlanet;
+  final AspectType type;
+  final double orb;
+  final bool isApplying;
 
   @override
   String toString() {

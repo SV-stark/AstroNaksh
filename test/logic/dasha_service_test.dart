@@ -11,7 +11,7 @@ void main() {
 
     test('calculateVimshottariDasha returns correct number of Mahadashas', () {
       final dateTime = DateTime(1990, 1, 1, 12, 0); // Arbitrary birth date
-      final moonLongitude = 45.0; // Arbitrary moon longitude (Rohini nakshatra)
+      const moonLongitude = 45.0; // Arbitrary moon longitude (Rohini nakshatra)
 
       final result = dashaService.calculateVimshottariDasha(
         moonLongitude: moonLongitude,
@@ -25,7 +25,7 @@ void main() {
 
     test('calculateYoginiDasha handles balance days correctly', () {
       final dateTime = DateTime(2000, 1, 1, 12, 0);
-      final moonLongitude = 10.0; // Ashwini nakshatra
+      const moonLongitude = 10.0; // Ashwini nakshatra
 
       final result = dashaService.calculateYoginiDasha(
         moonLongitude: moonLongitude,

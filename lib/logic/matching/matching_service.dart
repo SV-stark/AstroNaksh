@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:jyotish/jyotish.dart';
 import 'package:intl/intl.dart';
+import 'package:jyotish/jyotish.dart';
 
 import '../../data/models.dart';
 import 'matching_models.dart';
@@ -64,22 +64,22 @@ class MatchingService {
 
     if (totalScore >= 28) {
       if (!criticalDosha) {
-        conclusion = "Excellent Match (Uttam)";
+        conclusion = 'Excellent Match (Uttam)';
         color = Colors.green;
       } else {
-        conclusion = "High Score, but Critical Dosha detected";
+        conclusion = 'High Score, but Critical Dosha detected';
         color = Colors.orange;
       }
     } else if (totalScore >= 18) {
       if (!criticalDosha) {
-        conclusion = "Average Match (Madhyam)";
+        conclusion = 'Average Match (Madhyam)';
         color = Colors.yellow[700]!;
       } else {
-        conclusion = "Average Score with Critical Dosha";
+        conclusion = 'Average Score with Critical Dosha';
         color = Colors.orange;
       }
     } else {
-      conclusion = "Not Recommended (Adham)";
+      conclusion = 'Not Recommended (Adham)';
       color = Colors.red;
     }
 
@@ -137,19 +137,19 @@ class MatchingService {
       bride.baseChart,
     );
 
-    bool match = false;
-    String desc = '';
+    var match = false;
+    var desc = '';
 
     if (manglikBoy.isManglik && manglikGirl.isManglik) {
       match = true;
-      desc = "Both are Manglik. Dosha cancels out.";
+      desc = 'Both are Manglik. Dosha cancels out.';
     } else if (!manglikBoy.isManglik && !manglikGirl.isManglik) {
       match = true;
-      desc = "Neither is Manglik. Good compatibility.";
+      desc = 'Neither is Manglik. Good compatibility.';
     } else {
       match = false;
-      String mPerson = manglikBoy.isManglik ? "Groom" : "Bride";
-      desc = "$mPerson is Manglik, while the other is not.";
+      final mPerson = manglikBoy.isManglik ? 'Groom' : 'Bride';
+      desc = '$mPerson is Manglik, while the other is not.';
     }
 
     return ManglikMatchResult(
@@ -161,11 +161,11 @@ class MatchingService {
   }
 
   static List<ExtraMatchingCheck> _calculateExtraChecks(int gNak, int bNak) {
-    List<ExtraMatchingCheck> checks = [];
+    final checks = <ExtraMatchingCheck>[];
 
     // 1. Mahendra
-    int distBG = (gNak - bNak + 27) % 27 + 1;
-    bool mahendra = [4, 7, 10, 13, 16, 19, 22, 25].contains(distBG);
+    final distBG = (gNak - bNak + 27) % 27 + 1;
+    final mahendra = [4, 7, 10, 13, 16, 19, 22, 25].contains(distBG);
     checks.add(
       ExtraMatchingCheck(
         name: 'Mahendra',
@@ -177,7 +177,7 @@ class MatchingService {
     );
 
     // 2. Stree Deergha
-    bool streeDeergha = distBG > 13;
+    final streeDeergha = distBG > 13;
     checks.add(
       ExtraMatchingCheck(
         name: 'Stree Deergha',
@@ -198,9 +198,9 @@ class MatchingService {
       return -1;
     }
 
-    int gRajju = getRajjuGroup(gNak);
-    int bRajju = getRajjuGroup(bNak);
-    bool rajjuMatch = gRajju != bRajju;
+    final gRajju = getRajjuGroup(gNak);
+    final bRajju = getRajjuGroup(bNak);
+    final rajjuMatch = gRajju != bRajju;
 
     checks.add(
       ExtraMatchingCheck(
@@ -231,8 +231,8 @@ class MatchingService {
       {13, 22},
     ];
 
-    bool vedha = false;
-    for (var p in pairs) {
+    var vedha = false;
+    for (final p in pairs) {
       if (p.contains(gNak) && p.contains(bNak)) {
         vedha = true;
         break;
@@ -251,18 +251,18 @@ class MatchingService {
   }
 
   static bool _areExtrasGood(List<ExtraMatchingCheck> extras) {
-    bool rajjuGood = extras
+    final rajjuGood = extras
         .firstWhere(
           (e) => e.name == 'Rajju Dosha',
           orElse: () =>
-              ExtraMatchingCheck(name: '', isFavorable: true, description: ''),
+              const ExtraMatchingCheck(name: '', isFavorable: true, description: ''),
         )
         .isFavorable;
-    bool vedhaGood = extras
+    final vedhaGood = extras
         .firstWhere(
           (e) => e.name.contains('Vedha'),
           orElse: () =>
-              ExtraMatchingCheck(name: '', isFavorable: true, description: ''),
+              const ExtraMatchingCheck(name: '', isFavorable: true, description: ''),
         )
         .isFavorable;
     return rajjuGood && vedhaGood;
@@ -279,17 +279,17 @@ class MatchingService {
     if (gDasha.isEmpty || bDasha.isEmpty) {
       return const DashaSandhiResult(
         hasSandhi: false,
-        maleCurrentDasha: "Unknown",
-        femaleCurrentDasha: "Unknown",
-        description: "Could not calculate current Dasha for today.",
+        maleCurrentDasha: 'Unknown',
+        femaleCurrentDasha: 'Unknown',
+        description: 'Could not calculate current Dasha for today.',
       );
     }
 
     final gMaha = gDasha['mahadasha'] as String;
     final bMaha = bDasha['mahadasha'] as String;
 
-    bool gSandhi = false;
-    bool bSandhi = false;
+    var gSandhi = false;
+    var bSandhi = false;
 
     final gEnd = gDasha['mahaEnd'] as DateTime;
     final bEnd = bDasha['mahaEnd'] as DateTime;
@@ -300,13 +300,13 @@ class MatchingService {
     if (gDaysLeft < 180 && gDaysLeft > 0) gSandhi = true;
     if (bDaysLeft < 180 && bDaysLeft > 0) bSandhi = true;
 
-    String desc = "No immediate Dasha transition.";
+    var desc = 'No immediate Dasha transition.';
     if (gSandhi && bSandhi) {
-      desc = "Critical: Both at end of Mahadashas.";
+      desc = 'Critical: Both at end of Mahadashas.';
     } else if (gSandhi) {
-      desc = "Groom ending Mahadasha ($gMaha) soon.";
+      desc = 'Groom ending Mahadasha ($gMaha) soon.';
     } else if (bSandhi) {
-      desc = "Bride ending Mahadasha ($bMaha) soon.";
+      desc = 'Bride ending Mahadasha ($bMaha) soon.';
     }
 
     return DashaSandhiResult(

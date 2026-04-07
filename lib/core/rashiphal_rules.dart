@@ -192,7 +192,7 @@ class RashiphalRules {
     } else {
       // Fallback to static map if no sunrise/set
       final weekday = date.weekday; // 1=Mon, 7=Sun
-      String rahuKal = '';
+      var rahuKal = '';
       switch (weekday) {
         case 1:
           rahuKal = '07:30 - 09:00';
@@ -227,8 +227,8 @@ class RashiphalRules {
   /// [dailyNakshatra] 1-27
   static int getTarabalaCategory(int birthNakshatra, int dailyNakshatra) {
     // Count from birth to daily (inclusive)
-    int count = (dailyNakshatra - birthNakshatra + 27) % 27 + 1;
-    int tarabala = count % 9;
+    final count = (dailyNakshatra - birthNakshatra + 27) % 27 + 1;
+    final tarabala = count % 9;
     return tarabala == 0 ? 9 : tarabala;
   }
 
@@ -261,7 +261,7 @@ class RashiphalRules {
     // 2nd, 5th, 9th - Silver (Rajat)
     // 3rd, 7th, 10th - Copper (Tamra)
     // 4th, 8th, 12th - Iron (Loha)
-    int houseFromMoon = ((transitSign - natalSign + 12) % 12) + 1;
+    final houseFromMoon = ((transitSign - natalSign + 12) % 12) + 1;
 
     if ([1, 6, 11].contains(houseFromMoon)) return 'Gold';
     if ([2, 5, 9].contains(houseFromMoon)) return 'Silver';

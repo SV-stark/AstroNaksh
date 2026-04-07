@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:astronaksh/data/models.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Location Tests - Additional', () {
@@ -95,7 +95,7 @@ void main() {
 
     test('getSignLord covers all 12 signs uniquely', () {
       final lords = <String>{};
-      for (int i = 0; i < 12; i++) {
+      for (var i = 0; i < 12; i++) {
         lords.add(AstrologyConstants.getSignLord(i));
       }
       // 7 unique lords: Mars, Venus, Mercury, Moon, Sun, Jupiter, Saturn
@@ -122,9 +122,9 @@ void main() {
         name: 'Lagna',
         description: 'Birth Chart',
         positions: {
-          'Sun': 0.0,   // Exactly on Aries boundary
+          'Sun': 0.0, // Exactly on Aries boundary
           'Moon': 29.99, // End of Aries
-          'Mars': 30.0,  // Exactly on Taurus boundary
+          'Mars': 30.0, // Exactly on Taurus boundary
         },
       );
       expect(chart.getPlanetSign('Sun'), equals(0)); // Aries
@@ -135,11 +135,7 @@ void main() {
 
   group('KPData Tests', () {
     test('can create KPData with empty lists', () {
-      final kpData = KPData(
-        subLords: [],
-        significators: [],
-        rulingPlanets: [],
-      );
+      final kpData = KPData(subLords: [], significators: [], rulingPlanets: []);
       expect(kpData.subLords, isEmpty);
       expect(kpData.significators, isEmpty);
       expect(kpData.rulingPlanets, isEmpty);

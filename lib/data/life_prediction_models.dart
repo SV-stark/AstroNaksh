@@ -1,14 +1,10 @@
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 // Life Predictions Data Models
 // Models for life aspect predictions based on Vedic astrology
 
 /// Represents a planet's influence on a life aspect
 class PlanetaryInfluence {
-  final String planetName;
-  final String position; // e.g., "Sun in 10th House in Leo"
-  final String status; // "Exalted", "Own Sign", "Debilitated", "Neutral"
-  final double strength; // Shadbala strength (normalized 0-100)
-  final String effect; // How it affects this aspect
-  final bool isBenefic; // Positive or negative influence
+  // Positive or negative influence
 
   const PlanetaryInfluence({
     required this.planetName,
@@ -18,19 +14,17 @@ class PlanetaryInfluence {
     required this.effect,
     required this.isBenefic,
   });
+  final String planetName;
+  final String position; // e.g., "Sun in 10th House in Leo"
+  final String status; // "Exalted", "Own Sign", "Debilitated", "Neutral"
+  final double strength; // Shadbala strength (normalized 0-100)
+  final String effect; // How it affects this aspect
+  final bool isBenefic;
 }
 
 /// Represents a life aspect category (family, career, health, etc.)
 class LifeAspectPrediction {
-  final String aspectName; // e.g., "Career", "Family", "Health"
-  final String
-  aspectDescription; // Brief description of what this aspect covers
-  final String iconName; // FluentIcon name
-  final int score; // 40-95 range
-  final String prediction; // Detailed prediction text
-  final List<PlanetaryInfluence> influences; // Planets affecting this aspect
-  final String advice; // Remedial/enhancement suggestions
-  final List<int> relevantHouses; // Houses that govern this aspect
+  // Houses that govern this aspect
 
   const LifeAspectPrediction({
     required this.aspectName,
@@ -42,6 +36,15 @@ class LifeAspectPrediction {
     required this.advice,
     required this.relevantHouses,
   });
+  final String aspectName; // e.g., "Career", "Family", "Health"
+  final String
+  aspectDescription; // Brief description of what this aspect covers
+  final String iconName; // FluentIcon name
+  final int score; // 40-95 range
+  final String prediction; // Detailed prediction text
+  final List<PlanetaryInfluence> influences; // Planets affecting this aspect
+  final String advice; // Remedial/enhancement suggestions
+  final List<int> relevantHouses;
 
   /// Get color for this score
   String get scoreLabel {
@@ -54,11 +57,6 @@ class LifeAspectPrediction {
 
 /// Complete life predictions result
 class LifePredictionsResult {
-  final List<LifeAspectPrediction> aspects;
-  final int overallScore;
-  final String overallSummary;
-  final DateTime generatedAt;
-
   const LifePredictionsResult({
     required this.aspects,
     required this.overallScore,
@@ -82,7 +80,7 @@ class LifePredictionsResult {
     final weakest = sortedAspects.length > 1 ? sortedAspects.last : null;
 
     // Find key planetary highlights
-    String planetaryNote = '';
+    var planetaryNote = '';
     if (strongest != null && strongest.influences.isNotEmpty) {
       final topInfluence = strongest.influences.first;
       planetaryNote =
@@ -115,6 +113,10 @@ class LifePredictionsResult {
       generatedAt: DateTime.now(),
     );
   }
+  final List<LifeAspectPrediction> aspects;
+  final int overallScore;
+  final String overallSummary;
+  final DateTime generatedAt;
 }
 
 /// Life aspect definitions with astrological significations

@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:jyotish/jyotish.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import 'app_environment.dart';
 
@@ -74,84 +73,49 @@ class EphemerisManager {
       await _copyNativeLibrary(ephemerisPath);
     }
 
-    // Verify swisseph.dll existence (Windows only)
-    if (Platform.isAndroid) {
+    // Verify swisseph.dll existence and validity (Windows only)
+    if (Platform.isWindows) {
+      final dllPath = p.join(p.dirname(Platform.resolvedExecutable), 'swisseph.dll');
+      final dllFile = File(dllPath);
+
+      if (await dllFile.exists()) {
+        AppEnvironment.log('EphemerisManager: swisseph.dll found at $dllPath');
+
+        // 1. Check Architecture
+        try {
+          final bytes = await dllFile.readAsBytes();
+          if (bytes.length > 64) {
+            final peOffset = bytes[0x3C] | (bytes[0x3D] << 8) | (bytes[0x3E] << 16) | (bytes[0x3F] << 24);
+            if (peOffset + 6 < bytes.length) {
+              final machine = bytes[peOffset + 4] | (bytes[peOffset + 5] << 8);
+              final is64Bit = machine == 0x8664;
+              AppEnvironment.log('EphemerisManager: DLL Machine Type: 0x${machine.toRadixString(16)} (Is x64: $is64Bit)');
+              if (!is64Bit) {
+                AppEnvironment.log('EphemerisManager: WARNING - DLL is not x64! This will likely cause a crash on this platform.');
+              }
+            }
+          }
+        } catch (e) {
+          AppEnvironment.log('EphemerisManager: Failed to parse DLL header: $e');
+        }
+
+        // 2. Try Explicit Load to verify dependencies
+        try {
+          AppEnvironment.log('EphemerisManager: Attempting explicit DynamicLibrary.open to verify dependencies...');
+          final lib = DynamicLibrary.open(dllPath);
+          AppEnvironment.log('EphemerisManager: Explicit load successful: $lib');
+        } catch (e) {
+          AppEnvironment.log('EphemerisManager: CRITICAL - Explicit load failed: $e');
+          AppEnvironment.log('EphemerisManager: This usually means missing dependencies (VC++ Redist?) or architecture mismatch.');
+        }
+      } else {
+        AppEnvironment.log('EphemerisManager: ERROR - swisseph.dll NOT found at $dllPath');
+        // We already tried to copy it in _copyNativeLibrary, so if it's missing here, it's a real problem
+      }
+    } else if (Platform.isAndroid) {
       AppEnvironment.log(
         'EphemerisManager: Running on Android. Expecting libswisseph.so from JNI.',
       );
-    } else if (Platform.isWindows) {
-      if (AppEnvironment.isPortable) {
-        final dllPath =
-            '${p.dirname(Platform.resolvedExecutable)}\\swisseph.dll';
-        if (File(dllPath).existsSync()) {
-          AppEnvironment.log(
-            'EphemerisManager: swisseph.dll found at $dllPath',
-          );
-
-          // 1. Check Architecture
-          try {
-            final bytes = await File(dllPath).readAsBytes();
-            // PE Header offset is at 0x3C (60)
-            if (bytes.length > 64) {
-              final peOffset =
-                  bytes[0x3C] |
-                  (bytes[0x3D] << 8) |
-                  (bytes[0x3E] << 16) |
-                  (bytes[0x3F] << 24);
-              if (peOffset + 6 < bytes.length) {
-                // Machine type is at PE Offset + 4
-                // 0x8664 = x64, 0x014c = x86
-                final machine =
-                    bytes[peOffset + 4] | (bytes[peOffset + 5] << 8);
-                final is64Bit = machine == 0x8664;
-                AppEnvironment.log(
-                  'EphemerisManager: DLL Machine Type: 0x${machine.toRadixString(16)} (Is x64: $is64Bit)',
-                );
-
-                if (!is64Bit) {
-                  AppEnvironment.log(
-                    'EphemerisManager: WARNING - DLL does not appear to be x64! This implies a mismatch.',
-                  );
-                }
-              }
-            }
-          } catch (e) {
-            AppEnvironment.log(
-              'EphemerisManager: Failed to parse DLL header: $e',
-            );
-          }
-
-          // 2. Try Explicit Load
-          try {
-            AppEnvironment.log(
-              'EphemerisManager: Attempting explicit DynamicLibrary.open...',
-            );
-            // On Windows, open by path
-            final lib = DynamicLibrary.open(dllPath);
-            AppEnvironment.log(
-              'EphemerisManager: Explicit load successful: $lib',
-            );
-          } catch (e) {
-            AppEnvironment.log(
-              'EphemerisManager: CRITICAL - Explicit load failed: $e',
-            );
-            AppEnvironment.log(
-              'EphemerisManager: This usually means missing dependencies (VC++ Redist check?) or bad arch.',
-            );
-          }
-        } else {
-          AppEnvironment.log(
-            'EphemerisManager: ERROR - swisseph.dll NOT found at $dllPath',
-          );
-        }
-      } else {
-        // Standard check around executable
-        final dllPath =
-            '${p.dirname(Platform.resolvedExecutable)}\\swisseph.dll';
-        AppEnvironment.log(
-          'EphemerisManager: Checking for swisseph.dll at $dllPath: ${File(dllPath).existsSync()}',
-        );
-      }
     }
 
     // Check if required files exist, download if still missing
@@ -161,16 +125,25 @@ class EphemerisManager {
         'EphemerisManager: Missing files detected: $missingFiles. Attempting download/copy...',
       );
       await _downloadEphemerisFiles(ephemerisPath, missingFiles);
+
+      // Verify again after download
+      final stillMissing = await _getMissingFiles(ephemerisPath);
+      if (stillMissing.isNotEmpty) {
+        throw EphemerisException(
+          'Failed to obtain required ephemeris files: $stillMissing',
+        );
+      }
     } else {
       AppEnvironment.log('EphemerisManager: All required files present');
     }
 
     // Initialize the jyotish library
     try {
+      final formattedPath = AppEnvironment.formatPathForSwissEph(ephemerisPath);
       AppEnvironment.log(
-        'EphemerisManager: Initializing library with path: $ephemerisPath',
+        'EphemerisManager: Initializing library with path: $formattedPath',
       );
-      await _initializeLibrary(ephemerisPath);
+      await _initializeLibrary(formattedPath);
       _initialized = true;
       AppEnvironment.log('EphemerisManager: Initialization successful');
     } catch (e, stack) {
@@ -353,8 +326,8 @@ class EphemerisManager {
 
     // Standard files cover 1800-2400
     if (year >= 1800 && year <= 2400) {
-      final directory = await getApplicationSupportDirectory();
-      final ephemerisPath = '${directory.path}/ephe';
+      final directory = await AppEnvironment.getEphemerisDirectory();
+      final ephemerisPath = directory.path;
       final missing = await _getMissingFiles(ephemerisPath);
       return missing.isEmpty;
     }
@@ -365,8 +338,8 @@ class EphemerisManager {
 
   /// Get available date range for current ephemeris
   static Future<Map<String, DateTime>> getAvailableDateRange() async {
-    final directory = await getApplicationSupportDirectory();
-    final ephemerisPath = '${directory.path}/ephe';
+    final directory = await AppEnvironment.getEphemerisDirectory();
+    final ephemerisPath = directory.path;
     final hasStandard = await _hasFiles(
       ephemerisPath,
       _requiredFiles['standard']!,
@@ -404,8 +377,8 @@ class EphemerisManager {
   static Future<void> resetEphemerisData({
     void Function(double progress, String currentFile)? onProgress,
   }) async {
-    final directory = await getApplicationSupportDirectory();
-    final ephemerisPath = '${directory.path}/ephe';
+    final directory = await AppEnvironment.getEphemerisDirectory();
+    final ephemerisPath = directory.path;
     final dir = Directory(ephemerisPath);
 
     // Delete existing files
@@ -440,8 +413,8 @@ class EphemerisManager {
 
   /// Verify ephemeris file integrity
   static Future<bool> verifyEphemerisIntegrity() async {
-    final directory = await getApplicationSupportDirectory();
-    final ephemerisPath = '${directory.path}/ephe';
+    final directory = await AppEnvironment.getEphemerisDirectory();
+    final ephemerisPath = directory.path;
     final files = _requiredFiles['standard']!;
 
     for (final file in files) {

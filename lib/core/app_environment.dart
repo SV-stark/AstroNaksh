@@ -126,6 +126,18 @@ class AppEnvironment {
     }
   }
 
+  /// Formats a path for Swiss Ephemeris (ensures trailing slash and correct separators)
+  static String formatPathForSwissEph(String path) {
+    var formatted = path;
+    if (Platform.isWindows) {
+      formatted = formatted.replaceAll('\\', '/');
+    }
+    if (!formatted.endsWith('/')) {
+      formatted += '/';
+    }
+    return formatted;
+  }
+
   /// Helper for verbose logging
   static void log(String message) {
     final timestamp = DateTime.now().toIso8601String();

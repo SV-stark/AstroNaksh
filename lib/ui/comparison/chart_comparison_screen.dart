@@ -68,15 +68,26 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
 
     return NavigationView(
       appBar: NavigationAppBar(
+        leading: ResponsiveHelper.useMobileLayout(context)
+            ? null
+            : IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
         title: Row(
           children: [
+            if (ResponsiveHelper.useMobileLayout(context))
+              IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
             Icon(
               FluentIcons.heart_fill,
               color: compatibilityReport.overallColor,
               size: 20,
             ),
             const SizedBox(width: 12),
-            Text(compatibilityReport.overallConclusion),
+            Expanded(child: Text(compatibilityReport.overallConclusion)),
           ],
         ),
         actions: CommandBar(

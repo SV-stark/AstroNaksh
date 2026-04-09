@@ -122,19 +122,19 @@ class EphemerisManager {
     final missingFiles = await _getMissingFiles(ephemerisPath);
     if (missingFiles.isNotEmpty) {
       AppEnvironment.log(
-        'EphemerisManager: Missing files detected: $missingFiles. Attempting download/copy...',
+        'EphemerisManager: Missing or corrupted files detected: $missingFiles. Attempting download/copy...',
       );
       await _downloadEphemerisFiles(ephemerisPath, missingFiles);
 
-      // Verify again after download
-      final stillMissing = await _getMissingFiles(ephemerisPath);
+      // Verify again after download with STRICT integrity check
+      final stillMissing = await _getMissingFiles(ephemerisPath, strict: true);
       if (stillMissing.isNotEmpty) {
         throw EphemerisException(
-          'Failed to obtain required ephemeris files: $stillMissing',
+          'Failed to obtain valid ephemeris files: $stillMissing. Please check your internet connection and disk space.',
         );
       }
     } else {
-      AppEnvironment.log('EphemerisManager: All required files present');
+      AppEnvironment.log('EphemerisManager: All required files present and verified');
     }
 
     // Initialize the jyotish library
@@ -175,13 +175,13 @@ class EphemerisManager {
     }
 
     for (final file in files) {
-      final targetFile = File('$targetPath/$file');
+      final targetFile = File(p.join(targetPath, file));
 
       // Skip if file already exists and has correct size
       if (await targetFile.exists()) {
         final size = await targetFile.length();
         final expectedSize = _fileSizes[file] ?? 0;
-        if (size >= expectedSize * 0.9) {
+        if (size == expectedSize) {
           continue;
         }
       }
@@ -236,13 +236,13 @@ class EphemerisManager {
     }
   }
 
-  /// Check which files are missing
-  static Future<List<String>> _getMissingFiles(String path) async {
+  /// Check which files are missing or incomplete
+  static Future<List<String>> _getMissingFiles(String path, {bool strict = false}) async {
     final missing = <String>[];
     final files = _requiredFiles['standard']!;
 
     for (final file in files) {
-      final filePath = '$path/$file';
+      final filePath = p.join(path, file);
       final fileObj = File(filePath);
       if (!await fileObj.exists()) {
         missing.add(file);
@@ -250,8 +250,11 @@ class EphemerisManager {
         // Check file size
         final size = await fileObj.length();
         final expectedSize = _fileSizes[file] ?? 0;
-        if (size < expectedSize * 0.9) {
-          // File is incomplete, re-download
+        
+        // Use strict check (exact size) or loose check (within 10%)
+        final isValid = strict ? size == expectedSize : size >= expectedSize * 0.9;
+        
+        if (!isValid) {
           missing.add(file);
         }
       }
@@ -311,10 +314,14 @@ class EphemerisManager {
     }
   }
 
-  /// Initialize the jyotish library with the ephemeris path
+  /// Initialize the jyotish library once and correctly
   static Future<void> _initializeLibrary(String ephemerisPath) async {
+    // 1. Initialize the main Jyotish wrapper
+    // This internally creates an EphemerisService and initializes it.
     await _jyotish.initialize(ephemerisPath: ephemerisPath);
-    await service.initialize(ephemerisPath: ephemerisPath);
+    
+    // 2. We don't need to call service.initialize separately as _jyotish
+    // already handles the underlying library state.
   }
 
   /// Check if ephemeris files are available for a date range

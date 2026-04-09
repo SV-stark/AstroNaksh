@@ -329,11 +329,22 @@ class _ChartScreenState extends State<ChartScreen> {
   Widget build(BuildContext context) {
     return NavigationView(
       appBar: NavigationAppBar(
-        leading: IconButton(
-          icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
-          onPressed: () => Navigator.pop(context),
+        leading: ResponsiveHelper.useMobileLayout(context)
+            ? null // Allow NavigationView to show the hamburger button
+            : IconButton(
+                icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+                onPressed: () => Navigator.pop(context),
+              ),
+        title: Row(
+          children: [
+            if (ResponsiveHelper.useMobileLayout(context))
+              IconButton(
+                icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            const Text('Vedic Chart'),
+          ],
         ),
-        title: const Text('Vedic Chart'),
         actions: CommandBar(
           overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
           mainAxisAlignment: MainAxisAlignment.end,

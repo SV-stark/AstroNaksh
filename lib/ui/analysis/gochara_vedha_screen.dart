@@ -74,11 +74,22 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
   Widget build(BuildContext context) {
     return NavigationView(
       appBar: NavigationAppBar(
-        leading: IconButton(
-          icon: const Icon(FluentIcons.back),
-          onPressed: () => Navigator.pop(context),
+        leading: ResponsiveHelper.useMobileLayout(context)
+            ? null
+            : IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+        title: Row(
+          children: [
+            if (ResponsiveHelper.useMobileLayout(context))
+              IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            const Text('Gochara Vedha'),
+          ],
         ),
-        title: const Text('Gochara Vedha'),
       ),
       content: ScaffoldPage(
         header: PageHeader(

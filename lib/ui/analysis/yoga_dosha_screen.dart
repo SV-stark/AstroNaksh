@@ -109,10 +109,21 @@ class _YogaDoshaScreenState extends State<YogaDoshaScreen> {
       },
       child: NavigationView(
         appBar: NavigationAppBar(
-          title: const Text('Yoga & Dosha Analysis'),
-          leading: IconButton(
-            icon: const Icon(FluentIcons.back),
-            onPressed: () => Navigator.pop(context),
+          leading: ResponsiveHelper.useMobileLayout(context)
+              ? null
+              : IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+          title: Row(
+            children: [
+              if (ResponsiveHelper.useMobileLayout(context))
+                IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              const Text('Yoga & Dosha Analysis'),
+            ],
           ),
         ),
         pane: NavigationPane(

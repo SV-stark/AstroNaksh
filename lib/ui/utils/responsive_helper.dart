@@ -68,7 +68,7 @@ class ResponsiveHelper {
   /// Get appropriate NavigationPaneDisplayMode
   static PaneDisplayMode getNavigationPaneDisplayMode(BuildContext context) {
     if (useMobileLayout(context)) {
-      return PaneDisplayMode.open; // Open pane on mobile for easier navigation
+      return PaneDisplayMode.minimal; // Collapsible/Hidden by default on mobile
     }
     return PaneDisplayMode.open; // Full side pane on desktop
   }
@@ -76,7 +76,7 @@ class ResponsiveHelper {
   /// Get navigation pane width
   static double getNavigationPaneWidth(BuildContext context) {
     if (useMobileLayout(context)) {
-      return 280; // Wider pane on mobile for easier touch
+      return 300; // Wider pane on mobile for easier touch
     }
     return 200;
   }
@@ -84,14 +84,16 @@ class ResponsiveHelper {
   /// Get compact navigation pane width
   static double getCompactPaneWidth(BuildContext context) {
     if (useMobileLayout(context)) {
-      return 64; // Larger compact width on mobile
+      return 56; // Standard compact width
     }
     return 48;
   }
 
   /// Get appropriate PaneDisplayMode for top navigation
   static PaneDisplayMode getTopPaneDisplayMode(BuildContext context) {
-    // Top mode works well on both mobile and desktop for tabbed interfaces
+    if (useMobileLayout(context)) {
+      return PaneDisplayMode.minimal; // Also minimal for top-style on mobile
+    }
     return PaneDisplayMode.top;
   }
 

@@ -128,22 +128,25 @@ class AppEnvironment {
 
   /// Formats a path for Swiss Ephemeris (ensures correct separators and absolute path)
   static String formatPathForSwissEph(String path) {
-    // Ensure absolute path
+    // Ensure absolute path and resolve any .. or . segments
     final absolutePath = p.absolute(path);
     final canonicalPath = p.canonicalize(absolutePath);
     
     var formatted = canonicalPath;
+    
+    // On Windows, use native backslashes. 
+    // While SE can handle forward slashes, some builds of swisseph.dll 
+    // on Windows are more stable with native paths.
     if (Platform.isWindows) {
-      // Swiss Ephemeris handles forward slashes even on Windows, 
-      // but native backslashes are also fine. 
-      // Let's use forward slashes consistently as suggested by SE docs for some C environments.
+      formatted = formatted.replaceAll('/', '\\');
+    } else {
       formatted = formatted.replaceAll('\\', '/');
     }
     
-    // Swiss Ephemeris expects a directory path, often ending with a separator 
-    // to distinguish it from a filename prefix if multiple paths are used.
-    if (!formatted.endsWith('/')) {
-      formatted += '/';
+    // Ensure it ends with a separator as SE uses this as a directory prefix
+    final separator = Platform.isWindows ? '\\' : '/';
+    if (!formatted.endsWith(separator)) {
+      formatted += separator;
     }
     
     return formatted;

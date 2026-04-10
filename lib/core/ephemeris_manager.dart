@@ -110,7 +110,6 @@ class EphemerisManager {
         }
       } else {
         AppEnvironment.log('EphemerisManager: ERROR - swisseph.dll NOT found at $dllPath');
-        // We already tried to copy it in _copyNativeLibrary, so if it's missing here, it's a real problem
       }
     } else if (Platform.isAndroid) {
       AppEnvironment.log(
@@ -134,12 +133,24 @@ class EphemerisManager {
         );
       }
     } else {
-      AppEnvironment.log('EphemerisManager: All required files present and verified');
+      // Final sanity check: Can we actually list the files?
+      try {
+        final list = Directory(ephemerisPath).listSync();
+        AppEnvironment.log('EphemerisManager: Verified ${list.length} files in ephemeris directory.');
+      } catch (e) {
+        AppEnvironment.log('EphemerisManager: Warning - Could not list ephemeris directory: $e');
+      }
     }
 
     // Initialize the jyotish library
     try {
       final formattedPath = AppEnvironment.formatPathForSwissEph(ephemerisPath);
+      
+      // Swiss Ephemeris path limit check (usually 256)
+      if (formattedPath.length > 250) {
+        throw EphemerisException('Ephemeris path is too long for Swiss Ephemeris library.');
+      }
+      
       AppEnvironment.log(
         'EphemerisManager: Initializing library with path: $formattedPath',
       );

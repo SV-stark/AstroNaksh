@@ -24,9 +24,13 @@ class EphemerisService {
   ///
   /// [ephemerisPath] - Optional path to Swiss Ephemeris data files.
   /// If not provided, the library will use its default search paths.
+  /// [bypassEphemerisPath] - If true, skips calling swe_set_ephe_path.
   ///
   /// Throws [InitializationException] if initialization fails.
-  Future<void> initialize({String? ephemerisPath}) async {
+  Future<void> initialize({
+    String? ephemerisPath,
+    bool bypassEphemerisPath = false,
+  }) async {
     if (_isInitialized) {
       return;
     }
@@ -34,8 +38,8 @@ class EphemerisService {
     try {
       _bindings = SwissEphBindings();
 
-      // Set ephemeris path if provided
-      if (ephemerisPath != null) {
+      // Set ephemeris path if provided and not bypassed
+      if (ephemerisPath != null && !bypassEphemerisPath) {
         _bindings!.setEphemerisPath(ephemerisPath);
       }
 

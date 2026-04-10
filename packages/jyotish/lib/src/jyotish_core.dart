@@ -202,11 +202,15 @@ class Jyotish {
   ///
   /// [ephemerisPath] - Optional custom path to Swiss Ephemeris data files.
   /// If not provided, the library will look for data in the default locations.
+  /// [bypassEphemerisPath] - If true, skips calling swe_set_ephe_path (useful if DLL is buggy).
   ///
   /// This method must be called before performing any calculations.
   ///
   /// Throws [JyotishException] if initialization fails.
-  Future<void> initialize({String? ephemerisPath}) async {
+  Future<void> initialize({
+    String? ephemerisPath,
+    bool bypassEphemerisPath = false,
+  }) async {
     if (_isInitialized) {
       return;
     }
@@ -214,7 +218,10 @@ class Jyotish {
     try {
       AstrologyTimeService.initialize();
       _ephemerisService = EphemerisService();
-      await _ephemerisService!.initialize(ephemerisPath: ephemerisPath);
+      await _ephemerisService!.initialize(
+        ephemerisPath: ephemerisPath,
+        bypassEphemerisPath: bypassEphemerisPath,
+      );
       _vedicChartService = VedicChartService(_ephemerisService!);
       _aspectService = AspectService();
       _transitService = TransitService(_ephemerisService!);

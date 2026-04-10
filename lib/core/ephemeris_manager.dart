@@ -65,12 +65,18 @@ class EphemerisManager {
       await dir.create(recursive: true);
     }
 
+    // On Windows, the DLL default search path is the executable directory.
+    // Since swe_set_ephe_path is buggy, we MUST place files there.
+    final targetPath = Platform.isWindows 
+        ? p.dirname(Platform.resolvedExecutable)
+        : ephemerisPath;
+
     // First try to copy from bundled assets
-    await _copyBundledAssets(ephemerisPath);
+    await _copyBundledAssets(targetPath);
 
     // Copy swisseph.dll from assets to executable directory (Windows/Linux)
     if (Platform.isWindows || Platform.isLinux) {
-      await _copyNativeLibrary(ephemerisPath);
+      await _copyNativeLibrary(targetPath);
     }
 
     // Verify swisseph.dll existence and validity (Windows only)
@@ -118,15 +124,15 @@ class EphemerisManager {
     }
 
     // Check if required files exist, download if still missing
-    final missingFiles = await _getMissingFiles(ephemerisPath);
+    final missingFiles = await _getMissingFiles(targetPath);
     if (missingFiles.isNotEmpty) {
       AppEnvironment.log(
-        'EphemerisManager: Missing or corrupted files detected: $missingFiles. Attempting download/copy...',
+        'EphemerisManager: Missing or corrupted files detected in $targetPath: $missingFiles. Attempting download/copy...',
       );
-      await _downloadEphemerisFiles(ephemerisPath, missingFiles);
+      await _downloadEphemerisFiles(targetPath, missingFiles);
 
       // Verify again after download with STRICT integrity check
-      final stillMissing = await _getMissingFiles(ephemerisPath, strict: true);
+      final stillMissing = await _getMissingFiles(targetPath, strict: true);
       if (stillMissing.isNotEmpty) {
         throw EphemerisException(
           'Failed to obtain valid ephemeris files: $stillMissing. Please check your internet connection and disk space.',
@@ -135,8 +141,8 @@ class EphemerisManager {
     } else {
       // Final sanity check: Can we actually list the files?
       try {
-        final list = Directory(ephemerisPath).listSync();
-        AppEnvironment.log('EphemerisManager: Verified ${list.length} files in ephemeris directory.');
+        final list = Directory(targetPath).listSync();
+        AppEnvironment.log('EphemerisManager: Verified ${list.length} files in ephemeris directory ($targetPath).');
       } catch (e) {
         AppEnvironment.log('EphemerisManager: Warning - Could not list ephemeris directory: $e');
       }
@@ -144,17 +150,18 @@ class EphemerisManager {
 
     // Initialize the jyotish library
     try {
-      final formattedPath = AppEnvironment.formatPathForSwissEph(ephemerisPath);
+      final isWindows = Platform.isWindows;
       
-      // Swiss Ephemeris path limit check (usually 256)
-      if (formattedPath.length > 250) {
-        throw EphemerisException('Ephemeris path is too long for Swiss Ephemeris library.');
-      }
-      
+      // On Windows, we bypass the buggy swe_set_ephe_path function
+      // and rely on the files being in the current directory (executable dir).
       AppEnvironment.log(
-        'EphemerisManager: Initializing library with path: $formattedPath',
+        'EphemerisManager: Initializing library. Bypass path on Windows: $isWindows',
       );
-      await _initializeLibrary(formattedPath);
+      
+      await _initializeLibrary(
+        isWindows ? targetPath : AppEnvironment.formatPathForSwissEph(ephemerisPath), 
+        bypassEphemerisPath: isWindows,
+      );
       _initialized = true;
       AppEnvironment.log('EphemerisManager: Initialization successful');
     } catch (e, stack) {
@@ -326,10 +333,16 @@ class EphemerisManager {
   }
 
   /// Initialize the jyotish library once and correctly
-  static Future<void> _initializeLibrary(String ephemerisPath) async {
+  static Future<void> _initializeLibrary(
+    String ephemerisPath, {
+    bool bypassEphemerisPath = false,
+  }) async {
     // 1. Initialize the main Jyotish wrapper
     // This internally creates an EphemerisService and initializes it.
-    await _jyotish.initialize(ephemerisPath: ephemerisPath);
+    await _jyotish.initialize(
+      ephemerisPath: ephemerisPath,
+      bypassEphemerisPath: bypassEphemerisPath,
+    );
     
     // 2. We don't need to call service.initialize separately as _jyotish
     // already handles the underlying library state.

@@ -3,6 +3,7 @@ import 'package:jyotish/jyotish.dart';
 
 import '../../data/models.dart';
 import '../../logic/jaimini_service.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class JaiminiScreen extends StatefulWidget {
   const JaiminiScreen({super.key, required this.chartData});

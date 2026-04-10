@@ -6,6 +6,7 @@ import 'package:jyotish/src/transit/gochara_vedha_service.dart';
 
 import '../../data/models.dart';
 import '../../logic/transit_analysis.dart';
+import '../../ui/utils/responsive_helper.dart';
 
 class GocharaVedhaScreen extends StatefulWidget {
   const GocharaVedhaScreen({super.key, required this.chartData});

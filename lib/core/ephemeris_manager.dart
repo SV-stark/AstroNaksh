@@ -150,18 +150,13 @@ class EphemerisManager {
 
     // Initialize the jyotish library
     try {
-      final isWindows = Platform.isWindows;
+      final formattedPath = AppEnvironment.formatPathForSwissEph(ephemerisPath);
       
-      // On Windows, we bypass the buggy swe_set_ephe_path function
-      // and rely on the files being in the current directory (executable dir).
       AppEnvironment.log(
-        'EphemerisManager: Initializing library. Bypass path on Windows: $isWindows',
+        'EphemerisManager: Initializing library with path: $formattedPath',
       );
       
-      await _initializeLibrary(
-        isWindows ? targetPath : AppEnvironment.formatPathForSwissEph(ephemerisPath), 
-        bypassEphemerisPath: isWindows,
-      );
+      await _initializeLibrary(formattedPath);
       _initialized = true;
       AppEnvironment.log('EphemerisManager: Initialization successful');
     } catch (e, stack) {
@@ -185,9 +180,6 @@ class EphemerisManager {
       AppEnvironment.log(
         'EphemerisManager: AssetManifest loaded. Length: ${manifestContent.length}',
       );
-      if (AppEnvironment.isVerbose) {
-        // AppEnvironment.log('EphemerisManager: Manifest: $manifestContent'); // Too verbose
-      }
     } catch (e) {
       AppEnvironment.log('EphemerisManager: Could not load AssetManifest: $e');
     }
@@ -224,16 +216,16 @@ class EphemerisManager {
   }
 
   /// Copy native library (swisseph.dll / libswisseph.so) from assets to executable directory
-  static Future<void> _copyNativeLibrary(String ephemerisPath) async {
+  static Future<void> _copyNativeLibrary(String targetPath) async {
     final libName = Platform.isWindows ? 'swisseph.dll' : 'libswisseph.so';
     final assetPath = 'assets/ephe/$libName';
     final exeDir = p.dirname(Platform.resolvedExecutable);
-    final targetPath = p.join(exeDir, libName);
-    final targetFile = File(targetPath);
+    final dllPath = p.join(exeDir, libName);
+    final dllFile = File(dllPath);
 
-    if (await targetFile.exists()) {
+    if (await dllFile.exists()) {
       AppEnvironment.log(
-        'EphemerisManager: Native library already exists at $targetPath',
+        'EphemerisManager: Native library already exists at $dllPath',
       );
       return;
     }
@@ -243,11 +235,11 @@ class EphemerisManager {
         'EphemerisManager: Copying native library from assets: $assetPath',
       );
       final data = await rootBundle.load(assetPath);
-      await targetFile.writeAsBytes(
+      await dllFile.writeAsBytes(
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
       );
       AppEnvironment.log(
-        'EphemerisManager: Native library copied to $targetPath',
+        'EphemerisManager: Native library copied to $dllPath',
       );
     } catch (e) {
       AppEnvironment.log('EphemerisManager: Failed to copy native library: $e');
@@ -305,7 +297,7 @@ class EphemerisManager {
             .timeout(const Duration(seconds: 30));
 
         if (response.statusCode == 200) {
-          final filePath = '$path/$file';
+          final filePath = p.join(path, file);
           final fileObj = File(filePath);
           await fileObj.writeAsBytes(response.bodyBytes);
 
@@ -333,16 +325,10 @@ class EphemerisManager {
   }
 
   /// Initialize the jyotish library once and correctly
-  static Future<void> _initializeLibrary(
-    String ephemerisPath, {
-    bool bypassEphemerisPath = false,
-  }) async {
+  static Future<void> _initializeLibrary(String ephemerisPath) async {
     // 1. Initialize the main Jyotish wrapper
     // This internally creates an EphemerisService and initializes it.
-    await _jyotish.initialize(
-      ephemerisPath: ephemerisPath,
-      bypassEphemerisPath: bypassEphemerisPath,
-    );
+    await _jyotish.initialize(ephemerisPath: ephemerisPath);
     
     // 2. We don't need to call service.initialize separately as _jyotish
     // already handles the underlying library state.

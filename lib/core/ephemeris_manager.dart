@@ -65,18 +65,16 @@ class EphemerisManager {
       await dir.create(recursive: true);
     }
 
-    // On Windows, the DLL default search path is the executable directory.
-    // Since swe_set_ephe_path is buggy, we MUST place files there.
-    final targetPath = Platform.isWindows 
-        ? p.dirname(Platform.resolvedExecutable)
-        : ephemerisPath;
+    // targetPath for data files (.se1) should be the ephemeris directory
+    final targetPath = ephemerisPath;
 
-    // First try to copy from bundled assets
+    // First try to copy from bundled assets to the target path
     await _copyBundledAssets(targetPath);
 
-    // Copy swisseph.dll from assets to executable directory (Windows/Linux)
+    // On Windows, the DLL MUST be in the executable directory for DynamicLibrary.open to find it
     if (Platform.isWindows || Platform.isLinux) {
-      await _copyNativeLibrary(targetPath);
+      final exeDir = p.dirname(Platform.resolvedExecutable);
+      await _copyNativeLibrary(exeDir);
     }
 
     // Verify swisseph.dll existence and validity (Windows only)
@@ -87,7 +85,7 @@ class EphemerisManager {
       if (await dllFile.exists()) {
         AppEnvironment.log('EphemerisManager: swisseph.dll found at $dllPath');
 
-        // 1. Check Architecture
+        // Check Architecture
         try {
           final bytes = await dllFile.readAsBytes();
           if (bytes.length > 64) {
@@ -96,31 +94,22 @@ class EphemerisManager {
               final machine = bytes[peOffset + 4] | (bytes[peOffset + 5] << 8);
               final is64Bit = machine == 0x8664;
               AppEnvironment.log('EphemerisManager: DLL Machine Type: 0x${machine.toRadixString(16)} (Is x64: $is64Bit)');
-              if (!is64Bit) {
-                AppEnvironment.log('EphemerisManager: WARNING - DLL is not x64! This will likely cause a crash on this platform.');
-              }
             }
           }
         } catch (e) {
           AppEnvironment.log('EphemerisManager: Failed to parse DLL header: $e');
         }
 
-        // 2. Try Explicit Load to verify dependencies
+        // Try Explicit Load
         try {
-          AppEnvironment.log('EphemerisManager: Attempting explicit DynamicLibrary.open to verify dependencies...');
           final lib = DynamicLibrary.open(dllPath);
           AppEnvironment.log('EphemerisManager: Explicit load successful: $lib');
         } catch (e) {
           AppEnvironment.log('EphemerisManager: CRITICAL - Explicit load failed: $e');
-          AppEnvironment.log('EphemerisManager: This usually means missing dependencies (VC++ Redist?) or architecture mismatch.');
         }
       } else {
         AppEnvironment.log('EphemerisManager: ERROR - swisseph.dll NOT found at $dllPath');
       }
-    } else if (Platform.isAndroid) {
-      AppEnvironment.log(
-        'EphemerisManager: Running on Android. Expecting libswisseph.so from JNI.',
-      );
     }
 
     // Check if required files exist, download if still missing
@@ -139,7 +128,6 @@ class EphemerisManager {
         );
       }
     } else {
-      // Final sanity check: Can we actually list the files?
       try {
         final list = Directory(targetPath).listSync();
         AppEnvironment.log('EphemerisManager: Verified ${list.length} files in ephemeris directory ($targetPath).');
@@ -151,11 +139,11 @@ class EphemerisManager {
     // Initialize the jyotish library
     try {
       final formattedPath = AppEnvironment.formatPathForSwissEph(ephemerisPath);
-      
+
       AppEnvironment.log(
         'EphemerisManager: Initializing library with path: $formattedPath',
       );
-      
+
       await _initializeLibrary(formattedPath);
       _initialized = true;
       AppEnvironment.log('EphemerisManager: Initialization successful');
@@ -164,7 +152,6 @@ class EphemerisManager {
       AppEnvironment.log(
         'EphemerisManager: Error initializing Jyotish: $e\n$stack',
       );
-      // propagate error so UI can handle it
       throw EphemerisException('Failed to initialize astrology engine: $e');
     }
   }
@@ -172,17 +159,6 @@ class EphemerisManager {
   /// Copy bundled ephemeris files from assets to app directory
   static Future<void> _copyBundledAssets(String targetPath) async {
     final files = _requiredFiles['standard']!;
-
-    // Debug: List Asset Manifest if possible to see what's available
-    try {
-      final manifestContent = await rootBundle.loadString('AssetManifest.json');
-      // Simple check
-      AppEnvironment.log(
-        'EphemerisManager: AssetManifest loaded. Length: ${manifestContent.length}',
-      );
-    } catch (e) {
-      AppEnvironment.log('EphemerisManager: Could not load AssetManifest: $e');
-    }
 
     for (final file in files) {
       final targetFile = File(p.join(targetPath, file));
@@ -199,9 +175,6 @@ class EphemerisManager {
       // Try to copy from bundled assets
       try {
         final assetPath = 'assets/ephe/$file';
-        AppEnvironment.log(
-          'EphemerisManager: Attempting to load asset: $assetPath',
-        );
         final data = await rootBundle.load(assetPath);
         await targetFile.writeAsBytes(
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
@@ -215,31 +188,24 @@ class EphemerisManager {
     }
   }
 
-  /// Copy native library (swisseph.dll / libswisseph.so) from assets to executable directory
-  static Future<void> _copyNativeLibrary(String targetPath) async {
+  /// Copy native library (swisseph.dll / libswisseph.so) from assets to target directory
+  static Future<void> _copyNativeLibrary(String targetDir) async {
     final libName = Platform.isWindows ? 'swisseph.dll' : 'libswisseph.so';
     final assetPath = 'assets/ephe/$libName';
-    final exeDir = p.dirname(Platform.resolvedExecutable);
-    final dllPath = p.join(exeDir, libName);
-    final dllFile = File(dllPath);
+    final targetPath = p.join(targetDir, libName);
+    final targetFile = File(targetPath);
 
-    if (await dllFile.exists()) {
-      AppEnvironment.log(
-        'EphemerisManager: Native library already exists at $dllPath',
-      );
+    if (await targetFile.exists()) {
       return;
     }
 
     try {
       AppEnvironment.log(
-        'EphemerisManager: Copying native library from assets: $assetPath',
+        'EphemerisManager: Copying native library from assets to $targetPath',
       );
       final data = await rootBundle.load(assetPath);
-      await dllFile.writeAsBytes(
+      await targetFile.writeAsBytes(
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
-      );
-      AppEnvironment.log(
-        'EphemerisManager: Native library copied to $dllPath',
       );
     } catch (e) {
       AppEnvironment.log('EphemerisManager: Failed to copy native library: $e');
@@ -260,10 +226,10 @@ class EphemerisManager {
         // Check file size
         final size = await fileObj.length();
         final expectedSize = _fileSizes[file] ?? 0;
-        
+
         // Use strict check (exact size) or loose check (within 10%)
         final isValid = strict ? size == expectedSize : size >= expectedSize * 0.9;
-        
+
         if (!isValid) {
           missing.add(file);
         }
@@ -287,10 +253,6 @@ class EphemerisManager {
 
     for (final file in files) {
       try {
-        if (kDebugMode) {
-          print('Downloading $file...');
-        }
-
         final url = '$_baseUrl/$file';
         final response = await http
             .get(Uri.parse(url))
@@ -307,14 +269,6 @@ class EphemerisManager {
           if (onProgress != null) {
             onProgress(progress, file);
           }
-
-          if (kDebugMode) {
-            print('Downloaded $file (${response.bodyBytes.length} bytes)');
-          }
-        } else {
-          if (kDebugMode) {
-            print('Failed to download $file: HTTP ${response.statusCode}');
-          }
         }
       } catch (e) {
         if (kDebugMode) {
@@ -329,9 +283,10 @@ class EphemerisManager {
     // 1. Initialize the main Jyotish wrapper
     // This internally creates an EphemerisService and initializes it.
     await _jyotish.initialize(ephemerisPath: ephemerisPath);
-    
-    // 2. We don't need to call service.initialize separately as _jyotish
-    // already handles the underlying library state.
+
+    // 2. IMPORTANT: Initialize the direct service instance too!
+    // Many modules in the app use EphemerisManager.service directly.
+    await service.initialize(ephemerisPath: ephemerisPath);
   }
 
   /// Check if ephemeris files are available for a date range
@@ -349,7 +304,6 @@ class EphemerisManager {
       return missing.isEmpty;
     }
 
-    // Extended range requires different files
     return false;
   }
 
@@ -375,14 +329,13 @@ class EphemerisManager {
       return {'start': DateTime(1800, 1, 1), 'end': DateTime(2400, 12, 31)};
     }
 
-    // Fallback: only current date with approximate calculations
     return {'start': DateTime(1900, 1, 1), 'end': DateTime(2100, 12, 31)};
   }
 
   /// Check if specific files exist
   static Future<bool> _hasFiles(String path, List<String> files) async {
     for (final file in files) {
-      final filePath = '$path/$file';
+      final filePath = p.join(path, file);
       if (!await File(filePath).exists()) {
         return false;
       }
@@ -398,16 +351,13 @@ class EphemerisManager {
     final ephemerisPath = directory.path;
     final dir = Directory(ephemerisPath);
 
-    // Delete existing files
     if (await dir.exists()) {
       await dir.delete(recursive: true);
     }
     await dir.create(recursive: true);
 
-    // First try bundled assets
     await _copyBundledAssets(ephemerisPath);
 
-    // Download any still missing files
     final missingFiles = await _getMissingFiles(ephemerisPath);
     if (missingFiles.isNotEmpty) {
       await _downloadEphemerisFiles(
@@ -417,7 +367,6 @@ class EphemerisManager {
       );
     }
 
-    // Re-initialize
     _initialized = false;
     await ensureEphemerisData();
   }
@@ -435,7 +384,7 @@ class EphemerisManager {
     final files = _requiredFiles['standard']!;
 
     for (final file in files) {
-      final filePath = '$ephemerisPath/$file';
+      final filePath = p.join(ephemerisPath, file);
       final fileObj = File(filePath);
 
       if (!await fileObj.exists()) {
@@ -443,7 +392,6 @@ class EphemerisManager {
       }
 
       final size = await fileObj.length();
-      // Relaxed check: just ensure file is not empty (e.g. > 1KB)
       if (size < 1024) {
         return false;
       }

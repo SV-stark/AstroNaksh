@@ -57,13 +57,27 @@ class AppEnvironment {
     _isInitialized = true;
   }
 
+  static Future<Directory> _getAppSupportDir() async {
+    if (Platform.isWindows && !_isPortable) {
+      final roaming = Platform.environment['APPDATA'];
+      if (roaming != null) {
+        final dir = Directory(p.join(roaming, 'AstroNaksh'));
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
+        return dir;
+      }
+    }
+    return getApplicationSupportDirectory();
+  }
+
   static Future<void> _setupLogging() async {
     try {
       Directory logDir;
       if (_isPortable && _executableDir != null) {
         logDir = Directory(p.join(_executableDir!, 'user_data', 'logs'));
       } else {
-        final appSupport = await getApplicationSupportDirectory();
+        final appSupport = await _getAppSupportDir();
         logDir = Directory(p.join(appSupport.path, 'logs'));
       }
 
@@ -106,7 +120,7 @@ class AppEnvironment {
       }
       return dir;
     } else {
-      final appSupport = await getApplicationSupportDirectory();
+      final appSupport = await _getAppSupportDir();
       final dir = Directory(p.join(appSupport.path, 'ephe'));
       if (!await dir.exists()) {
         await dir.create(recursive: true);

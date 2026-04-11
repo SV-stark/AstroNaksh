@@ -742,8 +742,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
           if (_abhijit != null)
             _buildMuhurtaCard(
               'Abhijit Muhurta',
-              _abhijit!.start,
-              _abhijit!.end,
+              _abhijit!.startTime,
+              _abhijit!.endTime,
               FluentIcons.sunny,
               Colors.orange,
               'Abhijit Muhurta is the most auspicious time of the day to start any work.',
@@ -752,8 +752,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
             const SizedBox(height: 12),
             _buildMuhurtaCard(
               'Brahma Muhurta',
-              _brahma!.start,
-              _brahma!.end,
+              _brahma!.startTime,
+              _brahma!.endTime,
               FluentIcons.diamond,
               Colors.blue,
               'Brahma Muhurta is ideal for meditation, spiritual practices, and study.',

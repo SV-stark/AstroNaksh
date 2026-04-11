@@ -21,7 +21,7 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
       future: BhavaBala.calculateEnhancedBhavaBala(widget.chartData),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const ScaffoldPage(
+          return ScaffoldPage(
             header: PageHeader(
               title: const Text('Bhava Bala (House Strength)'),
               leading: IconButton(
@@ -29,7 +29,7 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            content: Center(child: ProgressRing()),
+            content: const Center(child: ProgressRing()),
           );
         }
 

@@ -18,7 +18,7 @@ class ShadbalaScreen extends StatelessWidget {
       future: ShadbalaCalculator.getScreenData(chartData),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const ScaffoldPage(
+          return ScaffoldPage(
             header: PageHeader(
               title: const Text('Shadbala Analysis'),
               leading: IconButton(
@@ -26,7 +26,7 @@ class ShadbalaScreen extends StatelessWidget {
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            content: Center(child: ProgressRing()),
+            content: const Center(child: ProgressRing()),
           );
         }
 

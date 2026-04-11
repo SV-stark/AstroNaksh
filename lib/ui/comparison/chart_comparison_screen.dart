@@ -206,157 +206,156 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
 
   Widget _buildOverviewTab(MatchingReport report) {
     return SingleChildScrollView(
-        padding: context.responsiveBodyPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Main Score Card
-            Card(
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  children: [
-                    // Score Circle
-                    Container(
-                      width: 180,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            report.overallColor.withValues(alpha: 0.3),
-                            report.overallColor.withValues(alpha: 0.1),
-                          ],
-                        ),
-                        border: Border.all(
-                          color: report.overallColor,
-                          width: 4,
-                        ),
+      padding: context.responsiveBodyPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Main Score Card
+          Card(
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                children: [
+                  // Score Circle
+                  Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          report.overallColor.withValues(alpha: 0.3),
+                          report.overallColor.withValues(alpha: 0.1),
+                        ],
                       ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              report.ashtakootaScore.toStringAsFixed(1),
-                              style: TextStyle(
-                                fontSize: 56,
-                                fontWeight: FontWeight.bold,
-                                color: report.overallColor,
-                              ),
-                            ),
-                            Text(
-                              '/ 36',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: report.overallColor.withValues(
-                                  alpha: 0.7,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      border: Border.all(
+                        color: report.overallColor,
+                        width: 4,
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 8,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            report.ashtakootaScore.toStringAsFixed(1),
+                            style: TextStyle(
+                              fontSize: 56,
+                              fontWeight: FontWeight.bold,
+                              color: report.overallColor,
+                            ),
+                          ),
+                          Text(
+                            '/ 36',
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: report.overallColor.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      decoration: BoxDecoration(
-                        color: report.overallColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        report.overallConclusion,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: report.overallColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Partner Info Cards
-            if (context.isMobile)
-              Column(
-                children: [
-                  _buildPartnerCard('Groom', _selectedChart1!, Colors.blue),
-                  const SizedBox(height: 16),
-                  _buildPartnerCard('Bride', _selectedChart2!, Colors.purple),
-                ],
-              )
-            else
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildPartnerCard(
-                      'Groom',
-                      _selectedChart1!,
-                      Colors.blue,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildPartnerCard(
-                      'Bride',
-                      _selectedChart2!,
-                      Colors.purple,
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: report.overallColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      report.overallConclusion,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: report.overallColor,
+                      ),
                     ),
                   ),
                 ],
               ),
-            const SizedBox(height: 20),
-            // Key Highlights
-            Text(
-              'Compatibility Highlights',
-              style: FluentTheme.of(context).typography.subtitle,
             ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+          ),
+          const SizedBox(height: 20),
+          // Partner Info Cards
+          if (context.isMobile)
+            Column(
               children: [
-                _buildHighlightChip(
-                  'Ashtakoota',
-                  '${report.ashtakootaScore.toStringAsFixed(1)}/36',
-                  report.ashtakootaScore >= 18 ? Colors.green : Colors.red,
-                  FluentIcons.heart,
-                ),
-                _buildHighlightChip(
-                  'Mangal Dosha',
-                  report.manglikMatch.isMatch ? 'Compatible' : 'Check Required',
-                  report.manglikMatch.isMatch ? Colors.green : Colors.orange,
-                  FluentIcons.shield,
-                ),
-                if (report.extraChecks.isNotEmpty)
-                  _buildHighlightChip(
-                    'Mahendra',
-                    report.extraChecks
-                            .firstWhere((e) => e.name == 'Mahendra')
-                            .isFavorable
-                        ? 'Favorable'
-                        : 'Neutral',
-                    report.extraChecks
-                            .firstWhere((e) => e.name == 'Mahendra')
-                            .isFavorable
-                        ? Colors.green
-                        : Colors.orange,
-                    FluentIcons.starburst,
+                _buildPartnerCard('Groom', _selectedChart1!, Colors.blue),
+                const SizedBox(height: 16),
+                _buildPartnerCard('Bride', _selectedChart2!, Colors.purple),
+              ],
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: _buildPartnerCard(
+                    'Groom',
+                    _selectedChart1!,
+                    Colors.blue,
                   ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildPartnerCard(
+                    'Bride',
+                    _selectedChart2!,
+                    Colors.purple,
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
+          const SizedBox(height: 20),
+          // Key Highlights
+          Text(
+            'Compatibility Highlights',
+            style: FluentTheme.of(context).typography.subtitle,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _buildHighlightChip(
+                'Ashtakoota',
+                '${report.ashtakootaScore.toStringAsFixed(1)}/36',
+                report.ashtakootaScore >= 18 ? Colors.green : Colors.red,
+                FluentIcons.heart,
+              ),
+              _buildHighlightChip(
+                'Mangal Dosha',
+                report.manglikMatch.isMatch ? 'Compatible' : 'Check Required',
+                report.manglikMatch.isMatch ? Colors.green : Colors.orange,
+                FluentIcons.shield,
+              ),
+              if (report.extraChecks.isNotEmpty)
+                _buildHighlightChip(
+                  'Mahendra',
+                  report.extraChecks
+                          .firstWhere((e) => e.name == 'Mahendra')
+                          .isFavorable
+                      ? 'Favorable'
+                      : 'Neutral',
+                  report.extraChecks
+                          .firstWhere((e) => e.name == 'Mahendra')
+                          .isFavorable
+                      ? Colors.green
+                      : Colors.orange,
+                  FluentIcons.starburst,
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

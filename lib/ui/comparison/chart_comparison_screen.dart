@@ -66,100 +66,91 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
       _selectedChart2!,
     );
 
-    return NavigationView(
-      appBar: NavigationAppBar(
-        leading: ResponsiveHelper.useMobileLayout(context)
-            ? null
-            : IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (ResponsiveHelper.useMobileLayout(context))
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: const Icon(FluentIcons.back),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            Icon(
-              FluentIcons.heart_fill,
-              color: compatibilityReport.overallColor,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Flexible(
-              child: Text(
-                compatibilityReport.overallConclusion,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        actions: CommandBar(
-          overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
-          mainAxisAlignment: MainAxisAlignment.end,
-          primaryItems: [
-            if (!ResponsiveHelper.useMobileLayout(context)) ...[
-              CommandBarButton(
-                icon: const Icon(FluentIcons.add_friend),
-                label: const Text('New Pair'),
-                onPressed: () {
-                  setState(() {
-                    _selectedChart2 = null;
-                  });
-                },
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.switch_widget),
-                label: const Text('Swap'),
-                onPressed: _swapCharts,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.side_panel_mirrored),
-                label: const Text('Charts'),
-                onPressed: _showSideBySideView,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.pdf),
-                label: const Text('Export'),
-                onPressed: _exportPdf,
-              ),
-            ],
-          ],
-          secondaryItems: [
-            if (ResponsiveHelper.useMobileLayout(context)) ...[
-              CommandBarButton(
-                icon: const Icon(FluentIcons.add_friend),
-                label: const Text('New Matching Pair'),
-                onPressed: () {
-                  setState(() {
-                    _selectedChart2 = null;
-                  });
-                },
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.switch_widget),
-                label: const Text('Swap Charts'),
-                onPressed: _swapCharts,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.side_panel_mirrored),
-                label: const Text('Side-by-Side Charts'),
-                onPressed: _showSideBySideView,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.pdf),
-                label: const Text('Export to PDF'),
-                onPressed: _exportPdf,
-              ),
-            ],
-          ],
-        ),
+    final appBar = PageHeader(
+      leading: IconButton(
+        icon: const Icon(FluentIcons.back),
+        onPressed: () => Navigator.pop(context),
       ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            FluentIcons.heart_fill,
+            color: compatibilityReport.overallColor,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              compatibilityReport.overallConclusion,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+      commandBar: CommandBar(
+        overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
+        mainAxisAlignment: MainAxisAlignment.end,
+        primaryItems: [
+          if (!ResponsiveHelper.useMobileLayout(context)) ...[
+            CommandBarButton(
+              icon: const Icon(FluentIcons.add_friend),
+              label: const Text('New Pair'),
+              onPressed: () {
+                setState(() {
+                  _selectedChart2 = null;
+                });
+              },
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.switch_widget),
+              label: const Text('Swap'),
+              onPressed: _swapCharts,
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.side_panel_mirrored),
+              label: const Text('Charts'),
+              onPressed: _showSideBySideView,
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.pdf),
+              label: const Text('Export'),
+              onPressed: _exportPdf,
+            ),
+          ],
+        ],
+        secondaryItems: [
+          if (ResponsiveHelper.useMobileLayout(context)) ...[
+            CommandBarButton(
+              icon: const Icon(FluentIcons.add_friend),
+              label: const Text('New Matching Pair'),
+              onPressed: () {
+                setState(() {
+                  _selectedChart2 = null;
+                });
+              },
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.switch_widget),
+              label: const Text('Swap Charts'),
+              onPressed: _swapCharts,
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.side_panel_mirrored),
+              label: const Text('Side-by-Side Charts'),
+              onPressed: _showSideBySideView,
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.pdf),
+              label: const Text('Export to PDF'),
+              onPressed: _exportPdf,
+            ),
+          ],
+        ],
+      ),
+    );
+
+    return NavigationView(
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
@@ -171,27 +162,42 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               color: compatibilityReport.overallColor,
             ),
             title: const Text('Overview'),
-            body: _buildOverviewTab(compatibilityReport),
+            body: ScaffoldPage(
+              header: appBar,
+              content: _buildOverviewTab(compatibilityReport),
+            ),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.view_dashboard),
             title: const Text('Ashtakoota'),
-            body: _buildAshtakootaTab(compatibilityReport),
+            body: ScaffoldPage(
+              header: appBar,
+              content: _buildAshtakootaTab(compatibilityReport),
+            ),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.shield_alert),
             title: const Text('Doshas'),
-            body: _buildDoshaTab(compatibilityReport),
+            body: ScaffoldPage(
+              header: appBar,
+              content: _buildDoshaTab(compatibilityReport),
+            ),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.starburst),
             title: const Text('Synastry'),
-            body: _buildSynastryTab(synastry),
+            body: ScaffoldPage(
+              header: appBar,
+              content: _buildSynastryTab(synastry),
+            ),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.home_group),
             title: const Text('Houses'),
-            body: _buildHouseOverlaysTab(synastry),
+            body: ScaffoldPage(
+              header: appBar,
+              content: _buildHouseOverlaysTab(synastry),
+            ),
           ),
         ],
       ),
@@ -199,8 +205,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   }
 
   Widget _buildOverviewTab(MatchingReport report) {
-    return ScaffoldPage(
-      content: SingleChildScrollView(
+    return SingleChildScrollView(
         padding: context.responsiveBodyPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -12,7 +12,13 @@ class NadiScreen extends StatelessWidget {
     final analysis = service.analyzeNadi(chartData);
 
     return ScaffoldPage(
-      header: const PageHeader(title: Text('Nadi Analysis')),
+      header: PageHeader(
+        title: const Text('Nadi Analysis'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       content: ListView(
         padding: const EdgeInsets.all(16),
         children: [

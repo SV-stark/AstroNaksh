@@ -40,33 +40,6 @@ class _TransitScreenState extends State<TransitScreen> {
   @override
   Widget build(BuildContext context) {
     return NavigationView(
-      appBar: NavigationAppBar(
-        leading: ResponsiveHelper.useMobileLayout(context)
-            ? null
-            : IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (ResponsiveHelper.useMobileLayout(context))
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: const Icon(FluentIcons.back),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            const Flexible(
-              child: Text(
-                'Transit Analysis',
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
       pane: NavigationPane(
         selected: _currentIndex,
         onChanged: (index) => setState(() => _currentIndex = index),
@@ -102,7 +75,19 @@ class _TransitScreenState extends State<TransitScreen> {
       return const Center(child: ProgressRing());
     }
     return ScaffoldPage(
-      header: PageHeader(title: _buildDateSelector()),
+      header: PageHeader(
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Flexible(
+          child: Text(
+            'Transit Analysis',
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        commandBar: _buildDateSelector(),
+      ),
       content: Padding(
         // Add padding around the content
         padding: context.responsiveBodyPadding,

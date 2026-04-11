@@ -86,6 +86,10 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
     return ScaffoldPage(
       header: PageHeader(
         title: const Text('Birth Time Rectification'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
         commandBar: CommandBar(
           mainAxisAlignment: MainAxisAlignment.end,
           primaryItems: [

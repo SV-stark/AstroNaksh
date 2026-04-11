@@ -245,7 +245,13 @@ class _InputScreenState extends State<InputScreen> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
-      header: const PageHeader(title: Text('New Chart')),
+      header: PageHeader(
+        title: const Text('New Chart'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       content: SingleChildScrollView(
         child: Padding(
           padding: ResponsiveHelper.getResponsivePadding(context),

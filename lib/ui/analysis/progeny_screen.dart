@@ -12,7 +12,13 @@ class ProgenyScreen extends StatelessWidget {
     final analysis = service.analyzeProgeny(chartData);
 
     return ScaffoldPage(
-      header: const PageHeader(title: Text('Progeny Analysis')),
+      header: PageHeader(
+        title: const Text('Progeny Analysis'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       content: ListView(
         padding: const EdgeInsets.all(16),
         children: [

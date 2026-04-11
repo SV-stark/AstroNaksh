@@ -328,648 +328,7 @@ class _ChartScreenState extends State<ChartScreen> {
   @override
   Widget build(BuildContext context) {
     return NavigationView(
-      appBar: NavigationAppBar(
-        leading: ResponsiveHelper.useMobileLayout(context)
-            ? null // Allow NavigationView to show the hamburger button
-            : IconButton(
-                icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
-                onPressed: () => Navigator.pop(context),
-              ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (ResponsiveHelper.useMobileLayout(context))
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            const Flexible(
-              child: Text(
-                'Vedic Chart',
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        actions: CommandBar(
-          overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
-          mainAxisAlignment: MainAxisAlignment.end,
-          primaryItems: [
-            // --- View & Calculation Options (Left/Start) ---
-            if (!ResponsiveHelper.useMobileLayout(context)) ...[
-              CommandBarButton(
-                icon: Icon(
-                  _style == ChartStyle.northIndian
-                      ? FluentIcons.grid_view_small
-                      : FluentIcons.diamond,
-                  semanticLabel: 'Toggle chart style',
-                ),
-                label: const Text('Style'),
-                tooltip: _style == ChartStyle.northIndian
-                    ? 'Currently North Indian style. Tap to switch to South Indian.'
-                    : 'Currently South Indian style. Tap to switch to North Indian.',
-                onPressed: () {
-                  setState(() {
-                    _style = _style == ChartStyle.northIndian
-                        ? ChartStyle.southIndian
-                        : ChartStyle.northIndian;
-                  });
-                },
-              ),
-              CommandBarButton(
-                icon: Icon(
-                  _showAspects ? FluentIcons.view : FluentIcons.hide,
-                  semanticLabel: _showAspects
-                      ? 'Hide planetary aspects'
-                      : 'Show planetary aspects',
-                ),
-                label: Text(_showAspects ? 'Aspects On' : 'Aspects Off'),
-                tooltip: _showAspects
-                    ? 'Planetary aspects are visible. Tap to hide.'
-                    : 'Tap to show planetary aspects (drishti).',
-                onPressed: () {
-                  setState(() {
-                    _showAspects = !_showAspects;
-                  });
-                },
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.globe),
-                label: const Text('Ayanamsa'),
-                onPressed: _openAyanamsaSelection,
-              ),
-            ],
-
-            // --- Analysis & Tools ---
-            if (!ResponsiveHelper.useMobileLayout(context))
-              CommandBarBuilderItem(
-                builder: (context, mode, w) {
-                  return DropDownButton(
-                    title: const Text('Analysis'),
-                    leading: const Icon(FluentIcons.analytics_view),
-                    items: [
-                      MenuFlyoutSubItem(
-                        text: const Text('Strength'),
-                        leading: const Icon(FluentIcons.favorite_star),
-                        items: (context) => [
-                          MenuFlyoutItem(
-                            text: const Text('Shadbala'),
-                            leading: const Icon(FluentIcons.favorite_star),
-                            onPressed: () => _navigateTo('shadbala'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Ashtakavarga'),
-                            leading: const Icon(FluentIcons.grid_view_small),
-                            onPressed: () => _navigateTo('ashtakavarga'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Bhava Bala'),
-                            leading: const Icon(FluentIcons.home),
-                            onPressed: () => _navigateTo('bhava_bala'),
-                          ),
-                        ],
-                      ),
-                      MenuFlyoutSubItem(
-                        text: const Text('Predictions'),
-                        leading: const Icon(FluentIcons.calendar),
-                        items: (context) => [
-                          MenuFlyoutItem(
-                            text: const Text('Transit'),
-                            leading: const Icon(FluentIcons.history),
-                            onPressed: () => _navigateTo('transit'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Varshaphal'),
-                            leading: const Icon(FluentIcons.calendar),
-                            onPressed: () => _navigateTo('varshaphal'),
-                          ),
-                        ],
-                      ),
-                      MenuFlyoutSubItem(
-                        text: const Text('Special'),
-                        leading: const Icon(FluentIcons.lightbulb),
-                        items: (context) => [
-                          MenuFlyoutItem(
-                            text: const Text('Jaimini (AK, Karakamsa)'),
-                            leading: const Icon(FluentIcons.favorite_star),
-                            onPressed: () => _navigateTo('jaimini'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Yoga & Dosha'),
-                            leading: const Icon(FluentIcons.scale_volume),
-                            onPressed: () => _navigateTo('yoga_dosha'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Planetary Maitri'),
-                            leading: const Icon(FluentIcons.people),
-                            onPressed: () => _navigateTo('planetary_maitri'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Retrograde'),
-                            leading: const Icon(FluentIcons.repeat_one),
-                            onPressed: () => _navigateTo('retrograde'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Sudarshan Chakra'),
-                            leading: const Icon(FluentIcons.view_all),
-                            onPressed: () => _navigateTo('sudarshan_chakra'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Comparison'),
-                            leading: const Icon(FluentIcons.compare),
-                            onPressed: () => _navigateTo('comparison'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Progeny'),
-                            leading: const Icon(FluentIcons.reminder_person),
-                            onPressed: () => _navigateTo('progeny'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Nadi Analysis'),
-                            leading: const Icon(FluentIcons.flow),
-                            onPressed: () => _navigateTo('nadi'),
-                          ),
-                          MenuFlyoutItem(
-                            text: const Text('Gochara Vedha'),
-                            leading: const Icon(FluentIcons.sync_occurence),
-                            onPressed: () => _navigateTo('gochara_vedha'),
-                          ),
-                        ],
-                      ),
-                      const MenuFlyoutSeparator(),
-                      MenuFlyoutItem(
-                        text: const Text('PDF Report'),
-                        leading: const Icon(FluentIcons.pdf),
-                        onPressed: () => _navigateTo('pdf_report'),
-                      ),
-                    ],
-                  );
-                },
-                wrappedItem: CommandBarButton(
-                  icon: const Icon(FluentIcons.analytics_view),
-                  label: const Text('Analysis'),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => ContentDialog(
-                        title: const Text('Analysis Tools'),
-                        content: SizedBox(
-                          height: 300,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _buildMobileAnalysisLink(
-                                  'Shadbala',
-                                  'shadbala',
-                                  FluentIcons.favorite_star,
-                                ),
-                                _buildMobileAnalysisLink(
-                                  'Ashtakavarga',
-                                  'ashtakavarga',
-                                  FluentIcons.grid_view_small,
-                                ),
-                                _buildMobileAnalysisLink(
-                                  'Bhava Bala',
-                                  'bhava_bala',
-                                  FluentIcons.home,
-                                ),
-                                const Divider(),
-                                _buildMobileAnalysisLink(
-                                  'Transit',
-                                  'transit',
-                                  FluentIcons.history,
-                                ),
-                                _buildMobileAnalysisLink(
-                                  'Varshaphal',
-                                  'varshaphal',
-                                  FluentIcons.calendar,
-                                ),
-                                const Divider(),
-                                _buildMobileAnalysisLink(
-                                  'Yoga & Dosha',
-                                  'yoga_dosha',
-                                  FluentIcons.scale_volume,
-                                ),
-                                _buildMobileAnalysisLink(
-                                  'Planetary Maitri',
-                                  'planetary_maitri',
-                                  FluentIcons.people,
-                                ),
-                                _buildMobileAnalysisLink(
-                                  'Retrograde',
-                                  'retrograde',
-                                  FluentIcons.repeat_one,
-                                ),
-                                _buildMobileAnalysisLink(
-                                  'Sudarshan Chakra',
-                                  'sudarshan_chakra',
-                                  FluentIcons.view_all,
-                                ),
-                                _buildMobileAnalysisLink(
-                                  'Comparison',
-                                  'comparison',
-                                  FluentIcons.compare,
-                                ),
-                                _buildMobileAnalysisLink(
-                                  'Gochara Vedha',
-                                  'gochara_vedha',
-                                  FluentIcons.sync_occurence,
-                                ),
-                                const Divider(),
-                                _buildMobileAnalysisLink(
-                                  'PDF Report',
-                                  'pdf_report',
-                                  FluentIcons.pdf,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        actions: [
-                          Button(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-            if (!ResponsiveHelper.useMobileLayout(context))
-              CommandBarButton(
-                icon: const Icon(FluentIcons.build),
-                label: const Text('Rectify'),
-                onPressed: () async {
-                  // ... (Logic)
-                  if (_birthData == null) return;
-                  final newData = await Navigator.push(
-                    context,
-                    FluentPageRoute(
-                      builder: (context) => const BirthTimeRectifierScreen(),
-                      settings: RouteSettings(arguments: _birthData),
-                    ),
-                  );
-
-                  if (newData != null && newData is BirthData) {
-                    setState(() {
-                      _birthData = newData;
-                      _loadChartData();
-                    });
-                  }
-                },
-              ),
-
-            // --- Primary Actions (End) ---
-            if (!ResponsiveHelper.useMobileLayout(context)) ...[
-              const CommandBarSeparator(),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.save),
-                label: const Text('Save'),
-                onPressed: _saveCurrentChart,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.share),
-                label: const Text('Share'),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return ContentDialog(
-                        title: const Text('Share Chart'),
-                        content: const Text(
-                          'How would you like to share this chart?',
-                        ),
-                        actions: [
-                          Button(
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              if (_d1ChartKey.currentContext == null) return;
-                              try {
-                                await ChartShareService.shareChartImage(
-                                  _d1ChartKey,
-                                  filename:
-                                      '${_birthData?.name ?? 'chart'}_D1.png',
-                                );
-                              } catch (e) {
-                                if (context.mounted) {
-                                  displayInfoBar(
-                                    context,
-                                    builder: (context, close) => InfoBar(
-                                      title: const Text('Share Failed'),
-                                      content: Text(e.toString()),
-                                      severity: InfoBarSeverity.error,
-                                      onClose: close,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            child: const Text('Image (D-1)'),
-                          ),
-                          Button(
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              final data = await _chartDataFuture;
-                              if (data != null && _birthData != null) {
-                                try {
-                                  await ChartShareService.shareChartPdf(
-                                    data,
-                                    _birthData!,
-                                    filename:
-                                        '${_birthData?.name ?? 'report'}.pdf',
-                                  );
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    displayInfoBar(
-                                      context,
-                                      builder: (context, close) => InfoBar(
-                                        title: const Text('Share Failed'),
-                                        content: Text(e.toString()),
-                                        severity: InfoBarSeverity.error,
-                                        onClose: close,
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                            child: const Text('PDF Report'),
-                          ),
-                          Button(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-              const CommandBarSeparator(),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.info),
-                label: const Text('Info'),
-                onPressed: _showBirthDetails,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.settings),
-                label: const Text('Settings'),
-                onPressed: () => Navigator.pushNamed(context, '/settings'),
-              ),
-            ],
-          ],
-          secondaryItems: [
-            // --- Secondary Actions (Overflow Menu) ---
-            // Force these into overflow on mobile for better touch targets
-            if (ResponsiveHelper.useMobileLayout(context)) ...[
-              CommandBarButton(
-                icon: const Icon(FluentIcons.save),
-                label: const Text('Save Chart'),
-                onPressed: _saveCurrentChart,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.share),
-                label: const Text('Share Chart'),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return ContentDialog(
-                        title: const Text('Share Chart'),
-                        content: const Text(
-                          'How would you like to share this chart?',
-                        ),
-                        actions: [
-                          Button(
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              if (_d1ChartKey.currentContext == null) return;
-                              try {
-                                await ChartShareService.shareChartImage(
-                                  _d1ChartKey,
-                                  filename:
-                                      '${_birthData?.name ?? 'chart'}_D1.png',
-                                );
-                              } catch (e) {
-                                if (context.mounted) {
-                                  displayInfoBar(
-                                    context,
-                                    builder: (context, close) => InfoBar(
-                                      title: const Text('Share Failed'),
-                                      content: Text(e.toString()),
-                                      severity: InfoBarSeverity.error,
-                                      onClose: close,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            child: const Text('Image (D-1)'),
-                          ),
-                          Button(
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              final data = await _chartDataFuture;
-                              if (data != null && _birthData != null) {
-                                try {
-                                  await ChartShareService.shareChartPdf(
-                                    data,
-                                    _birthData!,
-                                    filename:
-                                        '${_birthData?.name ?? 'report'}.pdf',
-                                  );
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    displayInfoBar(
-                                      context,
-                                      builder: (context, close) => InfoBar(
-                                        title: const Text('Share Failed'),
-                                        content: Text(e.toString()),
-                                        severity: InfoBarSeverity.error,
-                                        onClose: close,
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                            child: const Text('PDF Report'),
-                          ),
-                          Button(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-              const CommandBarSeparator(),
-              CommandBarButton(
-                icon: Icon(
-                  _style == ChartStyle.northIndian
-                      ? FluentIcons.grid_view_small
-                      : FluentIcons.diamond,
-                ),
-                label: Text(
-                  'Style: ${_style == ChartStyle.northIndian ? 'North Indian' : 'South Indian'}',
-                ),
-                onPressed: () {
-                  setState(() {
-                    _style = _style == ChartStyle.northIndian
-                        ? ChartStyle.southIndian
-                        : ChartStyle.northIndian;
-                  });
-                },
-              ),
-              CommandBarButton(
-                icon: Icon(_showAspects ? FluentIcons.view : FluentIcons.hide),
-                label: Text(_showAspects ? 'Hide Aspects' : 'Show Aspects'),
-                onPressed: () {
-                  setState(() {
-                    _showAspects = !_showAspects;
-                  });
-                },
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.globe),
-                label: const Text('Select Ayanamsa'),
-                onPressed: _openAyanamsaSelection,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.analytics_view),
-                label: const Text('Analysis Tools'),
-                onPressed: () {
-                  // Show a dialog or bottom sheet for analysis tools because
-                  // a nested dropdown in a command bar menu might be weird.
-                  // Or we can just navigate to a "Menu" or show the same Dropdown logic.
-                  // Let's use a simple dialog for now to match the desktop dropdown content.
-                  showDialog(
-                    context: context,
-                    builder: (context) => ContentDialog(
-                      title: const Text('Analysis Tools'),
-                      content: SizedBox(
-                        height: 300,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildMobileAnalysisLink(
-                                'Shadbala',
-                                'shadbala',
-                                FluentIcons.favorite_star,
-                              ),
-                              _buildMobileAnalysisLink(
-                                'Ashtakavarga',
-                                'ashtakavarga',
-                                FluentIcons.grid_view_small,
-                              ),
-                              _buildMobileAnalysisLink(
-                                'Bhava Bala',
-                                'bhava_bala',
-                                FluentIcons.home,
-                              ),
-                              const Divider(),
-                              _buildMobileAnalysisLink(
-                                'Transit',
-                                'transit',
-                                FluentIcons.history,
-                              ),
-                              _buildMobileAnalysisLink(
-                                'Varshaphal',
-                                'varshaphal',
-                                FluentIcons.calendar,
-                              ),
-                              const Divider(),
-                              _buildMobileAnalysisLink(
-                                'Yoga & Dosha',
-                                'yoga_dosha',
-                                FluentIcons.scale_volume,
-                              ),
-                              _buildMobileAnalysisLink(
-                                'Planetary Maitri',
-                                'planetary_maitri',
-                                FluentIcons.people,
-                              ),
-                              _buildMobileAnalysisLink(
-                                'Retrograde',
-                                'retrograde',
-                                FluentIcons.repeat_one,
-                              ),
-                              _buildMobileAnalysisLink(
-                                'Sudarshan Chakra',
-                                'sudarshan_chakra',
-                                FluentIcons.view_all,
-                              ),
-                              _buildMobileAnalysisLink(
-                                'Comparison',
-                                'comparison',
-                                FluentIcons.compare,
-                              ),
-                              const Divider(),
-                              _buildMobileAnalysisLink(
-                                'PDF Report',
-                                'pdf_report',
-                                FluentIcons.pdf,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      actions: [
-                        Button(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Close'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.build),
-                label: const Text('Birth Time Rectification'),
-                onPressed: () async {
-                  if (_birthData == null) return;
-                  final newData = await Navigator.push(
-                    context,
-                    FluentPageRoute(
-                      builder: (context) => const BirthTimeRectifierScreen(),
-                      settings: RouteSettings(arguments: _birthData),
-                    ),
-                  );
-
-                  if (newData != null && newData is BirthData) {
-                    setState(() {
-                      _birthData = newData;
-                      _loadChartData();
-                    });
-                  }
-                },
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.info),
-                label: const Text('Birth Details'),
-                onPressed: _showBirthDetails,
-              ),
-              CommandBarButton(
-                icon: const Icon(FluentIcons.settings),
-                label: const Text('Settings'),
-                onPressed: () => Navigator.pushNamed(context, '/settings'),
-              ),
-            ],
-          ],
-        ),
-      ),
-      pane: NavigationPane(
-        selected: _currentIndex,
+      pane: NavigationPane(        selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
         displayMode: ResponsiveHelper.getNavigationPaneDisplayMode(context),
         size: NavigationPaneSize(
@@ -1146,46 +505,683 @@ class _ChartScreenState extends State<ChartScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: ProgressRing());
         } else if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(FluentIcons.error, size: 48, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(
-                  'Error: ${snapshot.error}',
-                  textAlign: TextAlign.center,
-                  style: FluentTheme.of(context).typography.bodyLarge,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Button(
-                      onPressed: _loadChartData,
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(FluentIcons.refresh, size: 16),
-                          SizedBox(width: 8),
-                          Text('Retry'),
-                        ],
+          return ScaffoldPage(
+            header: PageHeader(
+              title: const Text('Error'),
+              leading: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            content: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(FluentIcons.error, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                    style: FluentTheme.of(context).typography.bodyLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Button(
+                        onPressed: _loadChartData,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(FluentIcons.refresh, size: 16),
+                            SizedBox(width: 8),
+                            Text('Retry'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Button(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Go Back'),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 12),
+                      Button(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Go Back'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
         } else if (!snapshot.hasData) {
           return const Center(child: Text('No Data'));
         }
-        return builder(snapshot.data!);
+
+        return ScaffoldPage(
+          header: PageHeader(
+            title: const Flexible(
+              child: Text(
+                'Vedic Chart',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            leading: IconButton(
+              icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            commandBar: CommandBar(
+              overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
+              mainAxisAlignment: MainAxisAlignment.end,
+              primaryItems: [
+                // --- View & Calculation Options (Left/Start) ---
+                if (!ResponsiveHelper.useMobileLayout(context)) ...[
+                  CommandBarButton(
+                    icon: Icon(
+                      _style == ChartStyle.northIndian
+                          ? FluentIcons.grid_view_small
+                          : FluentIcons.diamond,
+                      semanticLabel: 'Toggle chart style',
+                    ),
+                    label: const Text('Style'),
+                    tooltip: _style == ChartStyle.northIndian
+                        ? 'Currently North Indian style. Tap to switch to South Indian.'
+                        : 'Currently South Indian style. Tap to switch to North Indian.',
+                    onPressed: () {
+                      setState(() {
+                        _style = _style == ChartStyle.northIndian
+                            ? ChartStyle.southIndian
+                            : ChartStyle.northIndian;
+                      });
+                    },
+                  ),
+                  CommandBarButton(
+                    icon: Icon(
+                      _showAspects ? FluentIcons.view : FluentIcons.hide,
+                      semanticLabel: _showAspects
+                          ? 'Hide planetary aspects'
+                          : 'Show planetary aspects',
+                    ),
+                    label: Text(_showAspects ? 'Aspects On' : 'Aspects Off'),
+                    tooltip: _showAspects
+                        ? 'Planetary aspects are visible. Tap to hide.'
+                        : 'Tap to show planetary aspects (drishti).',
+                    onPressed: () {
+                      setState(() {
+                        _showAspects = !_showAspects;
+                      });
+                    },
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.globe),
+                    label: const Text('Ayanamsa'),
+                    onPressed: _openAyanamsaSelection,
+                  ),
+                ],
+
+                // --- Analysis & Tools ---
+                if (!ResponsiveHelper.useMobileLayout(context))
+                  CommandBarBuilderItem(
+                    builder: (context, mode, w) {
+                      return DropDownButton(
+                        title: const Text('Analysis'),
+                        leading: const Icon(FluentIcons.analytics_view),
+                        items: [
+                          MenuFlyoutSubItem(
+                            text: const Text('Strength'),
+                            leading: const Icon(FluentIcons.favorite_star),
+                            items: (context) => [
+                              MenuFlyoutItem(
+                                text: const Text('Shadbala'),
+                                leading: const Icon(FluentIcons.favorite_star),
+                                onPressed: () => _navigateTo('shadbala'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Ashtakavarga'),
+                                leading: const Icon(FluentIcons.grid_view_small),
+                                onPressed: () => _navigateTo('ashtakavarga'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Bhava Bala'),
+                                leading: const Icon(FluentIcons.home),
+                                onPressed: () => _navigateTo('bhava_bala'),
+                              ),
+                            ],
+                          ),
+                          MenuFlyoutSubItem(
+                            text: const Text('Predictions'),
+                            leading: const Icon(FluentIcons.calendar),
+                            items: (context) => [
+                              MenuFlyoutItem(
+                                text: const Text('Transit'),
+                                leading: const Icon(FluentIcons.history),
+                                onPressed: () => _navigateTo('transit'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Varshaphal'),
+                                leading: const Icon(FluentIcons.calendar),
+                                onPressed: () => _navigateTo('varshaphal'),
+                              ),
+                            ],
+                          ),
+                          MenuFlyoutSubItem(
+                            text: const Text('Special'),
+                            leading: const Icon(FluentIcons.lightbulb),
+                            items: (context) => [
+                              MenuFlyoutItem(
+                                text: const Text('Jaimini (AK, Karakamsa)'),
+                                leading: const Icon(FluentIcons.favorite_star),
+                                onPressed: () => _navigateTo('jaimini'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Yoga & Dosha'),
+                                leading: const Icon(FluentIcons.scale_volume),
+                                onPressed: () => _navigateTo('yoga_dosha'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Planetary Maitri'),
+                                leading: const Icon(FluentIcons.people),
+                                onPressed: () => _navigateTo('planetary_maitri'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Retrograde'),
+                                leading: const Icon(FluentIcons.repeat_one),
+                                onPressed: () => _navigateTo('retrograde'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Sudarshan Chakra'),
+                                leading: const Icon(FluentIcons.view_all),
+                                onPressed: () => _navigateTo('sudarshan_chakra'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Comparison'),
+                                leading: const Icon(FluentIcons.compare),
+                                onPressed: () => _navigateTo('comparison'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Progeny'),
+                                leading: const Icon(FluentIcons.reminder_person),
+                                onPressed: () => _navigateTo('progeny'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Nadi Analysis'),
+                                leading: const Icon(FluentIcons.flow),
+                                onPressed: () => _navigateTo('nadi'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Gochara Vedha'),
+                                leading: const Icon(FluentIcons.sync_occurence),
+                                onPressed: () => _navigateTo('gochara_vedha'),
+                              ),
+                            ],
+                          ),
+                          const MenuFlyoutSeparator(),
+                          MenuFlyoutItem(
+                            text: const Text('PDF Report'),
+                            leading: const Icon(FluentIcons.pdf),
+                            onPressed: () => _navigateTo('pdf_report'),
+                          ),
+                        ],
+                      );
+                    },
+                    wrappedItem: CommandBarButton(
+                      icon: const Icon(FluentIcons.analytics_view),
+                      label: const Text('Analysis'),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => ContentDialog(
+                            title: const Text('Analysis Tools'),
+                            content: SizedBox(
+                              height: 300,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    _buildMobileAnalysisLink(
+                                      'Shadbala',
+                                      'shadbala',
+                                      FluentIcons.favorite_star,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Ashtakavarga',
+                                      'ashtakavarga',
+                                      FluentIcons.grid_view_small,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Bhava Bala',
+                                      'bhava_bala',
+                                      FluentIcons.home,
+                                    ),
+                                    const Divider(),
+                                    _buildMobileAnalysisLink(
+                                      'Transit',
+                                      'transit',
+                                      FluentIcons.history,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Varshaphal',
+                                      'varshaphal',
+                                      FluentIcons.calendar,
+                                    ),
+                                    const Divider(),
+                                    _buildMobileAnalysisLink(
+                                      'Yoga & Dosha',
+                                      'yoga_dosha',
+                                      FluentIcons.scale_volume,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Planetary Maitri',
+                                      'planetary_maitri',
+                                      FluentIcons.people,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Retrograde',
+                                      'retrograde',
+                                      FluentIcons.repeat_one,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Sudarshan Chakra',
+                                      'sudarshan_chakra',
+                                      FluentIcons.view_all,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Comparison',
+                                      'comparison',
+                                      FluentIcons.compare,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Gochara Vedha',
+                                      'gochara_vedha',
+                                      FluentIcons.sync_occurence,
+                                    ),
+                                    const Divider(),
+                                    _buildMobileAnalysisLink(
+                                      'PDF Report',
+                                      'pdf_report',
+                                      FluentIcons.pdf,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              Button(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                if (!ResponsiveHelper.useMobileLayout(context))
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.build),
+                    label: const Text('Rectify'),
+                    onPressed: () async {
+                      // ... (Logic)
+                      if (_birthData == null) return;
+                      final newData = await Navigator.push(
+                        context,
+                        FluentPageRoute(
+                          builder: (context) => const BirthTimeRectifierScreen(),
+                          settings: RouteSettings(arguments: _birthData),
+                        ),
+                      );
+
+                      if (newData != null && newData is BirthData) {
+                        setState(() {
+                          _birthData = newData;
+                          _loadChartData();
+                        });
+                      }
+                    },
+                  ),
+
+                // --- Primary Actions (End) ---
+                if (!ResponsiveHelper.useMobileLayout(context)) ...[
+                  const CommandBarSeparator(),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.save),
+                    label: const Text('Save'),
+                    onPressed: _saveCurrentChart,
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.share),
+                    label: const Text('Share'),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return ContentDialog(
+                            title: const Text('Share Chart'),
+                            content: const Text(
+                              'How would you like to share this chart?',
+                            ),
+                            actions: [
+                              Button(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  if (_d1ChartKey.currentContext == null) return;
+                                  try {
+                                    await ChartShareService.shareChartImage(
+                                      _d1ChartKey,
+                                      filename:
+                                          '${_birthData?.name ?? 'chart'}_D1.png',
+                                    );
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      displayInfoBar(
+                                        context,
+                                        builder: (context, close) => InfoBar(
+                                          title: const Text('Share Failed'),
+                                          content: Text(e.toString()),
+                                          severity: InfoBarSeverity.error,
+                                          onClose: close,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: const Text('Image (D-1)'),
+                              ),
+                              Button(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  final data = await _chartDataFuture;
+                                  if (data != null && _birthData != null) {
+                                    try {
+                                      await ChartShareService.shareChartPdf(
+                                        data,
+                                        _birthData!,
+                                        filename:
+                                            '${_birthData?.name ?? 'report'}.pdf',
+                                      );
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        displayInfoBar(
+                                          context,
+                                          builder: (context, close) => InfoBar(
+                                            title: const Text('Share Failed'),
+                                            content: Text(e.toString()),
+                                            severity: InfoBarSeverity.error,
+                                            onClose: close,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                                child: const Text('PDF Report'),
+                              ),
+                              Button(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  const CommandBarSeparator(),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.info),
+                    label: const Text('Info'),
+                    onPressed: _showBirthDetails,
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.settings),
+                    label: const Text('Settings'),
+                    onPressed: () => Navigator.pushNamed(context, '/settings'),
+                  ),
+                ],
+              ],
+              secondaryItems: [
+                // --- Secondary Actions (Overflow Menu) ---
+                // Force these into overflow on mobile for better touch targets
+                if (ResponsiveHelper.useMobileLayout(context)) ...[
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.save),
+                    label: const Text('Save Chart'),
+                    onPressed: _saveCurrentChart,
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.share),
+                    label: const Text('Share Chart'),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return ContentDialog(
+                            title: const Text('Share Chart'),
+                            content: const Text(
+                              'How would you like to share this chart?',
+                            ),
+                            actions: [
+                              Button(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  if (_d1ChartKey.currentContext == null) return;
+                                  try {
+                                    await ChartShareService.shareChartImage(
+                                      _d1ChartKey,
+                                      filename:
+                                          '${_birthData?.name ?? 'chart'}_D1.png',
+                                    );
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      displayInfoBar(
+                                        context,
+                                        builder: (context, close) => InfoBar(
+                                          title: const Text('Share Failed'),
+                                          content: Text(e.toString()),
+                                          severity: InfoBarSeverity.error,
+                                          onClose: close,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: const Text('Image (D-1)'),
+                              ),
+                              Button(
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  final data = await _chartDataFuture;
+                                  if (data != null && _birthData != null) {
+                                    try {
+                                      await ChartShareService.shareChartPdf(
+                                        data,
+                                        _birthData!,
+                                        filename:
+                                            '${_birthData?.name ?? 'report'}.pdf',
+                                      );
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        displayInfoBar(
+                                          context,
+                                          builder: (context, close) => InfoBar(
+                                            title: const Text('Share Failed'),
+                                            content: Text(e.toString()),
+                                            severity: InfoBarSeverity.error,
+                                            onClose: close,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                                child: const Text('PDF Report'),
+                              ),
+                              Button(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  const CommandBarSeparator(),
+                  CommandBarButton(
+                    icon: Icon(
+                      _style == ChartStyle.northIndian
+                          ? FluentIcons.grid_view_small
+                          : FluentIcons.diamond,
+                    ),
+                    label: Text(
+                      'Style: ${_style == ChartStyle.northIndian ? 'North Indian' : 'South Indian'}',
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _style = _style == ChartStyle.northIndian
+                            ? ChartStyle.southIndian
+                            : ChartStyle.northIndian;
+                      });
+                    },
+                  ),
+                  CommandBarButton(
+                    icon: Icon(_showAspects ? FluentIcons.view : FluentIcons.hide),
+                    label: Text(_showAspects ? 'Hide Aspects' : 'Show Aspects'),
+                    onPressed: () {
+                      setState(() {
+                        _showAspects = !_showAspects;
+                      });
+                    },
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.globe),
+                    label: const Text('Select Ayanamsa'),
+                    onPressed: _openAyanamsaSelection,
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.analytics_view),
+                    label: const Text('Analysis Tools'),
+                    onPressed: () {
+                      // Show a dialog or bottom sheet for analysis tools because
+                      // a nested dropdown in a command bar menu might be weird.
+                      // Or we can just navigate to a "Menu" or show the same Dropdown logic.
+                      // Let's use a simple dialog for now to match the desktop dropdown content.
+                      showDialog(
+                        context: context,
+                        builder: (context) => ContentDialog(
+                          title: const Text('Analysis Tools'),
+                          content: SizedBox(
+                            height: 300,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _buildMobileAnalysisLink(
+                                    'Shadbala',
+                                    'shadbala',
+                                    FluentIcons.favorite_star,
+                                  ),
+                                  _buildMobileAnalysisLink(
+                                    'Ashtakavarga',
+                                    'ashtakavarga',
+                                    FluentIcons.grid_view_small,
+                                  ),
+                                  _buildMobileAnalysisLink(
+                                    'Bhava Bala',
+                                    'bhava_bala',
+                                    FluentIcons.home,
+                                  ),
+                                  const Divider(),
+                                  _buildMobileAnalysisLink(
+                                    'Transit',
+                                    'transit',
+                                    FluentIcons.history,
+                                    ),
+                                  _buildMobileAnalysisLink(
+                                    'Varshaphal',
+                                    'varshaphal',
+                                    FluentIcons.calendar,
+                                  ),
+                                  const Divider(),
+                                  _buildMobileAnalysisLink(
+                                    'Yoga & Dosha',
+                                    'yoga_dosha',
+                                    FluentIcons.scale_volume,
+                                  ),
+                                  _buildMobileAnalysisLink(
+                                    'Planetary Maitri',
+                                    'planetary_maitri',
+                                    FluentIcons.people,
+                                  ),
+                                  _buildMobileAnalysisLink(
+                                    'Retrograde',
+                                    'retrograde',
+                                    FluentIcons.repeat_one,
+                                  ),
+                                  _buildMobileAnalysisLink(
+                                    'Sudarshan Chakra',
+                                    'sudarshan_chakra',
+                                    FluentIcons.view_all,
+                                  ),
+                                  _buildMobileAnalysisLink(
+                                    'Comparison',
+                                    'comparison',
+                                    FluentIcons.compare,
+                                  ),
+                                  const Divider(),
+                                  _buildMobileAnalysisLink(
+                                    'PDF Report',
+                                    'pdf_report',
+                                    FluentIcons.pdf,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          actions: [
+                            Button(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.build),
+                    label: const Text('Birth Time Rectification'),
+                    onPressed: () async {
+                      if (_birthData == null) return;
+                      final newData = await Navigator.push(
+                        context,
+                        FluentPageRoute(
+                          builder: (context) => const BirthTimeRectifierScreen(),
+                          settings: RouteSettings(arguments: _birthData),
+                        ),
+                      );
+
+                      if (newData != null && newData is BirthData) {
+                        setState(() {
+                          _birthData = newData;
+                          _loadChartData();
+                        });
+                      }
+                    },
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.info),
+                    label: const Text('Birth Details'),
+                    onPressed: _showBirthDetails,
+                  ),
+                  CommandBarButton(
+                    icon: const Icon(FluentIcons.settings),
+                    label: const Text('Settings'),
+                    onPressed: () => Navigator.pushNamed(context, '/settings'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          content: builder(snapshot.data!),
+        );
       },
     );
   }

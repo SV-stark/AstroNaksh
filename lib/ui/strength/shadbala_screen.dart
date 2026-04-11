@@ -19,14 +19,26 @@ class ShadbalaScreen extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const ScaffoldPage(
-            header: PageHeader(title: Text('Shadbala Analysis')),
+            header: PageHeader(
+              title: const Text('Shadbala Analysis'),
+              leading: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
             content: Center(child: ProgressRing()),
           );
         }
 
         if (snapshot.hasError) {
           return ScaffoldPage(
-            header: const PageHeader(title: Text('Shadbala Analysis')),
+            header: PageHeader(
+              title: const Text('Shadbala Analysis'),
+              leading: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
             content: Center(
               child: InfoBar(
                 title: const Text('Calculation Error'),

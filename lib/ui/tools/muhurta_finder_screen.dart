@@ -175,6 +175,10 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
     return ScaffoldPage(
       header: PageHeader(
         title: const Text('Muhurta Finder'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
         commandBar: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [

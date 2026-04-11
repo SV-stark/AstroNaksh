@@ -22,15 +22,25 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const ScaffoldPage(
-            header: PageHeader(title: Text('Bhava Bala (House Strength)')),
+            header: PageHeader(
+              title: const Text('Bhava Bala (House Strength)'),
+              leading: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
             content: Center(child: ProgressRing()),
           );
         }
 
         if (snapshot.hasError) {
           return ScaffoldPage(
-            header: const PageHeader(
-              title: Text('Bhava Bala (House Strength)'),
+            header: PageHeader(
+              title: const Text('Bhava Bala (House Strength)'),
+              leading: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
             content: Center(
               child: InfoBar(

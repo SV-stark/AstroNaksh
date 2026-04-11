@@ -75,11 +75,15 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             if (ResponsiveHelper.useMobileLayout(context))
-              IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
             Icon(
               FluentIcons.heart_fill,
@@ -87,36 +91,72 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
               size: 20,
             ),
             const SizedBox(width: 12),
-            Expanded(child: Text(compatibilityReport.overallConclusion)),
+            Flexible(
+              child: Text(
+                compatibilityReport.overallConclusion,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: CommandBar(
-          overflowBehavior: CommandBarOverflowBehavior.noWrap,
+          overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
+          mainAxisAlignment: MainAxisAlignment.end,
           primaryItems: [
-            CommandBarButton(
-              icon: const Icon(FluentIcons.add_friend),
-              label: const Text('New Pair'),
-              onPressed: () {
-                setState(() {
-                  _selectedChart2 = null;
-                });
-              },
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.switch_widget),
-              label: const Text('Swap'),
-              onPressed: _swapCharts,
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.side_panel_mirrored),
-              label: const Text('Charts'),
-              onPressed: _showSideBySideView,
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.pdf),
-              label: const Text('Export'),
-              onPressed: _exportPdf,
-            ),
+            if (!ResponsiveHelper.useMobileLayout(context)) ...[
+              CommandBarButton(
+                icon: const Icon(FluentIcons.add_friend),
+                label: const Text('New Pair'),
+                onPressed: () {
+                  setState(() {
+                    _selectedChart2 = null;
+                  });
+                },
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.switch_widget),
+                label: const Text('Swap'),
+                onPressed: _swapCharts,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.side_panel_mirrored),
+                label: const Text('Charts'),
+                onPressed: _showSideBySideView,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.pdf),
+                label: const Text('Export'),
+                onPressed: _exportPdf,
+              ),
+            ],
+          ],
+          secondaryItems: [
+            if (ResponsiveHelper.useMobileLayout(context)) ...[
+              CommandBarButton(
+                icon: const Icon(FluentIcons.add_friend),
+                label: const Text('New Matching Pair'),
+                onPressed: () {
+                  setState(() {
+                    _selectedChart2 = null;
+                  });
+                },
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.switch_widget),
+                label: const Text('Swap Charts'),
+                onPressed: _swapCharts,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.side_panel_mirrored),
+                label: const Text('Side-by-Side Charts'),
+                onPressed: _showSideBySideView,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.pdf),
+                label: const Text('Export to PDF'),
+                onPressed: _exportPdf,
+              ),
+            ],
           ],
         ),
       ),

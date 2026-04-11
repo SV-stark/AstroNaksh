@@ -48,13 +48,22 @@ class _TransitScreenState extends State<TransitScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             if (ResponsiveHelper.useMobileLayout(context))
-              IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-            const Text('Transit Analysis'),
+            const Flexible(
+              child: Text(
+                'Transit Analysis',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),

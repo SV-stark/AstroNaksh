@@ -336,13 +336,22 @@ class _ChartScreenState extends State<ChartScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             if (ResponsiveHelper.useMobileLayout(context))
-              IconButton(
-                icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
-                onPressed: () => Navigator.pop(context),
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-            const Text('Vedic Chart'),
+            const Flexible(
+              child: Text(
+                'Vedic Chart',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: CommandBar(
@@ -617,62 +626,35 @@ class _ChartScreenState extends State<ChartScreen> {
               ),
 
             // --- Primary Actions (End) ---
-            const CommandBarSeparator(),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.save),
-              label: const Text('Save'),
-              onPressed: _saveCurrentChart,
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.share),
-              label: const Text('Share'),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return ContentDialog(
-                      title: const Text('Share Chart'),
-                      content: const Text(
-                        'How would you like to share this chart?',
-                      ),
-                      actions: [
-                        Button(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            if (_d1ChartKey.currentContext == null) return;
-                            try {
-                              await ChartShareService.shareChartImage(
-                                _d1ChartKey,
-                                filename:
-                                    '${_birthData?.name ?? 'chart'}_D1.png',
-                              );
-                            } catch (e) {
-                              if (context.mounted) {
-                                displayInfoBar(
-                                  context,
-                                  builder: (context, close) => InfoBar(
-                                    title: const Text('Share Failed'),
-                                    content: Text(e.toString()),
-                                    severity: InfoBarSeverity.error,
-                                    onClose: close,
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                          child: const Text('Image (D-1)'),
+            if (!ResponsiveHelper.useMobileLayout(context)) ...[
+              const CommandBarSeparator(),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.save),
+                label: const Text('Save'),
+                onPressed: _saveCurrentChart,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.share),
+                label: const Text('Share'),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ContentDialog(
+                        title: const Text('Share Chart'),
+                        content: const Text(
+                          'How would you like to share this chart?',
                         ),
-                        Button(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            final data = await _chartDataFuture;
-                            if (data != null && _birthData != null) {
+                        actions: [
+                          Button(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              if (_d1ChartKey.currentContext == null) return;
                               try {
-                                await ChartShareService.shareChartPdf(
-                                  data,
-                                  _birthData!,
+                                await ChartShareService.shareChartImage(
+                                  _d1ChartKey,
                                   filename:
-                                      '${_birthData?.name ?? 'report'}.pdf',
+                                      '${_birthData?.name ?? 'chart'}_D1.png',
                                 );
                               } catch (e) {
                                 if (context.mounted) {
@@ -687,22 +669,48 @@ class _ChartScreenState extends State<ChartScreen> {
                                   );
                                 }
                               }
-                            }
-                          },
-                          child: const Text('PDF Report'),
-                        ),
-                        Button(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-            ),
-
-            if (!ResponsiveHelper.useMobileLayout(context)) ...[
+                            },
+                            child: const Text('Image (D-1)'),
+                          ),
+                          Button(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              final data = await _chartDataFuture;
+                              if (data != null && _birthData != null) {
+                                try {
+                                  await ChartShareService.shareChartPdf(
+                                    data,
+                                    _birthData!,
+                                    filename:
+                                        '${_birthData?.name ?? 'report'}.pdf',
+                                  );
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    displayInfoBar(
+                                      context,
+                                      builder: (context, close) => InfoBar(
+                                        title: const Text('Share Failed'),
+                                        content: Text(e.toString()),
+                                        severity: InfoBarSeverity.error,
+                                        onClose: close,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            child: const Text('PDF Report'),
+                          ),
+                          Button(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
               const CommandBarSeparator(),
               CommandBarButton(
                 icon: const Icon(FluentIcons.info),
@@ -720,6 +728,90 @@ class _ChartScreenState extends State<ChartScreen> {
             // --- Secondary Actions (Overflow Menu) ---
             // Force these into overflow on mobile for better touch targets
             if (ResponsiveHelper.useMobileLayout(context)) ...[
+              CommandBarButton(
+                icon: const Icon(FluentIcons.save),
+                label: const Text('Save Chart'),
+                onPressed: _saveCurrentChart,
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.share),
+                label: const Text('Share Chart'),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ContentDialog(
+                        title: const Text('Share Chart'),
+                        content: const Text(
+                          'How would you like to share this chart?',
+                        ),
+                        actions: [
+                          Button(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              if (_d1ChartKey.currentContext == null) return;
+                              try {
+                                await ChartShareService.shareChartImage(
+                                  _d1ChartKey,
+                                  filename:
+                                      '${_birthData?.name ?? 'chart'}_D1.png',
+                                );
+                              } catch (e) {
+                                if (context.mounted) {
+                                  displayInfoBar(
+                                    context,
+                                    builder: (context, close) => InfoBar(
+                                      title: const Text('Share Failed'),
+                                      content: Text(e.toString()),
+                                      severity: InfoBarSeverity.error,
+                                      onClose: close,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text('Image (D-1)'),
+                          ),
+                          Button(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              final data = await _chartDataFuture;
+                              if (data != null && _birthData != null) {
+                                try {
+                                  await ChartShareService.shareChartPdf(
+                                    data,
+                                    _birthData!,
+                                    filename:
+                                        '${_birthData?.name ?? 'report'}.pdf',
+                                  );
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    displayInfoBar(
+                                      context,
+                                      builder: (context, close) => InfoBar(
+                                        title: const Text('Share Failed'),
+                                        content: Text(e.toString()),
+                                        severity: InfoBarSeverity.error,
+                                        onClose: close,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            child: const Text('PDF Report'),
+                          ),
+                          Button(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+              const CommandBarSeparator(),
               CommandBarButton(
                 icon: Icon(
                   _style == ChartStyle.northIndian

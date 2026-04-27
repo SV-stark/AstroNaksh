@@ -429,7 +429,7 @@ class _ChartScreenState extends State<ChartScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildMobileAnalysisLink(String title, String navKey, IconData icon) {

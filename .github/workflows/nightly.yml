@@ -70,13 +70,22 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R artifacts
 
+      - name: Update Nightly Tag
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f nightly
+          git push -f origin nightly
+
       - name: Update Nightly Release
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: ncipollo/release-action@v1
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "nightly"
+          artifacts: "artifacts/android-apk/AstroNaksh-Android.apk,artifacts/windows-installer/astronaksh_setup.exe"
+          body: "Nightly Build - Latest development version"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: nightly
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: false
           prerelease: true
-          title: "Nightly Build"
-          files: |
-            artifacts/android-apk/AstroNaksh-Android.apk
-            artifacts/windows-installer/astronaksh_setup.exe
+          generateReleaseNotes: true

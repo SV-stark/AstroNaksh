@@ -719,7 +719,7 @@ class VedhaAnalysis {
   /// Get vedha result for a specific planet
   j.VedhaResult? getResult(j.Planet planet) {
     for (final result in results) {
-      if (result.transitPlanet == planet.displayName) {
+      if (result.planet == planet) {
         return result;
       }
     }

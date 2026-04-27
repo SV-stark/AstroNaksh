@@ -5,6 +5,7 @@ import 'package:jyotish/jyotish.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../data/models.dart';
@@ -185,15 +186,16 @@ class PDFReportService {
     // Yogas & Doshas Section
     if (includeYogaDosha) {
       final yogaAnalysis = YogaDoshaAnalyzer.analyze(chartData);
+      final yogaDoshaSection = await ReportSections.buildYogaDoshaSection(
+        yogaAnalysis,
+        h2,
+        h3,
+        body,
+      );
       pdf.addPage(
         PdfWidgets.premiumPage(
           backgroundImage: bgImage,
-          build: (context) => ReportSections.buildYogaDoshaSection(
-            yogaAnalysis,
-            h2,
-            h3,
-            body,
-          ),
+          build: (context) => yogaDoshaSection,
         ),
       );
     }
@@ -205,16 +207,25 @@ class PDFReportService {
         DateTime.now().year,
       );
       
+      final varshaPage1 = await ReportSections.buildVarshaphalPage1(
+        varsha,
+        h2,
+        h3,
+        body,
+      );
+
+      final varshaPage2 = await ReportSections.buildVarshaphalPage2(
+        varsha,
+        h2,
+        h3,
+        body,
+      );
+
       // Page 1: Varsha Chart & Indicators
       pdf.addPage(
         PdfWidgets.premiumPage(
           backgroundImage: bgImage,
-          build: (context) => ReportSections.buildVarshaphalPage1(
-            varsha,
-            h2,
-            h3,
-            body,
-          ),
+          build: (context) => varshaPage1,
         ),
       );
 
@@ -222,12 +233,7 @@ class PDFReportService {
       pdf.addPage(
         PdfWidgets.premiumPage(
           backgroundImage: bgImage,
-          build: (context) => ReportSections.buildVarshaphalPage2(
-            varsha,
-            h2,
-            h3,
-            body,
-          ),
+          build: (context) => varshaPage2,
         ),
       );
     }

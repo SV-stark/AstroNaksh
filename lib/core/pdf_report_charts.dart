@@ -1,112 +1,184 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'pdf/report_styles.dart';
 
 class PdfReportCharts {
-  static pw.Widget drawNorthIndianChart(
+  /// Draw a premium North Indian chart with custom colors
+  static pw.Widget drawPremiumNorthIndianChart(
     Map<String, Map<String, dynamic>> significators,
-    int ascendantSign, { // 0-11
+    int ascendantSign, {
+    double width = 300,
+    double height = 300,
+    PdfColor? lineColor,
+  }) {
+    final color = lineColor ?? ReportStyles.primaryColor;
+
+    return pw.Stack(
+      children: [
+        pw.Container(
+          width: width,
+          height: height,
+          child: pw.CustomPaint(
+            size: PdfPoint(width, height),
+            painter: (PdfGraphics canvas, PdfPoint size) {
+              final w = size.x;
+              final h = size.y;
+
+              canvas
+                ..setColor(color)
+                ..setLineWidth(1.5);
+
+              // 1. Outer Square
+              canvas.drawRect(0, 0, w, h);
+              canvas.strokePath();
+
+              // 2. Diagonals
+              canvas.drawLine(0, 0, w, h);
+              canvas.drawLine(0, h, w, 0);
+              canvas.strokePath();
+
+              // 3. Inner Diamond
+              canvas.drawLine(w / 2, h, 0, h / 2);
+              canvas.drawLine(0, h / 2, w / 2, 0);
+              canvas.drawLine(w / 2, 0, w, h / 2);
+              canvas.drawLine(w, h / 2, w / 2, h);
+              canvas.strokePath();
+
+              // 4. Center decorative circle
+              canvas.drawEllipse(w / 2, h / 2, 10, 10);
+              canvas.strokePath();
+            },
+          ),
+        ),
+        ..._buildHouseContents(significators, ascendantSign, width, height, isPremium: true),
+      ],
+    );
+  }
+
+  /// Draw a South Indian style chart (4x4 grid with center empty)
+  static pw.Widget drawSouthIndianChart(
+    Map<String, Map<String, dynamic>> significators, {
     double width = 300,
     double height = 300,
   }) {
-    // Prepare data: Map Sign (1-12) -> List of Planet Names
+    final cellW = width / 4;
+    final cellH = height / 4;
+
+    // Signs in South Indian chart are fixed in position:
+    // 11 0  1  2
+    // 10       3
+    // 9        4
+    // 8  7  6  5
+    // Sign Index 0 is Aries (Top-row, 2nd column)
+    final signToPos = [
+      const PdfPoint(1, 3), // 0: Aries
+      const PdfPoint(2, 3), // 1: Taurus
+      const PdfPoint(3, 3), // 2: Gemini
+      const PdfPoint(3, 2), // 3: Cancer
+      const PdfPoint(3, 1), // 4: Leo
+      const PdfPoint(3, 0), // 5: Virgo
+      const PdfPoint(2, 0), // 6: Libra
+      const PdfPoint(1, 0), // 7: Scorpio
+      const PdfPoint(0, 0), // 8: Sagittarius
+      const PdfPoint(0, 1), // 9: Capricorn
+      const PdfPoint(0, 2), // 10: Aquarius
+      const PdfPoint(0, 3), // 11: Pisces
+    ];
+
+    // Prepare data
     final planetsBySign = <int, List<String>>{};
-    for (var i = 1; i <= 12; i++) {
+    for (var i = 0; i < 12; i++) {
       planetsBySign[i] = [];
     }
 
     significators.forEach((planet, info) {
       final position = info['position'] as double? ?? 0.0;
-      final signIndex = (position / 30).floor(); // 0-11
-      final signNumber = signIndex + 1; // 1-12
-      // Using short names for PDF to save space
-      final shortName = _getShortName(planet);
-      planetsBySign[signNumber]?.add(shortName);
+      final signIndex = (position / 30).floor() % 12;
+      planetsBySign[signIndex]?.add(_getShortName(planet));
     });
 
-    return pw.Container(
-      width: width,
-      height: height,
-      child: pw.CustomPaint(
-        size: PdfPoint(width, height),
-        painter: (PdfGraphics canvas, PdfPoint size) {
-          final w = size.x;
-          final h = size.y;
+    final widgets = <pw.Widget>[];
 
-          // Paint settings
-          canvas
-            ..setColor(PdfColors.black)
-            ..setLineWidth(1.0);
+    // Draw Grid Lines using CustomPaint
+    widgets.add(
+      pw.Container(
+        width: width,
+        height: height,
+        child: pw.CustomPaint(
+          size: PdfPoint(width, height),
+          painter: (PdfGraphics canvas, PdfPoint size) {
+            canvas
+              ..setColor(ReportStyles.primaryColor)
+              ..setLineWidth(1.0);
 
-          // 1. Draw Outer Square
-          canvas.drawRect(0, 0, w, h);
-          canvas.strokePath();
+            // Outer
+            canvas.drawRect(0, 0, width, height);
+            // Inner lines
+            for (var i = 1; i < 4; i++) {
+              canvas.drawLine(i * cellW, 0, i * cellW, height);
+              canvas.drawLine(0, i * cellH, width, i * cellH);
+            }
+            canvas.strokePath();
 
-          // 2. Draw Diagonals
-          canvas.drawLine(
-            0,
-            h,
-            w,
-            0,
-          ); // Top-left to Bottom-right (PDF coords are bottom-up?)
-          // Note: PdfGraphics usually uses bottom-left as (0,0).
-          // Let's assume (0,0) is bottom-left for now.
-          // If (0,0) is bottom-left:
-          // TL is (0, h), TR is (w, h), BL is (0, 0), BR is (w, 0).
-          // Diagonals: TL(0,h) to BR(w,0) and TR(w,h) to BL(0,0).
-          canvas.drawLine(0, 0, w, h);
-          canvas.strokePath();
-
-          // 3. Draw Inner Diamond
-          // Mid-Top: (w/2, h)
-          // Mid-Right: (w, h/2)
-          // Mid-Bottom: (w/2, 0)
-          // Mid-Left: (0, h/2)
-
-          canvas.drawLine(w / 2, h, 0, h / 2); // Top-Mid to Left-Mid
-          canvas.drawLine(0, h / 2, w / 2, 0); // Left-Mid to Bottom-Mid
-          canvas.drawLine(w / 2, 0, w, h / 2); // Bottom-Mid to Right-Mid
-          canvas.drawLine(w, h / 2, w / 2, h); // Right-Mid to Top-Mid
-          canvas.strokePath();
-
-          // Draw content
-          // We need to place text. PdfGraphics has simple text drawing,
-          // but managing layout (centering, wrapping) is hard with raw canvas.
-          // Since we are inside a CustomPaint widget, we can't easily use pw.Text widgets *inside* the painter for layout.
-          // However, we can overlay pw.Stack on top of this CustomPaint for the text!
-          // That is much easier than calculating text widths in PdfGraphics.
-        },
+            // Clear Center
+            canvas.setFillColor(PdfColors.white);
+            canvas.drawRect(cellW + 1, cellH + 1, cellW * 2 - 2, cellH * 2 - 2);
+            canvas.fillPath();
+          },
+        ),
       ),
     );
-  }
 
-  static pw.Widget buildChartWithTextOverlay(
-    Map<String, Map<String, dynamic>> significators,
-    int ascendantSign, { // 0-11
-    double width = 300,
-    double height = 300,
-  }) {
-    return pw.Stack(
-      children: [
-        drawNorthIndianChart(
-          significators,
-          ascendantSign,
-          width: width,
-          height: height,
+    // Add Content
+    for (var i = 0; i < 12; i++) {
+      final pos = signToPos[i];
+      final planets = planetsBySign[i] ?? [];
+      
+      widgets.add(
+        pw.Positioned(
+          left: pos.x * cellW,
+          bottom: pos.y * cellH,
+          child: pw.Container(
+            width: cellW,
+            height: cellH,
+            padding: const pw.EdgeInsets.all(4),
+            child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.start,
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('${i + 1}', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
+                pw.Expanded(
+                  child: pw.Center(
+                    child: pw.Text(
+                      planets.join(' '),
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(
+                        fontSize: 8,
+                        fontWeight: pw.FontWeight.bold,
+                        color: ReportStyles.primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        ..._buildHouseContents(significators, ascendantSign, width, height),
-      ],
-    );
+      );
+    }
+
+    return pw.Stack(children: widgets);
   }
 
   static List<pw.Widget> _buildHouseContents(
     Map<String, Map<String, dynamic>> significators,
     int ascendantSign,
     double w,
-    double h,
-  ) {
+    double h, {
+    bool isPremium = false,
+  }) {
     final widgets = <pw.Widget>[];
 
-    // Prepare data
     final planetsBySign = <int, List<String>>{};
     for (var i = 1; i <= 12; i++) {
       planetsBySign[i] = [];
@@ -114,25 +186,10 @@ class PdfReportCharts {
 
     significators.forEach((planet, info) {
       final position = info['position'] as double? ?? 0.0;
-      final signIndex = (position / 30).floor(); // 0-11
-      final signNumber = signIndex + 1; // 1-12
+      final signIndex = (position / 30).floor();
+      final signNumber = signIndex + 1;
       planetsBySign[signNumber]?.add(_getShortName(planet));
     });
-
-    // Centers for 12 houses (approximate percentage of w, h)
-    // Assuming PDF coordinates: (0,0) is BOTTOM-LEFT.
-    // House 1: Top Center -> (0.5w, 0.75h)
-    // House 2: Top Left -> (0.25w, 0.875h)
-    // House 3: Left Top -> (0.125w, 0.75h)
-    // House 4: Left Center -> (0.25w, 0.5h)
-    // House 5: Left Bottom -> (0.125w, 0.25h)
-    // House 6: Bottom Left -> (0.25w, 0.125h)
-    // House 7: Bottom Center -> (0.5w, 0.25h)
-    // House 8: Bottom Right -> (0.75w, 0.125h)
-    // House 9: Right Bottom -> (0.875w, 0.25h)
-    // House 10: Right Center -> (0.75w, 0.5h)
-    // House 11: Right Top -> (0.875w, 0.75h)
-    // House 12: Top Right -> (0.75w, 0.875h)
 
     final centers = [
       const PdfPoint(0.5, 0.75), // 1
@@ -150,17 +207,10 @@ class PdfReportCharts {
     ];
 
     for (var i = 0; i < 12; i++) {
-      // House Index i (0-11) -> 1st House is i=0
-      // Sign in this house = (Asc + i) % 12
-      // If Asc is 0 (Aries), House 0 has Sign 0 (Aries).
-      // ascendantSign is 0-based.
-
       final signIndex = (ascendantSign + i) % 12;
       final signNumber = signIndex + 1;
-
-      // Content
       final planets = planetsBySign[signNumber] ?? [];
-      final planetText = planets.join('\n'); // Stack vertically or horizontally
+      final planetText = planets.join(' ');
 
       final cx = centers[i].x * w;
       final cy = centers[i].y * h;
@@ -169,17 +219,17 @@ class PdfReportCharts {
       widgets.add(
         pw.Positioned(
           left: cx - 10,
-          bottom:
-              cy +
-              (planets.isNotEmpty
-                  ? 10
-                  : -6), // Adjust position relative to planets
+          bottom: cy + (planets.isNotEmpty ? 8 : -4),
           child: pw.Container(
             width: 20,
             alignment: pw.Alignment.center,
             child: pw.Text(
               '$signNumber',
-              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+              style: pw.TextStyle(
+                fontSize: 8,
+                color: isPremium ? ReportStyles.accentColor : PdfColors.grey700,
+                fontWeight: isPremium ? pw.FontWeight.bold : pw.FontWeight.normal,
+              ),
             ),
           ),
         ),
@@ -189,10 +239,10 @@ class PdfReportCharts {
       if (planets.isNotEmpty) {
         widgets.add(
           pw.Positioned(
-            left: cx - 25,
-            bottom: cy - 20, // Centered-ish
+            left: cx - 35,
+            bottom: cy - 15,
             child: pw.Container(
-              width: 50,
+              width: 70,
               alignment: pw.Alignment.center,
               child: pw.Text(
                 planetText,
@@ -200,7 +250,7 @@ class PdfReportCharts {
                 style: pw.TextStyle(
                   fontSize: 9,
                   fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.black,
+                  color: isPremium ? ReportStyles.primaryColor : PdfColors.black,
                 ),
               ),
             ),
@@ -214,6 +264,34 @@ class PdfReportCharts {
 
   static String _getShortName(String planet) {
     if (planet.length <= 2) return planet;
-    return planet.substring(0, 2);
+    // Map common names to 2-letter codes if possible
+    const maps = {
+      'Sun': 'Su',
+      'Moon': 'Mo',
+      'Mars': 'Ma',
+      'Mercury': 'Me',
+      'Jupiter': 'Ju',
+      'Venus': 'Ve',
+      'Saturn': 'Sa',
+      'Rahu': 'Ra',
+      'Ketu': 'Ke',
+      'Ascendant': 'As',
+    };
+    return maps[planet] ?? planet.substring(0, 2);
   }
+
+  // Backwards compatibility
+  static pw.Widget drawNorthIndianChart(
+    Map<String, Map<String, dynamic>> significators,
+    int ascendantSign, {
+    double width = 300,
+    double height = 300,
+  }) => drawPremiumNorthIndianChart(significators, ascendantSign, width: width, height: height);
+
+  static pw.Widget buildChartWithTextOverlay(
+    Map<String, Map<String, dynamic>> significators,
+    int ascendantSign, {
+    double width = 300,
+    double height = 300,
+  }) => drawPremiumNorthIndianChart(significators, ascendantSign, width: width, height: height);
 }

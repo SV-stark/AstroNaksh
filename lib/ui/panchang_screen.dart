@@ -707,7 +707,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             ),
-    );
+    ));
   }
 
   Widget _buildInauspiciousTab() {

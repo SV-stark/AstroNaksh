@@ -47,6 +47,21 @@ dependencies:
   fl_chart: ^0.69.0
   intl: ^0.20.0
   google_fonts: ^6.1.0
+  
+  # Modern State Management & DI
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  
+  # Reactive Database ORM
+  drift: ^2.14.1
+  
+  # Declarative Routing
+  go_router: ^12.1.1
+  
+  # Data Modeling & Utils
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+  dartx: ^1.2.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -66,6 +81,10 @@ dev_dependencies:
   build_runner: ^2.4.8
   freezed: ^2.4.7
   json_serializable: ^6.7.1
+  
+  # Generators
+  riverpod_generator: ^2.3.9
+  drift_dev: ^2.14.1
   
 dependency_overrides:
   intl: ^0.20.0

@@ -1,88 +1,27 @@
-class Location {
-  Location({required this.latitude, required this.longitude});
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  factory Location.fromJson(Map<String, dynamic> json) {
-    return Location(
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-    );
-  }
-  final double latitude;
-  final double longitude;
+part 'location.freezed.dart';
+part 'location.g.dart';
 
-  Map<String, dynamic> toJson() => {
-    'latitude': latitude,
-    'longitude': longitude,
-  };
+@freezed
+class Location with _$Location {
+  const factory Location({
+    required double latitude,
+    required double longitude,
+  }) = _Location;
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is Location &&
-        other.latitude == latitude &&
-        other.longitude == longitude;
-  }
-
-  @override
-  int get hashCode => latitude.hashCode ^ longitude.hashCode;
+  factory Location.fromJson(Map<String, dynamic> json) => _$LocationFromJson(json);
 }
 
-class BirthData {
-  BirthData({
-    required this.dateTime,
-    required this.location,
-    this.name = '',
-    this.place = '',
-    this.timezone = '',
-  });
+@freezed
+class BirthData with _$BirthData {
+  const factory BirthData({
+    required DateTime dateTime,
+    required Location location,
+    @Default('') String name,
+    @Default('') String place,
+    @Default('') String timezone,
+  }) = _BirthData;
 
-  factory BirthData.fromJson(Map<String, dynamic> json) {
-    final dateTimeStr = json['dateTime'] as String?;
-    if (dateTimeStr == null || dateTimeStr.isEmpty) {
-      throw const FormatException('Missing or empty dateTime in BirthData');
-    }
-    final locationJson = json['location'];
-    if (locationJson == null || locationJson is! Map) {
-      throw const FormatException('Missing or invalid location in BirthData');
-    }
-    return BirthData(
-      dateTime: DateTime.parse(dateTimeStr),
-      location: Location.fromJson(Map<String, dynamic>.from(locationJson)),
-      name: json['name'] as String? ?? '',
-      place: json['place'] as String? ?? '',
-      timezone: json['timezone'] as String? ?? '',
-    );
-  }
-  final DateTime dateTime;
-  final Location location;
-  final String name;
-  final String place;
-  final String timezone;
-
-  Map<String, dynamic> toJson() => {
-    'dateTime': dateTime.toIso8601String(),
-    'location': location.toJson(),
-    'name': name,
-    'place': place,
-    'timezone': timezone,
-  };
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is BirthData &&
-        other.dateTime == dateTime &&
-        other.location == location &&
-        other.name == name &&
-        other.place == place &&
-        other.timezone == timezone;
-  }
-
-  @override
-  int get hashCode =>
-      dateTime.hashCode ^
-      location.hashCode ^
-      name.hashCode ^
-      place.hashCode ^
-      timezone.hashCode;
+  factory BirthData.fromJson(Map<String, dynamic> json) => _$BirthDataFromJson(json);
 }

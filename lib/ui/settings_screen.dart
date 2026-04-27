@@ -1,31 +1,35 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/ayanamsa_calculator.dart';
 import '../core/chart_customization.dart';
-import '../core/settings_manager.dart';
+import '../core/settings_provider.dart';
 import '../ui/utils/responsive_helper.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late ChartCustomization _settings;
   int _currentIndex = 0;
+  bool _initialized = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _settings = ChartCustomization.fromJson(
-      SettingsManager().chartSettings.toJson(),
-    );
+  void _initSettingsIfNeeded() {
+    if (!_initialized) {
+      final currentSettings = ref.read(settingsProvider).value?.chartSettings;
+      if (currentSettings != null) {
+        _settings = ChartCustomization.fromJson(currentSettings.toJson());
+        _initialized = true;
+      }
+    }
   }
 
   void _saveSettings() {
-    SettingsManager().updateChartSettings(_settings);
+    ref.read(settingsProvider.notifier).updateChartSettings(_settings);
     displayInfoBar(
       context,
       builder: (context, close) => InfoBar(
@@ -38,6 +42,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _initSettingsIfNeeded();
+    
     return NavigationView(
       appBar: NavigationAppBar(
         leading: ResponsiveHelper.useMobileLayout(context)
@@ -117,7 +123,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildAppearanceSettings() {
-    final currentTheme = SettingsManager().themeMode;
+    final currentTheme = ref.watch(settingsProvider).value?.themeMode ?? ThemeMode.system;
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Appearance')),
       children: [
@@ -132,7 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 leading: const Icon(FluentIcons.system),
                 selected: currentTheme == ThemeMode.system,
                 onPressed: () =>
-                    SettingsManager().updateThemeMode(ThemeMode.system),
+                    ref.read(settingsProvider.notifier).updateThemeMode(ThemeMode.system),
               ),
               const Divider(),
               ListTile.selectable(
@@ -140,7 +146,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 leading: const Icon(FluentIcons.sunny),
                 selected: currentTheme == ThemeMode.light,
                 onPressed: () =>
-                    SettingsManager().updateThemeMode(ThemeMode.light),
+                    ref.read(settingsProvider.notifier).updateThemeMode(ThemeMode.light),
               ),
               const Divider(),
               ListTile.selectable(
@@ -148,7 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 leading: const Icon(FluentIcons.clear_night),
                 selected: currentTheme == ThemeMode.dark,
                 onPressed: () =>
-                    SettingsManager().updateThemeMode(ThemeMode.dark),
+                    ref.read(settingsProvider.notifier).updateThemeMode(ThemeMode.dark),
               ),
             ],
           ),

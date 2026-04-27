@@ -18,19 +18,23 @@ import 'ui/settings_screen.dart';
 import 'ui/styles.dart';
 import 'ui/tools/muhurta_finder_screen.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/router.dart';
+import 'core/settings_provider.dart';
+
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const AstroNakshApp());
+  runApp(const ProviderScope(child: AstroNakshApp()));
 }
 
-class AstroNakshApp extends StatefulWidget {
+class AstroNakshApp extends ConsumerStatefulWidget {
   const AstroNakshApp({super.key});
 
   @override
-  State<AstroNakshApp> createState() => _AstroNakshAppState();
+  ConsumerState<AstroNakshApp> createState() => _AstroNakshAppState();
 }
 
-class _AstroNakshAppState extends State<AstroNakshApp> {
+class _AstroNakshAppState extends ConsumerState<AstroNakshApp> {
   bool _initialized = false;
   String? _error;
 
@@ -42,8 +46,6 @@ class _AstroNakshAppState extends State<AstroNakshApp> {
 
   Future<void> _initApp() async {
     try {
-      // Initialize App Environment (Portable Mode / Verbose Checks)
-      // Arguments are lost here, but usually not needed for normal run
       await AppEnvironment.initialize([]);
 
       if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
@@ -60,13 +62,8 @@ class _AstroNakshAppState extends State<AstroNakshApp> {
             effect: WindowEffect.acrylic,
             color: const Color(0xCC222222),
           );
-        } catch (e) {
-          // Ignore
-        }
+        } catch (_) {}
       }
-
-      final settings = SettingsManager();
-      await settings.loadSettings();
 
       if (mounted) {
         setState(() {
@@ -98,29 +95,25 @@ class _AstroNakshAppState extends State<AstroNakshApp> {
       );
     }
 
-    final settings = SettingsManager();
-    return ListenableBuilder(
-      listenable: settings,
-      builder: (context, child) {
-        return FluentApp(
-          title: 'AstroNaksh',
-          themeMode: settings.themeMode,
-          theme: AppStyles.lightTheme,
-          darkTheme: AppStyles.darkTheme,
-          initialRoute: '/loading',
-          routes: {
-            '/loading': (context) => const LoadingScreen(),
-            '/': (context) => const HomeScreen(),
-            '/input': (context) => const InputScreen(),
-            '/chart': (context) => const ChartScreen(),
-            '/settings': (context) => const SettingsScreen(),
-            '/panchang': (context) => const PanchangScreen(),
-            '/comparison': (context) => const ChartComparisonScreen(),
-            '/muhurta': (context) => const MuhurtaFinderScreen(),
-          },
-          debugShowCheckedModeBanner: false,
-        );
-      },
+    final settingsAsync = ref.watch(settingsProvider);
+
+    return settingsAsync.when(
+      loading: () => const FluentApp(
+        home: ScaffoldPage(content: Center(child: ProgressRing())),
+      ),
+      error: (err, stack) => FluentApp(
+        home: ScaffoldPage(
+          content: Center(child: Text('Error loading settings: $err')),
+        ),
+      ),
+      data: (settings) => FluentApp.router(
+        title: 'AstroNaksh',
+        themeMode: settings.themeMode,
+        theme: AppStyles.lightTheme,
+        darkTheme: AppStyles.darkTheme,
+        routerConfig: router,
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

@@ -1,8 +1,10 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, FontWeight;
 import 'package:flutter/material.dart' show Colors, FontWeight;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../core/database_helper.dart';
+import '../core/database.dart';
 import '../data/models.dart';
 import '../data/sample_charts.dart';
 import '../ui/utils/responsive_helper.dart';
@@ -10,24 +12,23 @@ import 'horary/horary_input_screen.dart';
 import 'styles.dart';
 import 'widgets/panchang_daily_widget.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-  List<Map<String, dynamic>> _charts = [];
-  List<Map<String, dynamic>> _filteredCharts = [];
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  List<Chart> _charts = [];
+  List<Chart> _filteredCharts = [];
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadCharts();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCharts());
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -40,9 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadCharts() async {
     setState(() => _isLoading = true);
     try {
-      // Ensure database is initialized
-      await _dbHelper.database;
-      final charts = await _dbHelper.getCharts();
+      final db = ref.read(databaseProvider);
+      final charts = await db.select(db.charts).get();
       debugPrint('DEBUG: Loaded ${charts.length} charts from database');
       setState(() {
         _charts = charts;
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredCharts = _charts.where((chart) {
-        final name = (chart['name'] as String? ?? '').toLowerCase();
+        final name = (chart.name ?? '').toLowerCase();
         return name.contains(query);
       }).toList();
     });
@@ -86,22 +86,23 @@ class _HomeScreenState extends State<HomeScreen> {
       final dt = DateTime.parse(dateTimeStr);
       return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     } catch (e) {
-      return dateTimeStr;
+      return dateTimeStr ?? '';
     }
   }
 
-  void _openChart(Map<String, dynamic> chart) {
+  void _openChart(Chart chart) {
     try {
       final birthData = BirthData(
-        dateTime: DateTime.parse(chart['dateTime']),
+        dateTime: DateTime.parse(chart.dateTime!),
         location: Location(
-          latitude: chart['latitude'],
-          longitude: chart['longitude'],
+          latitude: chart.latitude!,
+          longitude: chart.longitude!,
         ),
-        name: chart['name'] ?? '',
-        place: chart['locationName'] ?? '',
+        name: chart.name ?? '',
+        place: chart.locationName ?? '',
+        timezone: chart.timezone ?? '',
       );
-      Navigator.pushNamed(context, '/chart', arguments: birthData);
+      context.push('/chart', extra: birthData);
     } catch (e) {
       displayInfoBar(
         context,
@@ -131,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(FluentIcons.add),
               label: const Text('New Chart'),
               onPressed: () async {
-                await Navigator.pushNamed(context, '/input');
+                await context.push('/input');
                 _loadCharts();
               },
             ),
@@ -141,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(FluentIcons.settings),
               label: const Text('Settings'),
               onPressed: () {
-                Navigator.pushNamed(context, '/settings');
+                context.push('/settings');
               },
             ),
           ],
@@ -174,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 16),
                   HoverButton(
                     onPressed: () async {
-                      await Navigator.pushNamed(context, '/input');
+                      await context.push('/input');
                       _loadCharts();
                     },
                     builder: (context, states) {
@@ -268,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         subtitle: 'Chart compatibility',
                         color: Colors.purple,
                         onTap: () {
-                          Navigator.pushNamed(context, '/comparison');
+                          context.push('/comparison');
                         },
                       ),
                       _buildQuickAction(
@@ -277,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         subtitle: 'Daily almanac',
                         color: Colors.orange,
                         onTap: () {
-                          Navigator.pushNamed(context, '/panchang');
+                          context.push('/panchang');
                         },
                       ),
                       _buildQuickAction(
@@ -300,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         subtitle: 'Auspicious times',
                         color: Colors.blue,
                         onTap: () {
-                          Navigator.pushNamed(context, '/muhurta');
+                          context.push('/muhurta');
                         },
                       ),
                     ],
@@ -376,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 24),
                             FilledButton(
                               onPressed: () async {
-                                await Navigator.pushNamed(context, '/input');
+                                await context.push('/input');
                                 _loadCharts();
                               },
                               child: const Row(
@@ -423,11 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             subtitle: Text(sample.place),
                                             onPressed: () {
-                                              Navigator.pushNamed(
-                                                context,
-                                                '/chart',
-                                                arguments: sample,
-                                              );
+                                              context.push('/chart', extra: sample);
                                             },
                                           ),
                                         ),
@@ -477,15 +474,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               title: Text(
-                                chart['name'] ?? 'Unknown',
+                                chart.name ?? 'Unknown',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: isMobile ? 16 : 14,
                                 ),
                               ),
                               subtitle: Text(
-                                '${_formatDateTime(chart['dateTime'])}'
-                                '${chart['locationName'] != null ? ' • ${chart['locationName']}' : ''}',
+                                '${_formatDateTime(chart.dateTime)}'
+                                '${chart.locationName != null ? ' • ${chart.locationName}' : ''}',
                                 style: TextStyle(fontSize: isMobile ? 13 : 12),
                               ),
                               trailing: SizedBox(
@@ -498,7 +495,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     size: isMobile ? 24 : 16,
                                   ),
                                   onPressed: () async {
-                                    await _dbHelper.deleteChart(chart['id']);
+                                    final db = ref.read(databaseProvider);
+                                    await (db.delete(db.charts)..where((t) => t.id.equals(chart.id))).go();
                                     _loadCharts();
                                   },
                                 ),

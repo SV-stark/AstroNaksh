@@ -220,9 +220,9 @@ class ReportSections {
         pw.Container(
           padding: const pw.EdgeInsets.all(12),
           decoration: pw.BoxDecoration(
-            color: ReportStyles.primaryColor.withValues(alpha: 0.05),
+            color: ReportStyles.primaryColor.shade(0.95),
             borderRadius: pw.BorderRadius.circular(8),
-            border: pw.Border.all(color: ReportStyles.primaryColor.withValues(alpha: 0.2)),
+            border: pw.Border.all(color: ReportStyles.primaryColor.shade(0.8)),
           ),
           child: pw.Row(
             children: [
@@ -421,7 +421,7 @@ class ReportSections {
         pw.Container(
           padding: const pw.EdgeInsets.all(12),
           decoration: pw.BoxDecoration(
-            color: ReportStyles.accentColor.withValues(alpha: 0.1),
+            color: ReportStyles.accentColor.shade(0.9),
             borderRadius: pw.BorderRadius.circular(8),
           ),
           child: pw.Text(varsha.interpretation, style: body),

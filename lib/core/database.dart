@@ -1,8 +1,9 @@
 import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'app_environment.dart';
 
 part 'database.g.dart';
@@ -10,7 +11,7 @@ part 'database.g.dart';
 class Charts extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().nullable()();
-  TextColumn get dateTime => text().nullable()();
+  TextColumn get birthTime => text().named('dateTime').nullable()();
   RealColumn get latitude => real().nullable()();
   RealColumn get longitude => real().nullable()();
   TextColumn get locationName => text().nullable()();
@@ -43,6 +44,6 @@ class AppDatabase extends _$AppDatabase {
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
-  ref.onDispose(() => db.close());
+  ref.onDispose(db.close);
   return db;
 });

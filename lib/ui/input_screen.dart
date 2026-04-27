@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/database_helper.dart';
 import '../../data/city_database.dart';
@@ -225,10 +226,10 @@ class _InputScreenState extends State<InputScreen> {
       if (!mounted) return;
 
       if (widget.onSelectionMode) {
-        Navigator.pop(context, birthData);
+        context.pop(birthData);
       } else {
         // Navigate to Chart Screen
-        Navigator.pushNamed(context, '/chart', arguments: birthData);
+        context.push('/chart', extra: birthData);
       }
     }
   }
@@ -249,7 +250,7 @@ class _InputScreenState extends State<InputScreen> {
         title: const Text('New Chart'),
         leading: IconButton(
           icon: const Icon(FluentIcons.back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
       ),
       content: SingleChildScrollView(

@@ -1,13 +1,12 @@
-import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
 
+import '../ui/chart_screen.dart';
+import '../ui/comparison/chart_comparison_screen.dart';
 import '../ui/home_screen.dart';
 import '../ui/input_screen.dart';
 import '../ui/loading_screen.dart';
 import '../ui/panchang_screen.dart';
 import '../ui/settings_screen.dart';
-import '../ui/chart_screen.dart';
-import '../ui/comparison/chart_comparison_screen.dart';
 import '../ui/tools/muhurta_finder_screen.dart';
 
 final router = GoRouter(

@@ -86,14 +86,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final dt = DateTime.parse(dateTimeStr);
       return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     } catch (e) {
-      return dateTimeStr ?? '';
+      return dateTimeStr;
     }
   }
 
   void _openChart(Chart chart) {
     try {
       final birthData = BirthData(
-        dateTime: DateTime.parse(chart.dateTime!),
+        dateTime: DateTime.parse(chart.birthTime!),
         location: Location(
           latitude: chart.latitude!,
           longitude: chart.longitude!,
@@ -481,7 +481,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                               ),
                               subtitle: Text(
-                                '${_formatDateTime(chart.dateTime)}'
+                                '${_formatDateTime(chart.birthTime)}'
                                 '${chart.locationName != null ? ' • ${chart.locationName}' : ''}',
                                 style: TextStyle(fontSize: isMobile ? 13 : 12),
                               ),

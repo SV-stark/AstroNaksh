@@ -87,13 +87,13 @@ void main() {
 
   group('Location Tests', () {
     test('Location can be created with required parameters', () {
-      final location = Location(latitude: 28.6139, longitude: 77.2090);
+      const location = Location(latitude: 28.6139, longitude: 77.2090);
       expect(location.latitude, equals(28.6139));
       expect(location.longitude, equals(77.2090));
     });
 
     test('Location toJson returns correct map', () {
-      final location = Location(latitude: 28.6139, longitude: 77.2090);
+      const location = Location(latitude: 28.6139, longitude: 77.2090);
       final json = location.toJson();
       expect(json['latitude'], equals(28.6139));
       expect(json['longitude'], equals(77.2090));
@@ -107,7 +107,7 @@ void main() {
     });
 
     test('Location roundtrip through JSON', () {
-      final original = Location(latitude: 40.7128, longitude: -74.0060);
+      const original = Location(latitude: 40.7128, longitude: -74.0060);
       final json = original.toJson();
       final restored = Location.fromJson(json);
       expect(restored.latitude, equals(original.latitude));
@@ -119,7 +119,7 @@ void main() {
     test('BirthData can be created with required parameters', () {
       final birthData = BirthData(
         dateTime: DateTime(1990, 1, 1, 12, 0),
-        location: Location(latitude: 28.6139, longitude: 77.2090),
+        location: const Location(latitude: 28.6139, longitude: 77.2090),
         name: 'Test User',
         place: 'New Delhi',
       );
@@ -130,7 +130,7 @@ void main() {
     test('BirthData has empty default timezone', () {
       final birthData = BirthData(
         dateTime: DateTime(1990, 1, 1, 12, 0),
-        location: Location(latitude: 28.6139, longitude: 77.2090),
+        location: const Location(latitude: 28.6139, longitude: 77.2090),
       );
       // Default timezone is empty string, not 'UTC'
       expect(birthData.timezone, equals(''));
@@ -139,7 +139,7 @@ void main() {
     test('BirthData toJson returns correct map', () {
       final birthData = BirthData(
         dateTime: DateTime(1990, 1, 1, 12, 0),
-        location: Location(latitude: 28.6139, longitude: 77.2090),
+        location: const Location(latitude: 28.6139, longitude: 77.2090),
         name: 'Test User',
         place: 'New Delhi',
         timezone: 'Asia/Kolkata',
@@ -167,7 +167,7 @@ void main() {
     test('BirthData roundtrip through JSON', () {
       final original = BirthData(
         dateTime: DateTime(1990, 1, 1, 12, 0),
-        location: Location(latitude: 28.6139, longitude: 77.2090),
+        location: const Location(latitude: 28.6139, longitude: 77.2090),
         name: 'Test User',
         place: 'New Delhi',
         timezone: 'Asia/Kolkata',

@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' show Colors;
+import 'package:go_router/go_router.dart';
 import 'package:jyotish/jyotish.dart';
 
 import '../../core/ayanamsa_calculator.dart';
@@ -932,7 +933,7 @@ class _ChartScreenState extends State<ChartScreen> {
                   CommandBarButton(
                     icon: const Icon(FluentIcons.settings),
                     label: const Text('Settings'),
-                    onPressed: () => Navigator.pushNamed(context, '/settings'),
+                    onPressed: () => context.push('/settings'),
                   ),
                 ],
               ],
@@ -1174,7 +1175,7 @@ class _ChartScreenState extends State<ChartScreen> {
                   CommandBarButton(
                     icon: const Icon(FluentIcons.settings),
                     label: const Text('Settings'),
-                    onPressed: () => Navigator.pushNamed(context, '/settings'),
+                    onPressed: () => context.push('/settings'),
                   ),
                 ],
               ],

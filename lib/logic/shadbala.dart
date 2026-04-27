@@ -1,5 +1,5 @@
-import 'package:jyotish/jyotish.dart';
 import 'package:dartx/dartx.dart';
+import 'package:jyotish/jyotish.dart';
 
 import '../core/ephemeris_manager.dart';
 import '../data/models.dart';
@@ -56,7 +56,8 @@ class ShadbalaCalculator {
             sunLongitude: sunPos,
           );
         })
-        .whereNotNull();
+        .filterValues((v) => v != null)
+        .cast<Planet, CombustionInfo>();
 
     final location = GeographicLocation(
       latitude: chart.latitude,

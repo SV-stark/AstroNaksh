@@ -4,25 +4,25 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('Location Tests - Additional', () {
     test('Location handles negative coordinates', () {
-      final location = Location(latitude: -33.8688, longitude: 151.2093);
+      const location = Location(latitude: -33.8688, longitude: 151.2093);
       expect(location.latitude, equals(-33.8688));
       expect(location.longitude, equals(151.2093));
     });
 
     test('Location handles zero coordinates', () {
-      final location = Location(latitude: 0.0, longitude: 0.0);
+      const location = Location(latitude: 0.0, longitude: 0.0);
       expect(location.latitude, equals(0.0));
       expect(location.longitude, equals(0.0));
     });
 
     test('Location handles extreme coordinates', () {
-      final location = Location(latitude: 90.0, longitude: 180.0);
+      const location = Location(latitude: 90.0, longitude: 180.0);
       expect(location.latitude, equals(90.0));
       expect(location.longitude, equals(180.0));
     });
 
     test('Location handles negative longitude', () {
-      final location = Location(latitude: 40.7128, longitude: -74.0060);
+      const location = Location(latitude: 40.7128, longitude: -74.0060);
       expect(location.longitude, equals(-74.0060));
     });
   });
@@ -31,7 +31,7 @@ void main() {
     test('BirthData handles all parameters', () {
       final birthData = BirthData(
         dateTime: DateTime(1990, 6, 15, 10, 30),
-        location: Location(latitude: 28.6139, longitude: 77.2090),
+        location: const Location(latitude: 28.6139, longitude: 77.2090),
         name: 'Test User',
         place: 'New Delhi, India',
         timezone: 'Asia/Kolkata',
@@ -44,7 +44,7 @@ void main() {
     test('BirthData handles empty name and place', () {
       final birthData = BirthData(
         dateTime: DateTime(1990, 1, 1),
-        location: Location(latitude: 0, longitude: 0),
+        location: const Location(latitude: 0, longitude: 0),
       );
       expect(birthData.name, equals(''));
       expect(birthData.place, equals(''));

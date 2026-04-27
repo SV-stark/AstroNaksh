@@ -18,7 +18,7 @@ void main() {
   test('PanchangService should include rise/set times', () async {
     final service = PanchangService();
     final date = DateTime(2024, 1, 1, 12, 0);
-    final location = Location(latitude: 28.6139, longitude: 77.2090);
+    const location = Location(latitude: 28.6139, longitude: 77.2090);
 
     await EphemerisManager.ensureEphemerisData();
     final result = await service.getPanchang(date, location);

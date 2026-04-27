@@ -295,72 +295,91 @@ class _PanchangScreenState extends State<PanchangScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldPage(
-      header: PageHeader(
-        title: const Text('Daily Panchang'),
-        leading: IconButton(
-          icon: const Icon(FluentIcons.back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        commandBar: CommandBar(
-          primaryItems: [
-            CommandBarBuilderItem(
-              builder: (context, mode, w) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: DatePicker(
-                    selected: _selectedDate,
-                    onChanged: (date) {
-                      setState(() => _selectedDate = date);
-                      _calculatePanchang();
-                    },
-                  ),
-                );
-              },
-              wrappedItem: CommandBarButton(
-                icon: const Icon(FluentIcons.calendar),
-                label: const Text('Date'),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => ContentDialog(
-                      title: const Text('Select Date'),
-                      content: DatePicker(
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+      },
+      child: ScaffoldPage(
+        header: PageHeader(
+          title: const Text('Daily Panchang'),
+          leading: IconButton(
+            icon: const Icon(FluentIcons.back),
+            onPressed: () => Navigator.pop(context),
+          ),
+          commandBar: CommandBar(
+            overflowBehavior: isMobile
+                ? CommandBarOverflowBehavior.dynamicOverflow
+                : CommandBarOverflowBehavior.noWrap,
+            primaryItems: [
+              if (!isMobile)
+                CommandBarBuilderItem(
+                  builder: (context, mode, w) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: DatePicker(
                         selected: _selectedDate,
                         onChanged: (date) {
                           setState(() => _selectedDate = date);
                           _calculatePanchang();
-                          Navigator.pop(ctx);
                         },
                       ),
-                      actions: [
-                        Button(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Cancel'),
+                    );
+                  },
+                  wrappedItem: CommandBarButton(
+                    icon: const Icon(FluentIcons.calendar),
+                    label: const Text('Date'),
+                    onPressed: () {},
+                  ),
+                ),
+              if (isMobile)
+                CommandBarButton(
+                  icon: const Icon(FluentIcons.calendar),
+                  label: const Text('Select Date'),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => ContentDialog(
+                        title: const Text('Select Date'),
+                        content: SizedBox(
+                          height: 300,
+                          child: DatePicker(
+                            selected: _selectedDate,
+                            onChanged: (date) {
+                              setState(() => _selectedDate = date);
+                              _calculatePanchang();
+                              Navigator.pop(ctx);
+                            },
+                          ),
                         ),
-                      ],
-                    ),
-                  );
+                        actions: [
+                          Button(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.location),
+                label: const Text('Location'),
+                onPressed: () {
+                  setState(() {
+                    _showLocationEditor = !_showLocationEditor;
+                  });
                 },
               ),
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.location),
-              label: const Text('Location'),
-              onPressed: () {
-                setState(() {
-                  _showLocationEditor = !_showLocationEditor;
-                });
-              },
-            ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.refresh),
-              label: const Text('Refresh'),
-              onPressed: _calculatePanchang,
-            ),
-          ],
+              CommandBarButton(
+                icon: const Icon(FluentIcons.refresh),
+                label: const Text('Refresh'),
+                onPressed: _calculatePanchang,
+              ),
+            ],
+          ),
         ),
-      ),
       content: _isLoading
           ? const Center(child: ProgressRing())
           : _result == null

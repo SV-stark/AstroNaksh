@@ -72,6 +72,16 @@ class _ChartScreenState extends State<ChartScreen> {
         _birthData = widget.birthData;
         _loadChartData();
       } else {
+        // Try to get from GoRouter extra first
+        try {
+          final extra = GoRouterState.of(context).extra;
+          if (extra is BirthData) {
+            _birthData = extra;
+            _loadChartData();
+            return;
+          }
+        } catch (_) {}
+
         final args = ModalRoute.of(context)?.settings.arguments;
         if (args is BirthData) {
           _birthData = args;
@@ -88,7 +98,11 @@ class _ChartScreenState extends State<ChartScreen> {
                   severity: InfoBarSeverity.error,
                 ),
               );
-              Navigator.pop(context);
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                Navigator.pop(context);
+              }
             }
           });
         }
@@ -334,8 +348,13 @@ class _ChartScreenState extends State<ChartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationView(
-      pane: NavigationPane(        selected: _currentIndex,
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+      },
+      child: NavigationView(
+        pane: NavigationPane(        selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
         displayMode: ResponsiveHelper.getNavigationPaneDisplayMode(context),
         size: NavigationPaneSize(

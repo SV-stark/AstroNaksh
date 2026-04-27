@@ -43,81 +43,88 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     _initSettingsIfNeeded();
-    
-    return NavigationView(
-      appBar: NavigationAppBar(
-        leading: ResponsiveHelper.useMobileLayout(context)
-            ? null
-            : IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
-        title: Row(
-          children: [
-            if (ResponsiveHelper.useMobileLayout(context))
-              IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
-            const Text('Settings'),
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
+
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+      },
+      child: NavigationView(
+        appBar: NavigationAppBar(
+          leading: isMobile
+              ? null
+              : IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+          title: Row(
+            children: [
+              if (isMobile)
+                IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              const Text('Settings'),
+            ],
+          ),
+          actions: Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: FilledButton(
+              onPressed: _saveSettings,
+              child: const Text('Save'),
+            ),
+          ),
+        ),
+        pane: NavigationPane(
+          selected: _currentIndex,
+          onChanged: (i) => setState(() => _currentIndex = i),
+          displayMode: context.paneDisplayMode,
+          items: [
+            PaneItem(
+              icon: const Icon(FluentIcons.brush),
+              title: const Text('Appearance'),
+              body: _buildAppearanceSettings(),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.design),
+              title: const Text('Chart Display'),
+              body: _buildChartDisplaySettings(),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.globe),
+              title: const Text('Planets'),
+              body: _buildPlanetSettings(),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.home),
+              title: const Text('Houses'),
+              body: _buildHouseSettings(),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.settings),
+              title: const Text('Ayanamsa'),
+              body: _buildAyanamsaSettings(),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.pdf),
+              title: const Text('PDF Report'),
+              body: _buildPdfSettings(),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.timer),
+              title: const Text('Dasha'),
+              body: _buildDashaSettings(),
+            ),
+          ],
+          footerItems: [
+            PaneItem(
+              icon: const Icon(FluentIcons.reset),
+              title: const Text('Reset'),
+              body: _buildPresetsSection(),
+            ),
           ],
         ),
-        actions: Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: FilledButton(
-            onPressed: _saveSettings,
-            child: const Text('Save'),
-          ),
-        ),
-      ),
-      pane: NavigationPane(
-        selected: _currentIndex,
-        onChanged: (i) => setState(() => _currentIndex = i),
-        displayMode: context.paneDisplayMode,
-        items: [
-          PaneItem(
-            icon: const Icon(FluentIcons.brush),
-            title: const Text('Appearance'),
-            body: _buildAppearanceSettings(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.design),
-            title: const Text('Chart Display'),
-            body: _buildChartDisplaySettings(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.globe),
-            title: const Text('Planets'),
-            body: _buildPlanetSettings(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.home),
-            title: const Text('Houses'),
-            body: _buildHouseSettings(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.settings),
-            title: const Text('Ayanamsa'),
-            body: _buildAyanamsaSettings(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.pdf),
-            title: const Text('PDF Report'),
-            body: _buildPdfSettings(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.timer),
-            title: const Text('Dasha'),
-            body: _buildDashaSettings(),
-          ),
-        ],
-        footerItems: [
-          PaneItem(
-            icon: const Icon(FluentIcons.reset),
-            title: const Text('Reset'),
-            body: _buildPresetsSection(),
-          ),
-        ],
       ),
     );
   }

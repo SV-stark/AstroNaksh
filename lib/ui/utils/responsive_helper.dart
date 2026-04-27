@@ -30,7 +30,11 @@ class ResponsiveHelper {
 
   /// Check if should use mobile optimized layout
   static bool useMobileLayout(BuildContext context) {
-    return isMobilePlatform && isPortrait(context);
+    // On mobile platforms, always prefer mobile-optimized layout unless on a large tablet
+    if (isMobilePlatform) {
+      return MediaQuery.of(context).size.width < 900; 
+    }
+    return isMobileWidth(context);
   }
 
   /// Get responsive padding based on screen size

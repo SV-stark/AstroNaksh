@@ -206,14 +206,31 @@ class _InputScreenState extends State<InputScreen> {
       final name = _nameController.text;
       final dbHelper = DatabaseHelper();
 
-      await dbHelper.insertChart({
-        'name': name,
-        'dateTime': dt.toIso8601String(),
-        'latitude': lat,
-        'longitude': long,
-        'locationName': locationName,
-        'timezone': timezone,
-      });
+      try {
+        await dbHelper.insertChart({
+          'name': name,
+          'dateTime': dt.toIso8601String(),
+          'latitude': lat,
+          'longitude': long,
+          'locationName': locationName,
+          'timezone': timezone,
+        });
+      } catch (e) {
+        if (mounted) {
+          displayInfoBar(
+            context,
+            builder: (context, close) {
+              return InfoBar(
+                title: const Text('Database Error'),
+                content: Text('Failed to save chart: $e'),
+                severity: InfoBarSeverity.error,
+                onClose: close,
+              );
+            },
+          );
+        }
+        return; // Don't navigate if save fails
+      }
 
       final birthData = BirthData(
         dateTime: dt,
@@ -231,6 +248,19 @@ class _InputScreenState extends State<InputScreen> {
         // Navigate to Chart Screen
         context.push('/chart', extra: birthData);
       }
+    } else {
+      // Provide feedback if form is invalid
+      displayInfoBar(
+        context,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Validation Error'),
+            content: const Text('Please check all fields and try again.'),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        },
+      );
     }
   }
 

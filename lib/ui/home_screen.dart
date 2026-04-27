@@ -120,34 +120,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldPage(
-      header: PageHeader(
-        title: const Text('AstroNaksh'),
-        commandBar: CommandBar(
-          overflowBehavior: ResponsiveHelper.useMobileLayout(context)
-              ? CommandBarOverflowBehavior.dynamicOverflow
-              : CommandBarOverflowBehavior.noWrap,
-          primaryItems: [
-            CommandBarButton(
-              icon: const Icon(FluentIcons.add),
-              label: const Text('New Chart'),
-              onPressed: () async {
-                await context.push('/input');
-                _loadCharts();
-              },
-            ),
-          ],
-          secondaryItems: [
-            CommandBarButton(
-              icon: const Icon(FluentIcons.settings),
-              label: const Text('Settings'),
-              onPressed: () {
-                context.push('/settings');
-              },
-            ),
-          ],
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+      },
+      child: ScaffoldPage(
+        header: PageHeader(
+          title: const Text('AstroNaksh'),
+          commandBar: CommandBar(
+            overflowBehavior: isMobile
+                ? CommandBarOverflowBehavior.dynamicOverflow
+                : CommandBarOverflowBehavior.noWrap,
+            primaryItems: [
+              CommandBarButton(
+                icon: const Icon(FluentIcons.add),
+                label: const Text('New Chart'),
+                onPressed: () async {
+                  await context.push('/input');
+                  _loadCharts();
+                },
+              ),
+            ],
+            secondaryItems: [
+              CommandBarButton(
+                icon: const Icon(FluentIcons.settings),
+                label: const Text('Settings'),
+                onPressed: () {
+                  context.push('/settings');
+                },
+              ),
+            ],
+          ),
         ),
-      ),
       content: CustomScrollView(
         slivers: [
           // Today's Sky Dashboard Widget

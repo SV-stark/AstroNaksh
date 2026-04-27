@@ -1,6 +1,6 @@
 name: jyotish
 description: A production-ready Flutter library for Vedic astrology (Jyotish) calculations using Swiss Ephemeris. Provides high-precision sidereal planetary positions with Lahiri ayanamsa, nakshatras, and complete birth chart analysis.
-version: 2.5.0
+version: 2.6.0
 homepage: https://github.com/rajsanjib/jyotish-flutter-library
 repository: https://github.com/rajsanjib/jyotish-flutter-library
 
@@ -15,6 +15,9 @@ dependencies:
   path: ^1.9.0
   intl: ^0.19.0
   timezone: ^0.9.4
+  dartx: ^1.2.0
+  synchronized: ^3.1.0
+  logging: ^1.2.0
 
 dev_dependencies:
   flutter_test:

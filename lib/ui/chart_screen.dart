@@ -40,7 +40,8 @@ import 'widgets/chart_widget.dart';
 import 'widgets/planetary_timeline.dart';
 
 class ChartScreen extends StatefulWidget {
-  const ChartScreen({super.key});
+  const ChartScreen({super.key, this.birthData});
+  final BirthData? birthData;
 
   @override
   State<ChartScreen> createState() => _ChartScreenState();
@@ -67,25 +68,30 @@ class _ChartScreenState extends State<ChartScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_birthData == null) {
-      final args = ModalRoute.of(context)?.settings.arguments as BirthData?;
-      if (args != null) {
-        _birthData = args;
+      if (widget.birthData != null) {
+        _birthData = widget.birthData;
         _loadChartData();
       } else {
-        // Handle missing arguments
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            displayInfoBar(
-              context,
-              builder: (context, close) => const InfoBar(
-                title: Text('Error'),
-                content: Text('No birth data provided'),
-                severity: InfoBarSeverity.error,
-              ),
-            );
-            Navigator.pop(context);
-          }
-        });
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is BirthData) {
+          _birthData = args;
+          _loadChartData();
+        } else {
+          // Handle missing arguments
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              displayInfoBar(
+                context,
+                builder: (context, close) => const InfoBar(
+                  title: Text('Error'),
+                  content: Text('No birth data provided'),
+                  severity: InfoBarSeverity.error,
+                ),
+              );
+              Navigator.pop(context);
+            }
+          });
+        }
       }
     }
   }

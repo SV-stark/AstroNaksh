@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../data/models.dart';
 import '../ui/chart_screen.dart';
 import '../ui/comparison/chart_comparison_screen.dart';
 import '../ui/home_screen.dart';
@@ -26,7 +27,7 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/chart',
-      builder: (context, state) => const ChartScreen(),
+      builder: (context, state) => ChartScreen(birthData: state.extra as BirthData?),
     ),
     GoRoute(
       path: '/settings',

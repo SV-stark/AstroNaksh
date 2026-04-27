@@ -11,7 +11,7 @@ void main() {
     test('BirthData serialization round-trip', () {
       final original = BirthData(
         dateTime: DateTime(1990, 6, 15, 14, 30),
-        location: Location(latitude: 28.6139, longitude: 77.2090),
+        location: const Location(latitude: 28.6139, longitude: 77.2090),
         name: 'Test Person',
         place: 'New Delhi',
         timezone: 'Asia/Kolkata',

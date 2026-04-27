@@ -1,8 +1,9 @@
 import 'dart:convert';
+
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:drift/drift.dart';
 
 import 'app_environment.dart';
 import 'chart_customization.dart';
@@ -37,7 +38,7 @@ class Settings extends _$Settings {
     );
 
     // Chart Settings
-    ChartCustomization chartSettings = ChartCustomization();
+    var chartSettings = ChartCustomization();
     final chartSettingsString = prefs.getString(_chartSettingsKey);
     if (chartSettingsString != null) {
       try {
@@ -55,7 +56,7 @@ class Settings extends _$Settings {
   Future<SettingsState> _loadSettingsFromDb() async {
     final db = ref.read(databaseProvider);
     final allSettings = await db.select(db.settings).get();
-    final settingsMap = {for (var s in allSettings) s.key: s.value};
+    final settingsMap = {for (final s in allSettings) s.key: s.value};
 
     final themeStr = settingsMap[_themeModeKey];
     final themeMode = ThemeMode.values.firstWhere(
@@ -63,7 +64,7 @@ class Settings extends _$Settings {
       orElse: () => ThemeMode.system,
     );
 
-    ChartCustomization chartSettings = ChartCustomization();
+    var chartSettings = ChartCustomization();
     final chartStr = settingsMap[_chartSettingsKey];
     if (chartStr != null) {
       try {

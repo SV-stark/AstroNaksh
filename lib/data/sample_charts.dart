@@ -5,14 +5,14 @@ class SampleCharts {
     BirthData(
       name: 'Swami Vivekananda',
       dateTime: DateTime(1863, 1, 12, 6, 33),
-      location: Location(latitude: 22.5726, longitude: 88.3639),
+      location: const Location(latitude: 22.5726, longitude: 88.3639),
       place: 'Kolkata, West Bengal, India',
       timezone: 'Asia/Kolkata',
     ),
     BirthData(
       name: 'Albert Einstein',
       dateTime: DateTime(1879, 3, 14, 11, 30),
-      location: Location(latitude: 48.3984, longitude: 9.9916),
+      location: const Location(latitude: 48.3984, longitude: 9.9916),
       place: 'Ulm, Germany',
       timezone: 'Europe/Berlin',
     ),
@@ -25,7 +25,7 @@ class SampleCharts {
         1,
         15,
       ), // Approximate time often used in astrology
-      location: Location(latitude: 9.2800, longitude: 79.3129),
+      location: const Location(latitude: 9.2800, longitude: 79.3129),
       place: 'Rameswaram, Tamil Nadu, India',
       timezone: 'Asia/Kolkata',
     ),

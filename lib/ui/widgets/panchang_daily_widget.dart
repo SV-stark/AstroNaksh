@@ -28,7 +28,7 @@ class _PanchangDailyWidgetState extends State<PanchangDailyWidget> {
     try {
       final loc =
           widget.currentLocation ??
-          Location(latitude: 28.6139, longitude: 77.2090); // Default Delhi
+          const Location(latitude: 28.6139, longitude: 77.2090); // Default Delhi
       final result = await _panchangaService.getPanchang(DateTime.now(), loc);
       if (mounted) {
         setState(() {

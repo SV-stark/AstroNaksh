@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:go_router/go_router.dart';
 import '../core/ephemeris_manager.dart';
 import '../data/city_database.dart';
 
@@ -31,7 +32,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       await EphemerisManager.ensureEphemerisData();
 
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/');
+        context.go('/');
       }
     } catch (e) {
       setState(() => _status = 'Error: $e');

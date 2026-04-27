@@ -35,7 +35,7 @@ void main() {
 
     test('Yoga Dosha - Kala Sarp Precision', () {
       // 1. Create Dummy Objects for CompleteChartData
-      final dummyLoc = Location(latitude: 0, longitude: 0);
+      const dummyLoc = Location(latitude: 0, longitude: 0);
       final dummyBirth = BirthData(
         dateTime: DateTime.now(),
         location: dummyLoc,

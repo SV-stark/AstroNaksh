@@ -13,7 +13,7 @@ class TestChartBuilder {
     12,
     0,
   ); // Made final as suggested
-  Location _location = Location(latitude: 0, longitude: 0);
+  Location _location = const Location(latitude: 0, longitude: 0);
 
   // Rahu longitude. Ketu will be opposite.
   double? _rahuLongitude;

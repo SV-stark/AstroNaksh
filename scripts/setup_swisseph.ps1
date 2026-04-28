@@ -69,9 +69,6 @@ foreach ($file in $required_ephe) {
     if (Test-Path "$TEMP_DIR/ephe/$file") {
         Copy-Item "$TEMP_DIR/ephe/$file" -Destination $ASSETS_EPHE_DIR -Force
     }
-    else {
-        Write-Warning "Missing $file in source repo!"
-    }
 }
 
 # 8. Cleanup

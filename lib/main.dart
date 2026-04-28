@@ -103,7 +103,15 @@ class _AstroNakshAppState extends ConsumerState<AstroNakshApp> {
         darkTheme: AppStyles.darkTheme,
         routerConfig: router,
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          DefaultMaterialLocalizations.delegate,
+          DefaultWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', 'US'),
+        ],
       ),
+
     );
   }
 }

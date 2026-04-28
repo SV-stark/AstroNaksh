@@ -40,8 +40,25 @@ class DatabaseHelper {
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: (db) async {
-
           // Verify database integrity on open
+          // We check for columns here because Drift and sqflite share the same file
+          // and might have conflicting versioning.
+          try {
+            final tableInfo = await db.rawQuery('PRAGMA table_info(charts)');
+            final columns = tableInfo.map((e) => e['name'] as String).toList();
+
+            if (!columns.contains('locationName')) {
+              await db.execute('ALTER TABLE charts ADD COLUMN locationName TEXT');
+              AppEnvironment.log('DatabaseHelper: Added missing column locationName');
+            }
+            if (!columns.contains('timezone')) {
+              await db.execute('ALTER TABLE charts ADD COLUMN timezone TEXT');
+              AppEnvironment.log('DatabaseHelper: Added missing column timezone');
+            }
+          } catch (e) {
+            AppEnvironment.log('DatabaseHelper: Error verifying schema on open - $e');
+          }
+
           if (!db.isOpen) {
             AppEnvironment.log(
               'DatabaseHelper: Warning - db.isOpen is false after openDatabase',

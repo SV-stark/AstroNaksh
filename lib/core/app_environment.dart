@@ -28,20 +28,23 @@ class AppEnvironment {
       _isVerbose = true;
     }
 
-    // 2. Determine Executable Directory
-    try {
-      _executableDir = p.dirname(Platform.resolvedExecutable);
-    } catch (e) {
-      // Cannot log yet
-    }
+    // 2. Determine Executable Directory (Desktop Only)
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      try {
+        _executableDir = p.dirname(Platform.resolvedExecutable);
+      } catch (e) {
+        // Cannot log yet
+      }
 
-    // 3. Check for Portable Marker
-    if (_executableDir != null) {
-      final portableFile = File(p.join(_executableDir!, '.portable'));
-      if (await portableFile.exists()) {
-        _isPortable = true;
+      // 3. Check for Portable Marker
+      if (_executableDir != null) {
+        final portableFile = File(p.join(_executableDir!, '.portable'));
+        if (await portableFile.exists()) {
+          _isPortable = true;
+        }
       }
     }
+
 
     // 4. Setup Logging
     await _setupLogging();

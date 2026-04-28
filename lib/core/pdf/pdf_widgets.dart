@@ -43,7 +43,7 @@ class PdfWidgets {
                   letterSpacing: 1.2,
                 ),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
           pw.Divider(color: PdfColors.grey200, thickness: 0.5),
@@ -60,7 +60,7 @@ class PdfWidgets {
     required pw.TextStyle bodyStyle,
   }) {
     return pw.Table(
-      border: pw.TableBorder(
+      border: const pw.TableBorder(
         horizontalInside: pw.BorderSide(color: PdfColors.grey100, width: 0.5),
         bottom: pw.BorderSide(color: PdfColors.grey300, width: 1),
       ),

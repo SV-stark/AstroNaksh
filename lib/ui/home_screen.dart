@@ -378,7 +378,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             const SizedBox(height: 8),
                             Text(
                               'Create your first chart to get started',
-                              style: TextStyle(color: Colors.grey[100]),
+                              style: TextStyle(color: Colors.grey.withAlpha(150)),
                             ),
                             const SizedBox(height: 24),
                             FilledButton(
@@ -562,7 +562,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     subtitle,
                     style: TextStyle(
                       fontSize: isMobile ? 12 : 11,
-                      color: Colors.grey[100],
+                      color: Colors.grey.withAlpha(150),
                     ),
                   ),
                 ],
@@ -570,7 +570,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             Icon(
               FluentIcons.chevron_right,
-              color: Colors.grey[400],
+              color: Colors.grey.withAlpha(180),
               size: isMobile ? 20 : 16,
             ),
           ],

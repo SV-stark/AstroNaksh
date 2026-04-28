@@ -96,7 +96,7 @@ class ProgenyScreen extends StatelessWidget {
     return Container(
       height: 8,
       decoration: BoxDecoration(
-        color: Colors.grey[700],
+        color: Colors.grey.withAlpha(240),
         borderRadius: BorderRadius.circular(4),
       ),
       child: FractionallySizedBox(
@@ -137,7 +137,7 @@ class ProgenyScreen extends StatelessWidget {
                 ),
                 Text(
                   factor.description,
-                  style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                  style: TextStyle(color: Colors.grey.withAlpha(180), fontSize: 13),
                 ),
               ],
             ),

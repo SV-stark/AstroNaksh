@@ -969,7 +969,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 _buildInfoRow('Period Name', _gowri!.type.name),
                 _buildInfoRow(
                   'Description',
-                  _gowri!.type.description.split(',').first,
+                  _gowri!.type.description.isNotEmpty 
+                      ? _gowri!.type.description.split(',').first 
+                      : 'N/A',
                 ),
                 _buildInfoRow(
                   'Time of Day',
@@ -1014,7 +1016,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 Text(
                   'Gowri Panchanga is used to determine auspicious timings for various activities. '
                   'It is calculated based on the weekday and the position of Sun and Moon.',
-                  style: TextStyle(color: Colors.grey[400]),
+                  style: TextStyle(color: Colors.grey.withAlpha(180)),
                 ),
               ],
             ),
@@ -1030,7 +1032,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey[400])),
+          Text(label, style: TextStyle(color: Colors.grey.withAlpha(180))),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
@@ -1630,7 +1632,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
               const SizedBox(height: 6),
               Text(
                 '${panchak.daysRemaining} day(s) remaining',
-                style: TextStyle(fontSize: 12, color: Colors.grey[130]),
+                style: TextStyle(fontSize: 12, color: Colors.grey.withAlpha(160)),
               ),
             ],
             const SizedBox(height: 12),
@@ -1662,7 +1664,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
               child: Text(
                 'Moon is not in any Panchak nakshatra today. '
                 'Auspicious activities can proceed without Panchak restrictions.',
-                style: TextStyle(fontSize: 13, color: Colors.grey[130]),
+                style: TextStyle(fontSize: 13, color: Colors.grey.withAlpha(160)),
               ),
             ),
         ],

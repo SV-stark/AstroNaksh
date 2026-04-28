@@ -5,9 +5,9 @@ import 'package:pdf/widgets.dart' as pw;
 import '../../data/models.dart';
 import '../../logic/life_prediction_service.dart';
 import '../../logic/varshaphal_system.dart';
+import '../pdf_report_charts.dart';
 import 'pdf_widgets.dart';
 import 'report_styles.dart';
-import '../pdf_report_charts.dart';
 
 class ReportSections {
   static pw.Page buildCoverPage({
@@ -83,7 +83,7 @@ class ReportSections {
                       ),
                       child: pw.Column(
                         children: [
-                          _buildInfoRow('Name', chartData.birthData.name ?? 'Astro Enthusiast'),
+                          _buildInfoRow('Name', chartData.birthData.name),
                           _buildInfoRow('Date', _formatDate(chartData.birthData.dateTime)),
                           _buildInfoRow('Time', _formatTime(chartData.birthData.dateTime)),
                           _buildInfoRow('Place', chartData.birthData.place),
@@ -93,7 +93,7 @@ class ReportSections {
                     pw.Spacer(),
                     pw.Text(
                       'PRODUCED BY ASTRONAKSH VEDIC ENGINE',
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         fontSize: 10,
                         color: ReportStyles.grey,
                         letterSpacing: 2,
@@ -195,7 +195,7 @@ class ReportSections {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -240,7 +240,7 @@ class ReportSections {
               pw.Spacer(),
               pw.Container(
                 padding: const pw.EdgeInsets.all(10),
-                decoration: pw.BoxDecoration(
+                decoration: const pw.BoxDecoration(
                   shape: pw.BoxShape.circle,
                   color: ReportStyles.primaryColor,
                 ),

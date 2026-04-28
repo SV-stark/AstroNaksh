@@ -216,7 +216,7 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
           const SizedBox(height: 10),
           Text(
             vedha.summary,
-            style: TextStyle(color: Colors.grey[130], fontSize: 13),
+            style: TextStyle(color: Colors.grey.withAlpha(160), fontSize: 13),
           ),
         ],
       ),
@@ -234,7 +234,7 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
             color: color,
           ),
         ),
-        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[130])),
+        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.withAlpha(180))),
       ],
     );
   }
@@ -418,7 +418,7 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
       children: [
         Text(
           'Favorable houses: ',
-          style: TextStyle(fontSize: 11, color: Colors.grey[130]),
+          style: TextStyle(fontSize: 11, color: Colors.grey.withAlpha(180)),
         ),
         ...houses.map(
           (h) => Container(

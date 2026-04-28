@@ -275,7 +275,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(color: Colors.grey[130], fontSize: 12),
+                  style: TextStyle(color: Colors.grey.withAlpha(160), fontSize: 12),
                 ),
               ],
             ),
@@ -316,7 +316,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
           ),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 11, color: Colors.grey[130]),
+            style: TextStyle(fontSize: 11, color: Colors.grey.withAlpha(160)),
           ),
           const SizedBox(height: 8),
           Text(
@@ -329,7 +329,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
           ),
           Text(
             'House $houseFromLagna from Lagna',
-            style: TextStyle(fontSize: 12, color: Colors.grey[130]),
+            style: TextStyle(fontSize: 12, color: Colors.grey.withAlpha(160)),
           ),
         ],
       ),
@@ -419,7 +419,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                         Text(
                           'Falls in: House ${pada.houseFromLagna} from Lagna',
                           style: TextStyle(
-                            color: Colors.grey[130],
+                            color: Colors.grey.withAlpha(160),
                             fontSize: 12,
                           ),
                         ),
@@ -441,7 +441,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                       ),
                       Text(
                         'H${pada.houseFromLagna}',
-                        style: TextStyle(color: Colors.grey[130], fontSize: 13),
+                        style: TextStyle(color: Colors.grey.withAlpha(160), fontSize: 13),
                       ),
                     ],
                   ),
@@ -534,7 +534,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
     if (list.isEmpty) {
       return Text(
         'None',
-        style: TextStyle(color: Colors.grey[130], fontSize: 12),
+        style: TextStyle(color: Colors.grey.withAlpha(160), fontSize: 12),
       );
     }
     final unobstructed = list.where((a) => !a.isObstructed).length;
@@ -617,7 +617,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
               ),
               Text(
                 argala.type.description,
-                style: TextStyle(fontSize: 10, color: Colors.grey[130]),
+                style: TextStyle(fontSize: 10, color: Colors.grey.withAlpha(160)),
               ),
             ],
           ),

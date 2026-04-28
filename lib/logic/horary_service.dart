@@ -55,18 +55,20 @@ class HoraryService {
     );
     debugPrint('Horary: Fixed Time found: $fixedTime');
 
+    final kpFlags = CalculationFlags.kp();
+
     final houseChart = await EphemerisManager.jyotish.calculateVedicChart(
       dateTime: fixedTime,
       location: location,
       houseSystem: 'P',
-      flags: CalculationFlags.kp(),
+      flags: kpFlags,
     );
 
     final planetChart = await EphemerisManager.jyotish.calculateVedicChart(
       dateTime: dateTime,
       location: location,
       houseSystem: 'P',
-      flags: CalculationFlags.kp(),
+      flags: kpFlags,
     );
 
     return VedicChart(
@@ -78,6 +80,7 @@ class HoraryService {
       planets: planetChart.planets,
       rahu: planetChart.rahu,
       ketu: planetChart.ketu,
+      calculationFlags: houseChart.calculationFlags,
     );
   }
 
@@ -94,10 +97,12 @@ class HoraryService {
         dateTime: currentTime,
         location: location,
         houseSystem: 'P',
-        flags: CalculationFlags(
-          siderealMode: ayanamsaMode,
-          nodeType: NodeType.meanNode,
-        ),
+        flags: ayanamsaMode == SiderealMode.krishnamurtiVP291
+            ? CalculationFlags.kp()
+            : CalculationFlags(
+                siderealMode: ayanamsaMode,
+                nodeType: NodeType.meanNode,
+              ),
       );
       final currentAsc = chartT.houses.ascendant;
 
@@ -106,10 +111,12 @@ class HoraryService {
         dateTime: currentTime.add(const Duration(seconds: deltaSeconds)),
         location: location,
         houseSystem: 'P',
-        flags: CalculationFlags(
-          siderealMode: ayanamsaMode,
-          nodeType: NodeType.meanNode,
-        ),
+        flags: ayanamsaMode == SiderealMode.krishnamurtiVP291
+            ? CalculationFlags.kp()
+            : CalculationFlags(
+                siderealMode: ayanamsaMode,
+                nodeType: NodeType.meanNode,
+              ),
       );
       final nextAsc = chartTPlus.houses.ascendant;
 

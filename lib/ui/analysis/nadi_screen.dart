@@ -40,7 +40,7 @@ class NadiScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     '${analysis.nakshatra} - Pada ${analysis.pada}',
-                    style: TextStyle(color: Colors.grey[400]),
+                    style: TextStyle(color: Colors.grey.withAlpha(180)),
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -95,7 +95,7 @@ class NadiScreen extends StatelessWidget {
                   'In Kundali matching, same Nadi (Adi-Madhya-Antya) between partners '
                   'is considered Nadi Dosha - a serious incompatibility that can affect '
                   'health and progeny. Different Nadis are considered more favorable.',
-                  style: TextStyle(color: Colors.grey[300]),
+                  style: TextStyle(color: Colors.grey.withAlpha(140)),
                 ),
               ],
             ),
@@ -131,7 +131,7 @@ class NadiScreen extends StatelessWidget {
         Container(
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.grey[700],
+            color: Colors.grey.withAlpha(240),
             borderRadius: BorderRadius.circular(4),
           ),
           child: FractionallySizedBox(
@@ -177,7 +177,7 @@ class NadiScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                  style: TextStyle(color: Colors.grey.withAlpha(180), fontSize: 13),
                 ),
               ],
             ),

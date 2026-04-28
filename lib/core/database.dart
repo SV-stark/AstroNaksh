@@ -39,10 +39,20 @@ class AppDatabase extends _$AppDatabase {
       onUpgrade: (m, from, to) async {
         if (from < 2) {
           // In version 2, we added locationName and timezone columns to the charts table
-          await m.addColumn(charts, charts.locationName);
-          await m.addColumn(charts, charts.timezone);
+          // We wrap these in try-catch because they might already exist if DatabaseHelper added them
+          try {
+            await m.addColumn(charts, charts.locationName);
+          } catch (e) {
+            // Column might already exist
+          }
+          try {
+            await m.addColumn(charts, charts.timezone);
+          } catch (e) {
+            // Column might already exist
+          }
         }
       },
+
     );
   }
 

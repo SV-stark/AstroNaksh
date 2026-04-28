@@ -36,9 +36,11 @@ class DatabaseHelper {
 
       return await openDatabase(
         path,
-        version: 1,
+        version: 2,
         onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
         onOpen: (db) async {
+
           // Verify database integrity on open
           if (!db.isOpen) {
             AppEnvironment.log(
@@ -80,6 +82,27 @@ class DatabaseHelper {
       throw DatabaseException('Error creating database tables: $e');
     }
   }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      try {
+        // Add columns that might be missing from version 1
+        // Check if columns exist first to avoid errors
+        final tableInfo = await db.rawQuery('PRAGMA table_info(charts)');
+        final columns = tableInfo.map((e) => e['name'] as String).toList();
+
+        if (!columns.contains('locationName')) {
+          await db.execute('ALTER TABLE charts ADD COLUMN locationName TEXT');
+        }
+        if (!columns.contains('timezone')) {
+          await db.execute('ALTER TABLE charts ADD COLUMN timezone TEXT');
+        }
+      } catch (e) {
+        AppEnvironment.log('DatabaseHelper: Error during upgrade - $e');
+      }
+    }
+  }
+
 
   Future<int> insertChart(Map<String, dynamic> row) async {
     try {

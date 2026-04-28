@@ -31,9 +31,23 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          // In version 2, we added locationName and timezone columns to the charts table
+          await m.addColumn(charts, charts.locationName);
+          await m.addColumn(charts, charts.timezone);
+        }
+      },
+    );
+  }
 
   static QueryExecutor _openConnection() {
+
     return LazyDatabase(() async {
       final path = await AppEnvironment.getDatabasePath();
       final file = File(path);

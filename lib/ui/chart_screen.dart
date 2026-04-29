@@ -2,7 +2,7 @@
 import 'dart:async';
 
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart' as m;
 import 'package:go_router/go_router.dart';
 import 'package:jyotish/jyotish.dart';
 
@@ -56,6 +56,7 @@ class _ChartScreenState extends State<ChartScreen> {
   int _currentIndex = 0;
   int _dashaTabIndex = 0; // 0 = Vimshottari, 1 = Yogini, 2 = Chara
   bool _showAspects = false; // Toggle for planetary aspects (drishti)
+  final GlobalKey<m.ScaffoldState> _scaffoldKey = GlobalKey<m.ScaffoldState>();
   final GlobalKey _d1ChartKey = GlobalKey();
 
   // Timeline state variables
@@ -348,12 +349,9 @@ class _ChartScreenState extends State<ChartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: true,
-      onPopInvoked: (didPop) {
-        if (didPop) return;
-      },
-      child: NavigationView(
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
+
+    Widget content = NavigationView(
         pane: NavigationPane(        selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
         displayMode: ResponsiveHelper.getNavigationPaneDisplayMode(context),
@@ -429,7 +427,103 @@ class _ChartScreenState extends State<ChartScreen> {
           ),
         ],
       ),
-    ));
+    );
+
+    if (isMobile) {
+      return m.Scaffold(
+        key: _scaffoldKey,
+        drawer: _buildMobileDrawer(),
+        body: content,
+      );
+    }
+
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+      },
+      child: content,
+    );
+  }
+
+  Widget _buildMobileDrawer() {
+    return m.Drawer(
+      child: Container(
+        color: FluentTheme.of(context).scaffoldBackgroundColor,
+        child: m.ListView(
+          padding: m.EdgeInsets.zero,
+          children: [
+            m.DrawerHeader(
+              decoration: m.BoxDecoration(
+                color: FluentTheme.of(context).accentColor.withValues(alpha: 0.1),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: m.MainAxisAlignment.end,
+                children: [
+                  Icon(
+                    FluentIcons.contact_card,
+                    size: 40,
+                    color: FluentTheme.of(context).accentColor,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'AstroNaksh',
+                    style: FluentTheme.of(context).typography.title,
+                  ),
+                ],
+              ),
+            ),
+            _buildDrawerHeader('Main Charts'),
+            _buildDrawerItem(0, 'D-1 Rashi', FluentIcons.contact_card),
+            _buildDrawerItem(1, 'Vargas', FluentIcons.grid_view_large),
+            _buildDrawerItem(2, 'KP System', FluentIcons.scatter_chart),
+            _buildDrawerItem(3, 'Dasha Periods', FluentIcons.timer),
+            _buildDrawerItem(4, 'Planet Details', FluentIcons.list),
+            _buildDrawerHeader('Analysis'),
+            _buildDrawerItem(5, 'Life Predictions', FluentIcons.heart),
+            _buildDrawerItem(6, 'Daily Rashiphal', FluentIcons.lightbulb),
+            const m.Divider(),
+            _buildDrawerItem(7, 'Planetary Strength', FluentIcons.scale_volume),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerHeader(String title) {
+    return Padding(
+      padding: const m.EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+      child: Text(
+        title,
+        style: FluentTheme.of(context).typography.caption?.copyWith(
+          color: FluentTheme.of(context).accentColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(int index, String title, IconData icon) {
+    final isSelected = _currentIndex == index;
+    return m.ListTile(
+      leading: Icon(
+        icon,
+        color: isSelected ? FluentTheme.of(context).accentColor : null,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isSelected ? FluentTheme.of(context).accentColor : null,
+          fontWeight: isSelected ? FontWeight.bold : null,
+        ),
+      ),
+      selected: isSelected,
+      onTap: () {
+        setState(() => _currentIndex = index);
+        Navigator.pop(context); // Close drawer
+      },
+    );
   }
 
   Widget _buildMobileAnalysisLink(String title, String navKey, IconData icon) {
@@ -543,7 +637,7 @@ class _ChartScreenState extends State<ChartScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(FluentIcons.error, size: 48, color: Colors.red),
+                  const Icon(FluentIcons.error, size: 48, color: m.Colors.red),
                   const SizedBox(height: 16),
                   Text(
                     'Error: ${snapshot.error}',
@@ -588,10 +682,16 @@ class _ChartScreenState extends State<ChartScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            leading: IconButton(
-              icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
-              onPressed: () => Navigator.pop(context),
-            ),
+            leading: ResponsiveHelper.useMobileLayout(context)
+                ? IconButton(
+                    icon: const Icon(FluentIcons.global_nav_button),
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  )
+                : IconButton(
+                    icon:
+                        const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
             commandBar: CommandBar(
               overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -1316,7 +1416,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           style: FluentTheme.of(context).typography.caption
                               ?.copyWith(
                                 color: _isTimelinePlaying
-                                    ? Colors.green
+                                    ? m.Colors.green
                                     : FluentTheme.of(context).inactiveColor,
                               ),
                         ),
@@ -1679,7 +1779,7 @@ class _ChartScreenState extends State<ChartScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(label, style: const TextStyle(fontSize: 12, color: m.Colors.grey)),
         const SizedBox(height: 4),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
       ],
@@ -1753,7 +1853,7 @@ class _ChartScreenState extends State<ChartScreen> {
                       ),
                       child: Text(
                         planet,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: m.Colors.white),
                       ),
                     ),
                   )
@@ -1833,14 +1933,14 @@ class _ChartScreenState extends State<ChartScreen> {
             children: [
               Icon(
                 icon,
-                color: isSelected ? Colors.white : accentColor,
+                color: isSelected ? m.Colors.white : accentColor,
                 size: 20,
               ),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : accentColor,
+                  color: isSelected ? m.Colors.white : accentColor,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   fontSize: 12,
                 ),
@@ -1886,7 +1986,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         Text(
                           'Balance at Birth: ${dasha.formattedBalanceAtBirth}',
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: m.Colors.grey,
                             fontSize: 12,
                           ),
                         ),
@@ -1964,7 +2064,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         color: isCurrent
                             ? FluentTheme.of(context).accentColor.withAlpha(40)
                             : (index % 2 == 0
-                                  ? Colors.grey.withAlpha(10)
+                                  ? m.Colors.grey.withAlpha(10)
                                   : null),
                         borderRadius: BorderRadius.circular(4),
                         border: isCurrent
@@ -2082,7 +2182,7 @@ class _ChartScreenState extends State<ChartScreen> {
                                       '${_formatDate(antar.startDate)} - ${_formatDate(antar.endDate)}',
                                       style: const TextStyle(
                                         fontSize: 11,
-                                        color: Colors.grey,
+                                        color: m.Colors.grey,
                                       ),
                                     ),
                                   ],
@@ -2136,7 +2236,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         ),
                         const Text(
                           'Total 8 Yogini periods (36 years cycle)',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                          style: TextStyle(color: m.Colors.grey, fontSize: 12),
                         ),
                       ],
                     ),
@@ -2219,7 +2319,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         color: isCurrent
                             ? FluentTheme.of(context).accentColor.withAlpha(40)
                             : (index % 2 == 0
-                                  ? Colors.grey.withAlpha(10)
+                                  ? m.Colors.grey.withAlpha(10)
                                   : null),
                         borderRadius: BorderRadius.circular(4),
                         border: isCurrent
@@ -2392,7 +2492,7 @@ class _ChartScreenState extends State<ChartScreen> {
                                                   '${_formatDate(pratyan.startDate)} - ${_formatDate(pratyan.endDate)}',
                                                   style: const TextStyle(
                                                     fontSize: 10,
-                                                    color: Colors.grey,
+                                                    color: m.Colors.grey,
                                                   ),
                                                 ),
                                               ),
@@ -2452,7 +2552,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         ),
                         const Text(
                           'Jaimini Chara Dasha System',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                          style: TextStyle(color: m.Colors.grey, fontSize: 12),
                         ),
                       ],
                     ),
@@ -2535,7 +2635,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         color: isCurrent
                             ? FluentTheme.of(context).accentColor.withAlpha(40)
                             : (index % 2 == 0
-                                  ? Colors.grey.withAlpha(10)
+                                  ? m.Colors.grey.withAlpha(10)
                                   : null),
                         borderRadius: BorderRadius.circular(4),
                         border: isCurrent
@@ -2642,7 +2742,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         Text(
                           'Balance of First Dasha: ${dasha.balanceOfFirstDasha.toStringAsFixed(2)} years',
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: m.Colors.grey,
                             fontSize: 12,
                           ),
                         ),
@@ -2714,7 +2814,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         ),
                         Text(
                           '12-sign cycle based on lagna/7th house strength',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                          style: TextStyle(color: m.Colors.grey, fontSize: 12),
                         ),
                       ],
                     ),
@@ -2809,7 +2909,7 @@ class _ChartScreenState extends State<ChartScreen> {
                 decoration: BoxDecoration(
                   color: isCurrent
                       ? FluentTheme.of(context).accentColor.withAlpha(40)
-                      : (index % 2 == 0 ? Colors.grey.withAlpha(10) : null),
+                      : (index % 2 == 0 ? m.Colors.grey.withAlpha(10) : null),
                   borderRadius: BorderRadius.circular(4),
                   border: isCurrent
                       ? Border.all(
@@ -2952,7 +3052,7 @@ class _ChartScreenState extends State<ChartScreen> {
                   decoration: BoxDecoration(
                     color: isCurrent
                         ? FluentTheme.of(context).accentColor.withAlpha(40)
-                        : (index % 2 == 0 ? Colors.grey.withAlpha(10) : null),
+                        : (index % 2 == 0 ? m.Colors.grey.withAlpha(10) : null),
                     borderRadius: BorderRadius.circular(4),
                     border: isCurrent
                         ? Border.all(
@@ -3153,7 +3253,7 @@ class _ChartScreenState extends State<ChartScreen> {
                               child: Text(
                                 info.isRetrograde ? 'R' : '',
                                 style: const TextStyle(
-                                  color: Colors.orange,
+                                  color: m.Colors.orange,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -3473,7 +3573,7 @@ class _ChartScreenState extends State<ChartScreen> {
                         child: Text(
                           status.join(' '),
                           style: TextStyle(
-                            color: status.contains('R') ? Colors.orange : null,
+                            color: status.contains('R') ? m.Colors.orange : null,
                             fontWeight: status.isNotEmpty
                                 ? FontWeight.bold
                                 : null,
@@ -3729,7 +3829,7 @@ class _ChartScreenState extends State<ChartScreen> {
                       const SizedBox(height: 4),
                       const Text(
                         'Favorable (Ishta) vs. Unfavorable (Kashta) fruit each planet can deliver.',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: m.Colors.grey),
                       ),
                       const SizedBox(height: 12),
                       // Header
@@ -3793,7 +3893,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           shadbalaStrength: shadbalaStrength,
                         );
                         final net = ishta - kashta;
-                        final netColor = net > 0 ? Colors.green : Colors.red;
+                        final netColor = net > 0 ? m.Colors.green : m.Colors.red;
                         return Container(
                           margin: const EdgeInsets.only(bottom: 3),
                           padding: const EdgeInsets.symmetric(
@@ -3802,8 +3902,8 @@ class _ChartScreenState extends State<ChartScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: net > 0
-                                ? Colors.green.withAlpha(12)
-                                : Colors.red.withAlpha(12),
+                                ? m.Colors.green.withAlpha(12)
+                                : m.Colors.red.withAlpha(12),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
@@ -3821,14 +3921,14 @@ class _ChartScreenState extends State<ChartScreen> {
                                 flex: 2,
                                 child: Text(
                                   '${(ishta * 100).toStringAsFixed(0)}%',
-                                  style: const TextStyle(color: Colors.green),
+                                  style: const TextStyle(color: m.Colors.green),
                                 ),
                               ),
                               Expanded(
                                 flex: 2,
                                 child: Text(
                                   '${(kashta * 100).toStringAsFixed(0)}%',
-                                  style: const TextStyle(color: Colors.orange),
+                                  style: const TextStyle(color: m.Colors.orange),
                                 ),
                               ),
                               Expanded(
@@ -3865,7 +3965,7 @@ class _ChartScreenState extends State<ChartScreen> {
                       const SizedBox(height: 4),
                       const Text(
                         'Measures planetary dignity across 16 divisional charts on a 0–20 scale.',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: m.Colors.grey),
                       ),
                       const SizedBox(height: 12),
                       ...sd.vimsopaka.entries.map((entry) {
@@ -3899,10 +3999,10 @@ class _ChartScreenState extends State<ChartScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: pct >= 0.7
-                                          ? Colors.green.withAlpha(30)
+                                          ? m.Colors.green.withAlpha(30)
                                           : pct >= 0.4
-                                          ? Colors.orange.withAlpha(30)
-                                          : Colors.red.withAlpha(30),
+                                          ? m.Colors.orange.withAlpha(30)
+                                          : m.Colors.red.withAlpha(30),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -3911,10 +4011,10 @@ class _ChartScreenState extends State<ChartScreen> {
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                         color: pct >= 0.7
-                                            ? Colors.green
+                                            ? m.Colors.green
                                             : pct >= 0.4
-                                            ? Colors.orange
-                                            : Colors.red,
+                                            ? m.Colors.orange
+                                            : m.Colors.red,
                                       ),
                                     ),
                                   ),
@@ -3929,7 +4029,7 @@ class _ChartScreenState extends State<ChartScreen> {
                                       children: [
                                         Container(
                                           decoration: BoxDecoration(
-                                            color: Colors.grey.withAlpha(40),
+                                            color: m.Colors.grey.withAlpha(40),
                                             borderRadius: BorderRadius.circular(
                                               3,
                                             ),
@@ -3940,10 +4040,10 @@ class _ChartScreenState extends State<ChartScreen> {
                                           child: Container(
                                             decoration: BoxDecoration(
                                               color: pct >= 0.7
-                                                  ? Colors.green
+                                                  ? m.Colors.green
                                                   : pct >= 0.4
-                                                  ? Colors.orange
-                                                  : Colors.red,
+                                                  ? m.Colors.orange
+                                                  : m.Colors.red,
                                               borderRadius:
                                                   BorderRadius.circular(3),
                                             ),
@@ -3977,7 +4077,7 @@ class _ChartScreenState extends State<ChartScreen> {
                       const SizedBox(height: 4),
                       const Text(
                         'Strength of each house (0–100). Kendra houses (1,4,7,10) are inherently strongest.',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: m.Colors.grey),
                       ),
                       const SizedBox(height: 12),
                       ...bhavaBala.entries.map((entry) {
@@ -4007,7 +4107,7 @@ class _ChartScreenState extends State<ChartScreen> {
                                         children: [
                                           Container(
                                             decoration: BoxDecoration(
-                                              color: Colors.grey.withAlpha(40),
+                                              color: m.Colors.grey.withAlpha(40),
                                               borderRadius:
                                                   BorderRadius.circular(3),
                                             ),

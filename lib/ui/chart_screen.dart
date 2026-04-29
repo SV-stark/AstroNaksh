@@ -351,8 +351,9 @@ class _ChartScreenState extends State<ChartScreen> {
   Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.useMobileLayout(context);
 
-    Widget content = NavigationView(
-        pane: NavigationPane(        selected: _currentIndex,
+    final content = NavigationView(
+      pane: NavigationPane(
+        selected: _currentIndex,
         onChanged: (i) => setState(() => _currentIndex = i),
         displayMode: ResponsiveHelper.getNavigationPaneDisplayMode(context),
         size: NavigationPaneSize(

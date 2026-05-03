@@ -231,10 +231,20 @@ class TransitAnalysis {
     final dhaiya = specialTransits.dhaiya;
     final saturnInfo = transitChart.planets[j.Planet.saturn];
 
+    final moonInfo = natalChart.baseChart.planets[j.Planet.moon];
+    var houseFromMoon = 0;
+    if (moonInfo != null && saturnInfo != null) {
+      final moonSign = moonInfo.position.zodiacSignIndex;
+      final saturnSign = saturnInfo.position.zodiacSignIndex;
+      houseFromMoon = ((saturnSign - moonSign + 12) % 12) + 1;
+    }
+
     return SaturnTransitAnalysis(
       transitSign: saturnInfo?.position.zodiacSignIndex ?? 0,
-      houseFromMoon: status.transitedHouse ?? 0,
+      houseFromMoon: houseFromMoon,
       sadeSatiPhase: _mapSadeSatiPhase(status.phase),
+      isDhaiya: dhaiya.isActive,
+      dhaiyaType: _mapDhaiyaType(dhaiya.type),
       kantakaShani: dhaiya.isActive,
       isRetrograde: saturnInfo?.isRetrograde ?? false,
       effects: [
@@ -261,6 +271,16 @@ class TransitAnalysis {
         return LocalSadeSatiPhase.peak;
       case j.SadeSatiPhase.setting:
         return LocalSadeSatiPhase.setting;
+    }
+  }
+
+  LocalDhaiyaType _mapDhaiyaType(j.DhaiyaType? type) {
+    if (type == null) return LocalDhaiyaType.none;
+    switch (type) {
+      case j.DhaiyaType.fourth:
+        return LocalDhaiyaType.fourth;
+      case j.DhaiyaType.eighth:
+        return LocalDhaiyaType.eighth;
     }
   }
 
@@ -552,7 +572,10 @@ class TransitChart {
       'Saturn: House ${saturnTransit.houseFromMoon} from natal Moon',
     );
     if (saturnTransit.isSadeSati) {
-      buffer.writeln('Sade Sati: ${saturnTransit.sadeSatiPhase.name} phase');
+      buffer.writeln('Sade Sati: ${saturnTransit.sadeSatiPhase.name} phase active');
+    }
+    if (saturnTransit.isDhaiya) {
+      buffer.writeln('Dhaiya: ${saturnTransit.dhaiyaType.name} active');
     }
     buffer.writeln(
       'Jupiter: House ${jupiterTransit.houseFromMoon} from natal Moon',
@@ -653,6 +676,8 @@ class SaturnTransitAnalysis {
     required this.transitSign,
     required this.houseFromMoon,
     required this.sadeSatiPhase,
+    required this.isDhaiya,
+    required this.dhaiyaType,
     required this.kantakaShani,
     required this.isRetrograde,
     required this.effects,
@@ -661,6 +686,8 @@ class SaturnTransitAnalysis {
   final int transitSign;
   final int houseFromMoon;
   final LocalSadeSatiPhase sadeSatiPhase;
+  final bool isDhaiya;
+  final LocalDhaiyaType dhaiyaType;
   final bool kantakaShani;
   final bool isRetrograde;
   final List<String> effects;
@@ -670,6 +697,8 @@ class SaturnTransitAnalysis {
 }
 
 enum LocalSadeSatiPhase { none, rising, peak, setting }
+
+enum LocalDhaiyaType { none, fourth, eighth }
 
 class JupiterTransitAnalysis {
   JupiterTransitAnalysis({

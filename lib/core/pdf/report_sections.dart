@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import '../../data/models.dart';
 import '../../logic/life_prediction_service.dart';
+import '../../logic/transit_analysis.dart';
 import '../../logic/varshaphal_system.dart';
 import '../pdf_report_charts.dart';
 import 'pdf_widgets.dart';
@@ -148,7 +149,131 @@ class ReportSections {
             ),
           ],
         ),
+        
+        // Special Transits (Sade Sati / Dhaiya)
+        await _buildSpecialTransitSummary(chartData, body, bodyBold),
       ],
+    );
+  }
+
+  static Future<pw.Widget> _buildSpecialTransitSummary(
+    CompleteChartData chartData,
+    pw.TextStyle body,
+    pw.TextStyle bodyBold,
+  ) async {
+    final transitAnalysis = TransitAnalysis();
+    final transitChart = await transitAnalysis.calculateTransitChart(chartData, DateTime.now());
+    final saturn = transitChart.saturnTransit;
+
+    if (!saturn.isSadeSati && !saturn.isDhaiya) return pw.SizedBox();
+
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(top: 16),
+      child: PdfWidgets.infoCard(
+        title: 'Special Transit Warnings',
+        children: [
+          if (saturn.isSadeSati)
+            _buildSummaryItem('Sade Sati', '${saturn.sadeSatiPhase.name} phase', body, bodyBold),
+          if (saturn.isDhaiya)
+            _buildSummaryItem('Dhaiya', '${saturn.dhaiyaType.name} active', body, bodyBold),
+          pw.SizedBox(height: 8),
+          pw.Text(
+            'Special Saturn transits often bring periods of discipline, transformation, and karmic adjustments.',
+            style: body.copyWith(fontSize: 8, fontStyle: pw.FontStyle.italic),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<pw.Widget> buildTransitSection(
+    CompleteChartData chartData,
+    pw.TextStyle h2,
+    pw.TextStyle h3,
+    pw.TextStyle body,
+  ) async {
+    final transitAnalysis = TransitAnalysis();
+    final transitChart = await transitAnalysis.calculateTransitChart(chartData, DateTime.now());
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        PdfWidgets.sectionHeader('Current Transit Analysis (Gochara)', h2),
+        pw.Text(
+          'Gochara analysis examines how current planetary positions interact with your natal chart to influence your present circumstances.',
+          style: body,
+        ),
+        pw.SizedBox(height: 20),
+        
+        // Gochara Positions Table
+        pw.Text('Planetary Placements from Moon', style: h3),
+        pw.SizedBox(height: 10),
+        PdfWidgets.premiumTable(
+          headers: ['Planet', 'Current Sign', 'House from Moon', 'Nature'],
+          rows: transitChart.gochara.positions.entries.map((entry) {
+            final planet = entry.key;
+            final house = entry.value;
+            final isFavorable = transitChart.gochara.isFavorable(planet);
+            
+            return [
+              planet.displayName,
+              AstrologyConstants.getSignName(transitChart.transitPositions.planets[planet]?.position.zodiacSignIndex ?? 0),
+              'House $house',
+              if (isFavorable) 'Favorable' else 'Challenging',
+            ];
+          }).toList(),
+          bodyStyle: body.copyWith(fontSize: 9),
+        ),
+
+        pw.SizedBox(height: 30),
+        
+        // Special Transits
+        pw.Text('Major Planetary Transits', style: h3),
+        pw.SizedBox(height: 10),
+        
+        // Saturn Card
+        _buildTransitDetailCard(
+          'Saturn (Shani)',
+          transitChart.saturnTransit.effects,
+          transitChart.saturnTransit.recommendations,
+          body,
+        ),
+        
+        pw.SizedBox(height: 12),
+        
+        // Jupiter Card
+        _buildTransitDetailCard(
+          'Jupiter (Guru)',
+          transitChart.jupiterTransit.effects,
+          transitChart.jupiterTransit.recommendations,
+          body,
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildTransitDetailCard(
+    String title,
+    List<String> effects,
+    List<String> recommendations,
+    pw.TextStyle body,
+  ) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: ReportStyles.accentColor.shade(0.8)),
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(title, style: body.copyWith(fontWeight: pw.FontWeight.bold, color: ReportStyles.primaryColor)),
+          pw.SizedBox(height: 8),
+          pw.Text('Effects: ${effects.join("; ")}', style: body.copyWith(fontSize: 9)),
+          pw.SizedBox(height: 4),
+          pw.Text('Advice: ${recommendations.join("; ")}', style: body.copyWith(fontSize: 9, fontStyle: pw.FontStyle.italic)),
+        ],
+      ),
     );
   }
 

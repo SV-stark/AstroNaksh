@@ -204,7 +204,7 @@ flutter build web --release      # For Web
 - [x] Yearly forecast (Varshaphal) - **Enhanced with Tajik Neelakantha rules**
 - [x] Marriage compatibility (Kuta matching) - **Enhanced with Manglik Cancellation & Dosha Samyam**
 - [x] Horary (Prashna) module
-- [ ] Muhurta (Electional) timing
+- [x] Muhurta (Electional) timing
 
 ### Phase 3: Advanced Features
 

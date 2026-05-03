@@ -1,7 +1,7 @@
-import 'package:intl/intl.dart';
 import 'package:jyotish/jyotish.dart';
 
 import '../core/ephemeris_manager.dart';
+import '../core/utils/formatters.dart';
 import '../data/models.dart';
 
 class PanchangResult {
@@ -158,10 +158,9 @@ class PanchangService {
     );
 
     final moon = chart.getPlanet(Planet.moon)!;
-    final timeFormat = DateFormat('HH:mm');
 
     return PanchangResult(
-      date: DateFormat('dd MMMM yyyy, HH:mm').format(dateTime),
+      date: AppFormatters.formatDateTime(dateTime),
       tithi:
           '${panchanga.tithi.paksha == Paksha.shukla ? 'Shukla' : 'Krishna'} ${panchanga.tithi.name}',
       tithiNumber: panchanga.tithi.number,
@@ -175,10 +174,10 @@ class PanchangService {
           'General good conduct recommended.',
       karana: panchanga.karana.name,
       vara: panchanga.vara.name,
-      sunrise: sr != null ? timeFormat.format(sr.toLocal()) : '--:--',
-      sunset: ss != null ? timeFormat.format(ss.toLocal()) : '--:--',
-      moonrise: mr != null ? timeFormat.format(mr.toLocal()) : '--:--',
-      moonset: ms != null ? timeFormat.format(ms.toLocal()) : '--:--',
+      sunrise: sr != null ? AppFormatters.formatTime(sr.toLocal()) : '--:--',
+      sunset: ss != null ? AppFormatters.formatTime(ss.toLocal()) : '--:--',
+      moonrise: mr != null ? AppFormatters.formatTime(mr.toLocal()) : '--:--',
+      moonset: ms != null ? AppFormatters.formatTime(ms.toLocal()) : '--:--',
     );
   }
 
@@ -323,15 +322,14 @@ class PanchangService {
       sunset: ss,
     );
 
-    final timeFormat = DateFormat('HH:mm');
     final results = <PanchangInauspicious>[];
 
     if (periods.rahukalam != null) {
       results.add(
         PanchangInauspicious(
           name: 'Rahukalam',
-          startTime: timeFormat.format(periods.rahukalam!.start.toLocal()),
-          endTime: timeFormat.format(periods.rahukalam!.end.toLocal()),
+          startTime: AppFormatters.formatTime(periods.rahukalam!.start.toLocal()),
+          endTime: AppFormatters.formatTime(periods.rahukalam!.end.toLocal()),
         ),
       );
     }
@@ -339,8 +337,8 @@ class PanchangService {
       results.add(
         PanchangInauspicious(
           name: 'Gulikalam',
-          startTime: timeFormat.format(periods.gulikalam!.start.toLocal()),
-          endTime: timeFormat.format(periods.gulikalam!.end.toLocal()),
+          startTime: AppFormatters.formatTime(periods.gulikalam!.start.toLocal()),
+          endTime: AppFormatters.formatTime(periods.gulikalam!.end.toLocal()),
         ),
       );
     }
@@ -348,8 +346,8 @@ class PanchangService {
       results.add(
         PanchangInauspicious(
           name: 'Yamagandam',
-          startTime: timeFormat.format(periods.yamagandam!.start.toLocal()),
-          endTime: timeFormat.format(periods.yamagandam!.end.toLocal()),
+          startTime: AppFormatters.formatTime(periods.yamagandam!.start.toLocal()),
+          endTime: AppFormatters.formatTime(periods.yamagandam!.end.toLocal()),
         ),
       );
     }
@@ -370,12 +368,11 @@ class PanchangService {
       location: geoLoc,
     );
 
-    final timeFormat = DateFormat('HH:mm');
     return rawHoras.map((h) {
       return PanchangHora(
         planet: h.lord.displayName,
-        startTime: timeFormat.format(h.startTime.toLocal()),
-        endTime: timeFormat.format(h.endTime.toLocal()),
+        startTime: AppFormatters.formatTime(h.startTime.toLocal()),
+        endTime: AppFormatters.formatTime(h.endTime.toLocal()),
         isDay: h.isDaytime,
       );
     }).toList();
@@ -402,13 +399,12 @@ class PanchangService {
     // Use typed ChoghadiyaPeriods return instead of dynamic cast
     final result = _jyotish.getChoghadiya(date: date, sunrise: sr, sunset: ss);
 
-    final timeFormat = DateFormat('HH:mm');
     return result.allPeriods.map<PanchangChoghadiya>((c) {
       return PanchangChoghadiya(
         name: c.name,
         type: c.type.nature, // e.g. 'Auspicious' or 'Inauspicious'
-        startTime: timeFormat.format(c.startTime.toLocal()),
-        endTime: timeFormat.format(c.endTime.toLocal()),
+        startTime: AppFormatters.formatTime(c.startTime.toLocal()),
+        endTime: AppFormatters.formatTime(c.endTime.toLocal()),
         isDay: c.isDaytime,
       );
     }).toList();

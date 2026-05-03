@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:jyotish/jyotish.dart';
 
+import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 import 'matching_models.dart';
 
@@ -311,8 +311,8 @@ class MatchingService {
 
     return DashaSandhiResult(
       hasSandhi: gSandhi || bSandhi,
-      maleCurrentDasha: "$gMaha (${DateFormat('MMM yyyy').format(gEnd)})",
-      femaleCurrentDasha: "$bMaha (${DateFormat('MMM yyyy').format(bEnd)})",
+      maleCurrentDasha: '$gMaha (${AppFormatters.formatDate(gEnd)})',
+      femaleCurrentDasha: '$bMaha (${AppFormatters.formatDate(bEnd)})',
       description: desc,
     );
   }

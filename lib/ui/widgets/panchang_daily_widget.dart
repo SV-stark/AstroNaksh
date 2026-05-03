@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' show Colors;
-import 'package:intl/intl.dart';
 
+import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 import '../../logic/panchang_service.dart';
 
@@ -94,7 +94,7 @@ class _PanchangDailyWidgetState extends State<PanchangDailyWidget> {
                       ),
                       const Spacer(),
                       Text(
-                        DateFormat('EEEE, MMM d, yyyy').format(DateTime.now()),
+                        AppFormatters.formatDate(DateTime.now()),
                         style: FluentTheme.of(context).typography.body
                             ?.copyWith(
                               color: Colors.white.withValues(alpha: 0.8),

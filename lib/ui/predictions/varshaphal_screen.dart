@@ -1,8 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
 import 'package:jyotish/jyotish.dart';
 
 import '../../core/ephemeris_manager.dart';
+import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 import '../../logic/varshaphal_system.dart';
 import '../../ui/utils/responsive_helper.dart';
@@ -158,9 +158,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                         textAlign: TextAlign.center,
                       ),
                       Text(
-                        DateFormat(
-                          'MMM dd, yyyy HH:mm:ss',
-                        ).format(chart.solarReturnTime),
+                        AppFormatters.formatTimeWithSeconds(chart.solarReturnTime),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Text(
@@ -203,9 +201,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                         style: FluentTheme.of(context).typography.subtitle,
                       ),
                       Text(
-                        DateFormat(
-                          'MMM dd, yyyy HH:mm:ss',
-                        ).format(chart.solarReturnTime),
+                        AppFormatters.formatTimeWithSeconds(chart.solarReturnTime),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Text(
@@ -416,7 +412,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${period.planet}: ${DateFormat('MMM dd').format(period.startDate)} - ${DateFormat('MMM dd').format(period.endDate)}',
+                        '${period.planet}: ${AppFormatters.formatDate(period.startDate)} - ${AppFormatters.formatDate(period.endDate)}',
                       ),
                     ),
                     // Score Badge
@@ -628,7 +624,7 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
           ),
           title: Text(period.lord.displayName),
           subtitle: Text(
-            '${DateFormat('MMM dd, yyyy').format(period.startDate)} - ${DateFormat('MMM dd, yyyy').format(period.endDate)}',
+            '${AppFormatters.formatDate(period.startDate)} - ${AppFormatters.formatDate(period.endDate)}',
             style: const TextStyle(fontSize: 12),
           ),
         );

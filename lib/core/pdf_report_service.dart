@@ -305,6 +305,17 @@ class PDFReportService {
       );
     }
 
+    // 7. Transit Section
+    if (includeTransit) {
+      final transitSection = await ReportSections.buildTransitSection(chartData, h2, h3, body);
+      pdf.addPage(
+        PdfWidgets.premiumPage(
+          backgroundImage: bgImage,
+          build: (context) => transitSection,
+        ),
+      );
+    }
+
     // Save PDF
     final output = await getTemporaryDirectory();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -387,7 +398,7 @@ class PDFReportService {
   }
 
   static String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   static Future<void> shareReport(File file) async {

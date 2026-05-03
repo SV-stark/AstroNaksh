@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/birth_time_rectifier.dart';
+import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 import '../../ui/utils/responsive_helper.dart';
 
@@ -81,7 +81,6 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
 
     final originalData = _originalData!;
     final adjustedTime = originalData.dateTime.add(_adjustment);
-    final formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
     return ScaffoldPage(
       header: PageHeader(
@@ -128,12 +127,12 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Original: ${formatter.format(originalData.dateTime)}',
+                      'Original: ${AppFormatters.formatDate(originalData.dateTime)} ${AppFormatters.formatTimeWithSeconds(originalData.dateTime)}',
                       style: FluentTheme.of(context).typography.caption,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      formatter.format(adjustedTime),
+                      '${AppFormatters.formatDate(adjustedTime)} ${AppFormatters.formatTimeWithSeconds(adjustedTime)}',
                       style: FluentTheme.of(context).typography.title,
                     ),
                     const SizedBox(height: 8),

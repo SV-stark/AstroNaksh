@@ -1,5 +1,6 @@
-import 'package:intl/intl.dart';
 import 'package:jyotish/jyotish.dart';
+
+import '../core/utils/formatters.dart';
 import '../data/models.dart';
 
 /// Yoga and Dosha Analyzer
@@ -48,7 +49,6 @@ class YogaDoshaAnalyzer {
     if (keyPlanets.isEmpty) return ('See chart analysis', '');
 
     final mahadashas = chart.dashaData.vimshottari.mahadashas;
-    final fmt = DateFormat('MMM yyyy');
 
     // Flatten relevant periods for easier querying
     final relevantPeriods = <({String mdLord, String adLord, DateTime start, DateTime end})>[];
@@ -72,7 +72,7 @@ class YogaDoshaAnalyzer {
     for (final p in relevantPeriods) {
       if (now.isAfter(p.start) && now.isBefore(p.end)) {
         return (
-          'Currently active – until ${fmt.format(p.end)}',
+          'Currently active – until ${AppFormatters.formatDate(p.end)}',
           '${p.mdLord} MD → ${p.adLord} AD'
         );
       }
@@ -82,7 +82,7 @@ class YogaDoshaAnalyzer {
     for (final p in relevantPeriods) {
       if (now.isBefore(p.start)) {
         return (
-          '${fmt.format(p.start)} – ${fmt.format(p.end)}',
+          '${AppFormatters.formatDate(p.start)} – ${AppFormatters.formatDate(p.end)}',
           '${p.mdLord} MD → ${p.adLord} AD'
         );
       }
@@ -92,7 +92,7 @@ class YogaDoshaAnalyzer {
     for (final p in relevantPeriods.reversed) {
       if (now.isAfter(p.end)) {
         return (
-          'Peak passed: ${fmt.format(p.start)} – ${fmt.format(p.end)}',
+          'Peak passed: ${AppFormatters.formatDate(p.start)} – ${AppFormatters.formatDate(p.end)}',
           '${p.mdLord} MD → ${p.adLord} AD'
         );
       }

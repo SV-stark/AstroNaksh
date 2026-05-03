@@ -1,7 +1,8 @@
 import 'package:jyotish/jyotish.dart' as j;
 
+import '../../core/utils/formatters.dart';
+import '../../data/models.dart';
 import '../core/ephemeris_manager.dart';
-import '../data/models.dart';
 
 /// Transit Analysis (Gochara) System
 /// Analyzes current planetary positions relative to natal chart
@@ -561,7 +562,7 @@ class TransitChart {
   String getSummary() {
     final buffer = StringBuffer();
     buffer.writeln(
-      'Transit Analysis for ${transitDate.day}/${transitDate.month}/${transitDate.year}',
+      'Transit Analysis for ${AppFormatters.formatDate(transitDate)}',
     );
     buffer.writeln('=' * 40);
     buffer.writeln();
@@ -781,6 +782,6 @@ class LocalFavorablePeriod {
 
   @override
   String toString() {
-    return '${planet.displayName}: ${startDate.day}/${startDate.month} - ${endDate.day}/${endDate.month} ($days days)';
+    return '${planet.displayName}: ${AppFormatters.formatDate(startDate)} - ${AppFormatters.formatDate(endDate)} ($days days)';
   }
 }

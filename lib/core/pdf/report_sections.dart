@@ -556,7 +556,7 @@ class ReportSections {
   }
 
   static String _formatDateShort(DateTime date) {
-    return '${date.day}/${date.month}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   static pw.Widget _buildInfoRow(String label, String value) {
@@ -592,11 +592,13 @@ class ReportSections {
   }
 
   static String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   static String _formatTime(DateTime date) {
-    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+    final amPm = date.hour >= 12 ? 'PM' : 'AM';
+    return '${hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')} $amPm';
   }
 
   static Map<String, Map<String, dynamic>> _convertVarshaToSignificators(

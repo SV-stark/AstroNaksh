@@ -305,6 +305,17 @@ class PDFReportService {
       );
     }
 
+    // 7. Transit Section
+    if (includeTransit) {
+      final transitSection = await ReportSections.buildTransitSection(chartData, h2, h3, body);
+      pdf.addPage(
+        PdfWidgets.premiumPage(
+          backgroundImage: bgImage,
+          build: (context) => transitSection,
+        ),
+      );
+    }
+
     // Save PDF
     final output = await getTemporaryDirectory();
     final timestamp = DateTime.now().millisecondsSinceEpoch;

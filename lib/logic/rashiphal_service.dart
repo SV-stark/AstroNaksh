@@ -193,6 +193,9 @@ class RashiphalService {
     if (saturnTransit.isSadeSati) {
       saturnNote += ' — Sade Sati ${saturnTransit.sadeSatiPhase.name} phase';
     }
+    if (saturnTransit.isDhaiya) {
+      saturnNote += ' — Dhaiya (${saturnTransit.dhaiyaType.name}) active';
+    }
     if (saturnTransit.isRetrograde) {
       saturnNote += ' [Retrograde]';
     }

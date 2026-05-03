@@ -43,6 +43,24 @@ class ProgenyScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
+          // Prediction Paragraph
+          const Text(
+            'Detailed Prediction',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              analysis.prediction,
+              style: const TextStyle(
+                fontSize: 14,
+                height: 1.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // Factors
           const Text(
             'Analysis Factors',

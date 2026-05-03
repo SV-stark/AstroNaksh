@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
+
+import '../../../core/utils/formatters.dart';
 import '../../../logic/panchang_service.dart';
 import '../../../ui/utils/responsive_helper.dart';
 import 'panchang_helpers.dart';
@@ -23,9 +24,8 @@ class PanchangElementsTab extends StatelessWidget {
     }
 
     final useMobile = ResponsiveHelper.useMobileLayout(context);
-    final timeFormat = DateFormat('HH:mm');
     final tithiEnd = tithiJunction != null
-        ? timeFormat.format(tithiJunction!)
+        ? AppFormatters.formatTime(tithiJunction!)
         : 'N/A';
 
     return GridView.count(

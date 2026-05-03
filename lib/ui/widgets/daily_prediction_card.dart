@@ -1,6 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
 
+import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 
 class DailyPredictionCard extends StatelessWidget {
@@ -26,7 +26,7 @@ class DailyPredictionCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                DateFormat('EEEE, MMM d').format(prediction.date),
+                AppFormatters.formatDateWithDay(prediction.date),
                 style: FluentTheme.of(context).typography.subtitle,
               ),
               if (isToday)

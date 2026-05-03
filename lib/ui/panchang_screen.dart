@@ -1,9 +1,9 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
 import 'package:jyotish/jyotish.dart';
 
 import '../core/ephemeris_manager.dart';
+import '../core/utils/formatters.dart';
 import '../data/city_database.dart';
 import '../data/models.dart';
 import '../logic/gowri_panchanga_service.dart';
@@ -107,26 +107,25 @@ class _PanchangScreenState extends State<PanchangScreen> {
         location,
       );
 
-      final tf = DateFormat('HH:mm');
       inauspicious.add(
         PanchangInauspicious(
           name: 'Night Rahukalam',
-          startTime: tf.format(nightInauspicious.rahuKaal.start.toLocal()),
-          endTime: tf.format(nightInauspicious.rahuKaal.end.toLocal()),
+          startTime: AppFormatters.formatTime(nightInauspicious.rahuKaal.start.toLocal()),
+          endTime: AppFormatters.formatTime(nightInauspicious.rahuKaal.end.toLocal()),
         ),
       );
       inauspicious.add(
         PanchangInauspicious(
           name: 'Night Gulikalam',
-          startTime: tf.format(nightInauspicious.gulikaKaal.start.toLocal()),
-          endTime: tf.format(nightInauspicious.gulikaKaal.end.toLocal()),
+          startTime: AppFormatters.formatTime(nightInauspicious.gulikaKaal.start.toLocal()),
+          endTime: AppFormatters.formatTime(nightInauspicious.gulikaKaal.end.toLocal()),
         ),
       );
       inauspicious.add(
         PanchangInauspicious(
           name: 'Night Yamagandam',
-          startTime: tf.format(nightInauspicious.yamagandam.start.toLocal()),
-          endTime: tf.format(nightInauspicious.yamagandam.end.toLocal()),
+          startTime: AppFormatters.formatTime(nightInauspicious.yamagandam.start.toLocal()),
+          endTime: AppFormatters.formatTime(nightInauspicious.yamagandam.end.toLocal()),
         ),
       );
 
@@ -425,7 +424,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                               child: Column(
                                 children: [
                                   Text(
-                                    DateFormat('EEEE').format(_selectedDate),
+                                    AppFormatters.formatDayName(_selectedDate),
                                     style: FluentTheme.of(context)
                                         .typography
                                         .bodyLarge
@@ -918,7 +917,6 @@ class _PanchangScreenState extends State<PanchangScreen> {
     Color color,
     String desc,
   ) {
-    final format = DateFormat('HH:mm');
     return Expander(
       header: Row(
         children: [
@@ -927,7 +925,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
           Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
           const Spacer(),
           Text(
-            '${format.format(start.toLocal())} - ${format.format(end.toLocal())}',
+            '${AppFormatters.formatTime(start.toLocal())} - ${AppFormatters.formatTime(end.toLocal())}',
             style: TextStyle(color: color, fontWeight: FontWeight.bold),
           ),
         ],
@@ -1093,7 +1091,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
             title: 'Tithi',
             value: _result!.tithi,
             subtitle: _tithiJunction != null
-                ? 'Ends at ${DateFormat('HH:mm').format(_tithiJunction!.toLocal())}'
+                ? 'Ends at ${AppFormatters.formatTime(_tithiJunction!.toLocal())}'
                 : 'Lunar Day',
             icon: FluentIcons.calendar_day,
             color: Colors.orange,
@@ -1272,7 +1270,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                       style: TextStyle(color: Colors.red),
                     ),
                   Text(
-                    'Date: ${DateFormat('dd MMM yyyy, HH:mm').format(_eclipseData!.date.toLocal())}',
+                    'Date: ${AppFormatters.formatDateTime(_eclipseData!.date.toLocal())}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],

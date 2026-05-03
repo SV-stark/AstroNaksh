@@ -1,10 +1,10 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' show showDatePicker;
-import 'package:intl/intl.dart';
 import 'package:jyotish/jyotish.dart';
 
 import '../../core/ephemeris_manager.dart';
+import '../../core/utils/formatters.dart';
 import '../../data/city_database.dart';
 import '../../ui/utils/responsive_helper.dart';
 
@@ -274,7 +274,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                           }
                         },
                         child: Text(
-                          DateFormat('EEEE, MMM d, yyyy').format(_selectedDate),
+                          AppFormatters.formatDate(_selectedDate),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -404,7 +404,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        '${DateFormat('hh:mm a').format(p.startTime)} - ${DateFormat('hh:mm a').format(p.endTime)}',
+                        '${AppFormatters.formatTime(p.startTime)} - ${AppFormatters.formatTime(p.endTime)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -505,7 +505,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
               SizedBox(
                 width: 130,
                 child: Text(
-                  '${DateFormat('hh:mm').format(period.startTime)} - ${DateFormat('hh:mm a').format(period.endTime)}',
+                  '${AppFormatters.formatTime(period.startTime)} - ${AppFormatters.formatTime(period.endTime)}',
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),

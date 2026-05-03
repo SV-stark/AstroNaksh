@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
+
+import '../../../core/utils/formatters.dart';
 import '../../../logic/panchang_service.dart';
 
 /// Reusable helper widgets for the Panchang screen.
@@ -169,7 +170,6 @@ Widget buildMuhurtaCard(
   Color color,
   String desc,
 ) {
-  final timeFormat = DateFormat('HH:mm');
   return Expander(
     header: Row(
       children: [
@@ -177,7 +177,7 @@ Widget buildMuhurtaCard(
         const SizedBox(width: 8),
         Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const Spacer(),
-        Text('${timeFormat.format(start)} - ${timeFormat.format(end)}'),
+        Text('${AppFormatters.formatTime(start)} - ${AppFormatters.formatTime(end)}'),
       ],
     ),
     content: Padding(padding: const EdgeInsets.all(8), child: Text(desc)),

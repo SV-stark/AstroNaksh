@@ -18,13 +18,40 @@ class ShadbalaScreen extends StatelessWidget {
       future: ShadbalaCalculator.getScreenData(chartData),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: ProgressRing());
+          return ScaffoldPage(
+            header: PageHeader(
+              title: const Text('Shadbala (Planetary Strength)'),
+              leading: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            content: const Center(child: ProgressRing()),
+          );
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return ScaffoldPage(
+            header: PageHeader(
+              title: const Text('Shadbala (Planetary Strength)'),
+              leading: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            content: Center(child: Text('Error: ${snapshot.error}')),
+          );
         }
         if (!snapshot.hasData) {
-          return const Center(child: Text('No data available'));
+          return ScaffoldPage(
+            header: PageHeader(
+              title: const Text('Shadbala (Planetary Strength)'),
+              leading: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            content: const Center(child: Text('No data available')),
+          );
         }
 
         final data = snapshot.data!;
@@ -33,8 +60,12 @@ class ShadbalaScreen extends StatelessWidget {
         final isMobile = context.isMobile;
 
         return ScaffoldPage.scrollable(
-          header: const PageHeader(
-            title: Text('Shadbala (Planetary Strength)'),
+          header: PageHeader(
+            title: const Text('Shadbala (Planetary Strength)'),
+            leading: IconButton(
+              icon: const Icon(FluentIcons.back),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
           children: [
             if (!isMobile)

@@ -24,6 +24,17 @@ class BhangaResult {
       peakDashaLord: json['peakDashaLord'] as String? ?? '',
     );
   }
+
+  factory BhangaResult.inactive(String name) {
+    return BhangaResult(
+      name: name,
+      description: '',
+      isActive: false,
+      status: 'Inactive',
+      strength: 0,
+    );
+  }
+
   final String name;
   final String description;
   final bool isActive;

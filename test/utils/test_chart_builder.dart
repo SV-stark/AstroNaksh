@@ -59,6 +59,8 @@ class TestChartBuilder {
     return this;
   }
 
+  final Map<Planet, PlanetaryDignity> _dignities = {};
+
   /// Set a planet to be retrograde
   TestChartBuilder withRetrogradePlanet(Planet planet) {
     if (planet == Planet.meanNode) {
@@ -70,6 +72,12 @@ class TestChartBuilder {
       final current = _planets[planet]!;
       _planets[planet] = PlanetInput(longitude: current.longitude, speed: -1.0);
     }
+    return this;
+  }
+
+  /// Set specific dignity for a planet
+  TestChartBuilder withPlanetDignity(Planet planet, PlanetaryDignity dignity) {
+    _dignities[planet] = dignity;
     return this;
   }
 
@@ -125,8 +133,7 @@ class TestChartBuilder {
       vedicPlanets[p] = VedicPlanetInfo(
         position: position,
         house: _getHouse(input.longitude, _ascendant),
-        dignity: PlanetaryDignity
-            .neutralSign, // Simplified, logic in builder doesn't calculate dignity yet
+        dignity: _dignities[p] ?? PlanetaryDignity.neutralSign,
         isCombust: false,
         exaltationDegree: 0,
         debilitationDegree: 0,
@@ -150,7 +157,7 @@ class TestChartBuilder {
     final rahuInfo = VedicPlanetInfo(
       position: rahuPosition,
       house: _getHouse(rahuLong, _ascendant),
-      dignity: PlanetaryDignity.neutralSign,
+      dignity: _dignities[Planet.meanNode] ?? PlanetaryDignity.neutralSign,
       isCombust: false,
       exaltationDegree: 0,
       debilitationDegree: 0,
@@ -243,21 +250,7 @@ class TestChartBuilder {
   }
 
   String _getSignName(int index) {
-    const signs = [
-      'Aries',
-      'Taurus',
-      'Gemini',
-      'Cancer',
-      'Leo',
-      'Virgo',
-      'Libra',
-      'Scorpio',
-      'Sagittarius',
-      'Capricorn',
-      'Aquarius',
-      'Pisces',
-    ];
-    return signs[index % 12];
+    return Rashi.fromIndex(index).name;
   }
 }
 

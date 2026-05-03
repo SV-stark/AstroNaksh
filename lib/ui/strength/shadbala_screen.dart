@@ -1,11 +1,11 @@
 import 'package:fl_chart/fl_chart.dart';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart' hide Colors;
+import 'package:flutter/material.dart' as m;
 import 'package:jyotish/jyotish.dart';
 
 import '../../data/models.dart';
 import '../../logic/shadbala.dart';
 import '../../ui/utils/responsive_helper.dart';
-import '../styles.dart';
 import '../widgets/strength_meter.dart';
 
 class ShadbalaScreen extends StatelessWidget {
@@ -18,489 +18,221 @@ class ShadbalaScreen extends StatelessWidget {
       future: ShadbalaCalculator.getScreenData(chartData),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return ScaffoldPage(
-            header: PageHeader(
-              title: const Text('Shadbala Analysis'),
-              leading: IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            content: const Center(child: ProgressRing()),
-          );
+          return const Center(child: ProgressRing());
         }
-
         if (snapshot.hasError) {
-          return ScaffoldPage(
-            header: PageHeader(
-              title: const Text('Shadbala Analysis'),
-              leading: IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            content: Center(
-              child: InfoBar(
-                title: const Text('Calculation Error'),
-                content: Text(
-                  'Failed to calculate Shadbala: ${snapshot.error}',
-                ),
-                severity: InfoBarSeverity.error,
-              ),
-            ),
-          );
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: Text('No data available'));
         }
 
-        if (snapshot.data == null) {
-          return const ScaffoldPage(
-            content: Center(child: Text('No data generated')),
-          );
-        }
+        final data = snapshot.data!;
+        final shadbalaMap = data.shadbala;
+        final detailedShadbala = data.detailedShadbala;
+        final isMobile = context.isMobile;
 
-        final screenData = snapshot.data!;
-        final shadbalaData = screenData.shadbala;
-
-        return ScaffoldPage(
-          header: PageHeader(
-            title: const Text('Shadbala Analysis'),
-            leading: IconButton(
-              icon: const Icon(FluentIcons.back),
-              onPressed: () => Navigator.pop(context),
-            ),
+        return ScaffoldPage.scrollable(
+          header: const PageHeader(
+            title: Text('Shadbala (Planetary Strength)'),
           ),
-          content: ListView(
-            padding: context.responsiveBodyPadding,
-            children: [
-              // Educational info
-              Card(
-                backgroundColor: Colors.orange.withValues(alpha: 0.1),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(FluentIcons.info, color: Colors.orange),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'About Shadbala',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Shadbala (Six-Fold Strength) measures planetary power through 6 components: '
-                        'Positional, Directional, Temporal, Motional, Natural, and Aspectual strength. '
-                        'Higher values indicate stronger planets capable of delivering better results.',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Overall strength ranking
-              _buildStrengthRanking(context, shadbalaData),
-
-              const SizedBox(height: 16),
-
-              // Comparative radar chart
-              _buildRadarChart(context, shadbalaData),
-
-              const SizedBox(height: 16),
-
-              // Individual planet cards with Vimsopaka and Combustion details
-              ..._buildPlanetCards(context, screenData),
-
-              const SizedBox(height: 16),
-
-              // Hora Lords section
-              _buildHoraLordsCard(context, screenData.horaLords),
-
-              const SizedBox(height: 32),
-            ],
-          ),
+          children: [
+            if (!isMobile)
+              _buildDesktopLayout(context, detailedShadbala, shadbalaMap)
+            else
+              _buildMobileLayout(context, detailedShadbala, shadbalaMap),
+          ],
         );
       },
     );
   }
 
-  Widget _buildStrengthRanking(
+  Widget _buildDesktopLayout(
     BuildContext context,
-    Map<String, double> shadbalaData,
+    Map<Planet, ShadbalaResult> detailedShadbala,
+    Map<Planet, double> totalStrengths,
   ) {
-    // Sort planets by strength
-    final rankings = shadbalaData.entries.toList()
+    return Column(
+      children: [
+        _buildOverviewCard(context, totalStrengths),
+        const SizedBox(height: 24),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: _buildDetailsCard(context, detailedShadbala),
+            ),
+            const SizedBox(width: 24),
+            Expanded(
+              child: _buildStrengthChart(context, totalStrengths),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout(
+    BuildContext context,
+    Map<Planet, ShadbalaResult> detailedShadbala,
+    Map<Planet, double> totalStrengths,
+  ) {
+    return Column(
+      children: [
+        _buildOverviewCard(context, totalStrengths),
+        const SizedBox(height: 16),
+        _buildStrengthChart(context, totalStrengths),
+        const SizedBox(height: 16),
+        _buildDetailsCard(context, detailedShadbala),
+      ],
+    );
+  }
+
+  Widget _buildOverviewCard(
+    BuildContext context,
+    Map<Planet, double> strengths,
+  ) {
+    final sortedPlanets = strengths.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Planetary Strength Ranking',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            ...rankings.asMap().entries.map((entry) {
-              final rank = entry.key + 1;
-              final planetEntry = entry.value;
-              final planetName = planetEntry.key;
-              final totalStrength = planetEntry.value;
-              final normalizedStrength = (totalStrength / 600) * 100;
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: _getPlanetColor(planetName),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '$rank',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            planetName,
-                            style: const TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 4),
-                          StrengthMeter(
-                            value: normalizedStrength,
-                            label: '${totalStrength.toStringAsFixed(2)} units',
-                            showPercentage: false,
-                            color: _getStrengthColor(totalStrength),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Planetary Strength Overview',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: sortedPlanets.map((entry) {
+              return SizedBox(
+                width: 150,
+                child: StrengthMeter(
+                  label: entry.key.displayName,
+                  value: (entry.value / 6).clamp(0, 100), // Normalize to 100 for display
                 ),
               );
-            }),
-          ],
-        ),
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildRadarChart(
+  Widget _buildStrengthChart(
     BuildContext context,
-    Map<String, double> shadbalaData,
+    Map<Planet, double> shadbalaData,
   ) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Comparative Strength Chart',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 300,
-              child: RadarChart(
-                RadarChartData(
-                  radarShape: RadarShape.polygon,
-                  tickCount: 4,
-                  ticksTextStyle: const TextStyle(
-                    fontSize: 10,
-                    color: Colors.transparent,
-                  ),
-                  radarBorderData: const BorderSide(color: Colors.grey),
-                  gridBorderData: const BorderSide(
-                    color: Colors.grey,
-                    width: 1,
-                  ),
-                  tickBorderData: const BorderSide(color: Colors.transparent),
-                  getTitle: (index, angle) {
-                    final planets = shadbalaData.keys.toList();
-                    if (index < planets.length) {
-                      return RadarChartTitle(
-                        text: planets[index],
-                        angle: angle,
-                      );
-                    }
-                    return const RadarChartTitle(text: '');
-                  },
-                  dataSets: [
-                    RadarDataSet(
-                      fillColor: Colors.blue.withValues(alpha: 0.2),
-                      borderColor: Colors.blue,
-                      dataEntries: shadbalaData.entries.map((entry) {
-                        return RadarEntry(value: entry.value / 6); // Normalize
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<Widget> _buildPlanetCards(
-    BuildContext context,
-    ShadbalaScreenData screenData,
-  ) {
-    return screenData.shadbala.entries.map((entry) {
-      final planetName = entry.key;
-      final totalStrength = entry.value;
-
-      final planetObj = Planet.traditionalPlanets.firstWhere(
-        (p) => p.displayName == planetName,
-        orElse: () => Planet.sun,
-      );
-      final vimsopaka = screenData.vimsopaka[planetObj];
-      final combustion = screenData.combustion[planetObj];
-
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12.0),
-        child: ExpandableInfoCard(
-          title: planetName,
-          summary:
-              'Total Strength: ${totalStrength.toStringAsFixed(2)} units - ${_getStrengthInterpretation(totalStrength)}',
-          icon: FluentIcons.favorite_star,
-          color: _getPlanetColor(planetName),
-          details: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Overall Strength:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    totalStrength.toStringAsFixed(1),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Comparative Strength Chart',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 300,
+            child: RadarChart(
+              RadarChartData(
+                radarShape: RadarShape.polygon,
+                tickCount: 4,
+                dataSets: [
+                  RadarDataSet(
+                    fillColor: FluentTheme.of(context).accentColor.withValues(alpha: 0.2),
+                    borderColor: FluentTheme.of(context).accentColor,
+                    entryRadius: 3,
+                    dataEntries: Planet.traditionalPlanets.map((p) {
+                      final value = shadbalaData[p] ?? 0.0;
+                      return RadarEntry(value: value);
+                    }).toList(),
                   ),
                 ],
+                ticksTextStyle: const TextStyle(
+                  fontSize: 10,
+                  color: m.Colors.transparent,
+                ),
+                radarBorderData: const BorderSide(color: m.Colors.grey),
+                gridBorderData: const BorderSide(
+                  color: m.Colors.grey,
+                  width: 1,
+                ),
+                tickBorderData: const BorderSide(color: m.Colors.transparent),
+                getTitle: (index, angle) {
+                  final planets = Planet.traditionalPlanets;
+                  if (index < planets.length) {
+                    return RadarChartTitle(
+                      text: planets[index].displayName,
+                      angle: angle,
+                    );
+                  }
+                  return const RadarChartTitle(text: '');
+                },
               ),
-              const SizedBox(height: 8),
-              StrengthMeter(
-                value: (totalStrength / 600) * 100,
-                label: _getStrengthInterpretation(totalStrength),
-                showPercentage: true,
-                color: _getStrengthColor(totalStrength),
-              ),
-              const SizedBox(height: 16),
-              _buildInterpretationText(planetName, totalStrength),
-              if (vimsopaka != null) ...[
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
-                const Text(
-                  'Vimsopaka Bala (20-Point Scale):',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '${vimsopaka.totalScore.toStringAsFixed(1)} / 20.0 (${vimsopaka.strengthCategory.name})',
-                ),
-                const Text(
-                  'Based on dignity in D-1, D-2, D-3, D-9, D-12, D-30 charts.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-              if (combustion != null) ...[
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Text(
-                      'Combustion Status: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      combustion.isCombust ? 'Combust' : 'Not Combust',
-                      style: TextStyle(
-                        color: combustion.isCombust ? Colors.red : Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  combustion.description,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
-            ],
+            ),
           ),
-        ),
-      );
-    }).toList();
-  }
-
-  Widget _buildInterpretationText(String planet, double strength) {
-    String interpretation;
-    if (strength >= 400) {
-      interpretation =
-          '$planet is very strong and will deliver excellent results. This planet can fulfill its significations powerfully.';
-    } else if (strength >= 300) {
-      interpretation =
-          '$planet has good strength and will give positive results. Most significations will be fulfilled.';
-    } else if (strength >= 200) {
-      interpretation =
-          '$planet has moderate strength. Results will be mixed, depending on other factors.';
-    } else if (strength >= 100) {
-      interpretation =
-          '$planet is weak and may struggle to deliver good results. Extra care needed in areas it rules.';
-    } else {
-      interpretation =
-          '$planet is very weak and may not be able to fulfill its promises effectively.';
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        interpretation,
-        style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+        ],
       ),
     );
   }
 
-  Widget _buildHoraLordsCard(BuildContext context, List<Planet> horaLords) {
-    if (horaLords.isEmpty) return const SizedBox.shrink();
-
+  Widget _buildDetailsCard(
+    BuildContext context,
+    Map<Planet, ShadbalaResult> detailedShadbala,
+  ) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(FluentIcons.clock, color: Colors.purple),
-                const SizedBox(width: 8),
-                const Text(
-                  'Hora Lords of the Day (24 Hours)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Shadbala Components (Virupas)',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: m.DataTable(
+              columns: [
+                const m.DataColumn(label: Text('Component')),
+                ...Planet.traditionalPlanets.map(
+                  (p) => m.DataColumn(label: Text(p.displayName)),
                 ),
               ],
+              rows: [
+                _buildDataRow('Sthana Bala', (r) => r.sthanaBala, detailedShadbala),
+                _buildDataRow('Dig Bala', (r) => r.digBala, detailedShadbala),
+                _buildDataRow('Kala Bala', (r) => r.kalaBala, detailedShadbala),
+                _buildDataRow('Chesta Bala', (r) => r.chestaBala, detailedShadbala),
+                _buildDataRow('Naisargika Bala', (r) => r.naisargikaBala, detailedShadbala),
+                _buildDataRow('Drik Bala', (r) => r.drikBala, detailedShadbala),
+                _buildDataRow('Total Virupas', (r) => r.totalBala, detailedShadbala),
+              ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Each day is divided into 24 planetary hours (Horas). The first hora begins at sunrise and is ruled by the lord of the weekday. Each subsequent hora is ruled by the 6th planet in the weekday sequence.',
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: List.generate(horaLords.length, (index) {
-                final lord = horaLords[index];
-                return Container(
-                  width: 90,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _getPlanetColor(
-                      lord.displayName,
-                    ).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: _getPlanetColor(
-                        lord.displayName,
-                      ).withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Hora ${index + 1}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        lord.displayName,
-                        style: TextStyle(
-                          color: _getPlanetColor(lord.displayName),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  String _getStrengthInterpretation(double strength) {
-    if (strength >= 400) return 'Very Strong';
-    if (strength >= 300) return 'Strong';
-    if (strength >= 200) return 'Moderate';
-    if (strength >= 100) return 'Weak';
-    return 'Very Weak';
-  }
-
-  Color _getStrengthColor(double strength) {
-    if (strength >= 400) return AppStyles.beneficColor;
-    if (strength >= 300) return AppStyles.beneficColor.withValues(alpha: 0.8);
-    if (strength >= 200) return AppStyles.neutralColor;
-    if (strength >= 100) return AppStyles.maleficColor.withValues(alpha: 0.8);
-    return AppStyles.maleficColor;
-  }
-
-  Color _getPlanetColor(String planet) {
-    switch (planet) {
-      case 'Sun':
-        return Colors.orange;
-      case 'Moon':
-        return const Color(0xFFADD8E6); // Light Blue
-      case 'Mars':
-        return Colors.red;
-      case 'Mercury':
-        return Colors.green;
-      case 'Jupiter':
-        return Colors.yellow;
-      case 'Venus':
-        return Colors.magenta; // Pinkish
-      case 'Saturn':
-        return Colors.purple; // Indigo replacement
-      default:
-        return Colors.grey;
-    }
+  m.DataRow _buildDataRow(
+    String label,
+    double Function(ShadbalaResult) selector,
+    Map<Planet, ShadbalaResult> detailedShadbala,
+  ) {
+    return m.DataRow(
+      cells: [
+        m.DataCell(Text(label, style: const TextStyle(fontWeight: FontWeight.bold))),
+        ...Planet.traditionalPlanets.map((p) {
+          final result = detailedShadbala[p];
+          final value = result != null ? selector(result) : 0.0;
+          return m.DataCell(Text(value.toStringAsFixed(1)));
+        }),
+      ],
+    );
   }
 }

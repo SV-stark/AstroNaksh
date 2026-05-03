@@ -38,7 +38,7 @@ class LifePredictionService {
   LifeAspectPrediction _generateAspectPrediction(
     CompleteChartData chartData,
     LifeAspect aspect,
-    Map<String, double> shadbala,
+    Map<Planet, double> shadbala,
     Map<int, BhavaStrength> bhavaBala,
   ) {
     // Collect planetary influences
@@ -47,10 +47,10 @@ class LifePredictionService {
     var influenceCount = 0;
 
     // Analyze primary planets for this aspect
-    for (final planetName in aspect.primaryPlanets) {
+    for (final planet in aspect.primaryPlanets) {
       final influence = _analyzePlanetForAspect(
         chartData,
-        planetName,
+        planet,
         aspect,
         shadbala,
       );
@@ -130,20 +130,20 @@ class LifePredictionService {
   /// Analyze a planet's influence on a life aspect
   PlanetaryInfluence? _analyzePlanetForAspect(
     CompleteChartData chartData,
-    String planetName,
+    Planet planet,
     LifeAspect aspect,
-    Map<String, double> shadbala, {
+    Map<Planet, double> shadbala, {
     bool isHouseLord = false,
     int? houseNumber,
   }) {
-    // Find planet in chart using typed lookup
-    final planetInfo = _findPlanet(chartData, planetName);
+    // Find planet in chart
+    final planetInfo = chartData.baseChart.planets[planet];
     if (planetInfo == null) return null;
 
     final longitude = planetInfo.longitude;
     final sign = planetInfo.position.zodiacSignIndex;
     final house = planetInfo.house;
-    final signName = AstrologyConstants.signNames[sign];
+    final signName = AstrologyConstants.getSignName(sign);
 
     // Calculate degree within sign
     final degreeInSign = longitude % 30;
@@ -152,16 +152,16 @@ class LifePredictionService {
     final degreeStr = '$degrees°${minutes.toString().padLeft(2, '0')}\'';
 
     // Get planetary strength (normalized to 0-100)
-    final rawStrength = shadbala[planetName] ?? 300;
+    final rawStrength = shadbala[planet] ?? 300;
     final strength = ((rawStrength / 600) * 100).clamp(0.0, 100.0);
 
     // Determine planetary status
-    final status = _getPlanetaryStatus(planetName, sign);
+    final status = planetInfo.dignity.name;
 
     // Determine if benefic for this aspect
     final isBenefic = _isBeneficForAspect(
       chartData,
-      planetName,
+      planet,
       aspect,
       sign,
       house,
@@ -172,15 +172,15 @@ class LifePredictionService {
     String position;
     if (isHouseLord && houseNumber != null) {
       position =
-          '${_getOrdinal(houseNumber)} Lord $planetName at $degreeStr $signName in ${_getOrdinal(house)} House';
+          '${_getOrdinal(houseNumber)} Lord ${planet.displayName} at $degreeStr $signName in ${_getOrdinal(house)} House';
     } else {
       position =
-          '$planetName at $degreeStr $signName in ${_getOrdinal(house)} House';
+          '${planet.displayName} at $degreeStr $signName in ${_getOrdinal(house)} House';
     }
 
     // Generate effect description
     final effect = _generateEffectDescription(
-      planetName,
+      planet,
       aspect,
       status,
       isBenefic,
@@ -193,7 +193,7 @@ class LifePredictionService {
     );
 
     return PlanetaryInfluence(
-      planetName: planetName,
+      planet: planet,
       position: position,
       status: status,
       strength: strength,
@@ -202,115 +202,35 @@ class LifePredictionService {
     );
   }
 
-  /// Find planet in chart using type-safe [Planet] enum lookup.
-  /// Falls back to string matching for callers that still use planet names.
-  VedicPlanetInfo? _findPlanet(CompleteChartData chartData, String planetName) {
-    final p = _planetFromName(planetName);
-    if (p != null) return chartData.baseChart.planets[p];
-    return null;
-  }
-
-  /// Maps a planet display name to [Planet] enum.
-  static Planet? _planetFromName(String name) {
-    return switch (name.toLowerCase()) {
-      'sun' => Planet.sun,
-      'moon' => Planet.moon,
-      'mars' => Planet.mars,
-      'mercury' => Planet.mercury,
-      'jupiter' => Planet.jupiter,
-      'venus' => Planet.venus,
-      'saturn' => Planet.saturn,
-      'rahu' => Planet.meanNode,
-      _ => null,
-    };
-  }
-
   /// Get house from sign based on ascendant
   int _getHouseFromSign(CompleteChartData chartData, int sign) {
     final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
     return ((sign - ascSign + 12) % 12) + 1;
   }
 
-  /// Get house lord as String name (for use in UI text)
-  String _getHouseLord(CompleteChartData chartData, int house) {
+  /// Get house lord
+  Planet _getHouseLord(CompleteChartData chartData, int house) {
     final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
     final houseSign = (ascSign + house - 1) % 12;
     return AstrologyConstants.getSignLord(houseSign);
   }
 
-  /// Get planetary status using library [PlanetaryDignity] from [VedicPlanetInfo].
-  /// Falls back to exaltation table if chart lookup fails.
-  String _getPlanetaryStatus(String planetName, int sign) {
-    // sign parameter kept for API compatibility with callers
-    // but we now prefer dignity from the chart when available.
-    // Callers to migrate to: chartData.baseChart.planets[Planet.x]?.dignity.english
-    const exaltation = {
-      'Sun': 0,
-      'Moon': 1,
-      'Mars': 9,
-      'Mercury': 5,
-      'Jupiter': 3,
-      'Venus': 11,
-      'Saturn': 6,
-    };
-    const debilitation = {
-      'Sun': 6,
-      'Moon': 7,
-      'Mars': 3,
-      'Mercury': 11,
-      'Jupiter': 9,
-      'Venus': 5,
-      'Saturn': 0,
-    };
-    const ownSigns = {
-      'Sun': [4],
-      'Moon': [3],
-      'Mars': [0, 7],
-      'Mercury': [2, 5],
-      'Jupiter': [8, 11],
-      'Venus': [1, 6],
-      'Saturn': [9, 10],
-    };
-    if (exaltation[planetName] == sign) return PlanetaryDignity.exalted.english;
-    if (debilitation[planetName] == sign) {
-      return PlanetaryDignity.debilitated.english;
-    }
-    if (ownSigns[planetName]?.contains(sign) ?? false) {
-      return PlanetaryDignity.ownSign.english;
-    }
-    return _getFriendlyStatus(planetName, sign);
-  }
-
-  /// Get planetary disposition using [RelationshipCalculator.naturalRelationships].
-  String _getFriendlyStatus(String planetName, int sign) {
-    final signLord = AstrologyConstants.getSignLord(sign);
-    final planet = _planetFromName(planetName);
-    final lordPlanet = _planetFromName(signLord);
-    if (planet != null && lordPlanet != null) {
-      final rel =
-          RelationshipCalculator.naturalRelationships[planet]?[lordPlanet];
-      if (rel == RelationshipType.friend ||
-          rel == RelationshipType.greatFriend) {
-        return PlanetaryDignity.friendSign.english;
-      } else if (rel == RelationshipType.enemy ||
-          rel == RelationshipType.greatEnemy) {
-        return PlanetaryDignity.enemySign.english;
-      }
-    }
-    return PlanetaryDignity.neutralSign.english;
-  }
-
   /// Determine if planet's influence is benefic for this aspect
   bool _isBeneficForAspect(
     CompleteChartData chartData,
-    String planetName,
+    Planet planet,
     LifeAspect aspect,
     int sign,
     int house,
     String status,
   ) {
     // Natural benefics
-    const naturalBenefics = ['Jupiter', 'Venus', 'Mercury', 'Moon'];
+    final naturalBenefics = [
+      Planet.jupiter,
+      Planet.venus,
+      Planet.mercury,
+      Planet.moon
+    ];
 
     // If exalted or in own sign, generally benefic
     if (status == 'Exalted' || status == 'Own Sign') {
@@ -324,7 +244,7 @@ class LifePredictionService {
 
     // Check if planet is placed in relevant houses (good placement)
     if (aspect.houses.contains(house)) {
-      return naturalBenefics.contains(planetName) || status == 'Friendly Sign';
+      return naturalBenefics.contains(planet) || status == 'Friendly Sign';
     }
 
     // Check if in kendra or trikona from relevant houses
@@ -332,16 +252,16 @@ class LifePredictionService {
       final distance = ((house - aspectHouse + 12) % 12) + 1;
       // Kendras (1, 4, 7, 10) and Trikonas (1, 5, 9) are good
       if ([1, 4, 5, 7, 9, 10].contains(distance)) {
-        return naturalBenefics.contains(planetName);
+        return naturalBenefics.contains(planet);
       }
     }
 
-    return naturalBenefics.contains(planetName);
+    return naturalBenefics.contains(planet);
   }
 
   /// Generate effect description
   String _generateEffectDescription(
-    String planetName,
+    Planet planet,
     LifeAspect aspect,
     String status,
     bool isBenefic,
@@ -354,9 +274,8 @@ class LifePredictionService {
   }) {
     final strengthWord = isBenefic ? 'supports' : 'challenges';
     final aspectArea = aspect.name.split(' ')[0].toLowerCase();
-    final strengthLabel = strength >= 70
-        ? 'strong'
-        : (strength >= 40 ? 'moderate' : 'weak');
+    final strengthLabel =
+        strength >= 70 ? 'strong' : (strength >= 40 ? 'moderate' : 'weak');
     final signRef = signName.isNotEmpty ? ' in $signName' : '';
     final degRef = degreeStr.isNotEmpty ? ' at $degreeStr' : '';
 
@@ -368,23 +287,23 @@ class LifePredictionService {
           'Lord of $houseSignificance placed$degRef$signRef in ${_getOrdinal(house)} house (Shadbala: $strengthLabel, ${strength.toStringAsFixed(0)}%)';
     } else {
       baseEffect =
-          '$planetName$degRef$signRef $strengthWord $aspectArea matters (Shadbala: $strengthLabel, ${strength.toStringAsFixed(0)}%)';
+          '${planet.displayName}$degRef$signRef $strengthWord $aspectArea matters (Shadbala: $strengthLabel, ${strength.toStringAsFixed(0)}%)';
     }
 
     // Add status-specific details
     switch (status) {
       case 'Exalted':
-        return '$baseEffect. Being exalted$signRef, $planetName delivers maximum strength and highly positive results for this area.';
+        return '$baseEffect. Being exalted$signRef, ${planet.displayName} delivers maximum strength and highly positive results for this area.';
       case 'Debilitated':
-        return '$baseEffect. $planetName is debilitated$signRef, indicating challenges that require persistent effort and remedial measures to overcome.';
+        return '$baseEffect. ${planet.displayName} is debilitated$signRef, indicating challenges that require persistent effort and remedial measures to overcome.';
       case 'Own Sign':
-        return '$baseEffect. $planetName is in its own sign ($signName), providing stability, confidence, and naturally good results.';
+        return '$baseEffect. ${planet.displayName} is in its own sign ($signName), providing stability, confidence, and naturally good results.';
       case 'Friendly Sign':
-        return '$baseEffect. $planetName is well-disposed in a friendly sign ($signName), enabling comfortable expression of its qualities.';
+        return '$baseEffect. ${planet.displayName} is well-disposed in a friendly sign ($signName), enabling comfortable expression of its qualities.';
       case 'Enemy Sign':
-        return '$baseEffect. $planetName struggles in an inimical sign ($signName), facing resistance in expressing its natural qualities.';
+        return '$baseEffect. ${planet.displayName} struggles in an inimical sign ($signName), facing resistance in expressing its natural qualities.';
       default:
-        return '$baseEffect. $planetName is in a neutral disposition.';
+        return '$baseEffect. ${planet.displayName} is in a neutral disposition.';
     }
   }
 
@@ -470,13 +389,13 @@ class LifePredictionService {
         final strength = bhava.totalStrength;
         final houseDesc = _getHouseSignificance(house);
         final houseLord = _getHouseLord(chartData, house);
-        final lordSign = _findPlanet(chartData, houseLord);
+        final lordInfo = chartData.baseChart.planets[houseLord];
         var lordPosition = '';
-        if (lordSign != null) {
-          final lordSignIdx = lordSign.position.zodiacSignIndex;
+        if (lordInfo != null) {
+          final lordSignIdx = lordInfo.position.zodiacSignIndex;
           final lordHouse = _getHouseFromSign(chartData, lordSignIdx);
           lordPosition =
-              ' Its lord $houseLord is placed in the ${_getOrdinal(lordHouse)} house (${AstrologyConstants.signNames[lordSignIdx]}).';
+              ' Its lord ${houseLord.displayName} is placed in the ${_getOrdinal(lordHouse)} house (${AstrologyConstants.getSignName(lordSignIdx)}).';
         }
         if (strength >= 60) {
           buffer.write(
@@ -525,9 +444,8 @@ class LifePredictionService {
     List<PlanetaryInfluence> influences,
     int score,
   ) {
-    final weakPlanets = influences
-        .where((i) => !i.isBenefic || i.strength < 50)
-        .toList();
+    final weakPlanets =
+        influences.where((i) => !i.isBenefic || i.strength < 50).toList();
 
     if (weakPlanets.isEmpty || score >= 80) {
       // For strong charts, still reference key planet
@@ -563,7 +481,7 @@ class LifePredictionService {
       buffer.write(
         '${planet.planetName} (${planet.status}, currently ${planet.position.replaceFirst(planet.planetName, '').trim()}) needs strengthening — ',
       );
-      final remedy = _getRemedyForPlanet(planet.planetName);
+      final remedy = _getRemedyForPlanet(planet.planet);
       buffer.write(remedy);
       buffer.write(' ');
     }
@@ -572,29 +490,28 @@ class LifePredictionService {
   }
 
   /// Get remedy for a planet
-  String _getRemedyForPlanet(String planetName) {
+  String _getRemedyForPlanet(Planet planet) {
     const remedies = {
-      'Sun':
+      Planet.sun:
           'Offer water to Sun at sunrise and recite Aditya Hridayam on Sundays.',
-      'Moon':
+      Planet.moon:
           'Wear pearl or moonstone, and observe fast on Mondays. Honor mother.',
-      'Mars':
+      Planet.mars:
           'Recite Hanuman Chalisa on Tuesdays. Wear red coral after consultation.',
-      'Mercury':
+      Planet.mercury:
           'Worship Lord Vishnu on Wednesdays. Donate to education causes.',
-      'Jupiter':
+      Planet.jupiter:
           'Fast on Thursdays and worship Lord Vishnu. Donate yellow items.',
-      'Venus':
+      Planet.venus:
           'Worship Goddess Lakshmi on Fridays. Wear diamond or white sapphire.',
-      'Saturn':
+      Planet.saturn:
           'Recite Shani Stotra on Saturdays. Serve the elderly and donate to workers.',
-      'Rahu':
+      Planet.meanNode:
           'Donate to sweepers on Saturdays. Recite Rahu Mantra with sincerity.',
-      'Ketu':
-          'Worship Lord Ganesha. Practice meditation and develop detachment.',
+      Planet.trueNode:
+          'Donate to sweepers on Saturdays. Recite Rahu Mantra with sincerity.',
     };
-    return remedies[planetName] ??
-        'Consult an astrologer for specific remedies.';
+    return remedies[planet] ?? 'Consult an astrologer for specific remedies.';
   }
 
   /// Get ordinal suffix

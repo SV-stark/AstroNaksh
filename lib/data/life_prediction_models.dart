@@ -2,19 +2,23 @@
 // Life Predictions Data Models
 // Models for life aspect predictions based on Vedic astrology
 
+import 'package:jyotish/jyotish.dart';
+
 /// Represents a planet's influence on a life aspect
 class PlanetaryInfluence {
   // Positive or negative influence
 
   const PlanetaryInfluence({
-    required this.planetName,
+    required this.planet,
     required this.position,
     required this.status,
     required this.strength,
     required this.effect,
     required this.isBenefic,
   });
-  final String planetName;
+
+  final Planet planet;
+  String get planetName => planet.displayName;
   final String position; // e.g., "Sun in 10th House in Leo"
   final String status; // "Exalted", "Own Sign", "Debilitated", "Neutral"
   final double strength; // Shadbala strength (normalized 0-100)
@@ -38,7 +42,7 @@ class LifeAspectPrediction {
   });
   final String aspectName; // e.g., "Career", "Family", "Health"
   final String
-  aspectDescription; // Brief description of what this aspect covers
+      aspectDescription; // Brief description of what this aspect covers
   final String iconName; // FluentIcon name
   final int score; // 40-95 range
   final String prediction; // Detailed prediction text
@@ -71,7 +75,7 @@ class LifePredictionsResult {
     final avgScore = aspects.isEmpty
         ? 65
         : (aspects.map((a) => a.score).reduce((a, b) => a + b) / aspects.length)
-              .round();
+            .round();
 
     // Identify strongest and weakest aspects for the summary
     final sortedAspects = List<LifeAspectPrediction>.from(aspects)
@@ -126,63 +130,63 @@ enum LifeAspect {
     description: 'Professional life, career growth, and public recognition',
     icon: 'work',
     houses: [10, 6, 2],
-    primaryPlanets: ['Sun', 'Saturn', 'Mercury'],
+    primaryPlanets: [Planet.sun, Planet.saturn, Planet.mercury],
   ),
   wealth(
     name: 'Wealth & Finance',
     description: 'Financial prosperity, assets, and material abundance',
     icon: 'money',
     houses: [2, 11, 5, 9],
-    primaryPlanets: ['Venus', 'Jupiter', 'Moon'],
+    primaryPlanets: [Planet.venus, Planet.jupiter, Planet.moon],
   ),
   family(
     name: 'Family & Home',
     description: 'Family relationships, domestic harmony, and property',
     icon: 'home',
     houses: [4, 2],
-    primaryPlanets: ['Moon', 'Venus', 'Mars'],
+    primaryPlanets: [Planet.moon, Planet.venus, Planet.mars],
   ),
   romance(
     name: 'Romance & Marriage',
     description: 'Love life, partnerships, and marital happiness',
     icon: 'heart',
     houses: [7, 5],
-    primaryPlanets: ['Venus', 'Mars', 'Jupiter'],
+    primaryPlanets: [Planet.venus, Planet.mars, Planet.jupiter],
   ),
   health(
     name: 'Health & Vitality',
     description: 'Physical health, energy levels, and longevity',
     icon: 'health',
     houses: [1, 6, 8],
-    primaryPlanets: ['Sun', 'Mars', 'Saturn'],
+    primaryPlanets: [Planet.sun, Planet.mars, Planet.saturn],
   ),
   children(
     name: 'Children & Creativity',
     description: 'Offspring, creative expression, and intelligence',
     icon: 'child',
     houses: [5, 9],
-    primaryPlanets: ['Jupiter', 'Moon', 'Mercury'],
+    primaryPlanets: [Planet.jupiter, Planet.moon, Planet.mercury],
   ),
   education(
     name: 'Education & Wisdom',
     description: 'Learning, knowledge acquisition, and intellectual growth',
     icon: 'education',
     houses: [4, 5, 9],
-    primaryPlanets: ['Mercury', 'Jupiter', 'Sun'],
+    primaryPlanets: [Planet.mercury, Planet.jupiter, Planet.sun],
   ),
   spirituality(
     name: 'Spirituality',
     description: 'Spiritual growth, enlightenment, and inner peace',
     icon: 'peace',
     houses: [9, 12, 5],
-    primaryPlanets: ['Jupiter', 'Ketu', 'Sun'],
+    primaryPlanets: [Planet.jupiter, Planet.meanNode, Planet.sun],
   );
 
   final String name;
   final String description;
   final String icon;
   final List<int> houses;
-  final List<String> primaryPlanets;
+  final List<Planet> primaryPlanets;
 
   const LifeAspect({
     required this.name,

@@ -1,5 +1,6 @@
 import 'package:astronaksh/data/models.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jyotish/jyotish.dart';
 
 void main() {
   group('Location Tests - Additional', () {
@@ -94,7 +95,7 @@ void main() {
     });
 
     test('getSignLord covers all 12 signs uniquely', () {
-      final lords = <String>{};
+      final lords = <Planet>{};
       for (var i = 0; i < 12; i++) {
         lords.add(AstrologyConstants.getSignLord(i));
       }

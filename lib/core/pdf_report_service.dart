@@ -170,7 +170,7 @@ class PDFReportService {
                     e.key,
                     AstrologyConstants.signNames[sign],
                     '${(e.value % 30).toStringAsFixed(2)}°',
-                    AstrologyConstants.getSignLord(sign),
+                    AstrologyConstants.getSignLord(sign).displayName,
                   ];
                 }).toList(),
                 bodyStyle: body,

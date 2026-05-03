@@ -54,5 +54,5 @@ class DivisionalCharts {
   static String getSignName(int sign) => AstrologyConstants.getSignName(sign);
 
   /// Get sign lord
-  static String getSignLord(int sign) => AstrologyConstants.getSignLord(sign);
+  static String getSignLord(int sign) => AstrologyConstants.getSignLord(sign).displayName;
 }

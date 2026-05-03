@@ -1,66 +1,13 @@
+import 'package:jyotish/jyotish.dart';
+
 class AstrologyConstants {
-  static const List<String> nakshatraNames = [
-    'Ashwini',
-    'Bharani',
-    'Krittika',
-    'Rohini',
-    'Mrigashira',
-    'Ardra',
-    'Punarvasu',
-    'Pushya',
-    'Ashlesha',
-    'Magha',
-    'Purva Phalguni',
-    'Uttara Phalguni',
-    'Hasta',
-    'Chitra',
-    'Swati',
-    'Vishakha',
-    'Anuradha',
-    'Jyeshtha',
-    'Mula',
-    'Purva Ashadha',
-    'Uttara Ashadha',
-    'Shravana',
-    'Dhanishta',
-    'Shatabhisha',
-    'Purva Bhadrapada',
-    'Uttara Bhadrapada',
-    'Revati',
-  ];
+  static List<String> get nakshatraNames => NakshatraInfo.nakshatraNames;
 
-  static const List<String> signNames = [
-    'Aries',
-    'Taurus',
-    'Gemini',
-    'Cancer',
-    'Leo',
-    'Virgo',
-    'Libra',
-    'Scorpio',
-    'Sagittarius',
-    'Capricorn',
-    'Aquarius',
-    'Pisces',
-  ];
+  static List<String> get signNames => Rashi.values.map((s) => s.name).toList();
 
-  static String getSignName(int sign) => signNames[sign % 12];
+  static String getSignName(int sign) => Rashi.fromIndex(sign).name;
 
-  static String getSignLord(int sign) {
-    const lords = [
-      'Mars',
-      'Venus',
-      'Mercury',
-      'Moon',
-      'Sun',
-      'Mercury',
-      'Venus',
-      'Mars',
-      'Jupiter',
-      'Saturn',
-      'Saturn',
-      'Jupiter',
-    ];
-    return lords[sign % 12];
+  static Planet getSignLord(int sign) {
+    return Rashi.fromIndex(sign).lord;
   }
 }

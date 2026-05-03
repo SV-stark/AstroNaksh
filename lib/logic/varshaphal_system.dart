@@ -445,7 +445,7 @@ class VarshaphalSystem {
     );
   }
 
-  static String getSignLord(int sign) => AstrologyConstants.getSignLord(sign);
+  static String getSignLord(int sign) => AstrologyConstants.getSignLord(sign).displayName;
 
   // --- Strength Calculation Helpers ---
 

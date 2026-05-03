@@ -162,7 +162,7 @@ class DashaSystem {
         return CharaDashaPeriod(
           sign: signIndex,
           signName: p.rashi?.name ?? '',
-          lord: AstrologyConstants.getSignLord(signIndex),
+          lord: AstrologyConstants.getSignLord(signIndex).displayName,
           startDate: p.startDate,
           endDate: p.endDate,
           periodYears: p.durationYears,
@@ -183,7 +183,7 @@ class DashaSystem {
         return NarayanaDashaPeriod(
           sign: signIndex,
           signName: p.rashi?.name ?? '',
-          lord: AstrologyConstants.getSignLord(signIndex),
+          lord: AstrologyConstants.getSignLord(signIndex).displayName,
           startDate: p.startDate,
           endDate: p.endDate,
           periodYears: p.durationYears,

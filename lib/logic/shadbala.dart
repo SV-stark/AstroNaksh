@@ -9,7 +9,7 @@ import '../data/models.dart';
 class ShadbalaCalculator {
   static ShadbalaService? _combustionService;
 
-  static Future<Map<String, double>> calculateShadbala(
+  static Future<Map<Planet, double>> calculateShadbala(
     CompleteChartData chartData,
   ) async {
     final nativeResults = await EphemerisManager.jyotish.getShadbala(
@@ -18,7 +18,7 @@ class ShadbalaCalculator {
 
     return nativeResults.entries
         .filter((e) => !Planet.lunarNodes.contains(e.key))
-        .associate((e) => MapEntry(e.key.displayName, e.value.totalBala));
+        .associate((e) => MapEntry(e.key, e.value.totalBala));
   }
 
   static Future<Map<Planet, ShadbalaResult>> calculateDetailedShadbala(
@@ -38,7 +38,7 @@ class ShadbalaCalculator {
     final detailedShadbala = await jyotish.getShadbala(chart);
     final shadbala = detailedShadbala.entries
         .filter((e) => !Planet.lunarNodes.contains(e.key))
-        .associate((e) => MapEntry(e.key.displayName, e.value.totalBala));
+        .associate((e) => MapEntry(e.key, e.value.totalBala));
 
     final vimsopaka = strengthService.getAllPlanetsVimshopakBala(chart);
 
@@ -88,7 +88,7 @@ class ShadbalaScreenData {
     required this.combustion,
     required this.horaLords,
   });
-  final Map<String, double> shadbala;
+  final Map<Planet, double> shadbala;
   final Map<Planet, ShadbalaResult> detailedShadbala;
   final Map<Planet, VimshopakBala> vimsopaka;
   final Map<Planet, CombustionInfo> combustion;

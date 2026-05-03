@@ -21,57 +21,69 @@ class AyanamsaCalculator {
     ];
 
     return orderedModes.map((mode) {
-      var name = mode.name;
+      var id = mode.name;
+      var name = mode.name[0].toUpperCase() + mode.name.substring(1);
       var description = mode.toString();
 
       // Custom names for KP systems with consistent naming
       if (mode == SiderealMode.krishnamurti) {
+        name = 'Krishnamurti';
         description = 'Krishnamurti (Old)';
       } else if (mode == SiderealMode.krishnamurtiVP291) {
+        id = 'newKP'; // Keep ID for settings compatibility
+        name = 'Krishnamurti'; // Title like others
         description = 'Krishnamurti (New)';
-        // Map 'newKP' identifier to this mode for backward compatibility
-        name = 'newKP';
       }
 
-      return AyanamsaSystem(name: name, description: description, mode: mode);
+      return AyanamsaSystem(
+        id: id,
+        name: name,
+        description: description,
+        mode: mode,
+      );
     }).toList();
   }
 
-  /// Get a specific system by name
-  static AyanamsaSystem? getSystem(String name) {
-    if (name == 'newKP') {
+  /// Get a specific system by ID
+  static AyanamsaSystem? getSystem(String id) {
+    if (id == 'newKP') {
       return const AyanamsaSystem(
-        name: 'newKP',
-        description: 'KP New',
+        id: 'newKP',
+        name: 'Krishnamurti',
+        description: 'Krishnamurti (New)',
         mode: SiderealMode.krishnamurtiVP291,
       );
     }
 
     try {
       final mode = SiderealMode.values.firstWhere(
-        (m) => m.name.toLowerCase() == name.toLowerCase(),
+        (m) => m.name.toLowerCase() == id.toLowerCase(),
       );
 
+      var name = mode.name[0].toUpperCase() + mode.name.substring(1);
       var description = mode.toString();
+
       if (mode == SiderealMode.krishnamurti) {
-        description = 'KP Old';
+        name = 'Krishnamurti';
+        description = 'Krishnamurti (Old)';
       }
 
       return AyanamsaSystem(
-        name: mode.name,
+        id: mode.name,
+        name: name,
         description: description,
         mode: mode,
       );
     } catch (e) {
-      // Invalid system name - return null to indicate not found
+      // Invalid system ID - return null to indicate not found
       return null;
     }
   }
 
-  /// Calculate ayanamsa for a given date using specified system
+  /// Calculate ayanamsa for a given date using specified system ID
   /// Returns 0.0 if the library fails or system is invalid
-  static Future<double> calculate(String systemName, DateTime date) async {
-    final system = getSystem(systemName);
+  static Future<double> calculate(String systemId, DateTime date) async {
+    final system = getSystem(systemId);
     if (system == null || system.mode == null) return 0.0;
 
     try {
@@ -114,17 +126,19 @@ class AyanamsaCalculator {
   /// Get default ayanamsa (New KP)
   static String get defaultAyanamsa => 'newKP';
 
-  /// Get list of system names
-  static List<String> get systemNames => systems.map((e) => e.name).toList();
+  /// Get list of system IDs
+  static List<String> get systemIds => systems.map((e) => e.id).toList();
 }
 
 /// Ayanamsa System Definition
 class AyanamsaSystem {
   const AyanamsaSystem({
+    required this.id,
     required this.name,
     required this.description,
     required this.mode,
   });
+  final String id;
   final String name;
   final String description;
   final SiderealMode? mode;

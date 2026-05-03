@@ -16,7 +16,6 @@ import '../../data/models.dart';
 import '../../logic/kp_chart_service.dart';
 import '../../logic/planetary_aspect_service.dart';
 import '../../logic/shadbala.dart';
-import '../ui/utils/responsive_helper.dart';
 import 'analysis/gochara_vedha_screen.dart';
 import 'analysis/jaimini_screen.dart';
 import 'analysis/nadi_screen.dart';
@@ -25,17 +24,18 @@ import 'analysis/progeny_screen.dart';
 import 'analysis/retrograde_screen.dart';
 import 'analysis/sudarshan_chakra_screen.dart';
 import 'analysis/yoga_dosha_screen.dart';
+import 'birth_details_screen.dart';
 import 'comparison/chart_comparison_screen.dart';
 import 'predictions/life_predictions_screen.dart';
 import 'predictions/rashiphal_dashboard.dart';
 import 'predictions/transit_screen.dart';
 import 'predictions/varshaphal_screen.dart';
 import 'reports/pdf_report_screen.dart';
-// New analysis screens
 import 'strength/ashtakavarga_screen.dart';
 import 'strength/bhava_bala_screen.dart';
 import 'strength/shadbala_screen.dart';
 import 'tools/birth_time_rectifier_screen.dart';
+import 'utils/responsive_helper.dart';
 import 'widgets/chart_widget.dart';
 import 'widgets/planetary_timeline.dart';
 
@@ -133,10 +133,13 @@ class _ChartScreenState extends State<ChartScreen> {
                       .where(
                         (s) =>
                             s.name.toLowerCase().contains(
-                              searchQuery.toLowerCase(),
+                               searchQuery.toLowerCase(),
+                            ) ||
+                            s.id.toLowerCase().contains(
+                               searchQuery.toLowerCase(),
                             ) ||
                             s.description.toLowerCase().contains(
-                              searchQuery.toLowerCase(),
+                               searchQuery.toLowerCase(),
                             ),
                       )
                       .toList();
@@ -168,7 +171,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           final isSelected =
                               SettingsManager().chartSettings.ayanamsaSystem
                                   .toLowerCase() ==
-                              system.name.toLowerCase();
+                              system.id.toLowerCase();
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -198,7 +201,7 @@ class _ChartScreenState extends State<ChartScreen> {
                                   SettingsManager()
                                           .chartSettings
                                           .ayanamsaSystem =
-                                      system.name;
+                                      system.id;
                                   Navigator.pop(context);
                                   _loadChartData();
                                 }
@@ -224,38 +227,15 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-  void _showBirthDetails() {
-    if (_birthData == null) return;
-    showDialog(
-      context: context,
-      builder: (context) {
-        return ContentDialog(
-          title: const Text('Birth Details'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Name: ${_birthData!.name}'),
-              Text(
-                'Date: ${_birthData!.dateTime.day}/${_birthData!.dateTime.month}/${_birthData!.dateTime.year}',
-              ),
-              Text(
-                "Time: ${_birthData!.dateTime.hour.toString().padLeft(2, '0')}:${_birthData!.dateTime.minute.toString().padLeft(2, '0')}",
-              ),
-              Text('Place: ${_birthData!.place}'),
-              Text(
-                'Lat: ${_birthData!.location.latitude.toStringAsFixed(4)}, Lon: ${_birthData!.location.longitude.toStringAsFixed(4)}',
-              ),
-            ],
-          ),
-          actions: [
-            Button(
-              child: const Text('Close'),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        );
-      },
+  void _showBirthDetails() async {
+    final data = await _chartDataFuture;
+    if (data == null || !mounted) return;
+    
+    Navigator.push(
+      context,
+      FluentPageRoute(
+        builder: (context) => BirthDetailsScreen(chartData: data),
+      ),
     );
   }
 
@@ -1711,7 +1691,15 @@ class _ChartScreenState extends State<ChartScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('KP System', style: FluentTheme.of(context).typography.subtitle),
+          Text(
+            'KP System',
+            style: FluentTheme.of(context).typography.subtitle,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Lagna: ${_getAscendantSign(data.baseChart)}',
+            style: FluentTheme.of(context).typography.body,
+          ),
           const SizedBox(height: 16),
           _buildKPSubLordsCard(data),
           const SizedBox(height: 16),

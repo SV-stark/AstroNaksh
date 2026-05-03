@@ -392,7 +392,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               final system = entry.value;
               final isSelected =
                   _settings.ayanamsaSystem.toLowerCase() ==
-                  system.name.toLowerCase();
+                  system.id.toLowerCase();
 
               return Column(
                 children: [
@@ -406,7 +406,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         : null,
                     selected: isSelected,
                     onPressed: () {
-                      setState(() => _settings.ayanamsaSystem = system.name);
+                      setState(() => _settings.ayanamsaSystem = system.id);
                     },
                     leading: Icon(
                       isSelected

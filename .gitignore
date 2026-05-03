@@ -60,3 +60,6 @@ nul
 /android/app/src/main/cpp/swisseph/
 /assets/ephe/*.se1
 /assets/ephe/swisseph.dll
+
+# Desloppify artifacts
+.desloppify/

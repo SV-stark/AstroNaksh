@@ -110,22 +110,34 @@ class _PanchangScreenState extends State<PanchangScreen> {
       inauspicious.add(
         PanchangInauspicious(
           name: 'Night Rahukalam',
-          startTime: AppFormatters.formatTime(nightInauspicious.rahuKaal.start.toLocal()),
-          endTime: AppFormatters.formatTime(nightInauspicious.rahuKaal.end.toLocal()),
+          startTime: AppFormatters.formatTime(
+            nightInauspicious.rahuKaal.start.toLocal(),
+          ),
+          endTime: AppFormatters.formatTime(
+            nightInauspicious.rahuKaal.end.toLocal(),
+          ),
         ),
       );
       inauspicious.add(
         PanchangInauspicious(
           name: 'Night Gulikalam',
-          startTime: AppFormatters.formatTime(nightInauspicious.gulikaKaal.start.toLocal()),
-          endTime: AppFormatters.formatTime(nightInauspicious.gulikaKaal.end.toLocal()),
+          startTime: AppFormatters.formatTime(
+            nightInauspicious.gulikaKaal.start.toLocal(),
+          ),
+          endTime: AppFormatters.formatTime(
+            nightInauspicious.gulikaKaal.end.toLocal(),
+          ),
         ),
       );
       inauspicious.add(
         PanchangInauspicious(
           name: 'Night Yamagandam',
-          startTime: AppFormatters.formatTime(nightInauspicious.yamagandam.start.toLocal()),
-          endTime: AppFormatters.formatTime(nightInauspicious.yamagandam.end.toLocal()),
+          startTime: AppFormatters.formatTime(
+            nightInauspicious.yamagandam.start.toLocal(),
+          ),
+          endTime: AppFormatters.formatTime(
+            nightInauspicious.yamagandam.end.toLocal(),
+          ),
         ),
       );
 
@@ -379,131 +391,304 @@ class _PanchangScreenState extends State<PanchangScreen> {
             ],
           ),
         ),
-      content: _isLoading
-          ? const Center(child: ProgressRing())
-          : _result == null
-          ? const Center(child: Text('No Data'))
-          : CustomScrollView(
-              slivers: [
-                // Date Navigation Header
-                SliverToBoxAdapter(
-                  child: Container(
-                    margin: const EdgeInsets.all(16.0),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 20.0,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          FluentTheme.of(context).accentColor.withAlpha(30),
-                          FluentTheme.of(context).accentColor.withAlpha(10),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+        content: _isLoading
+            ? const Center(child: ProgressRing())
+            : _result == null
+            ? const Center(child: Text('No Data'))
+            : CustomScrollView(
+                slivers: [
+                  // Date Navigation Header
+                  SliverToBoxAdapter(
+                    child: Container(
+                      margin: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 20.0,
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: FluentTheme.of(
-                          context,
-                        ).accentColor.withAlpha(50),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        // Date Navigation
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: const Icon(FluentIcons.chevron_left),
-                              onPressed: () => _changeDate(-1),
-                            ),
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    AppFormatters.formatDayName(_selectedDate),
-                                    style: FluentTheme.of(context)
-                                        .typography
-                                        .bodyLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: FluentTheme.of(
-                                            context,
-                                          ).accentColor,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _result!.date,
-                                    style: FluentTheme.of(context)
-                                        .typography
-                                        .title
-                                        ?.copyWith(fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(FluentIcons.chevron_right),
-                              onPressed: () => _changeDate(1),
-                            ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            FluentTheme.of(context).accentColor.withAlpha(30),
+                            FluentTheme.of(context).accentColor.withAlpha(10),
                           ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        const SizedBox(height: 12),
-                        // Location indicator with edit button
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: FluentTheme.of(
+                            context,
+                          ).accentColor.withAlpha(50),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          // Date Navigation
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const Icon(FluentIcons.chevron_left),
+                                onPressed: () => _changeDate(-1),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      AppFormatters.formatDayName(
+                                        _selectedDate,
+                                      ),
+                                      style: FluentTheme.of(context)
+                                          .typography
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: FluentTheme.of(
+                                              context,
+                                            ).accentColor,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _result!.date,
+                                      style: FluentTheme.of(context)
+                                          .typography
+                                          .title
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(FluentIcons.chevron_right),
+                                onPressed: () => _changeDate(1),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // Location indicator with edit button
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                FluentIcons.location,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _selectedCity?.displayName ??
+                                    'New Delhi, Delhi, India',
+                                style: FluentTheme.of(context)
+                                    .typography
+                                    .caption
+                                    ?.copyWith(color: Colors.grey),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: Icon(
+                                  FluentIcons.edit,
+                                  size: 12,
+                                  color: FluentTheme.of(context).accentColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _showLocationEditor = !_showLocationEditor;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Location Editor
+                  if (_showLocationEditor)
+                    SliverToBoxAdapter(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withAlpha(20),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: FluentTheme.of(
+                              context,
+                            ).accentColor.withAlpha(30),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
-                              FluentIcons.location,
-                              size: 14,
-                              color: Colors.grey,
+                            Row(
+                              children: [
+                                Icon(
+                                  FluentIcons.location,
+                                  size: 16,
+                                  color: FluentTheme.of(context).accentColor,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Change Location',
+                                  style: FluentTheme.of(context).typography.body
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(height: 12),
+                            AutoSuggestBox<City>(
+                              controller: _citySearchController,
+                              items: _cityItems,
+                              onChanged: (text, reason) {
+                                _onCitySearch(text);
+                              },
+                              placeholder: 'Search for a city...',
+                              trailingIcon: _isLoadingLocation
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: ProgressRing(strokeWidth: 2),
+                                    )
+                                  : IconButton(
+                                      icon: const Icon(FluentIcons.globe),
+                                      onPressed: _useCurrentLocation,
+                                    ),
+                            ),
+                            const SizedBox(height: 8),
                             Text(
-                              _selectedCity?.displayName ??
-                                  'New Delhi, Delhi, India',
+                              'Type at least 2 characters to search cities. Click the globe icon to use your current location.',
                               style: FluentTheme.of(context).typography.caption
                                   ?.copyWith(color: Colors.grey),
                             ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              icon: Icon(
-                                FluentIcons.edit,
-                                size: 12,
-                                color: FluentTheme.of(context).accentColor,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _showLocationEditor = !_showLocationEditor;
-                                });
-                              },
-                            ),
                           ],
                         ),
-                      ],
+                      ),
+                    ),
+
+                  // Tab Navigation
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Scrollbar(
+                            thumbVisibility: true,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: Row(
+                                  children: [
+                                    _buildTabButton(
+                                      icon: FluentIcons.calendar_day,
+                                      label: 'Panchang',
+                                      isSelected: _selectedTabIndex == 0,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 0),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildTabButton(
+                                      icon: FluentIcons.sunny,
+                                      label: 'Sun & Moon',
+                                      isSelected: _selectedTabIndex == 1,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 1),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildTabButton(
+                                      icon: FluentIcons.warning,
+                                      label: 'Inauspicious',
+                                      isSelected: _selectedTabIndex == 2,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 2),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildTabButton(
+                                      icon: FluentIcons.diamond,
+                                      label: 'Muhurta',
+                                      isSelected: _selectedTabIndex == 3,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 3),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildTabButton(
+                                      icon: FluentIcons.clock,
+                                      label: 'Hora',
+                                      isSelected: _selectedTabIndex == 4,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 4),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildTabButton(
+                                      icon: FluentIcons.grid_view_medium,
+                                      label: 'Choghadiya',
+                                      isSelected: _selectedTabIndex == 5,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 5),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildTabButton(
+                                      icon: FluentIcons.favorite_star,
+                                      label: 'Gowri',
+                                      isSelected: _selectedTabIndex == 6,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 6),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildTabButton(
+                                      icon: FluentIcons.sync_occurence,
+                                      label: 'Transits',
+                                      isSelected: _selectedTabIndex == 7,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 7),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ), // SingleChild
+                          ), // Scrollbar
+                          const SizedBox(height: 16),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // Location Editor
-                if (_showLocationEditor)
+                  // Tab Content
+                  if (_selectedTabIndex == 0)
+                    _buildPanchangElementsTab()
+                  else if (_selectedTabIndex == 1)
+                    _buildSunMoonTimesTab()
+                  else if (_selectedTabIndex == 2)
+                    _buildInauspiciousTab()
+                  else if (_selectedTabIndex == 3)
+                    _buildMuhurtaTab()
+                  else if (_selectedTabIndex == 4)
+                    _buildHoraTab()
+                  else if (_selectedTabIndex == 5)
+                    _buildChoghadiyaTab()
+                  else if (_selectedTabIndex == 6)
+                    _buildGowriPanchangaTab()
+                  else if (_selectedTabIndex == 7)
+                    _buildTransitsTab(),
+
+                  // Information Section
                   SliverToBoxAdapter(
                     child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                      margin: const EdgeInsets.all(16.0),
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
                         color: Colors.grey.withAlpha(20),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: FluentTheme.of(
-                            context,
-                          ).accentColor.withAlpha(30),
-                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -511,202 +696,35 @@ class _PanchangScreenState extends State<PanchangScreen> {
                           Row(
                             children: [
                               Icon(
-                                FluentIcons.location,
+                                FluentIcons.info,
                                 size: 16,
                                 color: FluentTheme.of(context).accentColor,
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Change Location',
+                                'About Panchang',
                                 style: FluentTheme.of(context).typography.body
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          AutoSuggestBox<City>(
-                            controller: _citySearchController,
-                            items: _cityItems,
-                            onChanged: (text, reason) {
-                              _onCitySearch(text);
-                            },
-                            placeholder: 'Search for a city...',
-                            trailingIcon: _isLoadingLocation
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: ProgressRing(strokeWidth: 2),
-                                  )
-                                : IconButton(
-                                    icon: const Icon(FluentIcons.globe),
-                                    onPressed: _useCurrentLocation,
-                                  ),
-                          ),
                           const SizedBox(height: 8),
                           Text(
-                            'Type at least 2 characters to search cities. Click the globe icon to use your current location.',
-                            style: FluentTheme.of(
-                              context,
-                            ).typography.caption?.copyWith(color: Colors.grey),
+                            'Panchang (Five Limbs) is the Hindu almanac that provides astrological information about the day. '
+                            'It consists of five elements: Tithi (lunar day), Nakshatra (lunar mansion), Yoga (sun-moon angle), '
+                            'Karana (half tithi), and Vara (weekday). These elements help determine auspicious times and activities for the day.',
+                            style: FluentTheme.of(context).typography.caption,
                           ),
                         ],
                       ),
                     ),
                   ),
 
-                // Tab Navigation
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 8.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Scrollbar(
-                          thumbVisibility: true,
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 12.0),
-                              child: Row(
-                                children: [
-                                  _buildTabButton(
-                                    icon: FluentIcons.calendar_day,
-                                    label: 'Panchang',
-                                    isSelected: _selectedTabIndex == 0,
-                                    onTap: () =>
-                                        setState(() => _selectedTabIndex = 0),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildTabButton(
-                                    icon: FluentIcons.sunny,
-                                    label: 'Sun & Moon',
-                                    isSelected: _selectedTabIndex == 1,
-                                    onTap: () =>
-                                        setState(() => _selectedTabIndex = 1),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildTabButton(
-                                    icon: FluentIcons.warning,
-                                    label: 'Inauspicious',
-                                    isSelected: _selectedTabIndex == 2,
-                                    onTap: () =>
-                                        setState(() => _selectedTabIndex = 2),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildTabButton(
-                                    icon: FluentIcons.diamond,
-                                    label: 'Muhurta',
-                                    isSelected: _selectedTabIndex == 3,
-                                    onTap: () =>
-                                        setState(() => _selectedTabIndex = 3),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildTabButton(
-                                    icon: FluentIcons.clock,
-                                    label: 'Hora',
-                                    isSelected: _selectedTabIndex == 4,
-                                    onTap: () =>
-                                        setState(() => _selectedTabIndex = 4),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildTabButton(
-                                    icon: FluentIcons.grid_view_medium,
-                                    label: 'Choghadiya',
-                                    isSelected: _selectedTabIndex == 5,
-                                    onTap: () =>
-                                        setState(() => _selectedTabIndex = 5),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildTabButton(
-                                    icon: FluentIcons.favorite_star,
-                                    label: 'Gowri',
-                                    isSelected: _selectedTabIndex == 6,
-                                    onTap: () =>
-                                        setState(() => _selectedTabIndex = 6),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildTabButton(
-                                    icon: FluentIcons.sync_occurence,
-                                    label: 'Transits',
-                                    isSelected: _selectedTabIndex == 7,
-                                    onTap: () =>
-                                        setState(() => _selectedTabIndex = 7),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ), // SingleChild
-                        ), // Scrollbar
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Tab Content
-                if (_selectedTabIndex == 0)
-                  _buildPanchangElementsTab()
-                else if (_selectedTabIndex == 1)
-                  _buildSunMoonTimesTab()
-                else if (_selectedTabIndex == 2)
-                  _buildInauspiciousTab()
-                else if (_selectedTabIndex == 3)
-                  _buildMuhurtaTab()
-                else if (_selectedTabIndex == 4)
-                  _buildHoraTab()
-                else if (_selectedTabIndex == 5)
-                  _buildChoghadiyaTab()
-                else if (_selectedTabIndex == 6)
-                  _buildGowriPanchangaTab()
-                else if (_selectedTabIndex == 7)
-                  _buildTransitsTab(),
-
-                // Information Section
-                SliverToBoxAdapter(
-                  child: Container(
-                    margin: const EdgeInsets.all(16.0),
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withAlpha(20),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              FluentIcons.info,
-                              size: 16,
-                              color: FluentTheme.of(context).accentColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'About Panchang',
-                              style: FluentTheme.of(context).typography.body
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Panchang (Five Limbs) is the Hindu almanac that provides astrological information about the day. '
-                          'It consists of five elements: Tithi (lunar day), Nakshatra (lunar mansion), Yoga (sun-moon angle), '
-                          'Karana (half tithi), and Vara (weekday). These elements help determine auspicious times and activities for the day.',
-                          style: FluentTheme.of(context).typography.caption,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
-              ],
-            ),
-    ));
+                  const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                ],
+              ),
+      ),
+    );
   }
 
   Widget _buildInauspiciousTab() {
@@ -967,8 +985,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 _buildInfoRow('Period Name', _gowri!.type.name),
                 _buildInfoRow(
                   'Description',
-                  _gowri!.type.description.isNotEmpty 
-                      ? _gowri!.type.description.split(',').first 
+                  _gowri!.type.description.isNotEmpty
+                      ? _gowri!.type.description.split(',').first
                       : 'N/A',
                 ),
                 _buildInfoRow(
@@ -1630,7 +1648,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
               const SizedBox(height: 6),
               Text(
                 '${panchak.daysRemaining} day(s) remaining',
-                style: TextStyle(fontSize: 12, color: Colors.grey.withAlpha(160)),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.withAlpha(160),
+                ),
               ),
             ],
             const SizedBox(height: 12),
@@ -1662,7 +1683,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
               child: Text(
                 'Moon is not in any Panchak nakshatra today. '
                 'Auspicious activities can proceed without Panchak restrictions.',
-                style: TextStyle(fontSize: 13, color: Colors.grey.withAlpha(160)),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.withAlpha(160),
+                ),
               ),
             ),
         ],

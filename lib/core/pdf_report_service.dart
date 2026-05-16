@@ -44,7 +44,7 @@ class PDFReportService {
     final font = await PdfGoogleFonts.playfairDisplayBold();
     final bodyFont = await PdfGoogleFonts.latoRegular();
     final bodyBoldFont = await PdfGoogleFonts.latoBold();
-    
+
     final h2 = await ReportStyles.h2(font: font);
     final h3 = await ReportStyles.h3(font: font);
     final body = await ReportStyles.body(font: bodyFont);
@@ -71,10 +71,20 @@ class PDFReportService {
     );
 
     // 2. Summary & Predictions Page
-    final summarySection = await ReportSections.buildSummarySection(chartData, h2, body, bodyBold);
+    final summarySection = await ReportSections.buildSummarySection(
+      chartData,
+      h2,
+      body,
+      bodyBold,
+    );
     pw.Widget? predictionSection;
     if (includePredictions || includeLifePredictions) {
-      predictionSection = await ReportSections.buildPredictionSection(chartData, h2, h3, body);
+      predictionSection = await ReportSections.buildPredictionSection(
+        chartData,
+        h2,
+        h3,
+        body,
+      );
     }
 
     pdf.addPage(
@@ -109,7 +119,9 @@ class PDFReportService {
               pw.Center(
                 child: PdfReportCharts.drawPremiumNorthIndianChart(
                   chartData.significatorTable,
-                  AstrologyConstants.signNames.indexOf(chartData.baseChart.ascendantSign),
+                  AstrologyConstants.signNames.indexOf(
+                    chartData.baseChart.ascendantSign,
+                  ),
                   width: 320,
                   height: 320,
                 ),
@@ -204,7 +216,7 @@ class PDFReportService {
         chartData.birthData,
         DateTime.now().year,
       );
-      
+
       final varshaPage1 = await ReportSections.buildVarshaphalPage1(
         varsha,
         h2,
@@ -252,12 +264,16 @@ class PDFReportService {
               pw.SizedBox(height: 20),
               PdfWidgets.premiumTable(
                 headers: ['Mahadasha', 'Period', 'Start Date', 'End Date'],
-                rows: chartData.dashaData.vimshottari.mahadashas.map((m) => [
-                  m.lord,
-                  m.formattedPeriod,
-                  _formatDate(m.startDate),
-                  _formatDate(m.endDate),
-                ]).toList(),
+                rows: chartData.dashaData.vimshottari.mahadashas
+                    .map(
+                      (m) => [
+                        m.lord,
+                        m.formattedPeriod,
+                        _formatDate(m.startDate),
+                        _formatDate(m.endDate),
+                      ],
+                    )
+                    .toList(),
                 bodyStyle: body,
               ),
               pw.SizedBox(height: 30),
@@ -307,7 +323,12 @@ class PDFReportService {
 
     // 7. Transit Section
     if (includeTransit) {
-      final transitSection = await ReportSections.buildTransitSection(chartData, h2, h3, body);
+      final transitSection = await ReportSections.buildTransitSection(
+        chartData,
+        h2,
+        h3,
+        body,
+      );
       pdf.addPage(
         PdfWidgets.premiumPage(
           backgroundImage: bgImage,
@@ -351,17 +372,24 @@ class PDFReportService {
               style: body,
             ),
             pw.SizedBox(height: 30),
-            pw.Text('Ashtakoota Score: ${report.ashtakootaScore}/36', style: h2),
+            pw.Text(
+              'Ashtakoota Score: ${report.ashtakootaScore}/36',
+              style: h2,
+            ),
             pw.Text('Conclusion: ${report.overallConclusion}', style: body),
             pw.SizedBox(height: 20),
             PdfWidgets.premiumTable(
               headers: ['Koota', 'Score', 'Status', 'Description'],
-              rows: report.kootaResults.map((k) => [
-                k.name,
-                '${k.score}/${k.maxScore}',
-                k.description,
-                k.detailedReason,
-              ]).toList(),
+              rows: report.kootaResults
+                  .map(
+                    (k) => [
+                      k.name,
+                      '${k.score}/${k.maxScore}',
+                      k.description,
+                      k.detailedReason,
+                    ],
+                  )
+                  .toList(),
               bodyStyle: body,
             ),
           ],
@@ -370,7 +398,9 @@ class PDFReportService {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File('${output.path}/matching_report_${DateTime.now().millisecondsSinceEpoch}.pdf');
+    final file = File(
+      '${output.path}/matching_report_${DateTime.now().millisecondsSinceEpoch}.pdf',
+    );
     await file.writeAsBytes(await pdf.save());
     return file;
   }
@@ -402,6 +432,8 @@ class PDFReportService {
   }
 
   static Future<void> shareReport(File file) async {
-    await Share.shareXFiles([XFile(file.path)], text: 'My Vedic Astrology Report from AstroNaksh');
+    await Share.shareXFiles([
+      XFile(file.path),
+    ], text: 'My Vedic Astrology Report from AstroNaksh');
   }
 }

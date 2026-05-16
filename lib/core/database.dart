@@ -52,12 +52,10 @@ class AppDatabase extends _$AppDatabase {
           }
         }
       },
-
     );
   }
 
   static QueryExecutor _openConnection() {
-
     return LazyDatabase(() async {
       final path = await AppEnvironment.getDatabasePath();
       final file = File(path);

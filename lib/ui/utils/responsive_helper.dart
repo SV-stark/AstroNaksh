@@ -32,7 +32,7 @@ class ResponsiveHelper {
   static bool useMobileLayout(BuildContext context) {
     // On mobile platforms, always prefer mobile-optimized layout unless on a large tablet
     if (isMobilePlatform) {
-      return MediaQuery.of(context).size.width < 900; 
+      return MediaQuery.of(context).size.width < 900;
     }
     return isMobileWidth(context);
   }
@@ -74,7 +74,7 @@ class ResponsiveHelper {
     if (useMobileLayout(context)) {
       return PaneDisplayMode.minimal; // Collapsible/Hidden by default on mobile
     }
-    return PaneDisplayMode.open; // Full side pane on desktop
+    return PaneDisplayMode.expanded; // Full side pane on desktop
   }
 
   /// Get navigation pane width

@@ -51,29 +51,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         if (didPop) return;
       },
       child: NavigationView(
-        appBar: NavigationAppBar(
-          leading: isMobile
-              ? null
-              : IconButton(
+        titleBar: TitleBar(
+          title: Row(
+            children: [
+              if (!isMobile)
+                IconButton(
                   icon: const Icon(FluentIcons.back),
                   onPressed: () => Navigator.pop(context),
                 ),
-          title: Row(
-            children: [
               if (isMobile)
                 IconButton(
                   icon: const Icon(FluentIcons.back),
                   onPressed: () => Navigator.pop(context),
                 ),
+              const SizedBox(width: 8),
               const Text('Settings'),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: FilledButton(
+                  onPressed: _saveSettings,
+                  child: const Text('Save'),
+                ),
+              ),
             ],
-          ),
-          actions: Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: FilledButton(
-              onPressed: _saveSettings,
-              child: const Text('Save'),
-            ),
           ),
         ),
         pane: NavigationPane(
@@ -130,7 +131,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildAppearanceSettings() {
-    final currentTheme = ref.watch(settingsProvider).value?.themeMode ?? ThemeMode.system;
+    final currentTheme =
+        ref.watch(settingsProvider).value?.themeMode ?? ThemeMode.system;
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Appearance')),
       children: [
@@ -144,24 +146,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('System Default'),
                 leading: const Icon(FluentIcons.system),
                 selected: currentTheme == ThemeMode.system,
-                onPressed: () =>
-                    ref.read(settingsProvider.notifier).updateThemeMode(ThemeMode.system),
+                onPressed: () => ref
+                    .read(settingsProvider.notifier)
+                    .updateThemeMode(ThemeMode.system),
               ),
               const Divider(),
               ListTile.selectable(
                 title: const Text('Light Mode'),
                 leading: const Icon(FluentIcons.sunny),
                 selected: currentTheme == ThemeMode.light,
-                onPressed: () =>
-                    ref.read(settingsProvider.notifier).updateThemeMode(ThemeMode.light),
+                onPressed: () => ref
+                    .read(settingsProvider.notifier)
+                    .updateThemeMode(ThemeMode.light),
               ),
               const Divider(),
               ListTile.selectable(
                 title: const Text('Dark Mode'),
                 leading: const Icon(FluentIcons.clear_night),
                 selected: currentTheme == ThemeMode.dark,
-                onPressed: () =>
-                    ref.read(settingsProvider.notifier).updateThemeMode(ThemeMode.dark),
+                onPressed: () => ref
+                    .read(settingsProvider.notifier)
+                    .updateThemeMode(ThemeMode.dark),
               ),
             ],
           ),

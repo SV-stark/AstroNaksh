@@ -27,7 +27,8 @@ class ParvataYogaDetector extends YogaDetector {
 
     final house = l1Info.house;
     final isKendraOrTrikona = [1, 4, 7, 10, 5, 9].contains(house);
-    final isStrong = l1Info.dignity == PlanetaryDignity.exalted ||
+    final isStrong =
+        l1Info.dignity == PlanetaryDignity.exalted ||
         l1Info.dignity == PlanetaryDignity.ownSign;
 
     if (isKendraOrTrikona && isStrong) {

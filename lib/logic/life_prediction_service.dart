@@ -229,7 +229,7 @@ class LifePredictionService {
       Planet.jupiter,
       Planet.venus,
       Planet.mercury,
-      Planet.moon
+      Planet.moon,
     ];
 
     // If exalted or in own sign, generally benefic
@@ -274,8 +274,9 @@ class LifePredictionService {
   }) {
     final strengthWord = isBenefic ? 'supports' : 'challenges';
     final aspectArea = aspect.name.split(' ')[0].toLowerCase();
-    final strengthLabel =
-        strength >= 70 ? 'strong' : (strength >= 40 ? 'moderate' : 'weak');
+    final strengthLabel = strength >= 70
+        ? 'strong'
+        : (strength >= 40 ? 'moderate' : 'weak');
     final signRef = signName.isNotEmpty ? ' in $signName' : '';
     final degRef = degreeStr.isNotEmpty ? ' at $degreeStr' : '';
 
@@ -444,8 +445,9 @@ class LifePredictionService {
     List<PlanetaryInfluence> influences,
     int score,
   ) {
-    final weakPlanets =
-        influences.where((i) => !i.isBenefic || i.strength < 50).toList();
+    final weakPlanets = influences
+        .where((i) => !i.isBenefic || i.strength < 50)
+        .toList();
 
     if (weakPlanets.isEmpty || score >= 80) {
       // For strong charts, still reference key planet

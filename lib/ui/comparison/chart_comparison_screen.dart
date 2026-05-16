@@ -232,10 +232,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                           report.overallColor.withValues(alpha: 0.1),
                         ],
                       ),
-                      border: Border.all(
-                        color: report.overallColor,
-                        width: 4,
-                      ),
+                      border: Border.all(color: report.overallColor, width: 4),
                     ),
                     child: Center(
                       child: Column(
@@ -253,9 +250,7 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                             '/ 36',
                             style: TextStyle(
                               fontSize: 20,
-                              color: report.overallColor.withValues(
-                                alpha: 0.7,
-                              ),
+                              color: report.overallColor.withValues(alpha: 0.7),
                             ),
                           ),
                         ],

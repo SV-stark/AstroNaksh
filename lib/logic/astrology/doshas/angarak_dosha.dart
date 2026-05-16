@@ -25,13 +25,15 @@ class AngarakDoshaDetector extends YogaDetector {
 
     if (mars == null) return BhangaResult.inactive(name);
 
-    final isRahu = mars.position.zodiacSignIndex == rahu.position.zodiacSignIndex;
-    final isKetu = mars.position.zodiacSignIndex == (ketu.longitude / 30).floor() % 12;
+    final isRahu =
+        mars.position.zodiacSignIndex == rahu.position.zodiacSignIndex;
+    final isKetu =
+        mars.position.zodiacSignIndex == (ketu.longitude / 30).floor() % 12;
 
     if (!isRahu && !isKetu) return BhangaResult.inactive(name);
 
     final node = isRahu ? 'Rahu' : 'Ketu';
-    
+
     return BhangaResult(
       name: name,
       description: description,

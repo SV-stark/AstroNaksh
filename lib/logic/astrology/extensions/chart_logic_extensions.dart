@@ -145,7 +145,7 @@ extension ChartLogicExtensions on CompleteChartData {
     final s1 = getPlanetSign(p1);
     final s2 = getPlanetSign(p2);
     return getSignLord(s1) == planetFromName(p2)?.index &&
-           getSignLord(s2) == planetFromName(p1)?.index;
+        getSignLord(s2) == planetFromName(p1)?.index;
   }
 
   bool isDusthana(int house) => [6, 8, 12].contains(house);
@@ -154,8 +154,13 @@ extension ChartLogicExtensions on CompleteChartData {
 
   String getExaltationSignLord(String planet) {
     final exalts = {
-      'Sun': 0, 'Moon': 1, 'Mars': 9, 'Mercury': 5,
-      'Jupiter': 3, 'Venus': 11, 'Saturn': 6,
+      'Sun': 0,
+      'Moon': 1,
+      'Mars': 9,
+      'Mercury': 5,
+      'Jupiter': 3,
+      'Venus': 11,
+      'Saturn': 6,
     };
     final sign = exalts[planet];
     if (sign == null) return '';

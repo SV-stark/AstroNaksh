@@ -45,7 +45,6 @@ class AppEnvironment {
       }
     }
 
-
     // 4. Setup Logging
     await _setupLogging();
 
@@ -148,24 +147,24 @@ class AppEnvironment {
     // Ensure absolute path and resolve any .. or . segments
     final absolutePath = p.absolute(path);
     final canonicalPath = p.canonicalize(absolutePath);
-    
+
     var formatted = canonicalPath;
-    
-    // On Windows, use native backslashes. 
-    // While SE can handle forward slashes, some builds of swisseph.dll 
+
+    // On Windows, use native backslashes.
+    // While SE can handle forward slashes, some builds of swisseph.dll
     // on Windows are more stable with native paths.
     if (Platform.isWindows) {
       formatted = formatted.replaceAll('/', '\\');
     } else {
       formatted = formatted.replaceAll('\\', '/');
     }
-    
+
     // Ensure it ends with a separator as SE uses this as a directory prefix
     final separator = Platform.isWindows ? '\\' : '/';
     if (!formatted.endsWith(separator)) {
       formatted += separator;
     }
-    
+
     return formatted;
   }
 

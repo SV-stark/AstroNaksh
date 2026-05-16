@@ -79,7 +79,10 @@ class EphemerisManager {
 
     // Verify swisseph.dll existence and validity (Windows only)
     if (Platform.isWindows) {
-      final dllPath = p.join(p.dirname(Platform.resolvedExecutable), 'swisseph.dll');
+      final dllPath = p.join(
+        p.dirname(Platform.resolvedExecutable),
+        'swisseph.dll',
+      );
       final dllFile = File(dllPath);
 
       if (await dllFile.exists()) {
@@ -89,26 +92,40 @@ class EphemerisManager {
         try {
           final bytes = await dllFile.readAsBytes();
           if (bytes.length > 64) {
-            final peOffset = bytes[0x3C] | (bytes[0x3D] << 8) | (bytes[0x3E] << 16) | (bytes[0x3F] << 24);
+            final peOffset =
+                bytes[0x3C] |
+                (bytes[0x3D] << 8) |
+                (bytes[0x3E] << 16) |
+                (bytes[0x3F] << 24);
             if (peOffset + 6 < bytes.length) {
               final machine = bytes[peOffset + 4] | (bytes[peOffset + 5] << 8);
               final is64Bit = machine == 0x8664;
-              AppEnvironment.log('EphemerisManager: DLL Machine Type: 0x${machine.toRadixString(16)} (Is x64: $is64Bit)');
+              AppEnvironment.log(
+                'EphemerisManager: DLL Machine Type: 0x${machine.toRadixString(16)} (Is x64: $is64Bit)',
+              );
             }
           }
         } catch (e) {
-          AppEnvironment.log('EphemerisManager: Failed to parse DLL header: $e');
+          AppEnvironment.log(
+            'EphemerisManager: Failed to parse DLL header: $e',
+          );
         }
 
         // Try Explicit Load
         try {
           final lib = DynamicLibrary.open(dllPath);
-          AppEnvironment.log('EphemerisManager: Explicit load successful: $lib');
+          AppEnvironment.log(
+            'EphemerisManager: Explicit load successful: $lib',
+          );
         } catch (e) {
-          AppEnvironment.log('EphemerisManager: CRITICAL - Explicit load failed: $e');
+          AppEnvironment.log(
+            'EphemerisManager: CRITICAL - Explicit load failed: $e',
+          );
         }
       } else {
-        AppEnvironment.log('EphemerisManager: ERROR - swisseph.dll NOT found at $dllPath');
+        AppEnvironment.log(
+          'EphemerisManager: ERROR - swisseph.dll NOT found at $dllPath',
+        );
       }
     }
 
@@ -130,9 +147,13 @@ class EphemerisManager {
     } else {
       try {
         final list = Directory(targetPath).listSync();
-        AppEnvironment.log('EphemerisManager: Verified ${list.length} files in ephemeris directory ($targetPath).');
+        AppEnvironment.log(
+          'EphemerisManager: Verified ${list.length} files in ephemeris directory ($targetPath).',
+        );
       } catch (e) {
-        AppEnvironment.log('EphemerisManager: Warning - Could not list ephemeris directory: $e');
+        AppEnvironment.log(
+          'EphemerisManager: Warning - Could not list ephemeris directory: $e',
+        );
       }
     }
 
@@ -213,7 +234,10 @@ class EphemerisManager {
   }
 
   /// Check which files are missing or incomplete
-  static Future<List<String>> _getMissingFiles(String path, {bool strict = false}) async {
+  static Future<List<String>> _getMissingFiles(
+    String path, {
+    bool strict = false,
+  }) async {
     final missing = <String>[];
     final files = _requiredFiles['standard']!;
 
@@ -228,7 +252,9 @@ class EphemerisManager {
         final expectedSize = _fileSizes[file] ?? 0;
 
         // Use strict check (exact size) or loose check (within 10%)
-        final isValid = strict ? size == expectedSize : size >= expectedSize * 0.9;
+        final isValid = strict
+            ? size == expectedSize
+            : size >= expectedSize * 0.9;
 
         if (!isValid) {
           missing.add(file);

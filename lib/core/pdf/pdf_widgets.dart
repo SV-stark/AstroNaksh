@@ -9,11 +9,7 @@ class PdfWidgets {
       children: [
         pw.Text(title, style: style),
         pw.SizedBox(height: 4),
-        pw.Container(
-          height: 2,
-          width: 40,
-          color: ReportStyles.accentColor,
-        ),
+        pw.Container(height: 2, width: 40, color: ReportStyles.accentColor),
         pw.SizedBox(height: 16),
       ],
     );
@@ -66,33 +62,37 @@ class PdfWidgets {
       ),
       children: [
         pw.TableRow(
-          decoration: const pw.BoxDecoration(
-            color: ReportStyles.primaryColor,
-          ),
-          children: headers.map((h) => pw.Padding(
-            padding: const pw.EdgeInsets.all(6),
-            child: pw.Text(
-              h,
-              style: pw.TextStyle(
-                color: PdfColors.white,
-                fontWeight: pw.FontWeight.bold,
-                fontSize: 9,
-              ),
-            ),
-          )).toList(),
+          decoration: const pw.BoxDecoration(color: ReportStyles.primaryColor),
+          children: headers
+              .map(
+                (h) => pw.Padding(
+                  padding: const pw.EdgeInsets.all(6),
+                  child: pw.Text(
+                    h,
+                    style: pw.TextStyle(
+                      color: PdfColors.white,
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 9,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
         ),
         ...rows.asMap().entries.map((entry) {
           final index = entry.key;
           final row = entry.value;
           final color = index % 2 == 0 ? PdfColors.white : PdfColors.grey50;
           return pw.TableRow(
-            decoration: pw.BoxDecoration(
-              color: color,
-            ),
-            children: row.map((cell) => pw.Padding(
-              padding: const pw.EdgeInsets.all(6),
-              child: pw.Text(cell, style: bodyStyle),
-            )).toList(),
+            decoration: pw.BoxDecoration(color: color),
+            children: row
+                .map(
+                  (cell) => pw.Padding(
+                    padding: const pw.EdgeInsets.all(6),
+                    child: pw.Text(cell, style: bodyStyle),
+                  ),
+                )
+                .toList(),
           );
         }),
       ],
@@ -161,11 +161,17 @@ class PdfWidgets {
                       children: [
                         pw.Text(
                           '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
-                          style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey),
+                          style: const pw.TextStyle(
+                            fontSize: 8,
+                            color: PdfColors.grey,
+                          ),
                         ),
                         pw.Text(
                           'Page ${context.pageNumber} of ${context.pagesCount}',
-                          style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey),
+                          style: const pw.TextStyle(
+                            fontSize: 8,
+                            color: PdfColors.grey,
+                          ),
                         ),
                       ],
                     ),

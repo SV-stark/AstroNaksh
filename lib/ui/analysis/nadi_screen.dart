@@ -177,7 +177,10 @@ class NadiScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(color: Colors.grey.withAlpha(180), fontSize: 13),
+                  style: TextStyle(
+                    color: Colors.grey.withAlpha(180),
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),

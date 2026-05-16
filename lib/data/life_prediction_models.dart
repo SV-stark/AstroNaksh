@@ -42,7 +42,7 @@ class LifeAspectPrediction {
   });
   final String aspectName; // e.g., "Career", "Family", "Health"
   final String
-      aspectDescription; // Brief description of what this aspect covers
+  aspectDescription; // Brief description of what this aspect covers
   final String iconName; // FluentIcon name
   final int score; // 40-95 range
   final String prediction; // Detailed prediction text
@@ -75,7 +75,7 @@ class LifePredictionsResult {
     final avgScore = aspects.isEmpty
         ? 65
         : (aspects.map((a) => a.score).reduce((a, b) => a + b) / aspects.length)
-            .round();
+              .round();
 
     // Identify strongest and weakest aspects for the summary
     final sortedAspects = List<LifeAspectPrediction>.from(aspects)

@@ -30,7 +30,13 @@ class LunarYogaDetector implements YogaDetector {
     var hasAnapha = false;
 
     const visiblePlanets = [
-      'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
     ];
 
     for (final p in visiblePlanets) {

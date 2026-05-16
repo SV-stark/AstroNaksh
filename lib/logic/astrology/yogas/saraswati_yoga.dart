@@ -35,7 +35,8 @@ class SaraswatiYogaDetector extends YogaDetector {
     }
 
     final jup = chart.baseChart.planets[Planet.jupiter];
-    final isJupStrong = jup != null &&
+    final isJupStrong =
+        jup != null &&
         (jup.dignity == PlanetaryDignity.exalted ||
             jup.dignity == PlanetaryDignity.ownSign ||
             jup.dignity == PlanetaryDignity.greatFriend);
@@ -49,7 +50,8 @@ class SaraswatiYogaDetector extends YogaDetector {
         strength: strength,
         status: 'Strong',
         cancellationReasons: reasons,
-        manifestationPeriod: 'Active during Dashas of Mercury, Jupiter, or Venus',
+        manifestationPeriod:
+            'Active during Dashas of Mercury, Jupiter, or Venus',
         peakDashaLord: Planet.jupiter.displayName,
       );
     }

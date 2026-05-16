@@ -52,7 +52,8 @@ class RajYogaDetector extends YogaDetector {
           if (klSign == tlSign) {
             activeLords.addAll([kl, tl]);
             reasons.add(
-                '${kl.displayName} (Kendra Lord) and ${tl.displayName} (Trikona Lord) are conjunct in ${Rashi.values[klSign].name}');
+              '${kl.displayName} (Kendra Lord) and ${tl.displayName} (Trikona Lord) are conjunct in ${Rashi.values[klSign].name}',
+            );
           }
         }
       }
@@ -64,7 +65,7 @@ class RajYogaDetector extends YogaDetector {
 
     // Strength calculation
     var strength = 70.0;
-    
+
     // Check if conjunction is in a good house
     final firstLord = activeLords.first;
     final house = chart.baseChart.planets[firstLord]?.house ?? 1;
@@ -80,7 +81,8 @@ class RajYogaDetector extends YogaDetector {
       strength: strength.clamp(0, 100),
       status: strength >= 85 ? 'Powerful' : 'Active',
       cancellationReasons: reasons,
-      manifestationPeriod: 'Active during the Dashas of the participating lords',
+      manifestationPeriod:
+          'Active during the Dashas of the participating lords',
       peakDashaLord: activeLords.first.displayName,
     );
   }

@@ -154,369 +154,384 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
         ),
-      content: CustomScrollView(
-        slivers: [
-          // Today's Sky Dashboard Widget
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              ResponsiveHelper.useMobileLayout(context) ? 16 : 24,
-              24,
-              ResponsiveHelper.useMobileLayout(context) ? 16 : 24,
-              8,
+        content: CustomScrollView(
+          slivers: [
+            // Today's Sky Dashboard Widget
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                ResponsiveHelper.useMobileLayout(context) ? 16 : 24,
+                24,
+                ResponsiveHelper.useMobileLayout(context) ? 16 : 24,
+                8,
+              ),
+              sliver: const SliverToBoxAdapter(child: PanchangDailyWidget()),
             ),
-            sliver: const SliverToBoxAdapter(child: PanchangDailyWidget()),
-          ),
 
-          // Dashboard Quick Actions
-          SliverPadding(
-            padding: ResponsiveHelper.getResponsivePadding(context),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quick Actions',
-                    style: FluentTheme.of(context).typography.subtitle,
-                  ),
-                  const SizedBox(height: 16),
-                  HoverButton(
-                    onPressed: () async {
-                      await context.push('/input');
-                      _loadCharts();
-                    },
-                    builder: (context, states) {
-                      return Card(
-                        padding: EdgeInsets.zero,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppStyles.primaryColor,
-                                AppStyles.primaryColor.withValues(alpha: 0.7),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 20,
-                            horizontal: 20,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  FluentIcons.add,
-                                  color: Colors.black,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Create New Chart',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Calculate birth data and explore detailed horoscopes',
-                                      style: TextStyle(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.7,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(
-                                FluentIcons.chevron_right,
-                                color: Colors.black87,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: ResponsiveHelper.useMobileLayout(context)
-                        ? 2
-                        : 3,
-                    mainAxisSpacing: ResponsiveHelper.useMobileLayout(context)
-                        ? 16
-                        : 12,
-                    crossAxisSpacing: ResponsiveHelper.useMobileLayout(context)
-                        ? 16
-                        : 12,
-                    childAspectRatio:
-                        ResponsiveHelper.getGridChildAspectRatio(context) *
-                        (ResponsiveHelper.useMobileLayout(context) ? 1.0 : 1.5),
-                    children: [
-                      _buildQuickAction(
-                        icon: FluentIcons.heart_fill,
-                        title: 'Compare',
-                        subtitle: 'Chart compatibility',
-                        color: Colors.purple,
-                        onTap: () {
-                          context.push('/comparison');
-                        },
-                      ),
-                      _buildQuickAction(
-                        icon: FluentIcons.calendar,
-                        title: 'Panchang',
-                        subtitle: 'Daily almanac',
-                        color: Colors.orange,
-                        onTap: () {
-                          context.push('/panchang');
-                        },
-                      ),
-                      _buildQuickAction(
-                        icon: FluentIcons.chat,
-                        title: 'Horary (Prashna)',
-                        subtitle: 'Ask a question',
-                        color: Colors.teal,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            FluentPageRoute(
-                              builder: (_) => const HoraryInputScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                      _buildQuickAction(
-                        icon: FluentIcons.diamond,
-                        title: 'Muhurta Finder',
-                        subtitle: 'Auspicious times',
-                        color: Colors.blue,
-                        onTap: () {
-                          context.push('/muhurta');
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: EdgeInsets.symmetric(
-              horizontal: ResponsiveHelper.useMobileLayout(context)
-                  ? 16.0
-                  : 24.0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: Row(
-                children: [
-                  Text(
-                    'Recent Charts',
-                    style: FluentTheme.of(context).typography.subtitle,
-                  ),
-                  const Spacer(),
-                  SizedBox(
-                    width: ResponsiveHelper.useMobileLayout(context)
-                        ? 200
-                        : 250,
-                    height: ResponsiveHelper.useMobileLayout(context) ? 44 : 36,
-                    child: TextBox(
-                      controller: _searchController,
-                      placeholder: 'Search...',
-                      prefix: const Padding(
-                        padding: EdgeInsets.only(left: 8.0),
-                        child: Icon(FluentIcons.search),
-                      ),
+            // Dashboard Quick Actions
+            SliverPadding(
+              padding: ResponsiveHelper.getResponsivePadding(context),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Quick Actions',
+                      style: FluentTheme.of(context).typography.subtitle,
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
-          if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(top: 100),
-                child: Center(child: ProgressRing()),
-              ),
-            )
-          else
-            _filteredCharts.isEmpty
-                ? SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 100),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              FluentIcons.contact_list,
-                              size: 64,
-                              color: Colors.grey.withAlpha(128),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              'No saved charts yet',
-                              style: FluentTheme.of(context).typography.title,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Create your first chart to get started',
-                              style: TextStyle(color: Colors.grey.withAlpha(150)),
-                            ),
-                            const SizedBox(height: 24),
-                            FilledButton(
-                              onPressed: () async {
-                                await context.push('/input');
-                                _loadCharts();
-                              },
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(FluentIcons.add),
-                                  SizedBox(width: 8),
-                                  Text('Create New Chart'),
+                    const SizedBox(height: 16),
+                    HoverButton(
+                      onPressed: () async {
+                        await context.push('/input');
+                        _loadCharts();
+                      },
+                      builder: (context, states) {
+                        return Card(
+                          padding: EdgeInsets.zero,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppStyles.primaryColor,
+                                  AppStyles.primaryColor.withValues(alpha: 0.7),
                                 ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            const SizedBox(height: 48),
-                            Text(
-                              'Or explore famous charts:',
-                              style: FluentTheme.of(
-                                context,
-                              ).typography.subtitle,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 20,
+                              horizontal: 20,
                             ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: 400,
-                              child: Column(
-                                children: SampleCharts.samples
-                                    .map(
-                                      (sample) => Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 4.0,
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    FluentIcons.add,
+                                    color: Colors.black,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Create New Chart',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
                                         ),
-                                        child: Card(
-                                          padding: EdgeInsets.zero,
-                                          child: ListTile.selectable(
-                                            leading: const Padding(
-                                              padding: EdgeInsets.all(8.0),
-                                              child: Icon(
-                                                FluentIcons.contact_info,
-                                                color: AppStyles.primaryColor,
-                                              ),
-                                            ),
-                                            title: Text(
-                                              sample.name,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            subtitle: Text(sample.place),
-                                            onPressed: () {
-                                              context.push('/chart', extra: sample);
-                                            },
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Calculate birth data and explore detailed horoscopes',
+                                        style: TextStyle(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.7,
                                           ),
                                         ),
                                       ),
-                                    )
-                                    .toList(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                : SliverPadding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: ResponsiveHelper.useMobileLayout(context)
-                          ? 16.0
-                          : 24.0,
-                    ),
-                    sliver: SliverList.builder(
-                      itemCount: _filteredCharts.length,
-                      itemBuilder: (context, index) {
-                        final chart = _filteredCharts[index];
-                        final isMobile = ResponsiveHelper.useMobileLayout(
-                          context,
-                        );
-                        return Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: isMobile ? 8 : 4,
-                          ),
-                          child: Card(
-                            padding: EdgeInsets.zero,
-                            child: ListTile.selectable(
-                              onPressed: () => _openChart(chart),
-                              leading: Container(
-                                width: isMobile ? 48 : 40,
-                                height: isMobile ? 48 : 40,
-                                margin: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppStyles.primaryColor.withAlpha(25),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  FluentIcons.contact,
-                                  color: AppStyles.primaryColor,
-                                  size: isMobile ? 24 : 20,
-                                ),
-                              ),
-                              title: Text(
-                                chart.name ?? 'Unknown',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: isMobile ? 16 : 14,
-                                ),
-                              ),
-                              subtitle: Text(
-                                '${_formatDateTime(chart.birthTime)}'
-                                '${chart.locationName != null ? ' • ${chart.locationName}' : ''}',
-                                style: TextStyle(fontSize: isMobile ? 13 : 12),
-                              ),
-                              trailing: SizedBox(
-                                width: isMobile ? 48 : 40,
-                                height: isMobile ? 48 : 40,
-                                child: IconButton(
-                                  icon: Icon(
-                                    FluentIcons.delete,
-                                    color: Colors.red,
-                                    size: isMobile ? 24 : 16,
+                                    ],
                                   ),
-                                  onPressed: () async {
-                                    final db = ref.read(databaseProvider);
-                                    await (db.delete(db.charts)..where((t) => t.id.equals(chart.id))).go();
-                                    _loadCharts();
-                                  },
                                 ),
-                              ),
+                                const Icon(
+                                  FluentIcons.chevron_right,
+                                  color: Colors.black87,
+                                ),
+                              ],
                             ),
                           ),
                         );
                       },
                     ),
-                  ),
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
-        ],
+                    const SizedBox(height: 16),
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: ResponsiveHelper.useMobileLayout(context)
+                          ? 2
+                          : 3,
+                      mainAxisSpacing: ResponsiveHelper.useMobileLayout(context)
+                          ? 16
+                          : 12,
+                      crossAxisSpacing:
+                          ResponsiveHelper.useMobileLayout(context) ? 16 : 12,
+                      childAspectRatio:
+                          ResponsiveHelper.getGridChildAspectRatio(context) *
+                          (ResponsiveHelper.useMobileLayout(context)
+                              ? 1.0
+                              : 1.5),
+                      children: [
+                        _buildQuickAction(
+                          icon: FluentIcons.heart_fill,
+                          title: 'Compare',
+                          subtitle: 'Chart compatibility',
+                          color: Colors.purple,
+                          onTap: () {
+                            context.push('/comparison');
+                          },
+                        ),
+                        _buildQuickAction(
+                          icon: FluentIcons.calendar,
+                          title: 'Panchang',
+                          subtitle: 'Daily almanac',
+                          color: Colors.orange,
+                          onTap: () {
+                            context.push('/panchang');
+                          },
+                        ),
+                        _buildQuickAction(
+                          icon: FluentIcons.chat,
+                          title: 'Horary (Prashna)',
+                          subtitle: 'Ask a question',
+                          color: Colors.teal,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              FluentPageRoute(
+                                builder: (_) => const HoraryInputScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildQuickAction(
+                          icon: FluentIcons.diamond,
+                          title: 'Muhurta Finder',
+                          subtitle: 'Auspicious times',
+                          color: Colors.blue,
+                          onTap: () {
+                            context.push('/muhurta');
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveHelper.useMobileLayout(context)
+                    ? 16.0
+                    : 24.0,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  children: [
+                    Text(
+                      'Recent Charts',
+                      style: FluentTheme.of(context).typography.subtitle,
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: ResponsiveHelper.useMobileLayout(context)
+                          ? 200
+                          : 250,
+                      height: ResponsiveHelper.useMobileLayout(context)
+                          ? 44
+                          : 36,
+                      child: TextBox(
+                        controller: _searchController,
+                        placeholder: 'Search...',
+                        prefix: const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Icon(FluentIcons.search),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            if (_isLoading)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 100),
+                  child: Center(child: ProgressRing()),
+                ),
+              )
+            else
+              _filteredCharts.isEmpty
+                  ? SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 100),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                FluentIcons.contact_list,
+                                size: 64,
+                                color: Colors.grey.withAlpha(128),
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                'No saved charts yet',
+                                style: FluentTheme.of(context).typography.title,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Create your first chart to get started',
+                                style: TextStyle(
+                                  color: Colors.grey.withAlpha(150),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              FilledButton(
+                                onPressed: () async {
+                                  await context.push('/input');
+                                  _loadCharts();
+                                },
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(FluentIcons.add),
+                                    SizedBox(width: 8),
+                                    Text('Create New Chart'),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 48),
+                              Text(
+                                'Or explore famous charts:',
+                                style: FluentTheme.of(
+                                  context,
+                                ).typography.subtitle,
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: 400,
+                                child: Column(
+                                  children: SampleCharts.samples
+                                      .map(
+                                        (sample) => Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 4.0,
+                                          ),
+                                          child: Card(
+                                            padding: EdgeInsets.zero,
+                                            child: ListTile.selectable(
+                                              leading: const Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Icon(
+                                                  FluentIcons.contact_info,
+                                                  color: AppStyles.primaryColor,
+                                                ),
+                                              ),
+                                              title: Text(
+                                                sample.name,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              subtitle: Text(sample.place),
+                                              onPressed: () {
+                                                context.push(
+                                                  '/chart',
+                                                  extra: sample,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : SliverPadding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.useMobileLayout(context)
+                            ? 16.0
+                            : 24.0,
+                      ),
+                      sliver: SliverList.builder(
+                        itemCount: _filteredCharts.length,
+                        itemBuilder: (context, index) {
+                          final chart = _filteredCharts[index];
+                          final isMobile = ResponsiveHelper.useMobileLayout(
+                            context,
+                          );
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: isMobile ? 8 : 4,
+                            ),
+                            child: Card(
+                              padding: EdgeInsets.zero,
+                              child: ListTile.selectable(
+                                onPressed: () => _openChart(chart),
+                                leading: Container(
+                                  width: isMobile ? 48 : 40,
+                                  height: isMobile ? 48 : 40,
+                                  margin: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppStyles.primaryColor.withAlpha(25),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    FluentIcons.contact,
+                                    color: AppStyles.primaryColor,
+                                    size: isMobile ? 24 : 20,
+                                  ),
+                                ),
+                                title: Text(
+                                  chart.name ?? 'Unknown',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: isMobile ? 16 : 14,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  '${_formatDateTime(chart.birthTime)}'
+                                  '${chart.locationName != null ? ' • ${chart.locationName}' : ''}',
+                                  style: TextStyle(
+                                    fontSize: isMobile ? 13 : 12,
+                                  ),
+                                ),
+                                trailing: SizedBox(
+                                  width: isMobile ? 48 : 40,
+                                  height: isMobile ? 48 : 40,
+                                  child: IconButton(
+                                    icon: Icon(
+                                      FluentIcons.delete,
+                                      color: Colors.red,
+                                      size: isMobile ? 24 : 16,
+                                    ),
+                                    onPressed: () async {
+                                      final db = ref.read(databaseProvider);
+                                      await (db.delete(db.charts)..where(
+                                            (t) => t.id.equals(chart.id),
+                                          ))
+                                          .go();
+                                      _loadCharts();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildQuickAction({

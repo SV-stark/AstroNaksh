@@ -26,7 +26,13 @@ class NabhasaYogaDetector implements YogaDetector {
     final planetHouses = <String, int>{};
 
     const visiblePlanets = [
-      'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
     ];
 
     for (final p in visiblePlanets) {
@@ -51,7 +57,10 @@ class NabhasaYogaDetector implements YogaDetector {
 
     // --- Dala Yogas (Kendra distribution) ---
     final consecutiveKendras = [
-      {1, 4, 7}, {4, 7, 10}, {7, 10, 1}, {10, 1, 4}
+      {1, 4, 7},
+      {4, 7, 10},
+      {7, 10, 1},
+      {10, 1, 4},
     ];
 
     for (final set in consecutiveKendras) {
@@ -62,7 +71,10 @@ class NabhasaYogaDetector implements YogaDetector {
     }
 
     final consecutivePanaparas = [
-      {2, 5, 8}, {5, 8, 11}, {8, 11, 2}, {11, 2, 5}
+      {2, 5, 8},
+      {5, 8, 11},
+      {8, 11, 2},
+      {11, 2, 5},
     ];
     for (final set in consecutivePanaparas) {
       if (planetHouses.values.every(set.contains)) {

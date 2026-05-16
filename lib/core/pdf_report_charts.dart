@@ -50,7 +50,13 @@ class PdfReportCharts {
             },
           ),
         ),
-        ..._buildHouseContents(significators, ascendantSign, width, height, isPremium: true),
+        ..._buildHouseContents(
+          significators,
+          ascendantSign,
+          width,
+          height,
+          isPremium: true,
+        ),
       ],
     );
   }
@@ -133,7 +139,7 @@ class PdfReportCharts {
     for (var i = 0; i < 12; i++) {
       final pos = signToPos[i];
       final planets = planetsBySign[i] ?? [];
-      
+
       widgets.add(
         pw.Positioned(
           left: pos.x * cellW,
@@ -146,7 +152,13 @@ class PdfReportCharts {
               mainAxisAlignment: pw.MainAxisAlignment.start,
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text('${i + 1}', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
+                pw.Text(
+                  '${i + 1}',
+                  style: const pw.TextStyle(
+                    fontSize: 7,
+                    color: PdfColors.grey700,
+                  ),
+                ),
                 pw.Expanded(
                   child: pw.Center(
                     child: pw.Text(
@@ -228,7 +240,9 @@ class PdfReportCharts {
               style: pw.TextStyle(
                 fontSize: 8,
                 color: isPremium ? ReportStyles.accentColor : PdfColors.grey700,
-                fontWeight: isPremium ? pw.FontWeight.bold : pw.FontWeight.normal,
+                fontWeight: isPremium
+                    ? pw.FontWeight.bold
+                    : pw.FontWeight.normal,
               ),
             ),
           ),
@@ -250,7 +264,9 @@ class PdfReportCharts {
                 style: pw.TextStyle(
                   fontSize: 9,
                   fontWeight: pw.FontWeight.bold,
-                  color: isPremium ? ReportStyles.primaryColor : PdfColors.black,
+                  color: isPremium
+                      ? ReportStyles.primaryColor
+                      : PdfColors.black,
                 ),
               ),
             ),
@@ -286,12 +302,22 @@ class PdfReportCharts {
     int ascendantSign, {
     double width = 300,
     double height = 300,
-  }) => drawPremiumNorthIndianChart(significators, ascendantSign, width: width, height: height);
+  }) => drawPremiumNorthIndianChart(
+    significators,
+    ascendantSign,
+    width: width,
+    height: height,
+  );
 
   static pw.Widget buildChartWithTextOverlay(
     Map<String, Map<String, dynamic>> significators,
     int ascendantSign, {
     double width = 300,
     double height = 300,
-  }) => drawPremiumNorthIndianChart(significators, ascendantSign, width: width, height: height);
+  }) => drawPremiumNorthIndianChart(
+    significators,
+    ascendantSign,
+    width: width,
+    height: height,
+  );
 }

@@ -81,10 +81,7 @@ class _TransitScreenState extends State<TransitScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Flexible(
-          child: Text(
-            'Transit Analysis',
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text('Transit Analysis', overflow: TextOverflow.ellipsis),
         ),
         commandBar: _buildDateSelector(),
       ),

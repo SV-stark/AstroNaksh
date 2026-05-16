@@ -20,7 +20,7 @@ class AvakahadaService {
   static String getGana(int nakshatraIndex) {
     const deva = [0, 4, 6, 7, 12, 14, 20, 21, 26];
     const manushya = [1, 3, 5, 10, 11, 13, 15, 17, 24];
-    
+
     if (deva.contains(nakshatraIndex)) return 'Deva (Divine)';
     if (manushya.contains(nakshatraIndex)) return 'Manushya (Human)';
     return 'Rakshasa (Demon)';
@@ -64,10 +64,14 @@ class AvakahadaService {
   static String getNadi(int nakshatraIndex) {
     final remainder = nakshatraIndex % 3;
     switch (remainder) {
-      case 0: return 'Adi (Beginning)';
-      case 1: return 'Madhya (Middle)';
-      case 2: return 'Antya (End)';
-      default: return 'Unknown';
+      case 0:
+        return 'Adi (Beginning)';
+      case 1:
+        return 'Madhya (Middle)';
+      case 2:
+        return 'Antya (End)';
+      default:
+        return 'Unknown';
     }
   }
 

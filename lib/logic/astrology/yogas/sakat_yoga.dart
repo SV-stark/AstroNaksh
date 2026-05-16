@@ -24,14 +24,19 @@ class SakatYogaDetector extends YogaDetector {
 
     if (moon == null || jupiter == null) return BhangaResult.inactive(name);
 
-    final houseFromMoon = (jupiter.position.zodiacSignIndex - moon.position.zodiacSignIndex + 12) % 12 + 1;
+    final houseFromMoon =
+        (jupiter.position.zodiacSignIndex -
+                moon.position.zodiacSignIndex +
+                12) %
+            12 +
+        1;
     final isSakat = [6, 8, 12].contains(houseFromMoon);
 
     if (!isSakat) return BhangaResult.inactive(name);
 
     // Check for cancellation: Moon in Kendra from Lagna
     final isCancelled = [1, 4, 7, 10].contains(moon.house);
-    
+
     final strength = isCancelled ? 30.0 : 70.0;
 
     return BhangaResult(
@@ -40,7 +45,9 @@ class SakatYogaDetector extends YogaDetector {
       isActive: !isCancelled,
       strength: strength,
       status: isCancelled ? 'Cancelled / Weak' : 'Active',
-      cancellationReasons: isCancelled ? ['Moon is in Kendra from Lagna, cancelling Sakat Yoga'] : ['Jupiter is in ${houseFromMoon}th from Moon'],
+      cancellationReasons: isCancelled
+          ? ['Moon is in Kendra from Lagna, cancelling Sakat Yoga']
+          : ['Jupiter is in ${houseFromMoon}th from Moon'],
       manifestationPeriod: 'Felt during Jupiter and Moon Dashas',
       peakDashaLord: 'Jupiter',
     );

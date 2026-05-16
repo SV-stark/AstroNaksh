@@ -15,7 +15,12 @@ class GrahanDoshaDetector extends YogaDetector {
       'It can indicate confusion, low energy, or obstacles in personal growth.';
 
   @override
-  List<Planet> get keyPlanets => [Planet.sun, Planet.moon, Planet.meanNode, Planet.ketu];
+  List<Planet> get keyPlanets => [
+    Planet.sun,
+    Planet.moon,
+    Planet.meanNode,
+    Planet.ketu,
+  ];
 
   @override
   BhangaResult detect(CompleteChartData chart) {
@@ -43,8 +48,10 @@ class GrahanDoshaDetector extends YogaDetector {
 
     if (!isSunGrahan && !isMoonGrahan) return BhangaResult.inactive(name);
 
-    final target = isSunGrahan && isMoonGrahan ? 'Sun and Moon' : (isSunGrahan ? 'Sun' : 'Moon');
-    
+    final target = isSunGrahan && isMoonGrahan
+        ? 'Sun and Moon'
+        : (isSunGrahan ? 'Sun' : 'Moon');
+
     return BhangaResult(
       name: name,
       description: description,

@@ -894,7 +894,6 @@ class ChartComparison {
 
 /// Synastry Analysis Result
 class SynastryAnalysis {
-
   SynastryAnalysis({
     required this.chart1Name,
     required this.chart2Name,
@@ -931,7 +930,6 @@ class SynastryAnalysis {
 
 /// Synastry Aspect
 class SynastryAspect {
-
   SynastryAspect({
     required this.planet1,
     required this.planet2,
@@ -967,7 +965,6 @@ enum AspectEffect {
 
 /// House Overlay
 class HouseOverlay {
-
   HouseOverlay({
     required this.planet,
     required this.house,
@@ -984,7 +981,6 @@ class HouseOverlay {
 
 /// Nakshatra Analysis (Kuta Matching)
 class NakshatraAnalysis {
-
   NakshatraAnalysis({
     required this.moon1Nakshatra,
     required this.moon2Nakshatra,
@@ -1016,7 +1012,6 @@ class NakshatraAnalysis {
 
 /// Navamsa Compatibility
 class NavamsaCompatibility {
-
   NavamsaCompatibility({
     required this.ascendantCompatibility,
     required this.moonSignCompatibility,

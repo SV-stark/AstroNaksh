@@ -39,10 +39,11 @@ class KemadrumaDoshaDetector extends YogaDetector {
     for (final p in visiblePlanets) {
       final pInfo = chart.baseChart.planets[p];
       if (pInfo == null) continue;
-      
+
       final diff = (pInfo.position.zodiacSignIndex - moonSign + 12) % 12 + 1;
       if (diff == 2 || diff == 12) hasPlanetsInAdjacent = true;
-      if ([1, 4, 7, 10].contains(diff) && p != Planet.moon) hasPlanetsInKendras = true;
+      if ([1, 4, 7, 10].contains(diff) && p != Planet.moon)
+        hasPlanetsInKendras = true;
     }
 
     if (hasPlanetsInAdjacent) return BhangaResult.inactive(name);
@@ -56,7 +57,9 @@ class KemadrumaDoshaDetector extends YogaDetector {
       isActive: !isCancelled,
       strength: strength,
       status: isCancelled ? 'Cancelled' : 'Active',
-      cancellationReasons: isCancelled ? ['Planets are present in Kendras from Moon'] : ['No planets in 2nd or 12th from Moon'],
+      cancellationReasons: isCancelled
+          ? ['Planets are present in Kendras from Moon']
+          : ['No planets in 2nd or 12th from Moon'],
       manifestationPeriod: 'Felt during Moon Dasha',
       peakDashaLord: 'Moon',
     );

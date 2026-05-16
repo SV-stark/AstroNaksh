@@ -6,8 +6,8 @@ part of 'settings_state.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SettingsStateImpl _$$SettingsStateImplFromJson(Map<String, dynamic> json) =>
-    _$SettingsStateImpl(
+_SettingsState _$SettingsStateFromJson(Map<String, dynamic> json) =>
+    _SettingsState(
       chartSettings: ChartCustomization.fromJson(
         json['chartSettings'] as Map<String, dynamic>,
       ),
@@ -17,7 +17,7 @@ _$SettingsStateImpl _$$SettingsStateImplFromJson(Map<String, dynamic> json) =>
       hasSeenTutorial: json['hasSeenTutorial'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$SettingsStateImplToJson(_$SettingsStateImpl instance) =>
+Map<String, dynamic> _$SettingsStateToJson(_SettingsState instance) =>
     <String, dynamic>{
       'chartSettings': instance.chartSettings,
       'themeMode': _$ThemeModeEnumMap[instance.themeMode]!,

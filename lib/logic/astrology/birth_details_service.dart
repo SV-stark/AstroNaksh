@@ -22,7 +22,9 @@ class BirthDetailsReport {
 }
 
 class BirthDetailsService {
-  static Future<BirthDetailsReport> generateReport(CompleteChartData data) async {
+  static Future<BirthDetailsReport> generateReport(
+    CompleteChartData data,
+  ) async {
     final chart = data.baseChart;
     final birthData = data.birthData;
     final moon = chart.planets[Planet.moon]!;
@@ -47,7 +49,8 @@ class BirthDetailsService {
       final ghatis = (totalMinutes * 2.5 / 60).floor();
       final palas = ((totalMinutes * 2.5) % 60).floor();
       final vipalas = (totalMinutes * 2.5 * 60 % 60).floor();
-      ishtakala = '${ghatis.toString().padLeft(3, '0')}-${palas.toString().padLeft(2, '0')}-${vipalas.toString().padLeft(2, '0')}';
+      ishtakala =
+          '${ghatis.toString().padLeft(3, '0')}-${palas.toString().padLeft(2, '0')}-${vipalas.toString().padLeft(2, '0')}';
     }
 
     // Calculate LMT (Local Mean Time)
@@ -55,18 +58,24 @@ class BirthDetailsService {
     final lonHours = birthData.location.longitude / 15.0;
     final gmt = birthData.dateTime.toUtc();
     final lmt = gmt.add(Duration(minutes: (lonHours * 60).round()));
-    
+
     // LMT Correction (Correction from standard timezone)
     final tzHours = double.tryParse(birthData.timezone) ?? 5.5;
-    final lmtCorrectionMinutes = (birthData.location.longitude - (tzHours * 15.0)) * 4.0;
-    final lmtCorrection = '${lmtCorrectionMinutes.abs().floor().toString().padLeft(2, '0')} : ${((lmtCorrectionMinutes.abs() % 1) * 60).round().toString().padLeft(2, '0')}';
+    final lmtCorrectionMinutes =
+        (birthData.location.longitude - (tzHours * 15.0)) * 4.0;
+    final lmtCorrection =
+        '${lmtCorrectionMinutes.abs().floor().toString().padLeft(2, '0')} : ${((lmtCorrectionMinutes.abs() % 1) * 60).round().toString().padLeft(2, '0')}';
 
     // Julian Day
-    final julianDay = (birthData.dateTime.millisecondsSinceEpoch / 86400000.0) + 2440587.5;
+    final julianDay =
+        (birthData.dateTime.millisecondsSinceEpoch / 86400000.0) + 2440587.5;
 
     // Get Ayanamsa info from library
     final ayanamsaSystemId = SettingsManager().chartSettings.ayanamsaSystem;
-    final ayanamsaValue = await AyanamsaCalculator.calculate(ayanamsaSystemId, birthData.dateTime);
+    final ayanamsaValue = await AyanamsaCalculator.calculate(
+      ayanamsaSystemId,
+      birthData.dateTime,
+    );
     final system = AyanamsaCalculator.getSystem(ayanamsaSystemId);
     final ayanamsaName = system?.name ?? 'Lahiri';
 
@@ -92,33 +101,45 @@ class BirthDetailsService {
         'Latitude': _formatDegrees(birthData.location.latitude, isLat: true),
         'Longitude': _formatDegrees(birthData.location.longitude, isLat: false),
         'Ishtakala': ishtakala,
-        'LMT Correction': '${lmtCorrectionMinutes < 0 ? "-" : "+"}$lmtCorrection',
+        'LMT Correction':
+            '${lmtCorrectionMinutes < 0 ? "-" : "+"}$lmtCorrection',
         'Local Mean Time': AppFormatters.formatTime(lmt),
         'Time of Birth (GMT)': AppFormatters.formatTime(gmt),
       },
       avakahadaChakra: {
-        'Paya (Nakshatra)': AvakahadaService.getPaya(chart.houses.getHouseForLongitude(moon.longitude)),
+        'Paya (Nakshatra)': AvakahadaService.getPaya(
+          chart.houses.getHouseForLongitude(moon.longitude),
+        ),
         'Varna': AvakahadaService.getVarna(moonRashiIndex),
         'Yoni': AvakahadaService.getYoni(moonNakIndex),
         'Gana': AvakahadaService.getGana(moonNakIndex),
         'Vasya': AvakahadaService.getVashya(moonRashiIndex),
         'Nadi': AvakahadaService.getNadi(moonNakIndex),
-        'Dasha Balance': data.dashaData.vimshottari.mahadashas.first.lord, // Simplified
+        'Dasha Balance':
+            data.dashaData.vimshottari.mahadashas.first.lord, // Simplified
         'Lagna (Ascendant)': Rashi.fromIndex(ascendantIndex).name,
         'Lagna Lord': Rashi.fromIndex(ascendantIndex).lord.displayName,
         'Rashi (Moon Sign)': moon.zodiacSign,
         'Rashi Lord': Rashi.fromIndex(moonRashiIndex).lord.displayName,
-        'Nakshatra-Pada': '${moon.nakshatra}-${(moon.longitude % (360 / 27) / (360 / 27 / 4)).floor() + 1}',
+        'Nakshatra-Pada':
+            '${moon.nakshatra}-${(moon.longitude % (360 / 27) / (360 / 27 / 4)).floor() + 1}',
         'Nakshatra Lord': _getNakshatraLord(moonNakIndex),
       },
       panchangDetails: {
-        'Tithi': '${panchanga.tithi.paksha == Paksha.shukla ? 'Shukla' : 'Krishna'} ${panchanga.tithi.name}',
+        'Tithi':
+            '${panchanga.tithi.paksha == Paksha.shukla ? 'Shukla' : 'Krishna'} ${panchanga.tithi.name}',
         'Hindu Day': panchanga.vara.name,
-        'Paksha': panchanga.tithi.paksha == Paksha.shukla ? 'Shukla' : 'Krishna',
+        'Paksha': panchanga.tithi.paksha == Paksha.shukla
+            ? 'Shukla'
+            : 'Krishna',
         'Yoga': panchanga.yoga.name,
         'Karana': panchanga.karana.name,
-        'Sunrise': sunrise != null ? AppFormatters.formatTime(sunrise.toLocal()) : '--:--',
-        'Sunset': sunset != null ? AppFormatters.formatTime(sunset.toLocal()) : '--:--',
+        'Sunrise': sunrise != null
+            ? AppFormatters.formatTime(sunrise.toLocal())
+            : '--:--',
+        'Sunset': sunset != null
+            ? AppFormatters.formatTime(sunset.toLocal())
+            : '--:--',
       },
       additionalInfo: {
         'Julian Day': julianDay.toStringAsFixed(6),
@@ -133,7 +154,15 @@ class BirthDetailsService {
   }
 
   static String _getWeekdayName(int weekday) {
-    const names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const names = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
     return names[weekday - 1];
   }
 
@@ -152,7 +181,17 @@ class BirthDetailsService {
   }
 
   static String _getNakshatraLord(int index) {
-    const lords = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'];
+    const lords = [
+      'Ketu',
+      'Venus',
+      'Sun',
+      'Moon',
+      'Mars',
+      'Rahu',
+      'Jupiter',
+      'Saturn',
+      'Mercury',
+    ];
     return lords[index % 9];
   }
 
@@ -166,10 +205,14 @@ class BirthDetailsService {
     if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return 'Leo';
     if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return 'Virgo';
     if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) return 'Libra';
-    if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) return 'Scorpio';
-    if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return 'Sagittarius';
-    if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return 'Capricorn';
-    if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return 'Aquarius';
+    if ((month == 10 && day >= 23) || (month == 11 && day <= 21))
+      return 'Scorpio';
+    if ((month == 11 && day >= 22) || (month == 12 && day <= 21))
+      return 'Sagittarius';
+    if ((month == 12 && day >= 22) || (month == 1 && day <= 19))
+      return 'Capricorn';
+    if ((month == 1 && day >= 20) || (month == 2 && day <= 18))
+      return 'Aquarius';
     return 'Pisces';
   }
 }

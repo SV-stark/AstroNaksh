@@ -17,17 +17,12 @@ final router = GoRouter(
       path: '/loading',
       builder: (context, state) => const LoadingScreen(),
     ),
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: '/input',
-      builder: (context, state) => const InputScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/input', builder: (context, state) => const InputScreen()),
     GoRoute(
       path: '/chart',
-      builder: (context, state) => ChartScreen(birthData: state.extra as BirthData?),
+      builder: (context, state) =>
+          ChartScreen(birthData: state.extra as BirthData?),
     ),
     GoRoute(
       path: '/settings',

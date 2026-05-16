@@ -158,7 +158,9 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                         textAlign: TextAlign.center,
                       ),
                       Text(
-                        AppFormatters.formatTimeWithSeconds(chart.solarReturnTime),
+                        AppFormatters.formatTimeWithSeconds(
+                          chart.solarReturnTime,
+                        ),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Text(
@@ -201,7 +203,9 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
                         style: FluentTheme.of(context).typography.subtitle,
                       ),
                       Text(
-                        AppFormatters.formatTimeWithSeconds(chart.solarReturnTime),
+                        AppFormatters.formatTimeWithSeconds(
+                          chart.solarReturnTime,
+                        ),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Text(

@@ -23,22 +23,37 @@ class MangalDoshaDetector extends YogaDetector {
     if (mars == null) return BhangaResult.inactive(name);
 
     final badHouses = [1, 2, 4, 7, 8, 12];
-    
+
     // Check from Lagna
     final lagnaSign = (chart.baseChart.houses.ascendant / 30).floor() % 12;
-    final houseFromLagna = (mars.position.zodiacSignIndex - lagnaSign + 12) % 12 + 1;
+    final houseFromLagna =
+        (mars.position.zodiacSignIndex - lagnaSign + 12) % 12 + 1;
     final fromLagna = badHouses.contains(houseFromLagna);
 
     // Check from Moon
     final moon = chart.baseChart.planets[Planet.moon];
-    final fromMoon = moon != null && badHouses.contains((mars.position.zodiacSignIndex - moon.position.zodiacSignIndex + 12) % 12 + 1);
+    final fromMoon =
+        moon != null &&
+        badHouses.contains(
+          (mars.position.zodiacSignIndex - moon.position.zodiacSignIndex + 12) %
+                  12 +
+              1,
+        );
 
     // Check from Venus
     final venus = chart.baseChart.planets[Planet.venus];
-    final fromVenus = venus != null && badHouses.contains((mars.position.zodiacSignIndex - venus.position.zodiacSignIndex + 12) % 12 + 1);
+    final fromVenus =
+        venus != null &&
+        badHouses.contains(
+          (mars.position.zodiacSignIndex -
+                      venus.position.zodiacSignIndex +
+                      12) %
+                  12 +
+              1,
+        );
 
     final count = [fromLagna, fromMoon, fromVenus].where((x) => x).length;
-    
+
     if (count < 2) {
       return BhangaResult.inactive(name);
     }
@@ -50,7 +65,8 @@ class MangalDoshaDetector extends YogaDetector {
 
     // Check for cancellations
     final cancellations = <String>[];
-    if (mars.dignity == PlanetaryDignity.exalted || mars.dignity == PlanetaryDignity.ownSign) {
+    if (mars.dignity == PlanetaryDignity.exalted ||
+        mars.dignity == PlanetaryDignity.ownSign) {
       cancellations.add('Mars is strong (${mars.dignity.name})');
     }
     if (mars.position.zodiacSignIndex == Rashi.cancer.number) {

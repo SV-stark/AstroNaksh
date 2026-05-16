@@ -10,7 +10,8 @@ class Location with _$Location {
     required double longitude,
   }) = _Location;
 
-  factory Location.fromJson(Map<String, dynamic> json) => _$LocationFromJson(json);
+  factory Location.fromJson(Map<String, dynamic> json) =>
+      _$LocationFromJson(json);
 }
 
 @freezed
@@ -23,5 +24,6 @@ class BirthData with _$BirthData {
     @Default('') String timezone,
   }) = _BirthData;
 
-  factory BirthData.fromJson(Map<String, dynamic> json) => _$BirthDataFromJson(json);
+  factory BirthData.fromJson(Map<String, dynamic> json) =>
+      _$BirthDataFromJson(json);
 }

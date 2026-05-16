@@ -48,15 +48,23 @@ class DatabaseHelper {
             final columns = tableInfo.map((e) => e['name'] as String).toList();
 
             if (!columns.contains('locationName')) {
-              await db.execute('ALTER TABLE charts ADD COLUMN locationName TEXT');
-              AppEnvironment.log('DatabaseHelper: Added missing column locationName');
+              await db.execute(
+                'ALTER TABLE charts ADD COLUMN locationName TEXT',
+              );
+              AppEnvironment.log(
+                'DatabaseHelper: Added missing column locationName',
+              );
             }
             if (!columns.contains('timezone')) {
               await db.execute('ALTER TABLE charts ADD COLUMN timezone TEXT');
-              AppEnvironment.log('DatabaseHelper: Added missing column timezone');
+              AppEnvironment.log(
+                'DatabaseHelper: Added missing column timezone',
+              );
             }
           } catch (e) {
-            AppEnvironment.log('DatabaseHelper: Error verifying schema on open - $e');
+            AppEnvironment.log(
+              'DatabaseHelper: Error verifying schema on open - $e',
+            );
           }
 
           if (!db.isOpen) {
@@ -119,7 +127,6 @@ class DatabaseHelper {
       }
     }
   }
-
 
   Future<int> insertChart(Map<String, dynamic> row) async {
     try {

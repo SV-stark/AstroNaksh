@@ -15,7 +15,12 @@ class PitraDoshaDetector extends YogaDetector {
       'It can indicate karmic debts related to ancestors and challenges in personal progress.';
 
   @override
-  List<Planet> get keyPlanets => [Planet.sun, Planet.jupiter, Planet.meanNode, Planet.ketu];
+  List<Planet> get keyPlanets => [
+    Planet.sun,
+    Planet.jupiter,
+    Planet.meanNode,
+    Planet.ketu,
+  ];
 
   @override
   BhangaResult detect(CompleteChartData chart) {
@@ -24,17 +29,23 @@ class PitraDoshaDetector extends YogaDetector {
     final rahu = chart.baseChart.rahu;
     final ketu = chart.baseChart.ketu;
 
-    final nodeSigns = [rahu.position.zodiacSignIndex, (ketu.longitude / 30).floor() % 12];
-    
-    final isSunNode = sun != null && nodeSigns.contains(sun.position.zodiacSignIndex);
-    final isJupiterNode = jupiter != null && nodeSigns.contains(jupiter.position.zodiacSignIndex);
+    final nodeSigns = [
+      rahu.position.zodiacSignIndex,
+      (ketu.longitude / 30).floor() % 12,
+    ];
+
+    final isSunNode =
+        sun != null && nodeSigns.contains(sun.position.zodiacSignIndex);
+    final isJupiterNode =
+        jupiter != null && nodeSigns.contains(jupiter.position.zodiacSignIndex);
 
     final lagnaSign = (chart.baseChart.houses.ascendant / 30).floor() % 12;
     final l9 = Rashi.values[(lagnaSign + 8) % 12].lord;
     final l9Info = chart.baseChart.planets[l9];
     final isL9Bad = l9Info != null && [6, 8, 12].contains(l9Info.house);
 
-    if (!isSunNode && !isJupiterNode && !isL9Bad) return BhangaResult.inactive(name);
+    if (!isSunNode && !isJupiterNode && !isL9Bad)
+      return BhangaResult.inactive(name);
 
     final reasons = <String>[];
     if (isSunNode) reasons.add('Sun conjunct with Nodes');

@@ -15,7 +15,12 @@ class AdhiYogaDetector extends YogaDetector {
       'It grants leadership, status, victory over enemies, and lasting prosperity.';
 
   @override
-  List<Planet> get keyPlanets => [Planet.jupiter, Planet.venus, Planet.mercury, Planet.moon];
+  List<Planet> get keyPlanets => [
+    Planet.jupiter,
+    Planet.venus,
+    Planet.mercury,
+    Planet.moon,
+  ];
 
   @override
   BhangaResult detect(CompleteChartData chart) {
@@ -32,10 +37,13 @@ class AdhiYogaDetector extends YogaDetector {
       final info = chart.baseChart.planets[planet];
       if (info == null) continue;
 
-      final houseFromMoon = (info.position.zodiacSignIndex - moonSign + 12) % 12 + 1;
+      final houseFromMoon =
+          (info.position.zodiacSignIndex - moonSign + 12) % 12 + 1;
       if (targetHouses.contains(houseFromMoon)) {
         activePlanets.add(planet);
-        reasons.add('${planet.displayName} in the ${houseFromMoon}th house from Moon');
+        reasons.add(
+          '${planet.displayName} in the ${houseFromMoon}th house from Moon',
+        );
       }
     }
 
@@ -44,7 +52,7 @@ class AdhiYogaDetector extends YogaDetector {
     }
 
     final strength = activePlanets.length * 30.0;
-    
+
     return BhangaResult(
       name: name,
       description: description,
@@ -52,7 +60,8 @@ class AdhiYogaDetector extends YogaDetector {
       strength: strength.clamp(0, 100),
       status: strength >= 80 ? 'Powerful' : 'Active',
       cancellationReasons: reasons,
-      manifestationPeriod: 'Active during the Dashas of the participating benefics',
+      manifestationPeriod:
+          'Active during the Dashas of the participating benefics',
       peakDashaLord: activePlanets.first.displayName,
     );
   }

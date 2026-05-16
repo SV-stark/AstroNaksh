@@ -29,7 +29,7 @@ class Settings extends _$Settings {
     }
 
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Theme
     final themeModeString = prefs.getString(_themeModeKey);
     final themeMode = ThemeMode.values.firstWhere(
@@ -42,7 +42,9 @@ class Settings extends _$Settings {
     final chartSettingsString = prefs.getString(_chartSettingsKey);
     if (chartSettingsString != null) {
       try {
-        chartSettings = ChartCustomization.fromJson(jsonDecode(chartSettingsString));
+        chartSettings = ChartCustomization.fromJson(
+          jsonDecode(chartSettingsString),
+        );
       } catch (_) {}
     }
 
@@ -105,12 +107,11 @@ class Settings extends _$Settings {
   Future<void> _saveSetting(String key, String value) async {
     if (AppEnvironment.isPortable) {
       final db = ref.read(databaseProvider);
-      await db.into(db.settings).insertOnConflictUpdate(
-        SettingsCompanion(
-          key: Value(key),
-          value: Value(value),
-        ),
-      );
+      await db
+          .into(db.settings)
+          .insertOnConflictUpdate(
+            SettingsCompanion(key: Value(key), value: Value(value)),
+          );
     } else {
       final prefs = await SharedPreferences.getInstance();
       if (value == 'true' || value == 'false') {

@@ -53,10 +53,7 @@ class ProgenyScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Text(
               analysis.prediction,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.5,
-              ),
+              style: const TextStyle(fontSize: 14, height: 1.5),
             ),
           ),
           const SizedBox(height: 16),
@@ -155,7 +152,10 @@ class ProgenyScreen extends StatelessWidget {
                 ),
                 Text(
                   factor.description,
-                  style: TextStyle(color: Colors.grey.withAlpha(180), fontSize: 13),
+                  style: TextStyle(
+                    color: Colors.grey.withAlpha(180),
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),

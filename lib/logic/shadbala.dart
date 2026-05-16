@@ -43,7 +43,7 @@ class ShadbalaCalculator {
     final vimsopaka = strengthService.getAllPlanetsVimshopakBala(chart);
 
     final sunPos = chart.getPlanet(Planet.sun)?.longitude ?? 0.0;
-    
+
     final combustion = Planet.traditionalPlanets
         .filter((p) => p != Planet.sun)
         .associateWith((planet) {

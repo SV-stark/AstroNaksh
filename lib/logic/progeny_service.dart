@@ -44,57 +44,73 @@ class ProgenyService {
     // Overall assessment
     if (score >= 75) {
       buffer.write(
-          'Your birth chart indicates exceptionally strong and auspicious prospects for progeny. ');
+        'Your birth chart indicates exceptionally strong and auspicious prospects for progeny. ',
+      );
     } else if (score >= 60) {
       buffer.write(
-          'There are very positive and supportive planetary configurations for children in your chart. ');
+        'There are very positive and supportive planetary configurations for children in your chart. ',
+      );
     } else if (score >= 45) {
       buffer.write(
-          'The astrological factors suggest favorable prospects for family growth, with a balanced influence of planets. ');
+        'The astrological factors suggest favorable prospects for family growth, with a balanced influence of planets. ',
+      );
     } else if (score >= 30) {
       buffer.write(
-          'The analysis shows mixed results regarding progeny. While there are some supportive factors, certain planetary positions might cause some delays. ');
+        'The analysis shows mixed results regarding progeny. While there are some supportive factors, certain planetary positions might cause some delays. ',
+      );
     } else {
       buffer.write(
-          'The planetary configurations regarding progeny appear quite challenging. This suggests that parenthood may involve significant delays or may require specific traditional remedies and medical guidance. ');
+        'The planetary configurations regarding progeny appear quite challenging. This suggests that parenthood may involve significant delays or may require specific traditional remedies and medical guidance. ',
+      );
     }
 
     // Jupiter Analysis (Karaka)
-    final jupiter = factors.firstWhere((f) => f.name == 'Jupiter',
-        orElse: () => ProgenyFactor(name: '', score: 0, description: ''));
+    final jupiter = factors.firstWhere(
+      (f) => f.name == 'Jupiter',
+      orElse: () => ProgenyFactor(name: '', score: 0, description: ''),
+    );
     if (jupiter.score >= 70) {
       buffer.write(
-          'Jupiter, the natural significator for children, is powerfully placed, acting as a divine shield and blessing for your lineage. ');
+        'Jupiter, the natural significator for children, is powerfully placed, acting as a divine shield and blessing for your lineage. ',
+      );
     } else if (jupiter.score < 40) {
       buffer.write(
-          'The current placement of Jupiter is somewhat weak, which often correlates with delays or the need for more effort in conceiving. ');
+        'The current placement of Jupiter is somewhat weak, which often correlates with delays or the need for more effort in conceiving. ',
+      );
     }
 
     // 5th House Analysis
-    final fifthHouse = factors.firstWhere((f) => f.name == '5th House',
-        orElse: () => ProgenyFactor(name: '', score: 0, description: ''));
+    final fifthHouse = factors.firstWhere(
+      (f) => f.name == '5th House',
+      orElse: () => ProgenyFactor(name: '', score: 0, description: ''),
+    );
     if (fifthHouse.description.contains('Saturn')) {
       buffer.write(
-          'The influence of Saturn on the 5th house indicates that patience will be key, as results may be slow but stable. ');
+        'The influence of Saturn on the 5th house indicates that patience will be key, as results may be slow but stable. ',
+      );
     }
     if (fifthHouse.description.contains('Jupiter') ||
         fifthHouse.description.contains('Venus')) {
       buffer.write(
-          'Benefic influences on your 5th house suggest that the children will bring happiness and grace to the family. ');
+        'Benefic influences on your 5th house suggest that the children will bring happiness and grace to the family. ',
+      );
     }
     if (fifthHouse.description.contains('Ketu') ||
         fifthHouse.description.contains('Rahu')) {
       buffer.write(
-          'The presence of nodal planets suggests some unconventional or unexpected developments in progeny matters. ');
+        'The presence of nodal planets suggests some unconventional or unexpected developments in progeny matters. ',
+      );
     }
 
     // Conclusion
     if (score >= 50) {
       buffer.write(
-          '\n\nIn conclusion, your chart reflects a promising and fulfilling path toward parenthood. Maintaining a healthy lifestyle and following the suggested spiritual remedies will further enhance these positive vibrations.');
+        '\n\nIn conclusion, your chart reflects a promising and fulfilling path toward parenthood. Maintaining a healthy lifestyle and following the suggested spiritual remedies will further enhance these positive vibrations.',
+      );
     } else {
       buffer.write(
-          '\n\nWhile the astrological indicators suggest hurdles, do not be discouraged. Astrological challenges are often meant to be overcome through specific remedies, perseverance, and faith.');
+        '\n\nWhile the astrological indicators suggest hurdles, do not be discouraged. Astrological challenges are often meant to be overcome through specific remedies, perseverance, and faith.',
+      );
     }
 
     return buffer.toString();

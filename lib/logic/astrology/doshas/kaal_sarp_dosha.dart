@@ -59,7 +59,7 @@ class KaalSarpDoshaDetector extends YogaDetector {
 
     // Check for cancellations (Bhangas)
     final cancellations = <String>[];
-    
+
     // 1. Planet conjunct Nodes (Axis broken)
     for (final p in visiblePlanets) {
       final pInfo = chart.baseChart.planets[p];
@@ -67,9 +67,11 @@ class KaalSarpDoshaDetector extends YogaDetector {
       final pSign = (pInfo.position.longitude / 30).floor();
       final rahuSign = (rahu.longitude / 30).floor();
       final ketuSign = (ketu.longitude / 30).floor();
-      
+
       if (pSign == rahuSign || pSign == ketuSign) {
-        cancellations.add('Axis broken: ${p.displayName} is conjunct with Nodes');
+        cancellations.add(
+          'Axis broken: ${p.displayName} is conjunct with Nodes',
+        );
       }
     }
 
@@ -77,7 +79,9 @@ class KaalSarpDoshaDetector extends YogaDetector {
     final lagnaSign = (chart.baseChart.houses.ascendant / 30).floor() % 12;
     final lagnaLord = Rashi.values[lagnaSign].lord;
     final l1Info = chart.baseChart.planets[lagnaLord];
-    if (l1Info != null && (l1Info.dignity == PlanetaryDignity.exalted || l1Info.dignity == PlanetaryDignity.ownSign)) {
+    if (l1Info != null &&
+        (l1Info.dignity == PlanetaryDignity.exalted ||
+            l1Info.dignity == PlanetaryDignity.ownSign)) {
       cancellations.add('Lagna Lord is strong (${l1Info.dignity.name})');
     }
 
@@ -91,7 +95,8 @@ class KaalSarpDoshaDetector extends YogaDetector {
       strength: strength,
       status: isCancelled ? 'Cancelled' : 'Active',
       cancellationReasons: cancellations,
-      manifestationPeriod: 'Generally lifelong, intensified during Rahu/Ketu Dashas',
+      manifestationPeriod:
+          'Generally lifelong, intensified during Rahu/Ketu Dashas',
       peakDashaLord: 'Rahu',
     );
   }

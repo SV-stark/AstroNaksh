@@ -25,16 +25,20 @@ class GuruChandalDoshaDetector extends YogaDetector {
 
     if (jupiter == null) return BhangaResult.inactive(name);
 
-    final isConjunctRahu = jupiter.position.zodiacSignIndex == rahu.position.zodiacSignIndex;
-    final isConjunctKetu = jupiter.position.zodiacSignIndex == (ketu.longitude / 30).floor() % 12;
+    final isConjunctRahu =
+        jupiter.position.zodiacSignIndex == rahu.position.zodiacSignIndex;
+    final isConjunctKetu =
+        jupiter.position.zodiacSignIndex == (ketu.longitude / 30).floor() % 12;
 
     if (!isConjunctRahu && !isConjunctKetu) return BhangaResult.inactive(name);
 
     final nodeName = isConjunctRahu ? 'Rahu' : 'Ketu';
-    
+
     // Check for cancellation: Strong Jupiter (Own sign or Exalted)
-    final isCancelled = jupiter.dignity == PlanetaryDignity.exalted || jupiter.dignity == PlanetaryDignity.ownSign;
-    
+    final isCancelled =
+        jupiter.dignity == PlanetaryDignity.exalted ||
+        jupiter.dignity == PlanetaryDignity.ownSign;
+
     final strength = isCancelled ? 25.0 : 75.0;
 
     return BhangaResult(
@@ -43,7 +47,9 @@ class GuruChandalDoshaDetector extends YogaDetector {
       isActive: !isCancelled,
       strength: strength,
       status: isCancelled ? 'Cancelled / Mild' : 'Active',
-      cancellationReasons: isCancelled ? ['Jupiter is strong (${jupiter.dignity.name}), mitigating the dosha'] : ['Jupiter is conjunct with $nodeName'],
+      cancellationReasons: isCancelled
+          ? ['Jupiter is strong (${jupiter.dignity.name}), mitigating the dosha']
+          : ['Jupiter is conjunct with $nodeName'],
       manifestationPeriod: 'Active during Jupiter and $nodeName Dashas',
       peakDashaLord: 'Jupiter',
     );

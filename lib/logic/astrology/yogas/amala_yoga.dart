@@ -15,7 +15,12 @@ class AmalaYogaDetector extends YogaDetector {
       'It indicates a spotless reputation, professional success, and virtuous conduct.';
 
   @override
-  List<Planet> get keyPlanets => [Planet.jupiter, Planet.venus, Planet.mercury, Planet.moon];
+  List<Planet> get keyPlanets => [
+    Planet.jupiter,
+    Planet.venus,
+    Planet.mercury,
+    Planet.moon,
+  ];
 
   @override
   BhangaResult detect(CompleteChartData chart) {
@@ -39,7 +44,8 @@ class AmalaYogaDetector extends YogaDetector {
       for (final planet in benefics) {
         final info = chart.baseChart.planets[planet];
         if (info == null) continue;
-        final houseFromMoon = (info.position.zodiacSignIndex - moonSign + 12) % 12 + 1;
+        final houseFromMoon =
+            (info.position.zodiacSignIndex - moonSign + 12) % 12 + 1;
         if (houseFromMoon == 10) {
           if (!activePlanets.contains(planet)) {
             activePlanets.add(planet);
@@ -62,7 +68,8 @@ class AmalaYogaDetector extends YogaDetector {
       strength: strength.clamp(0, 100),
       status: strength >= 80 ? 'Strong' : 'Active',
       cancellationReasons: reasons,
-      manifestationPeriod: 'Active during the Dasha of the participating benefic in 10th',
+      manifestationPeriod:
+          'Active during the Dasha of the participating benefic in 10th',
       peakDashaLord: activePlanets.first.displayName,
     );
   }

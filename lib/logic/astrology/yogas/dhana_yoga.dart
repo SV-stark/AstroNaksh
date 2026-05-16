@@ -17,7 +17,12 @@ class DhanaYogaDetector implements YogaDetector {
       'Includes Vasumathi Yoga, Pushkala Yoga, and Akhanda Samrajya Yoga.';
 
   @override
-  List<Planet> get keyPlanets => [Planet.jupiter, Planet.venus, Planet.mercury, Planet.moon];
+  List<Planet> get keyPlanets => [
+    Planet.jupiter,
+    Planet.venus,
+    Planet.mercury,
+    Planet.moon,
+  ];
 
   @override
   BhangaResult detect(CompleteChartData chart) {
@@ -31,8 +36,10 @@ class DhanaYogaDetector implements YogaDetector {
     var vasumathiMoon = true;
     for (final b in ['Jupiter', 'Venus', 'Mercury']) {
       final pSign = chart.getPlanetSign(b);
-      if (!upachayas.contains((pSign - lagnaSign + 12) % 12)) vasumathiLagna = false;
-      if (!upachayas.contains((pSign - moonSign + 12) % 12)) vasumathiMoon = false;
+      if (!upachayas.contains((pSign - lagnaSign + 12) % 12))
+        vasumathiLagna = false;
+      if (!upachayas.contains((pSign - moonSign + 12) % 12))
+        vasumathiMoon = false;
     }
     if (vasumathiLagna || vasumathiMoon) {
       results.add('Vasumathi Yoga (Benefics in Upachayas)');
@@ -42,15 +49,21 @@ class DhanaYogaDetector implements YogaDetector {
     final lagnaLord = chart.getHouseLord(1);
     final lagnaLordSign = chart.getPlanetSign(lagnaLord);
     if (chart.isExalted(lagnaLord, lagnaLordSign)) {
-      if (chart.isOwnSign('Moon', moonSign) || chart.isExalted('Moon', moonSign)) {
+      if (chart.isOwnSign('Moon', moonSign) ||
+          chart.isExalted('Moon', moonSign)) {
         results.add('Pushkala Yoga (Strong Lagna Lord & Moon)');
       }
     }
 
     // 3. Akhanda Samrajya Yoga
     final jupSign = chart.getPlanetSign('Jupiter');
-    if (chart.isOwnSign('Jupiter', jupSign) || chart.isExalted('Jupiter', jupSign)) {
-      final lords = [chart.getHouseLord(2), chart.getHouseLord(9), chart.getHouseLord(11)];
+    if (chart.isOwnSign('Jupiter', jupSign) ||
+        chart.isExalted('Jupiter', jupSign)) {
+      final lords = [
+        chart.getHouseLord(2),
+        chart.getHouseLord(9),
+        chart.getHouseLord(11),
+      ];
       var conditionMet = false;
       for (final lord in lords) {
         final sign = chart.getPlanetSign(lord);

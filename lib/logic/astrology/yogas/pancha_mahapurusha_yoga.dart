@@ -15,8 +15,13 @@ class PanchaMahapurushaYogaDetector extends YogaDetector {
       'is in its own sign or exalted and in a Kendra from the Lagna.';
 
   @override
-  List<Planet> get keyPlanets =>
-      [Planet.mars, Planet.mercury, Planet.jupiter, Planet.venus, Planet.saturn];
+  List<Planet> get keyPlanets => [
+    Planet.mars,
+    Planet.mercury,
+    Planet.jupiter,
+    Planet.venus,
+    Planet.saturn,
+  ];
 
   @override
   BhangaResult detect(CompleteChartData chart) {
@@ -39,7 +44,8 @@ class PanchaMahapurushaYogaDetector extends YogaDetector {
 
       if (info == null) continue;
 
-      final isStrong = info.dignity == PlanetaryDignity.exalted ||
+      final isStrong =
+          info.dignity == PlanetaryDignity.exalted ||
           info.dignity == PlanetaryDignity.ownSign;
       final isKendra = [1, 4, 7, 10].contains(info.house);
 
@@ -47,7 +53,8 @@ class PanchaMahapurushaYogaDetector extends YogaDetector {
         activePlanets.add(planet);
         results.add(yogaName);
         reasons.add(
-            '$yogaName: ${planet.displayName} is in its ${info.dignity == PlanetaryDignity.exalted ? "Exaltation" : "Own"} sign in a Kendra (${info.house}th house)');
+          '$yogaName: ${planet.displayName} is in its ${info.dignity == PlanetaryDignity.exalted ? "Exaltation" : "Own"} sign in a Kendra (${info.house}th house)',
+        );
       }
     }
 
@@ -64,7 +71,8 @@ class PanchaMahapurushaYogaDetector extends YogaDetector {
       strength: strength.clamp(0, 100),
       status: strength >= 80 ? 'Strong' : 'Active',
       cancellationReasons: reasons,
-      manifestationPeriod: 'Active during the Dashas of the participating Mahapurusha planets',
+      manifestationPeriod:
+          'Active during the Dashas of the participating Mahapurusha planets',
       peakDashaLord: activePlanets.first.displayName,
     );
   }

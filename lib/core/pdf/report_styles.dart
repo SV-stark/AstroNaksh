@@ -8,7 +8,9 @@ class ReportStyles {
   static const accentColor = PdfColor.fromInt(0xFFB8860B); // Dark Goldenrod
   static const textColor = PdfColor.fromInt(0xFF212121); // Grey 900
   static const secondaryTextColor = PdfColor.fromInt(0xFF757575); // Grey 600
-  static const lightBackgroundColor = PdfColor.fromInt(0xFFFFF8E1); // Amber 50 (subtle cream)
+  static const lightBackgroundColor = PdfColor.fromInt(
+    0xFFFFF8E1,
+  ); // Amber 50 (subtle cream)
   static const white = PdfColors.white;
   static const grey = PdfColors.grey;
 

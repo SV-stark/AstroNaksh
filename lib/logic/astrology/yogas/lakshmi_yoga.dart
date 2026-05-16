@@ -28,10 +28,13 @@ class LakshmiYogaDetector extends YogaDetector {
 
     if (venus == null || lord == null) return BhangaResult.inactive(name);
 
-    final isSameSign = venus.position.zodiacSignIndex == lord.position.zodiacSignIndex;
-    final isVenusStrong = venus.dignity == PlanetaryDignity.exalted ||
+    final isSameSign =
+        venus.position.zodiacSignIndex == lord.position.zodiacSignIndex;
+    final isVenusStrong =
+        venus.dignity == PlanetaryDignity.exalted ||
         venus.dignity == PlanetaryDignity.ownSign;
-    final isLordStrong = lord.dignity == PlanetaryDignity.exalted ||
+    final isLordStrong =
+        lord.dignity == PlanetaryDignity.exalted ||
         lord.dignity == PlanetaryDignity.ownSign;
 
     if (isSameSign && isVenusStrong && isLordStrong) {

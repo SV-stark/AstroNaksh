@@ -133,13 +133,13 @@ class _ChartScreenState extends State<ChartScreen> {
                       .where(
                         (s) =>
                             s.name.toLowerCase().contains(
-                               searchQuery.toLowerCase(),
+                              searchQuery.toLowerCase(),
                             ) ||
                             s.id.toLowerCase().contains(
-                               searchQuery.toLowerCase(),
+                              searchQuery.toLowerCase(),
                             ) ||
                             s.description.toLowerCase().contains(
-                               searchQuery.toLowerCase(),
+                              searchQuery.toLowerCase(),
                             ),
                       )
                       .toList();
@@ -164,51 +164,49 @@ class _ChartScreenState extends State<ChartScreen> {
                     ),
                     const SizedBox(height: 16),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: filteredSystems.length,
-                        itemBuilder: (context, index) {
-                          final system = filteredSystems[index];
-                          final isSelected =
-                              SettingsManager().chartSettings.ayanamsaSystem
-                                  .toLowerCase() ==
-                              system.id.toLowerCase();
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: RadioButton(
-                              checked: isSelected,
-                              content: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    system.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  if (system.description != system.name)
-                                    Text(
-                                      system.description,
-                                      style: FluentTheme.of(
-                                        context,
-                                      ).typography.caption,
-                                    ),
-                                ],
-                              ),
-                              onChanged: (v) {
-                                if (v == true) {
-                                  SettingsManager()
-                                          .chartSettings
-                                          .ayanamsaSystem =
-                                      system.id;
-                                  Navigator.pop(context);
-                                  _loadChartData();
-                                }
-                              },
-                            ),
-                          );
+                      child: RadioGroup<String>(
+                        groupValue:
+                            SettingsManager().chartSettings.ayanamsaSystem,
+                        onChanged: (v) {
+                          if (v != null) {
+                            SettingsManager().chartSettings.ayanamsaSystem = v;
+                            Navigator.pop(context);
+                            _loadChartData();
+                          }
                         },
+                        child: ListView.builder(
+                          itemCount: filteredSystems.length,
+                          itemBuilder: (context, index) {
+                            final system = filteredSystems[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4.0,
+                              ),
+                              child: RadioButton<String>(
+                                value: system.id,
+                                content: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      system.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    if (system.description != system.name)
+                                      Text(
+                                        system.description,
+                                        style: FluentTheme.of(
+                                          context,
+                                        ).typography.caption,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -230,7 +228,7 @@ class _ChartScreenState extends State<ChartScreen> {
   void _showBirthDetails() async {
     final data = await _chartDataFuture;
     if (data == null || !mounted) return;
-    
+
     Navigator.push(
       context,
       FluentPageRoute(
@@ -436,7 +434,9 @@ class _ChartScreenState extends State<ChartScreen> {
           children: [
             m.DrawerHeader(
               decoration: m.BoxDecoration(
-                color: FluentTheme.of(context).accentColor.withValues(alpha: 0.1),
+                color: FluentTheme.of(
+                  context,
+                ).accentColor.withValues(alpha: 0.1),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -658,10 +658,7 @@ class _ChartScreenState extends State<ChartScreen> {
         return ScaffoldPage(
           header: PageHeader(
             title: const Flexible(
-              child: Text(
-                'Vedic Chart',
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text('Vedic Chart', overflow: TextOverflow.ellipsis),
             ),
             leading: ResponsiveHelper.useMobileLayout(context)
                 ? IconButton(
@@ -669,8 +666,10 @@ class _ChartScreenState extends State<ChartScreen> {
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   )
                 : IconButton(
-                    icon:
-                        const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+                    icon: const Icon(
+                      FluentIcons.back,
+                      semanticLabel: 'Go back',
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
             commandBar: CommandBar(
@@ -741,7 +740,9 @@ class _ChartScreenState extends State<ChartScreen> {
                               ),
                               MenuFlyoutItem(
                                 text: const Text('Ashtakavarga'),
-                                leading: const Icon(FluentIcons.grid_view_small),
+                                leading: const Icon(
+                                  FluentIcons.grid_view_small,
+                                ),
                                 onPressed: () => _navigateTo('ashtakavarga'),
                               ),
                               MenuFlyoutItem(
@@ -784,7 +785,8 @@ class _ChartScreenState extends State<ChartScreen> {
                               MenuFlyoutItem(
                                 text: const Text('Planetary Maitri'),
                                 leading: const Icon(FluentIcons.people),
-                                onPressed: () => _navigateTo('planetary_maitri'),
+                                onPressed: () =>
+                                    _navigateTo('planetary_maitri'),
                               ),
                               MenuFlyoutItem(
                                 text: const Text('Retrograde'),
@@ -794,7 +796,8 @@ class _ChartScreenState extends State<ChartScreen> {
                               MenuFlyoutItem(
                                 text: const Text('Sudarshan Chakra'),
                                 leading: const Icon(FluentIcons.view_all),
-                                onPressed: () => _navigateTo('sudarshan_chakra'),
+                                onPressed: () =>
+                                    _navigateTo('sudarshan_chakra'),
                               ),
                               MenuFlyoutItem(
                                 text: const Text('Comparison'),
@@ -803,7 +806,9 @@ class _ChartScreenState extends State<ChartScreen> {
                               ),
                               MenuFlyoutItem(
                                 text: const Text('Progeny'),
-                                leading: const Icon(FluentIcons.reminder_person),
+                                leading: const Icon(
+                                  FluentIcons.reminder_person,
+                                ),
                                 onPressed: () => _navigateTo('progeny'),
                               ),
                               MenuFlyoutItem(
@@ -839,7 +844,8 @@ class _ChartScreenState extends State<ChartScreen> {
                               height: 300,
                               child: SingleChildScrollView(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     _buildMobileAnalysisLink(
                                       'Shadbala',
@@ -930,7 +936,8 @@ class _ChartScreenState extends State<ChartScreen> {
                       final newData = await Navigator.push(
                         context,
                         FluentPageRoute(
-                          builder: (context) => const BirthTimeRectifierScreen(),
+                          builder: (context) =>
+                              const BirthTimeRectifierScreen(),
                           settings: RouteSettings(arguments: _birthData),
                         ),
                       );
@@ -968,7 +975,8 @@ class _ChartScreenState extends State<ChartScreen> {
                               Button(
                                 onPressed: () async {
                                   Navigator.pop(context);
-                                  if (_d1ChartKey.currentContext == null) return;
+                                  if (_d1ChartKey.currentContext == null)
+                                    return;
                                   try {
                                     await ChartShareService.shareChartImage(
                                       _d1ChartKey,
@@ -1068,7 +1076,8 @@ class _ChartScreenState extends State<ChartScreen> {
                               Button(
                                 onPressed: () async {
                                   Navigator.pop(context);
-                                  if (_d1ChartKey.currentContext == null) return;
+                                  if (_d1ChartKey.currentContext == null)
+                                    return;
                                   try {
                                     await ChartShareService.shareChartImage(
                                       _d1ChartKey,
@@ -1149,7 +1158,9 @@ class _ChartScreenState extends State<ChartScreen> {
                     },
                   ),
                   CommandBarButton(
-                    icon: Icon(_showAspects ? FluentIcons.view : FluentIcons.hide),
+                    icon: Icon(
+                      _showAspects ? FluentIcons.view : FluentIcons.hide,
+                    ),
                     label: Text(_showAspects ? 'Hide Aspects' : 'Show Aspects'),
                     onPressed: () {
                       setState(() {
@@ -1200,7 +1211,7 @@ class _ChartScreenState extends State<ChartScreen> {
                                     'Transit',
                                     'transit',
                                     FluentIcons.history,
-                                    ),
+                                  ),
                                   _buildMobileAnalysisLink(
                                     'Varshaphal',
                                     'varshaphal',
@@ -1260,7 +1271,8 @@ class _ChartScreenState extends State<ChartScreen> {
                       final newData = await Navigator.push(
                         context,
                         FluentPageRoute(
-                          builder: (context) => const BirthTimeRectifierScreen(),
+                          builder: (context) =>
+                              const BirthTimeRectifierScreen(),
                           settings: RouteSettings(arguments: _birthData),
                         ),
                       );
@@ -1691,10 +1703,7 @@ class _ChartScreenState extends State<ChartScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'KP System',
-            style: FluentTheme.of(context).typography.subtitle,
-          ),
+          Text('KP System', style: FluentTheme.of(context).typography.subtitle),
           const SizedBox(height: 8),
           Text(
             'Lagna: ${_getAscendantSign(data.baseChart)}',
@@ -3562,7 +3571,9 @@ class _ChartScreenState extends State<ChartScreen> {
                         child: Text(
                           status.join(' '),
                           style: TextStyle(
-                            color: status.contains('R') ? m.Colors.orange : null,
+                            color: status.contains('R')
+                                ? m.Colors.orange
+                                : null,
                             fontWeight: status.isNotEmpty
                                 ? FontWeight.bold
                                 : null,
@@ -3882,7 +3893,9 @@ class _ChartScreenState extends State<ChartScreen> {
                           shadbalaStrength: shadbalaStrength,
                         );
                         final net = ishta - kashta;
-                        final netColor = net > 0 ? m.Colors.green : m.Colors.red;
+                        final netColor = net > 0
+                            ? m.Colors.green
+                            : m.Colors.red;
                         return Container(
                           margin: const EdgeInsets.only(bottom: 3),
                           padding: const EdgeInsets.symmetric(
@@ -3917,7 +3930,9 @@ class _ChartScreenState extends State<ChartScreen> {
                                 flex: 2,
                                 child: Text(
                                   '${(kashta * 100).toStringAsFixed(0)}%',
-                                  style: const TextStyle(color: m.Colors.orange),
+                                  style: const TextStyle(
+                                    color: m.Colors.orange,
+                                  ),
                                 ),
                               ),
                               Expanded(
@@ -4096,7 +4111,9 @@ class _ChartScreenState extends State<ChartScreen> {
                                         children: [
                                           Container(
                                             decoration: BoxDecoration(
-                                              color: m.Colors.grey.withAlpha(40),
+                                              color: m.Colors.grey.withAlpha(
+                                                40,
+                                              ),
                                               borderRadius:
                                                   BorderRadius.circular(3),
                                             ),

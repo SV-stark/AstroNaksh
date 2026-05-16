@@ -35,7 +35,8 @@ class ShrapitDoshaDetector extends YogaDetector {
       strength: 80.0,
       status: 'Active',
       cancellationReasons: ['Saturn and Rahu are in conjunction'],
-      manifestationPeriod: 'Generally lifelong, intensified during Saturn or Rahu Dashas',
+      manifestationPeriod:
+          'Generally lifelong, intensified during Saturn or Rahu Dashas',
       peakDashaLord: 'Saturn',
     );
   }

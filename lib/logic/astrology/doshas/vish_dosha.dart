@@ -30,7 +30,7 @@ class VishDoshaDetector extends YogaDetector {
 
     // Check for cancellation: Benefic aspect or placement in good house
     final isCancelled = moon.house == 4 || moon.house == 9 || moon.house == 11;
-    
+
     final strength = isCancelled ? 30.0 : 70.0;
 
     return BhangaResult(
@@ -39,7 +39,9 @@ class VishDoshaDetector extends YogaDetector {
       isActive: !isCancelled,
       strength: strength,
       status: isCancelled ? 'Cancelled / Weak' : 'Active',
-      cancellationReasons: isCancelled ? ['Moon is in a strong house (${moon.house})'] : ['Moon and Saturn are in conjunction'],
+      cancellationReasons: isCancelled
+          ? ['Moon is in a strong house (${moon.house})']
+          : ['Moon and Saturn are in conjunction'],
       manifestationPeriod: 'Active during Moon and Saturn Dashas',
       peakDashaLord: 'Saturn',
     );

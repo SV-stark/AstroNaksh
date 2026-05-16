@@ -10,7 +10,7 @@ class AppFormatters {
   static String formatTime(DateTime dateTime) {
     return DateFormat('hh:mm a').format(dateTime);
   }
-  
+
   /// Format date and time as DD/MM/YYYY, hh:mm AM/PM
   static String formatDateTime(DateTime dateTime) {
     return DateFormat('dd/MM/yyyy, hh:mm a').format(dateTime);

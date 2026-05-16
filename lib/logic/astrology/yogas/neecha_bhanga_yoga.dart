@@ -22,7 +22,7 @@ class NeechaBhangaYogaDetector implements YogaDetector {
   @override
   BhangaResult detect(CompleteChartData chart) {
     final results = <String>[];
-    
+
     final planets = [
       'Sun',
       'Moon',
@@ -36,9 +36,15 @@ class NeechaBhangaYogaDetector implements YogaDetector {
     for (final planet in planets) {
       final sign = chart.getPlanetSign(planet);
       if (chart.isDebilitated(planet, sign)) {
-        final cancellationReasons = _getCancellationReasons(chart, planet, sign);
+        final cancellationReasons = _getCancellationReasons(
+          chart,
+          planet,
+          sign,
+        );
         if (cancellationReasons.isNotEmpty) {
-          results.add('Neecha Bhanga Raja Yoga ($planet: ${cancellationReasons.join(", ")})');
+          results.add(
+            'Neecha Bhanga Raja Yoga ($planet: ${cancellationReasons.join(", ")})',
+          );
         }
       }
     }
@@ -57,7 +63,11 @@ class NeechaBhangaYogaDetector implements YogaDetector {
     );
   }
 
-  List<String> _getCancellationReasons(CompleteChartData chart, String planet, int sign) {
+  List<String> _getCancellationReasons(
+    CompleteChartData chart,
+    String planet,
+    int sign,
+  ) {
     final reasons = <String>[];
     final debilSignLordIndex = chart.getSignLord(sign);
     final debilSignLord = Planet.values[debilSignLordIndex].name;

@@ -121,7 +121,7 @@ class _BirthDetailsScreenState extends State<BirthDetailsScreen> {
     AccentColor? color,
   }) {
     final theme = FluentTheme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -170,7 +170,10 @@ class _BirthDetailsScreenState extends State<BirthDetailsScreen> {
                         : BorderSide.none,
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Expanded(

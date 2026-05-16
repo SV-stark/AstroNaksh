@@ -32,8 +32,11 @@ class DaridraDoshaDetector extends YogaDetector {
     // Check for cancellation: Strong Lagna lord or Jupiter aspect
     final l1 = Rashi.values[lagnaSign].lord;
     final l1Info = chart.baseChart.planets[l1];
-    final isCancelled = l1Info != null && (l1Info.dignity == PlanetaryDignity.exalted || l1Info.dignity == PlanetaryDignity.ownSign);
-    
+    final isCancelled =
+        l1Info != null &&
+        (l1Info.dignity == PlanetaryDignity.exalted ||
+            l1Info.dignity == PlanetaryDignity.ownSign);
+
     final strength = isCancelled ? 25.0 : 65.0;
 
     return BhangaResult(
@@ -42,7 +45,9 @@ class DaridraDoshaDetector extends YogaDetector {
       isActive: !isCancelled,
       strength: strength,
       status: isCancelled ? 'Cancelled' : 'Active',
-      cancellationReasons: isCancelled ? ['Strong Lagna Lord mitigates financial struggles'] : ['11th Lord in ${l11Info.house}th house'],
+      cancellationReasons: isCancelled
+          ? ['Strong Lagna Lord mitigates financial struggles']
+          : ['11th Lord in ${l11Info.house}th house'],
       manifestationPeriod: 'Felt during 11th Lord Dasha',
       peakDashaLord: l11.displayName,
     );

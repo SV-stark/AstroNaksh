@@ -74,20 +74,20 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
   @override
   Widget build(BuildContext context) {
     return NavigationView(
-      appBar: NavigationAppBar(
-        leading: ResponsiveHelper.useMobileLayout(context)
-            ? null
-            : IconButton(
+      titleBar: TitleBar(
+        title: Row(
+          children: [
+            if (!ResponsiveHelper.useMobileLayout(context))
+              IconButton(
                 icon: const Icon(FluentIcons.back),
                 onPressed: () => Navigator.pop(context),
               ),
-        title: Row(
-          children: [
             if (ResponsiveHelper.useMobileLayout(context))
               IconButton(
                 icon: const Icon(FluentIcons.back),
                 onPressed: () => Navigator.pop(context),
               ),
+            const SizedBox(width: 8),
             const Text('Gochara Vedha'),
           ],
         ),
@@ -234,7 +234,10 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
             color: color,
           ),
         ),
-        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.withAlpha(180))),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: Colors.grey.withAlpha(180)),
+        ),
       ],
     );
   }

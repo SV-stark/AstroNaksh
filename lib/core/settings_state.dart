@@ -13,5 +13,6 @@ class SettingsState with _$SettingsState {
     @Default(false) bool hasSeenTutorial,
   }) = _SettingsState;
 
-  factory SettingsState.fromJson(Map<String, dynamic> json) => _$SettingsStateFromJson(json);
+  factory SettingsState.fromJson(Map<String, dynamic> json) =>
+      _$SettingsStateFromJson(json);
 }

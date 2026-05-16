@@ -254,15 +254,21 @@ class MatchingService {
     final rajjuGood = extras
         .firstWhere(
           (e) => e.name == 'Rajju Dosha',
-          orElse: () =>
-              const ExtraMatchingCheck(name: '', isFavorable: true, description: ''),
+          orElse: () => const ExtraMatchingCheck(
+            name: '',
+            isFavorable: true,
+            description: '',
+          ),
         )
         .isFavorable;
     final vedhaGood = extras
         .firstWhere(
           (e) => e.name.contains('Vedha'),
-          orElse: () =>
-              const ExtraMatchingCheck(name: '', isFavorable: true, description: ''),
+          orElse: () => const ExtraMatchingCheck(
+            name: '',
+            isFavorable: true,
+            description: '',
+          ),
         )
         .isFavorable;
     return rajjuGood && vedhaGood;

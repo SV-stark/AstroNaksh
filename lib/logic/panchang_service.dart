@@ -328,7 +328,9 @@ class PanchangService {
       results.add(
         PanchangInauspicious(
           name: 'Rahukalam',
-          startTime: AppFormatters.formatTime(periods.rahukalam!.start.toLocal()),
+          startTime: AppFormatters.formatTime(
+            periods.rahukalam!.start.toLocal(),
+          ),
           endTime: AppFormatters.formatTime(periods.rahukalam!.end.toLocal()),
         ),
       );
@@ -337,7 +339,9 @@ class PanchangService {
       results.add(
         PanchangInauspicious(
           name: 'Gulikalam',
-          startTime: AppFormatters.formatTime(periods.gulikalam!.start.toLocal()),
+          startTime: AppFormatters.formatTime(
+            periods.gulikalam!.start.toLocal(),
+          ),
           endTime: AppFormatters.formatTime(periods.gulikalam!.end.toLocal()),
         ),
       );
@@ -346,7 +350,9 @@ class PanchangService {
       results.add(
         PanchangInauspicious(
           name: 'Yamagandam',
-          startTime: AppFormatters.formatTime(periods.yamagandam!.start.toLocal()),
+          startTime: AppFormatters.formatTime(
+            periods.yamagandam!.start.toLocal(),
+          ),
           endTime: AppFormatters.formatTime(periods.yamagandam!.end.toLocal()),
         ),
       );

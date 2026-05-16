@@ -107,11 +107,8 @@ class _AstroNakshAppState extends ConsumerState<AstroNakshApp> {
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
-        supportedLocales: const [
-          Locale('en', 'US'),
-        ],
+        supportedLocales: const [Locale('en', 'US')],
       ),
-
     );
   }
 }

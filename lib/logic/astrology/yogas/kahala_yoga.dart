@@ -20,7 +20,7 @@ class KahalaYogaDetector extends YogaDetector {
   @override
   BhangaResult detect(CompleteChartData chart) {
     final lagnaSign = (chart.baseChart.houses.ascendant / 30).floor() % 12;
-    
+
     Planet getLord(int house) {
       final sign = (lagnaSign + house - 1) % 12;
       return Rashi.values[sign].lord;
@@ -38,9 +38,14 @@ class KahalaYogaDetector extends YogaDetector {
       return BhangaResult.inactive(name);
     }
 
-    final diff = (l4Info.position.zodiacSignIndex - l9Info.position.zodiacSignIndex + 12) % 12;
+    final diff =
+        (l4Info.position.zodiacSignIndex -
+            l9Info.position.zodiacSignIndex +
+            12) %
+        12;
     final isKendra = [0, 3, 6, 9].contains(diff);
-    final isL1Strong = l1Info.dignity == PlanetaryDignity.exalted ||
+    final isL1Strong =
+        l1Info.dignity == PlanetaryDignity.exalted ||
         l1Info.dignity == PlanetaryDignity.ownSign;
 
     if (isKendra && isL1Strong) {

@@ -55,8 +55,11 @@ class ChamaraYogaDetector extends YogaDetector {
       isActive: true,
       strength: 90.0,
       status: 'Strong',
-      cancellationReasons: ['Lagna Lord ${l1.displayName} is exalted in Kendra and aspected by Jupiter'],
-      manifestationPeriod: 'Generally lifelong, intensified during Lagna Lord or Jupiter Dasha',
+      cancellationReasons: [
+        'Lagna Lord ${l1.displayName} is exalted in Kendra and aspected by Jupiter',
+      ],
+      manifestationPeriod:
+          'Generally lifelong, intensified during Lagna Lord or Jupiter Dasha',
       peakDashaLord: l1.displayName,
     );
   }

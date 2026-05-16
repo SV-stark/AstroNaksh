@@ -1,5 +1,6 @@
 import 'package:astronaksh/logic/panchang_service.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+
 /// Tab 4: Hora
 class PanchangHoraTab extends StatelessWidget {
   const PanchangHoraTab({super.key, this.horas = const []});
@@ -19,7 +20,10 @@ class PanchangHoraTab extends StatelessWidget {
           child: Card(
             child: Row(
               children: [
-                Icon(isDay ? FluentIcons.sunny : FluentIcons.clear_night, size: 16),
+                Icon(
+                  isDay ? FluentIcons.sunny : FluentIcons.clear_night,
+                  size: 16,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(

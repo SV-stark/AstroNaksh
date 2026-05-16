@@ -113,10 +113,7 @@ class DashaSystem {
             .toList(),
       );
     } catch (e) {
-      return YoginiDasha(
-        startYogini: '--',
-        mahadashas: [],
-      );
+      return YoginiDasha(startYogini: '--', mahadashas: []);
     }
   }
 
@@ -242,10 +239,7 @@ class DashaSystem {
         }).toList(),
       );
     } catch (e) {
-      return KalachakraDasha(
-        birthNakshatra: '--',
-        mahadashas: [],
-      );
+      return KalachakraDasha(birthNakshatra: '--', mahadashas: []);
     }
   }
 

@@ -41,7 +41,7 @@ Widget buildTabButton({
     child: Button(
       onPressed: onTap,
       style: ButtonStyle(
-        backgroundColor: ButtonState.all(
+        backgroundColor: WidgetStateProperty.all(
           isSelected ? Colors.blue : Colors.transparent,
         ),
       ),
@@ -177,7 +177,9 @@ Widget buildMuhurtaCard(
         const SizedBox(width: 8),
         Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const Spacer(),
-        Text('${AppFormatters.formatTime(start)} - ${AppFormatters.formatTime(end)}'),
+        Text(
+          '${AppFormatters.formatTime(start)} - ${AppFormatters.formatTime(end)}',
+        ),
       ],
     ),
     content: Padding(padding: const EdgeInsets.all(8), child: Text(desc)),

@@ -95,9 +95,7 @@ class ShadbalaScreen extends StatelessWidget {
               child: _buildDetailsCard(context, detailedShadbala),
             ),
             const SizedBox(width: 24),
-            Expanded(
-              child: _buildStrengthChart(context, totalStrengths),
-            ),
+            Expanded(child: _buildStrengthChart(context, totalStrengths)),
           ],
         ),
       ],
@@ -144,7 +142,10 @@ class ShadbalaScreen extends StatelessWidget {
                 width: 150,
                 child: StrengthMeter(
                   label: entry.key.displayName,
-                  value: (entry.value / 6).clamp(0, 100), // Normalize to 100 for display
+                  value: (entry.value / 6).clamp(
+                    0,
+                    100,
+                  ), // Normalize to 100 for display
                 ),
               );
             }).toList(),
@@ -175,7 +176,9 @@ class ShadbalaScreen extends StatelessWidget {
                 tickCount: 4,
                 dataSets: [
                   RadarDataSet(
-                    fillColor: FluentTheme.of(context).accentColor.withValues(alpha: 0.2),
+                    fillColor: FluentTheme.of(
+                      context,
+                    ).accentColor.withValues(alpha: 0.2),
                     borderColor: FluentTheme.of(context).accentColor,
                     entryRadius: 3,
                     dataEntries: Planet.traditionalPlanets.map((p) {
@@ -235,13 +238,29 @@ class ShadbalaScreen extends StatelessWidget {
                 ),
               ],
               rows: [
-                _buildDataRow('Sthana Bala', (r) => r.sthanaBala, detailedShadbala),
+                _buildDataRow(
+                  'Sthana Bala',
+                  (r) => r.sthanaBala,
+                  detailedShadbala,
+                ),
                 _buildDataRow('Dig Bala', (r) => r.digBala, detailedShadbala),
                 _buildDataRow('Kala Bala', (r) => r.kalaBala, detailedShadbala),
-                _buildDataRow('Chesta Bala', (r) => r.chestaBala, detailedShadbala),
-                _buildDataRow('Naisargika Bala', (r) => r.naisargikaBala, detailedShadbala),
+                _buildDataRow(
+                  'Chesta Bala',
+                  (r) => r.chestaBala,
+                  detailedShadbala,
+                ),
+                _buildDataRow(
+                  'Naisargika Bala',
+                  (r) => r.naisargikaBala,
+                  detailedShadbala,
+                ),
                 _buildDataRow('Drik Bala', (r) => r.drikBala, detailedShadbala),
-                _buildDataRow('Total Virupas', (r) => r.totalBala, detailedShadbala),
+                _buildDataRow(
+                  'Total Virupas',
+                  (r) => r.totalBala,
+                  detailedShadbala,
+                ),
               ],
             ),
           ),
@@ -257,7 +276,9 @@ class ShadbalaScreen extends StatelessWidget {
   ) {
     return m.DataRow(
       cells: [
-        m.DataCell(Text(label, style: const TextStyle(fontWeight: FontWeight.bold))),
+        m.DataCell(
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ),
         ...Planet.traditionalPlanets.map((p) {
           final result = detailedShadbala[p];
           final value = result != null ? selector(result) : 0.0;

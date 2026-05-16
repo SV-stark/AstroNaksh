@@ -573,7 +573,9 @@ class TransitChart {
       'Saturn: House ${saturnTransit.houseFromMoon} from natal Moon',
     );
     if (saturnTransit.isSadeSati) {
-      buffer.writeln('Sade Sati: ${saturnTransit.sadeSatiPhase.name} phase active');
+      buffer.writeln(
+        'Sade Sati: ${saturnTransit.sadeSatiPhase.name} phase active',
+      );
     }
     if (saturnTransit.isDhaiya) {
       buffer.writeln('Dhaiya: ${saturnTransit.dhaiyaType.name} active');

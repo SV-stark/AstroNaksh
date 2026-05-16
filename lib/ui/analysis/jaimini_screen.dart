@@ -27,20 +27,20 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
   @override
   Widget build(BuildContext context) {
     return NavigationView(
-      appBar: NavigationAppBar(
-        leading: ResponsiveHelper.useMobileLayout(context)
-            ? null
-            : IconButton(
+      titleBar: TitleBar(
+        title: Row(
+          children: [
+            if (!ResponsiveHelper.useMobileLayout(context))
+              IconButton(
                 icon: const Icon(FluentIcons.back),
                 onPressed: () => Navigator.pop(context),
               ),
-        title: Row(
-          children: [
             if (ResponsiveHelper.useMobileLayout(context))
               IconButton(
                 icon: const Icon(FluentIcons.back),
                 onPressed: () => Navigator.pop(context),
               ),
+            const SizedBox(width: 8),
             const Text('Jaimini Astrology'),
           ],
         ),
@@ -275,7 +275,10 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(color: Colors.grey.withAlpha(160), fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.grey.withAlpha(160),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -441,7 +444,10 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                       ),
                       Text(
                         'H${pada.houseFromLagna}',
-                        style: TextStyle(color: Colors.grey.withAlpha(160), fontSize: 13),
+                        style: TextStyle(
+                          color: Colors.grey.withAlpha(160),
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -617,7 +623,10 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
               ),
               Text(
                 argala.type.description,
-                style: TextStyle(fontSize: 10, color: Colors.grey.withAlpha(160)),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey.withAlpha(160),
+                ),
               ),
             ],
           ),

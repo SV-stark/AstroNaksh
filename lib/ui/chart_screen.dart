@@ -975,8 +975,7 @@ class _ChartScreenState extends State<ChartScreen> {
                               Button(
                                 onPressed: () async {
                                   Navigator.pop(context);
-                                  if (_d1ChartKey.currentContext == null)
-                                    return;
+                                  if (_d1ChartKey.currentContext == null) return;
                                   try {
                                     await ChartShareService.shareChartImage(
                                       _d1ChartKey,
@@ -1076,8 +1075,7 @@ class _ChartScreenState extends State<ChartScreen> {
                               Button(
                                 onPressed: () async {
                                   Navigator.pop(context);
-                                  if (_d1ChartKey.currentContext == null)
-                                    return;
+                                  if (_d1ChartKey.currentContext == null) return;
                                   try {
                                     await ChartShareService.shareChartImage(
                                       _d1ChartKey,

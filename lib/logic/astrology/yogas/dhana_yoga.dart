@@ -36,10 +36,12 @@ class DhanaYogaDetector implements YogaDetector {
     var vasumathiMoon = true;
     for (final b in ['Jupiter', 'Venus', 'Mercury']) {
       final pSign = chart.getPlanetSign(b);
-      if (!upachayas.contains((pSign - lagnaSign + 12) % 12))
+      if (!upachayas.contains((pSign - lagnaSign + 12) % 12)) {
         vasumathiLagna = false;
-      if (!upachayas.contains((pSign - moonSign + 12) % 12))
+      }
+      if (!upachayas.contains((pSign - moonSign + 12) % 12)) {
         vasumathiMoon = false;
+      }
     }
     if (vasumathiLagna || vasumathiMoon) {
       results.add('Vasumathi Yoga (Benefics in Upachayas)');

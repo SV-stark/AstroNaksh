@@ -4,7 +4,7 @@ part 'location.freezed.dart';
 part 'location.g.dart';
 
 @freezed
-class Location with _$Location {
+abstract class Location with _$Location {
   const factory Location({
     required double latitude,
     required double longitude,
@@ -15,7 +15,7 @@ class Location with _$Location {
 }
 
 @freezed
-class BirthData with _$BirthData {
+abstract class BirthData with _$BirthData {
   const factory BirthData({
     required DateTime dateTime,
     required Location location,

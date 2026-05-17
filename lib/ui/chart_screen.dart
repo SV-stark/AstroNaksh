@@ -1,17 +1,21 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'dart:async';
 
+import 'package:drift/drift.dart' as drift;
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jyotish/jyotish.dart';
 
 import '../../core/ayanamsa_calculator.dart';
+import '../../core/chart_customization.dart';
 import '../../core/chart_share_service.dart';
 import '../../core/constants.dart';
-import '../../core/database_helper.dart';
+import '../../core/database.dart';
 import '../../core/saved_charts_helper.dart';
-import '../../core/settings_manager.dart';
+import '../../core/settings_provider.dart';
+import '../../core/settings_state.dart';
 import '../../data/models.dart';
 import '../../logic/kp_chart_service.dart';
 import '../../logic/planetary_aspect_service.dart';
@@ -39,15 +43,15 @@ import 'utils/responsive_helper.dart';
 import 'widgets/chart_widget.dart';
 import 'widgets/planetary_timeline.dart';
 
-class ChartScreen extends StatefulWidget {
+class ChartScreen extends ConsumerStatefulWidget {
   const ChartScreen({super.key, this.birthData});
   final BirthData? birthData;
 
   @override
-  State<ChartScreen> createState() => _ChartScreenState();
+  ConsumerState<ChartScreen> createState() => _ChartScreenState();
 }
 
-class _ChartScreenState extends State<ChartScreen> {
+class _ChartScreenState extends ConsumerState<ChartScreen> {
   final KPChartService _kpChartService = KPChartService();
   Future<CompleteChartData>? _chartDataFuture;
   ChartStyle _style = ChartStyle.northIndian;
@@ -120,6 +124,11 @@ class _ChartScreenState extends State<ChartScreen> {
   }
 
   void _openAyanamsaSelection() {
+    final settingsState =
+        ref.read(settingsProvider).value ??
+        SettingsState(chartSettings: ChartCustomization());
+    final chartSettings = settingsState.chartSettings;
+
     showDialog(
       context: context,
       builder: (context) {
@@ -165,11 +174,14 @@ class _ChartScreenState extends State<ChartScreen> {
                     const SizedBox(height: 16),
                     Expanded(
                       child: RadioGroup<String>(
-                        groupValue:
-                            SettingsManager().chartSettings.ayanamsaSystem,
+                        groupValue: chartSettings.ayanamsaSystem,
                         onChanged: (v) {
                           if (v != null) {
-                            SettingsManager().chartSettings.ayanamsaSystem = v;
+                            ref
+                                .read(settingsProvider.notifier)
+                                .updateChartSettings(
+                                  chartSettings.copyWith(ayanamsaSystem: v),
+                                );
                             Navigator.pop(context);
                             _loadChartData();
                           }
@@ -243,15 +255,21 @@ class _ChartScreenState extends State<ChartScreen> {
     // Save to both SharedPreferences and Database for compatibility
     await SavedChartsHelper.saveChart(_birthData!);
 
-    final dbHelper = DatabaseHelper();
-    await dbHelper.insertChart({
-      'name': _birthData!.name,
-      'dateTime': _birthData!.dateTime.toIso8601String(),
-      'latitude': _birthData!.location.latitude,
-      'longitude': _birthData!.location.longitude,
-      'locationName': _birthData!.place,
-      'timezone': _birthData!.timezone.isEmpty ? 'UTC' : _birthData!.timezone,
-    });
+    final db = ref.read(databaseProvider);
+    await db
+        .into(db.charts)
+        .insert(
+          ChartsCompanion.insert(
+            name: drift.Value(_birthData!.name),
+            birthTime: drift.Value(_birthData!.dateTime.toIso8601String()),
+            latitude: drift.Value(_birthData!.location.latitude),
+            longitude: drift.Value(_birthData!.location.longitude),
+            locationName: drift.Value(_birthData!.place),
+            timezone: drift.Value(
+              _birthData!.timezone.isEmpty ? 'UTC' : _birthData!.timezone,
+            ),
+          ),
+        );
 
     if (!mounted) return;
     displayInfoBar(
@@ -975,7 +993,9 @@ class _ChartScreenState extends State<ChartScreen> {
                               Button(
                                 onPressed: () async {
                                   Navigator.pop(context);
-                                  if (_d1ChartKey.currentContext == null) return;
+                                  if (_d1ChartKey.currentContext == null) {
+                                    return;
+                                  }
                                   try {
                                     await ChartShareService.shareChartImage(
                                       _d1ChartKey,
@@ -1075,7 +1095,9 @@ class _ChartScreenState extends State<ChartScreen> {
                               Button(
                                 onPressed: () async {
                                   Navigator.pop(context);
-                                  if (_d1ChartKey.currentContext == null) return;
+                                  if (_d1ChartKey.currentContext == null) {
+                                    return;
+                                  }
                                   try {
                                     await ChartShareService.shareChartImage(
                                       _d1ChartKey,

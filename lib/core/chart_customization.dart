@@ -223,6 +223,93 @@ class ChartCustomization {
     notificationHour = 8;
     notificationMinute = 0;
   }
+
+  ChartCustomization copyWith({
+    ChartStyle? chartStyle,
+    ColorScheme? colorScheme,
+    bool? showHouses,
+    bool? showSigns,
+    bool? showDegrees,
+    bool? showNakshatras,
+    bool? showRetrograde,
+    bool? showCombust,
+    bool? showExaltedDebilitated,
+    PlanetSize? planetSize,
+    HouseSystem? houseSystem,
+    bool? showHouseCusps,
+    bool? showHouseNumbers,
+    bool? showBirthDetails,
+    bool? showAyanamsa,
+    bool? showCurrentDasha,
+    bool? pdfIncludeD1,
+    bool? pdfIncludeD9,
+    bool? pdfIncludeDasha,
+    bool? pdfIncludeKP,
+    bool? pdfIncludeVargas,
+    bool? pdfIncludeInterpretations,
+    int? dashaYearsToShow,
+    bool? showAntardasha,
+    bool? showPratyantardasha,
+    bool? showTransits,
+    int? transitDaysToShow,
+    String? ayanamsaSystem,
+    bool? useTrueNode,
+    bool? useTopocentric,
+    bool? calculateSpeed,
+    bool? includeSpecialAspects,
+    bool? includeNodesInAspects,
+    bool? includeOuterPlanets,
+    bool? dailyTransitNotifications,
+    int? notificationHour,
+    int? notificationMinute,
+  }) {
+    final result = ChartCustomization();
+    result.chartStyle = chartStyle ?? this.chartStyle;
+    result.colorScheme = colorScheme ?? this.colorScheme;
+    result.showHouses = showHouses ?? this.showHouses;
+    result.showSigns = showSigns ?? this.showSigns;
+    result.showDegrees = showDegrees ?? this.showDegrees;
+    result.showNakshatras = showNakshatras ?? this.showNakshatras;
+    result.showRetrograde = showRetrograde ?? this.showRetrograde;
+    result.showCombust = showCombust ?? this.showCombust;
+    result.showExaltedDebilitated =
+        showExaltedDebilitated ?? this.showExaltedDebilitated;
+    result.planetSize = planetSize ?? this.planetSize;
+    result.houseSystem = houseSystem ?? this.houseSystem;
+    result.showHouseCusps = showHouseCusps ?? this.showHouseCusps;
+    result.showHouseNumbers = showHouseNumbers ?? this.showHouseNumbers;
+    result.showBirthDetails = showBirthDetails ?? this.showBirthDetails;
+    result.showAyanamsa = showAyanamsa ?? this.showAyanamsa;
+    result.showCurrentDasha = showCurrentDasha ?? this.showCurrentDasha;
+    result.pdfIncludeD1 = pdfIncludeD1 ?? this.pdfIncludeD1;
+    result.pdfIncludeD9 = pdfIncludeD9 ?? this.pdfIncludeD9;
+    result.pdfIncludeDasha = pdfIncludeDasha ?? this.pdfIncludeDasha;
+    result.pdfIncludeKP = pdfIncludeKP ?? this.pdfIncludeKP;
+    result.pdfIncludeVargas = pdfIncludeVargas ?? this.pdfIncludeVargas;
+    result.pdfIncludeInterpretations =
+        pdfIncludeInterpretations ?? this.pdfIncludeInterpretations;
+    result.dashaYearsToShow = dashaYearsToShow ?? this.dashaYearsToShow;
+    result.showAntardasha = showAntardasha ?? this.showAntardasha;
+    result.showPratyantardasha =
+        showPratyantardasha ?? this.showPratyantardasha;
+    result.showTransits = showTransits ?? this.showTransits;
+    result.transitDaysToShow = transitDaysToShow ?? this.transitDaysToShow;
+    result.ayanamsaSystem = ayanamsaSystem ?? this.ayanamsaSystem;
+    result.useTrueNode = useTrueNode ?? this.useTrueNode;
+    result.useTopocentric = useTopocentric ?? this.useTopocentric;
+    result.calculateSpeed = calculateSpeed ?? this.calculateSpeed;
+    result.includeSpecialAspects =
+        includeSpecialAspects ?? this.includeSpecialAspects;
+    result.includeNodesInAspects =
+        includeNodesInAspects ?? this.includeNodesInAspects;
+    result.includeOuterPlanets =
+        includeOuterPlanets ?? this.includeOuterPlanets;
+    result.dailyTransitNotifications =
+        dailyTransitNotifications ?? this.dailyTransitNotifications;
+    result.notificationHour = notificationHour ?? this.notificationHour;
+    result.notificationMinute = notificationMinute ?? this.notificationMinute;
+    return result;
+  }
 }
 
 /// Chart Style Options

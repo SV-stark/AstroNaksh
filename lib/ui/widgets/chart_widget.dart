@@ -1,15 +1,14 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/chart_customization.dart';
-import '../../core/settings_manager.dart';
+import '../../core/settings_provider.dart';
 import '../../logic/planetary_aspect_service.dart';
 import '../painters/aspect_painter.dart';
 import '../painters/north_indian_chart_painter.dart';
 import '../painters/south_indian_chart_painter.dart';
 
-enum ChartStyle { northIndian, southIndian }
-
-class ChartWidget extends StatelessWidget {
+class ChartWidget extends ConsumerWidget {
   const ChartWidget({
     super.key,
     required this.planetsBySign,
@@ -27,13 +26,13 @@ class ChartWidget extends StatelessWidget {
   final bool showAspects;
 
   @override
-  Widget build(BuildContext context) {
-    // Listen to SettingsManager for updates
-    return ListenableBuilder(
-      listenable: SettingsManager(),
-      builder: (context, child) {
-        final settings = SettingsManager().chartSettings;
-        final colors = settings.colorScheme.colors;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(settingsProvider);
+
+    return settingsAsync.maybeWhen(
+      data: (settings) {
+        final chartSettings = settings.chartSettings;
+        final colors = chartSettings.colorScheme.colors;
 
         return Container(
           width: size,
@@ -82,6 +81,12 @@ class ChartWidget extends StatelessWidget {
           ),
         );
       },
+      orElse: () => Container(
+        width: size,
+        height: size,
+        color: Colors.grey.withValues(alpha: 0.1),
+        child: const Center(child: ProgressRing()),
+      ),
     );
   }
 }

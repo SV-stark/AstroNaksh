@@ -42,8 +42,9 @@ class KemadrumaDoshaDetector extends YogaDetector {
 
       final diff = (pInfo.position.zodiacSignIndex - moonSign + 12) % 12 + 1;
       if (diff == 2 || diff == 12) hasPlanetsInAdjacent = true;
-      if ([1, 4, 7, 10].contains(diff) && p != Planet.moon)
+      if ([1, 4, 7, 10].contains(diff) && p != Planet.moon) {
         hasPlanetsInKendras = true;
+      }
     }
 
     if (hasPlanetsInAdjacent) return BhangaResult.inactive(name);

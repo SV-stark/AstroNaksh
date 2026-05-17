@@ -44,8 +44,7 @@ class PitraDoshaDetector extends YogaDetector {
     final l9Info = chart.baseChart.planets[l9];
     final isL9Bad = l9Info != null && [6, 8, 12].contains(l9Info.house);
 
-    if (!isSunNode && !isJupiterNode && !isL9Bad)
-      return BhangaResult.inactive(name);
+    if (!isSunNode && !isJupiterNode && !isL9Bad) return BhangaResult.inactive(name);
 
     final reasons = <String>[];
     if (isSunNode) reasons.add('Sun conjunct with Nodes');

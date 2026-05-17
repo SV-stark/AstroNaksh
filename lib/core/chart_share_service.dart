@@ -40,9 +40,12 @@ class ChartShareService {
       await file.writeAsBytes(pngBytes);
 
       // Share the file
-      await Share.shareXFiles([
-        XFile(file.path),
-      ], text: 'Shared from AstroNaksh');
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'Shared from AstroNaksh',
+        ),
+      );
     } catch (e) {
       debugPrint('Error sharing image: $e');
       rethrow;
@@ -68,9 +71,12 @@ class ChartShareService {
       final file = await pdfFile.copy(path);
 
       if (await file.exists()) {
-        await Share.shareXFiles([
-          XFile(path),
-        ], text: 'Vedic Astrology Report from AstroNaksh');
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(path)],
+            text: 'Vedic Astrology Report from AstroNaksh',
+          ),
+        );
       } else {
         throw Exception('PDF generation failed: File not found');
       }

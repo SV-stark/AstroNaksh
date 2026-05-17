@@ -432,8 +432,11 @@ class PDFReportService {
   }
 
   static Future<void> shareReport(File file) async {
-    await Share.shareXFiles([
-      XFile(file.path),
-    ], text: 'My Vedic Astrology Report from AstroNaksh');
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'My Vedic Astrology Report from AstroNaksh',
+      ),
+    );
   }
 }

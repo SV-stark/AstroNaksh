@@ -6,7 +6,7 @@ part 'settings_state.freezed.dart';
 part 'settings_state.g.dart';
 
 @freezed
-class SettingsState with _$SettingsState {
+abstract class SettingsState with _$SettingsState {
   const factory SettingsState({
     required ChartCustomization chartSettings,
     @Default(ThemeMode.system) ThemeMode themeMode,

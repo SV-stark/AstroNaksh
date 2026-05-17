@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -115,27 +114,14 @@ class CityDatabase {
     return nearest;
   }
 
-  /// Haversine formula for distance between coordinates
   static double _calculateDistance(
     double lat1,
     double lon1,
     double lat2,
     double lon2,
   ) {
-    const r = 6371; // Earth radius in km
-    final dLat = _toRadians(lat2 - lat1);
-    final dLon = _toRadians(lon2 - lon1);
-    final a =
-        sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(lat1)) *
-            cos(_toRadians(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return r * c;
+    return Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000.0;
   }
-
-  static double _toRadians(double degree) => degree * pi / 180;
 
   /// Get current location and find nearest city
   static Future<City?> getCityFromCurrentPosition() async {

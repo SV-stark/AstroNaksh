@@ -30,7 +30,6 @@ class PlanetaryTimeline extends StatefulWidget {
 }
 
 class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
-  bool _isDragging = false;
   late double _sliderValue;
 
   @override
@@ -42,7 +41,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
   @override
   void didUpdateWidget(covariant PlanetaryTimeline oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_isDragging && oldWidget.currentDate != widget.currentDate) {
+    if (oldWidget.currentDate != widget.currentDate) {
       _updateSliderValue();
     }
   }
@@ -138,84 +137,14 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
               const SizedBox(width: 8),
               // Timeline track
               Expanded(
-                child: GestureDetector(
-                  onHorizontalDragStart: (_) =>
-                      setState(() => _isDragging = true),
-                  onHorizontalDragEnd: (_) =>
-                      setState(() => _isDragging = false),
-                  onHorizontalDragUpdate: (details) {
-                    final box = context.findRenderObject() as RenderBox;
-                    final localPosition = box.globalToLocal(
-                      details.globalPosition,
-                    );
-                    final width = box.size.width - 100; // Account for labels
-                    final newValue =
-                        (localPosition.dx - 50).clamp(0.0, width) / width;
-                    setState(() => _sliderValue = newValue.clamp(0.0, 1.0));
+                child: Slider(
+                  value: _sliderValue,
+                  onChanged: (newValue) {
+                    setState(() => _sliderValue = newValue);
                     widget.onDateChanged(
-                      _calculateDateFromSlider(_sliderValue),
+                      _calculateDateFromSlider(newValue),
                     );
                   },
-                  child: Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: theme.resources.subtleFillColorTertiary,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Stack(
-                      children: [
-                        // Timeline ticks
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: _TimelineTicksPainter(
-                              color: theme.inactiveColor,
-                            ),
-                          ),
-                        ),
-                        // Progress fill
-                        FractionallySizedBox(
-                          widthFactor: _sliderValue,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: theme.accentColor.withValues(alpha: 0.3),
-                              borderRadius: const BorderRadius.horizontal(
-                                left: Radius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Slider thumb
-                        AnimatedPositioned(
-                          duration: _isDragging
-                              ? Duration.zero
-                              : const Duration(milliseconds: 100),
-                          left: _isDragging
-                              ? null
-                              : (_sliderValue *
-                                        MediaQuery.of(context).size.width *
-                                        0.7) -
-                                    10,
-                          top: 8,
-                          bottom: 8,
-                          child: Container(
-                            width: 20,
-                            decoration: BoxDecoration(
-                              color: theme.accentColor,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.white, width: 2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -303,41 +232,4 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
   String _formatShortDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year.toString().substring(2)}';
   }
-}
-
-/// Painter for timeline tick marks
-class _TimelineTicksPainter extends CustomPainter {
-  _TimelineTicksPainter({required this.color});
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
-
-    // Draw major ticks every 10%
-    for (var i = 0; i <= 10; i++) {
-      final x = (size.width / 10) * i;
-      canvas.drawLine(
-        Offset(x, size.height * 0.2),
-        Offset(x, size.height * 0.8),
-        paint,
-      );
-    }
-
-    // Draw minor ticks every 2%
-    for (var i = 0; i <= 50; i++) {
-      if (i % 5 == 0) continue; // Skip major ticks
-      final x = (size.width / 50) * i;
-      canvas.drawLine(
-        Offset(x, size.height * 0.35),
-        Offset(x, size.height * 0.65),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

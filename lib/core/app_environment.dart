@@ -168,28 +168,27 @@ class AppEnvironment {
     return formatted;
   }
 
-  /// Helper for verbose logging
   static void log(String message) {
     final timestamp = DateTime.now().toIso8601String();
     final logMessage = '[$timestamp] $message';
 
     // 1. Print to console (stdout) for CLI visibility
     if (_isVerbose) {
-      stdout.writeln(logMessage);
+      try {
+        stdout.writeln(logMessage);
+      } catch (_) {}
     }
 
-    // 2. Write to file
+    // 2. Write asynchronously to file (non-blocking)
     if (_logFile != null) {
-      try {
-        _logFile!.writeAsStringSync('$logMessage\n', mode: FileMode.append);
-      } catch (e) {
-        // Fallback to stdout
+      _logFile!
+          .writeAsString('$logMessage\n', mode: FileMode.append)
+          .catchError((_) {
         try {
           stdout.writeln(logMessage);
-        } catch (e) {
-          // Ignore
-        }
-      }
+        } catch (_) {}
+        return _logFile!;
+      });
     }
   }
 }

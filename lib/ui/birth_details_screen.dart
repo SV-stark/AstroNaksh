@@ -1,19 +1,23 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/chart_customization.dart';
+import '../../core/settings_provider.dart';
+import '../../core/settings_state.dart';
 import '../../data/models.dart';
 import '../../logic/astrology/birth_details_service.dart';
 import 'utils/responsive_helper.dart';
 
-class BirthDetailsScreen extends StatefulWidget {
+class BirthDetailsScreen extends ConsumerStatefulWidget {
   const BirthDetailsScreen({super.key, required this.chartData});
   final CompleteChartData chartData;
 
   @override
-  State<BirthDetailsScreen> createState() => _BirthDetailsScreenState();
+  ConsumerState<BirthDetailsScreen> createState() => _BirthDetailsScreenState();
 }
 
-class _BirthDetailsScreenState extends State<BirthDetailsScreen> {
+class _BirthDetailsScreenState extends ConsumerState<BirthDetailsScreen> {
   BirthDetailsReport? _report;
   bool _isLoading = true;
 
@@ -24,7 +28,13 @@ class _BirthDetailsScreenState extends State<BirthDetailsScreen> {
   }
 
   Future<void> _loadReport() async {
-    final report = await BirthDetailsService.generateReport(widget.chartData);
+    final settingsState =
+        ref.read(settingsProvider).value ??
+        SettingsState(chartSettings: ChartCustomization());
+    final report = await BirthDetailsService.generateReport(
+      widget.chartData,
+      ayanamsaSystemId: settingsState.chartSettings.ayanamsaSystem,
+    );
     if (mounted) {
       setState(() {
         _report = report;

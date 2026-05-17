@@ -1,7 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jyotish/jyotish.dart';
 
+import '../../core/chart_customization.dart';
 import '../../core/ephemeris_manager.dart';
+import '../../core/settings_provider.dart';
+import '../../core/settings_state.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 import '../../logic/varshaphal_system.dart';
@@ -14,15 +18,15 @@ class _CombinedVarshaphalData {
   final Varshapal nativeChart;
 }
 
-class VarshaphalScreen extends StatefulWidget {
+class VarshaphalScreen extends ConsumerStatefulWidget {
   const VarshaphalScreen({super.key, required this.birthData});
   final BirthData birthData;
 
   @override
-  State<VarshaphalScreen> createState() => _VarshaphalScreenState();
+  ConsumerState<VarshaphalScreen> createState() => _VarshaphalScreenState();
 }
 
-class _VarshaphalScreenState extends State<VarshaphalScreen> {
+class _VarshaphalScreenState extends ConsumerState<VarshaphalScreen> {
   late int _selectedYear;
 
   @override
@@ -90,9 +94,13 @@ class _VarshaphalScreenState extends State<VarshaphalScreen> {
   }
 
   Future<_CombinedVarshaphalData> _fetchCombinedData() async {
+    final settingsState =
+        ref.read(settingsProvider).value ??
+        SettingsState(chartSettings: ChartCustomization());
     final customChart = await VarshaphalSystem.calculateVarshaphal(
       widget.birthData,
       _selectedYear,
+      chartCustomization: settingsState.chartSettings,
     );
 
     final nativeChart = await EphemerisManager.jyotish.getVarshapal(

@@ -1,6 +1,6 @@
 import 'package:jyotish/jyotish.dart';
 
-import '../core/settings_manager.dart';
+import '../core/chart_customization.dart';
 import '../data/models.dart';
 import 'custom_chart_service.dart';
 
@@ -11,9 +11,10 @@ class VarshaphalSystem {
   /// Calculate Varshaphal chart for a given year
   static Future<VarshaphalChart> calculateVarshaphal(
     BirthData birthData,
-    int year,
-  ) async {
-    final chartSettings = SettingsManager().chartSettings;
+    int year, {
+    ChartCustomization? chartCustomization,
+  }) async {
+    final chartSettings = chartCustomization ?? ChartCustomization();
 
     // 1. Calculate rigorous Solar Return Time (High Precision)
     final solarReturnTime = await calculateSolarReturn(birthData, year);

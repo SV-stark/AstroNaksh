@@ -1074,7 +1074,9 @@ class DashaService {
     }
     final ak = _getAtmakaraka(chart);
     final akInfo = chart.getPlanet(ak);
-    if (akInfo != null && Rashi.fromLongitude(akInfo.longitude) == sign) strength += 50.0;
+    if (akInfo != null && Rashi.fromLongitude(akInfo.longitude) == sign) {
+      strength += 50.0;
+    }
     return strength;
   }
 

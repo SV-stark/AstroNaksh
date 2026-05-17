@@ -1,14 +1,17 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jyotish/jyotish.dart';
 
+import '../../core/chart_customization.dart';
 import '../../core/ephemeris_manager.dart';
-import '../../core/settings_manager.dart';
+import '../../core/settings_provider.dart';
+import '../../core/settings_state.dart';
 import '../../data/models.dart';
 import '../../logic/horary_service.dart';
 import '../../ui/utils/responsive_helper.dart';
 import '../widgets/chart_widget.dart';
 
-class HoraryResultScreen extends StatefulWidget {
+class HoraryResultScreen extends ConsumerStatefulWidget {
   const HoraryResultScreen({
     super.key,
     required this.seedNumber,
@@ -22,10 +25,10 @@ class HoraryResultScreen extends StatefulWidget {
   final String locationName;
 
   @override
-  State<HoraryResultScreen> createState() => _HoraryResultScreenState();
+  ConsumerState<HoraryResultScreen> createState() => _HoraryResultScreenState();
 }
 
-class _HoraryResultScreenState extends State<HoraryResultScreen> {
+class _HoraryResultScreenState extends ConsumerState<HoraryResultScreen> {
   final HoraryService _horaryService = HoraryService();
 
   late Future<CompleteChartData> _chartFuture;
@@ -191,8 +194,11 @@ class _HoraryResultScreenState extends State<HoraryResultScreen> {
           final planetsMap = _getPlanetsMap(chart.baseChart);
           final ascSign = _getAscendantSign(chart.baseChart);
           final ascSignName = _getSignName(ascSign);
+          final settingsState =
+              ref.watch(settingsProvider).value ??
+              SettingsState(chartSettings: ChartCustomization());
           final style =
-              SettingsManager().chartSettings.chartStyle.name == 'northIndian'
+              settingsState.chartSettings.chartStyle.name == 'northIndian'
               ? ChartStyle.northIndian
               : ChartStyle.southIndian;
 

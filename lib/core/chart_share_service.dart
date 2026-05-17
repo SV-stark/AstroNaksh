@@ -41,10 +41,7 @@ class ChartShareService {
 
       // Share the file
       await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path)],
-          text: 'Shared from AstroNaksh',
-        ),
+        ShareParams(files: [XFile(file.path)], text: 'Shared from AstroNaksh'),
       );
     } catch (e) {
       debugPrint('Error sharing image: $e');

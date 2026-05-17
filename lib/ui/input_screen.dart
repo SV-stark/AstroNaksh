@@ -1,21 +1,23 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
+import 'package:drift/drift.dart' as drift;
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/database_helper.dart';
+import '../../core/database.dart';
 import '../../data/city_database.dart';
 import '../../data/models.dart';
 import '../ui/utils/responsive_helper.dart';
 
-class InputScreen extends StatefulWidget {
+class InputScreen extends ConsumerStatefulWidget {
   const InputScreen({super.key, this.onSelectionMode = false});
   final bool onSelectionMode;
 
   @override
-  State<InputScreen> createState() => _InputScreenState();
+  ConsumerState<InputScreen> createState() => _InputScreenState();
 }
 
-class _InputScreenState extends State<InputScreen> {
+class _InputScreenState extends ConsumerState<InputScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _citySearchController = TextEditingController();
@@ -204,17 +206,21 @@ class _InputScreenState extends State<InputScreen> {
 
       // Save to Database
       final name = _nameController.text;
-      final dbHelper = DatabaseHelper();
+      final db = ref.read(databaseProvider);
 
       try {
-        await dbHelper.insertChart({
-          'name': name,
-          'dateTime': dt.toIso8601String(),
-          'latitude': lat,
-          'longitude': long,
-          'locationName': locationName,
-          'timezone': timezone,
-        });
+        await db
+            .into(db.charts)
+            .insert(
+              ChartsCompanion.insert(
+                name: drift.Value(name),
+                birthTime: drift.Value(dt.toIso8601String()),
+                latitude: drift.Value(lat),
+                longitude: drift.Value(long),
+                locationName: drift.Value(locationName),
+                timezone: drift.Value(timezone),
+              ),
+            );
       } catch (e) {
         if (mounted) {
           displayInfoBar(

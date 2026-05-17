@@ -1,8 +1,10 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jyotish/jyotish.dart' hide AspectType;
 
-import '../../core/database_helper.dart';
+import '../../core/chart_customization.dart';
+import '../../core/database.dart';
 import '../../core/pdf_report_service.dart';
 import '../../data/models.dart';
 import '../../logic/chart_comparison.dart';
@@ -13,15 +15,16 @@ import '../../ui/utils/responsive_helper.dart';
 import '../input_screen.dart';
 import '../widgets/chart_widget.dart';
 
-class ChartComparisonScreen extends StatefulWidget {
+class ChartComparisonScreen extends ConsumerStatefulWidget {
   const ChartComparisonScreen({super.key, this.chart1});
   final CompleteChartData? chart1;
 
   @override
-  State<ChartComparisonScreen> createState() => _ChartComparisonScreenState();
+  ConsumerState<ChartComparisonScreen> createState() =>
+      _ChartComparisonScreenState();
 }
 
-class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
+class _ChartComparisonScreenState extends ConsumerState<ChartComparisonScreen> {
   CompleteChartData? _selectedChart1;
   CompleteChartData? _selectedChart2;
   int _currentIndex = 0;
@@ -1165,8 +1168,8 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
   }
 
   Future<CompleteChartData?> _showChartPicker() async {
-    final db = DatabaseHelper();
-    final charts = await db.getCharts();
+    final db = ref.read(databaseProvider);
+    final charts = await db.select(db.charts).get();
     if (!mounted) return null;
 
     return showDialog<CompleteChartData>(
@@ -1274,27 +1277,26 @@ class _ChartComparisonScreenState extends State<ChartComparisonScreen> {
                                     color: FluentTheme.of(context).accentColor,
                                   ),
                                 ),
-                                title: Text(chart['name'] ?? 'Unknown'),
-                                subtitle: Text(chart['dateTime'] ?? ''),
+                                title: Text(chart.name ?? 'Unknown'),
+                                subtitle: Text(chart.birthTime ?? ''),
                                 onPressed: () async {
-                                  if (chart['dateTime'] == null ||
-                                      chart['latitude'] == null ||
-                                      chart['longitude'] == null) {
+                                  if (chart.birthTime == null ||
+                                      chart.latitude == null ||
+                                      chart.longitude == null) {
                                     return;
                                   }
                                   try {
                                     final birthData = BirthData(
                                       dateTime: DateTime.parse(
-                                        chart['dateTime'] as String,
+                                        chart.birthTime!,
                                       ),
                                       location: Location(
-                                        latitude: (chart['latitude'] as num)
-                                            .toDouble(),
-                                        longitude: (chart['longitude'] as num)
-                                            .toDouble(),
+                                        latitude: chart.latitude!,
+                                        longitude: chart.longitude!,
                                       ),
-                                      name: chart['name'] ?? '',
-                                      place: chart['locationName'] ?? '',
+                                      name: chart.name ?? '',
+                                      place: chart.locationName ?? '',
+                                      timezone: chart.timezone ?? '',
                                     );
                                     final service = KPChartService();
                                     final completeData = await service

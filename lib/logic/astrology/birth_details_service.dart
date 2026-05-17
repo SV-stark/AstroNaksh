@@ -1,7 +1,6 @@
 import 'package:jyotish/jyotish.dart';
 import '../../core/ayanamsa_calculator.dart';
 import '../../core/ephemeris_manager.dart';
-import '../../core/settings_manager.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 import 'avakahada_service.dart';
@@ -23,8 +22,9 @@ class BirthDetailsReport {
 
 class BirthDetailsService {
   static Future<BirthDetailsReport> generateReport(
-    CompleteChartData data,
-  ) async {
+    CompleteChartData data, {
+    String? ayanamsaSystemId,
+  }) async {
     final chart = data.baseChart;
     final birthData = data.birthData;
     final moon = chart.planets[Planet.moon]!;
@@ -67,16 +67,18 @@ class BirthDetailsService {
         '${lmtCorrectionMinutes.abs().floor().toString().padLeft(2, '0')} : ${((lmtCorrectionMinutes.abs() % 1) * 60).round().toString().padLeft(2, '0')}';
 
     // Julian Day
-    final julianDay =
-        (birthData.dateTime.millisecondsSinceEpoch / 86400000.0) + 2440587.5;
+    final julianDay = EphemerisManager.service.dateTimeToJulianDay(
+      birthData.dateTime,
+      timezoneId: birthData.timezone,
+    );
 
     // Get Ayanamsa info from library
-    final ayanamsaSystemId = SettingsManager().chartSettings.ayanamsaSystem;
+    final selectedAyanamsaSystemId = ayanamsaSystemId ?? 'lahiri';
     final ayanamsaValue = await AyanamsaCalculator.calculate(
-      ayanamsaSystemId,
+      selectedAyanamsaSystemId,
       birthData.dateTime,
     );
-    final system = AyanamsaCalculator.getSystem(ayanamsaSystemId);
+    final system = AyanamsaCalculator.getSystem(selectedAyanamsaSystemId);
     final ayanamsaName = system?.name ?? 'Lahiri';
 
     // Calculate Panchanga
@@ -144,7 +146,7 @@ class BirthDetailsService {
       additionalInfo: {
         'Julian Day': julianDay.toStringAsFixed(6),
         'Sun Sign (Vedic)': chart.planets[Planet.sun]!.zodiacSign,
-        'Sun Sign (Western)': _getWesternSunSign(birthData.dateTime),
+        'Sun Sign (Western)': await _getWesternSunSign(birthData.dateTime),
         'Ayanamsa': _formatDMS(ayanamsaValue),
         'Ayanamsa Name': ayanamsaName,
         'Obliquity': '23° 26\' 22"', // Approx standard
@@ -195,20 +197,76 @@ class BirthDetailsService {
     return lords[index % 9];
   }
 
-  static String _getWesternSunSign(DateTime date) {
-    final day = date.day;
-    final month = date.month;
-    if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return 'Aries';
-    if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return 'Taurus';
-    if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) return 'Gemini';
-    if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) return 'Cancer';
-    if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return 'Leo';
-    if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return 'Virgo';
-    if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) return 'Libra';
-    if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) return 'Scorpio';
-    if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return 'Sagittarius';
-    if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return 'Capricorn';
-    if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return 'Aquarius';
-    return 'Pisces';
+  static Future<String> _getWesternSunSign(DateTime date) async {
+    try {
+      final sunPos = await EphemerisManager.service.calculatePlanetPosition(
+        planet: Planet.sun,
+        dateTime: date,
+        location: GeographicLocation(latitude: 0.0, longitude: 0.0),
+        flags: CalculationFlags.traditionalist(),
+      );
+
+      final ayanamsa = await EphemerisManager.service.getAyanamsa(
+        dateTime: date,
+        mode: SiderealMode.lahiri,
+      );
+
+      final tropicalSunLongitude = (sunPos.longitude + ayanamsa) % 360;
+      final signIndex = (tropicalSunLongitude / 30.0).floor();
+
+      const westernSigns = [
+        'Aries',
+        'Taurus',
+        'Gemini',
+        'Cancer',
+        'Leo',
+        'Virgo',
+        'Libra',
+        'Scorpio',
+        'Sagittarius',
+        'Capricorn',
+        'Aquarius',
+        'Pisces',
+      ];
+
+      return westernSigns[signIndex.clamp(0, 11)];
+    } catch (_) {
+      final day = date.day;
+      final month = date.month;
+      if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) {
+        return 'Aries';
+      }
+      if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) {
+        return 'Taurus';
+      }
+      if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) {
+        return 'Gemini';
+      }
+      if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) {
+        return 'Cancer';
+      }
+      if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) {
+        return 'Leo';
+      }
+      if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) {
+        return 'Virgo';
+      }
+      if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) {
+        return 'Libra';
+      }
+      if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) {
+        return 'Scorpio';
+      }
+      if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) {
+        return 'Sagittarius';
+      }
+      if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) {
+        return 'Capricorn';
+      }
+      if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) {
+        return 'Aquarius';
+      }
+      return 'Pisces';
+    }
   }
 }

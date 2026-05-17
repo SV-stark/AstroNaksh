@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:astronaksh/core/settings_manager.dart';
 import 'package:astronaksh/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,11 +14,6 @@ void main() {
 
     // Mock SharedPreferences
     SharedPreferences.setMockInitialValues({'has_seen_tutorial': true});
-
-    // Initialize SettingsManager singleton and force tutorial seen
-    final settings = SettingsManager();
-    await settings.loadSettings();
-    await settings.setHasSeenTutorial(true);
   });
 
   testWidgets('App loads and showing loading screen', (

@@ -356,24 +356,11 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
           openWidth: context.paneWidth,
           compactWidth: context.compactPaneWidth,
         ),
-        header: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                _getCurrentTabIcon(_currentIndex),
-                size: 32,
-                color: FluentTheme.of(context).accentColor,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _getCurrentTabTitle(_currentIndex),
-                style: FluentTheme.of(
-                  context,
-                ).typography.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ],
+        header: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Text(
+            'AstroNaksh',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
         items: [
@@ -3762,47 +3749,6 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
     );
   }
 
-  IconData _getCurrentTabIcon(int index) {
-    switch (index) {
-      case 0:
-        return FluentIcons.contact_card;
-      case 1:
-        return FluentIcons.grid_view_large;
-      case 2:
-        return FluentIcons.scatter_chart;
-      case 3:
-        return FluentIcons.timer;
-      case 4:
-        return FluentIcons.list;
-      case 5:
-        return FluentIcons.lightbulb;
-      case 6:
-        return FluentIcons.scale_volume;
-      default:
-        return FluentIcons.chart;
-    }
-  }
-
-  String _getCurrentTabTitle(int index) {
-    switch (index) {
-      case 0:
-        return 'D-1 Rashi';
-      case 1:
-        return 'Vargas';
-      case 2:
-        return 'KP System';
-      case 3:
-        return 'Dasha Periods';
-      case 4:
-        return 'Planet Details';
-      case 5:
-        return 'Daily Rashiphal';
-      case 6:
-        return 'Planetary Strength';
-      default:
-        return 'Chart Views';
-    }
-  }
 
   // ── Phase 5: Planetary Strength Tab ──────────────────────────────────────
   Widget _buildStrengthTab(CompleteChartData data) {

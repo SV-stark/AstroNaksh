@@ -603,7 +603,7 @@ packages:
       path: "packages/jyotish"
       relative: true
     source: path
-    version: "2.6.0"
+    version: "2.9.0"
   leak_tracker:
     dependency: transitive
     description:

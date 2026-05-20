@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:astronaksh/main.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -14,6 +15,13 @@ void main() {
 
     // Mock SharedPreferences
     SharedPreferences.setMockInitialValues({'has_seen_tutorial': true});
+
+    // Mock path_provider for AppEnvironment initialization
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestWidgetsFlutterBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+          return '.';
+        });
   });
 
   testWidgets('App loads and showing loading screen', (

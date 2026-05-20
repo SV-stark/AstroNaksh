@@ -1,74 +1,83 @@
 import 'package:jyotish/jyotish.dart';
 import '../core/ephemeris_manager.dart';
+import '../core/error_handler.dart';
 import '../data/models.dart';
 import 'dasha_system.dart';
 import 'divisional_charts.dart';
 
 class KPChartService {
-  Future<CompleteChartData> generateCompleteChart(BirthData birthData) async {
-    await EphemerisManager.ensureEphemerisData();
+  Future<CompleteChartData?> generateCompleteChart(BirthData birthData) async {
+    return AppErrorHandler().safeAsync<CompleteChartData?>(
+      () async {
+        await EphemerisManager.ensureEphemerisData();
 
-    final location = GeographicLocation(
-      latitude: birthData.location.latitude,
-      longitude: birthData.location.longitude,
-      altitude: 0,
-    );
+        final location = GeographicLocation(
+          latitude: birthData.location.latitude,
+          longitude: birthData.location.longitude,
+          altitude: 0,
+        );
 
-    // KP system requires CalculationFlags.kp() + Placidus house system
-    final chart = await EphemerisManager.jyotish.calculateVedicChart(
-      dateTime: birthData.dateTime,
-      location: location,
-      houseSystem: 'P',
-      flags: CalculationFlags.kp(),
-    );
+        // KP system requires CalculationFlags.kp() + Placidus house system
+        final chart = await EphemerisManager.jyotish.calculateVedicChart(
+          dateTime: birthData.dateTime,
+          location: location,
+          houseSystem: 'P',
+          flags: CalculationFlags.kp(),
+        );
 
-    // Use library's native KP calculation
-    final nativeKPData = await EphemerisManager.jyotish.calculateKPData(chart);
+        // Use library's native KP calculation
+        final nativeKPData = await EphemerisManager.jyotish.calculateKPData(chart);
 
-    // Calculate correct Day Lord (Sunrise based)
-    // We need to fetch sunrise for the location
-    final (sunrise, _) = await EphemerisManager.jyotish.getSunriseSunset(
-      date: birthData.dateTime,
-      location: GeographicLocation(
-        latitude: birthData.location.latitude,
-        longitude: birthData.location.longitude,
-      ),
-    );
+        // Calculate correct Day Lord (Sunrise based)
+        // We need to fetch sunrise for the location
+        final (sunrise, _) = await EphemerisManager.jyotish.getSunriseSunset(
+          date: birthData.dateTime,
+          location: GeographicLocation(
+            latitude: birthData.location.latitude,
+            longitude: birthData.location.longitude,
+          ),
+        );
 
-    Planet? dayLord;
-    if (sunrise != null) {
-      // If birth time is before sunrise, it belongs to previous day
-      // Note: birthData.dateTime and sunrise should be in same timezone context
-      // Assuming straightforward comparison
-      var effectiveDate = birthData.dateTime;
-      if (birthData.dateTime.isBefore(sunrise)) {
-        effectiveDate = birthData.dateTime.subtract(const Duration(days: 1));
-      }
-      dayLord = KPChartService._getDayLord(effectiveDate.weekday);
-    }
+        Planet? dayLord;
+        if (sunrise != null) {
+          // If birth time is before sunrise, it belongs to previous day
+          // Note: birthData.dateTime and sunrise should be in same timezone context
+          // Assuming straightforward comparison
+          var effectiveDate = birthData.dateTime;
+          if (birthData.dateTime.isBefore(sunrise)) {
+            effectiveDate = birthData.dateTime.subtract(const Duration(days: 1));
+          }
+          dayLord = KPChartService._getDayLord(effectiveDate.weekday);
+        }
 
-    // Calculate all systems
-    final kpData = mapNativeKPData(
-      nativeKPData,
-      chart,
-      dayLord: dayLord,
-    ); // Use static
-    final dashaData = await _calculateDashaSystems(chart);
-    final divisionalCharts = DivisionalCharts.calculateAllCharts(chart);
-    final significatorTable = generateSignificatorTable(nativeKPData, chart);
+        // Calculate all systems
+        final kpData = mapNativeKPData(
+          nativeKPData,
+          chart,
+          dayLord: dayLord,
+        ); // Use static
+        final dashaData = await _calculateDashaSystems(chart);
+        final divisionalCharts = DivisionalCharts.calculateAllCharts(chart);
+        final significatorTable = generateSignificatorTable(nativeKPData, chart);
 
-    return CompleteChartData(
-      baseChart: chart,
-      kpData: kpData,
-      dashaData: dashaData,
-      divisionalCharts: divisionalCharts,
-      significatorTable: significatorTable,
-      birthData: birthData,
+        return CompleteChartData(
+          baseChart: chart,
+          kpData: kpData,
+          dashaData: dashaData,
+          divisionalCharts: divisionalCharts,
+          significatorTable: significatorTable,
+          birthData: birthData,
+        );
+      },
+      defaultValue: null,
+      context: 'KPChartService.generateCompleteChart',
+      userMessage: 'Failed to generate complete chart. The birth details might contain invalid coordinates or FFI calculations failed.',
     );
   }
 
-  Future<ChartData> generateKPChart(BirthData birthData) async {
+  Future<ChartData?> generateKPChart(BirthData birthData) async {
     final completeData = await generateCompleteChart(birthData);
+    if (completeData == null) return null;
     return ChartData(
       baseChart: completeData.baseChart,
       kpData: completeData.kpData,

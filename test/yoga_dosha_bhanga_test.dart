@@ -43,6 +43,7 @@ void main() {
       final chart = builder
           .withAscendantSign(7) // Libra
           .withPlanetInSign(Planet.mars, 1) // Aries (Own Sign)
+          .withPlanetDignity(Planet.mars, PlanetaryDignity.ownSign)
           .build();
 
       final analysis = YogaDoshaAnalyzer.analyze(chart);

@@ -9,6 +9,7 @@ import '../data/models.dart';
 import '../logic/gowri_panchanga_service.dart';
 import '../logic/panchang_service.dart';
 import '../ui/utils/responsive_helper.dart';
+import 'panchang/panchang.dart';
 
 class PanchangScreen extends StatefulWidget {
   const PanchangScreen({super.key});
@@ -320,9 +321,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           commandBar: CommandBar(
-            overflowBehavior: isMobile
-                ? CommandBarOverflowBehavior.dynamicOverflow
-                : CommandBarOverflowBehavior.noWrap,
+            overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
             primaryItems: [
               if (!isMobile)
                 CommandBarBuilderItem(
@@ -665,21 +664,82 @@ class _PanchangScreenState extends State<PanchangScreen> {
 
                   // Tab Content
                   if (_selectedTabIndex == 0)
-                    _buildPanchangElementsTab()
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangElementsTab(
+                          result: _result,
+                          tithiJunction: _tithiJunction,
+                          isLoading: _isLoading,
+                        ),
+                      ),
+                    )
                   else if (_selectedTabIndex == 1)
-                    _buildSunMoonTimesTab()
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangSunMoonTab(
+                          result: _result,
+                          moonPhase: _moonPhase,
+                          eclipseData: _eclipseData,
+                        ),
+                      ),
+                    )
                   else if (_selectedTabIndex == 2)
-                    _buildInauspiciousTab()
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangInauspiciousTab(
+                          inauspicious: _inauspicious,
+                        ),
+                      ),
+                    )
                   else if (_selectedTabIndex == 3)
-                    _buildMuhurtaTab()
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangMuhurtaTab(
+                          abhijit: _abhijit,
+                          brahma: _brahma,
+                        ),
+                      ),
+                    )
                   else if (_selectedTabIndex == 4)
-                    _buildHoraTab()
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangHoraTab(
+                          horas: _horas,
+                        ),
+                      ),
+                    )
                   else if (_selectedTabIndex == 5)
-                    _buildChoghadiyaTab()
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangChoghadiyaTab(
+                          choghadiya: _choghadiya,
+                        ),
+                      ),
+                    )
                   else if (_selectedTabIndex == 6)
-                    _buildGowriPanchangaTab()
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangGowriTab(
+                          gowri: _gowri,
+                        ),
+                      ),
+                    )
                   else if (_selectedTabIndex == 7)
-                    _buildTransitsTab(),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangTransitsTab(
+                          panchak: _panchak,
+                        ),
+                      ),
+                    ),
 
                   // Information Section
                   SliverToBoxAdapter(
@@ -727,334 +787,6 @@ class _PanchangScreenState extends State<PanchangScreen> {
     );
   }
 
-  Widget _buildInauspiciousTab() {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverList(
-        delegate: SliverChildListDelegate([
-          _buildSectionHeading('Inauspicious Periods'),
-          const SizedBox(height: 16),
-          ..._inauspicious.map(
-            (p) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Expander(
-                header: Row(
-                  children: [
-                    Icon(FluentIcons.warning, color: Colors.red, size: 16),
-                    const SizedBox(width: 12),
-                    Text(
-                      p.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${p.startTime} - ${p.endTime}',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ],
-                ),
-                content: Text(
-                  'During ${p.name}, it is generally advised to avoid starting new ventures or important activities.',
-                ),
-              ),
-            ),
-          ),
-          if (_inauspicious.isEmpty)
-            const Center(
-              child: Text('No inauspicious periods calculated for today.'),
-            ),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildMuhurtaTab() {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverList(
-        delegate: SliverChildListDelegate([
-          _buildSectionHeading('Auspicious Muhurtas'),
-          const SizedBox(height: 16),
-          if (_abhijit != null)
-            _buildMuhurtaCard(
-              'Abhijit Muhurta',
-              _abhijit!.startTime,
-              _abhijit!.endTime,
-              FluentIcons.sunny,
-              Colors.orange,
-              'Abhijit Muhurta is the most auspicious time of the day to start any work.',
-            ),
-          if (_brahma != null) ...[
-            const SizedBox(height: 12),
-            _buildMuhurtaCard(
-              'Brahma Muhurta',
-              _brahma!.startTime,
-              _brahma!.endTime,
-              FluentIcons.diamond,
-              Colors.blue,
-              'Brahma Muhurta is ideal for meditation, spiritual practices, and study.',
-            ),
-          ],
-          if (_abhijit == null && _brahma == null)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24.0),
-                child: Text('Calculating muhurtas...'),
-              ),
-            ),
-          const SizedBox(height: 12),
-          const InfoBar(
-            title: Text('More Muhurtas'),
-            content: Text(
-              'Additional muhurtas are coming soon. Brahma Muhurta values vary based on local sunrise.',
-            ),
-            severity: InfoBarSeverity.info,
-          ),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildHoraTab() {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverList(
-        delegate: SliverChildListDelegate([
-          _buildSectionHeading('Hora (Planetary Hours)'),
-          const SizedBox(height: 16),
-          ..._horas.map(
-            (h) => ListTile(
-              leading: Icon(
-                h.isDay ? FluentIcons.sunny : FluentIcons.clear_night,
-                color: h.isDay ? Colors.orange : Colors.purple,
-              ),
-              title: Text('${h.planet} Hora'),
-              subtitle: Text('${h.startTime} - ${h.endTime}'),
-              trailing: h.isDay ? const Text('Day') : const Text('Night'),
-            ),
-          ),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildChoghadiyaTab() {
-    final dayChoghadiya = _choghadiya.where((c) => c.isDay).toList();
-    final nightChoghadiya = _choghadiya.where((c) => !c.isDay).toList();
-
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverList(
-        delegate: SliverChildListDelegate([
-          _buildSectionHeading('Day Choghadiya'),
-          const SizedBox(height: 8),
-          _buildChoghadiyaList(dayChoghadiya),
-          const SizedBox(height: 24),
-          _buildSectionHeading('Night Choghadiya'),
-          const SizedBox(height: 8),
-          _buildChoghadiyaList(nightChoghadiya),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeading(String title) {
-    return Text(
-      title,
-      style: FluentTheme.of(
-        context,
-      ).typography.subtitle?.copyWith(fontWeight: FontWeight.bold),
-    );
-  }
-
-  Widget _buildChoghadiyaList(List<PanchangChoghadiya> list) {
-    return Column(
-      children: list.map((c) {
-        Color color;
-        IconData icon;
-        switch (c.type.toLowerCase()) {
-          case 'good':
-          case 'shubh':
-          case 'amrit':
-          case 'labh':
-            color = Colors.green;
-            icon = FluentIcons.completed;
-            break;
-          case 'bad':
-          case 'rog':
-          case 'kaal':
-          case 'udveg':
-            color = Colors.red;
-            icon = FluentIcons.error;
-            break;
-          default:
-            color = Colors.orange;
-            icon = FluentIcons.info;
-        }
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 4.0),
-          child: Card(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Icon(icon, color: color, size: 16),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        c.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        c.type,
-                        style: TextStyle(color: color, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  '${c.startTime} - ${c.endTime}',
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildMuhurtaCard(
-    String title,
-    DateTime start,
-    DateTime end,
-    IconData icon,
-    Color color,
-    String desc,
-  ) {
-    return Expander(
-      header: Row(
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 12),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const Spacer(),
-          Text(
-            '${AppFormatters.formatTime(start.toLocal())} - ${AppFormatters.formatTime(end.toLocal())}',
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-      content: Text(desc),
-    );
-  }
-
-  Widget _buildGowriPanchangaTab() {
-    if (_gowri == null) {
-      return const SliverFillRemaining(
-        child: Center(child: Text('Loading...')),
-      );
-    }
-
-    return SliverPadding(
-      padding: const EdgeInsets.all(16),
-      sliver: SliverList(
-        delegate: SliverChildListDelegate([
-          Card(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(FluentIcons.favorite_star, size: 24),
-                    SizedBox(width: 8),
-                    Text(
-                      'Gowri Panchanga',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildInfoRow('Period Name', _gowri!.type.name),
-                _buildInfoRow(
-                  'Description',
-                  _gowri!.type.description.isNotEmpty
-                      ? _gowri!.type.description.split(',').first
-                      : 'N/A',
-                ),
-                _buildInfoRow(
-                  'Time of Day',
-                  _gowri!.isDaytime ? 'Daytime' : 'Nighttime',
-                ),
-                _buildInfoRow('Period No.', _gowri!.periodNumber.toString()),
-                const Divider(),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Auspicious',
-                            style: TextStyle(
-                              color: _gowri!.type.isAuspicious
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                          ),
-                          Text(_gowri!.type.isAuspicious ? 'Yes' : 'No'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'About Gowri Panchanga',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Gowri Panchanga is used to determine auspicious timings for various activities. '
-                  'It is calculated based on the weekday and the position of Sun and Moon.',
-                  style: TextStyle(color: Colors.grey.withAlpha(180)),
-                ),
-              ],
-            ),
-          ),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(color: Colors.grey.withAlpha(180))),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTabButton({
     required IconData icon,
     required String label,
@@ -1093,604 +825,6 @@ class _PanchangScreenState extends State<PanchangScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildPanchangElementsTab() {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverGrid.count(
-        crossAxisCount: ResponsiveHelper.useMobileLayout(context) ? 1 : 3,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        childAspectRatio: ResponsiveHelper.useMobileLayout(context) ? 3.0 : 1.5,
-        children: [
-          _buildPanchangCard(
-            title: 'Tithi',
-            value: _result!.tithi,
-            subtitle: _tithiJunction != null
-                ? 'Ends at ${AppFormatters.formatTime(_tithiJunction!.toLocal())}'
-                : 'Lunar Day',
-            icon: FluentIcons.calendar_day,
-            color: Colors.orange,
-            description: 'The lunar day based on moon phases',
-          ),
-          _buildPanchangCard(
-            title: 'Nakshatra',
-            value: _result!.nakshatra,
-            subtitle: 'Lunar Mansion',
-            icon: FluentIcons.favorite_star,
-            color: Colors.purple,
-            description: 'The constellation moon is transiting',
-          ),
-          _buildPanchangCard(
-            title: 'Yoga',
-            value: _result!.yoga,
-            subtitle: 'Sun-Moon Angle',
-            icon: FluentIcons.flow,
-            color: Colors.blue,
-            description: 'Angular relationship between Sun and Moon',
-          ),
-          _buildPanchangCard(
-            title: 'Karana',
-            value: _result!.karana,
-            subtitle: 'Half Tithi',
-            icon: FluentIcons.stopwatch,
-            color: Colors.teal,
-            description: 'Half of a lunar day',
-          ),
-          _buildPanchangCard(
-            title: 'Vara',
-            value: _result!.vara,
-            subtitle: 'Weekday',
-            icon: FluentIcons.calendar,
-            color: Colors.green,
-            description: 'Day of the week ruled by a planet',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSunMoonTimesTab() {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverList(
-        delegate: SliverChildListDelegate([
-          Text(
-            'Sun & Moon Rise/Set Times',
-            style: FluentTheme.of(
-              context,
-            ).typography.subtitle?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTimeCard(
-                  title: 'Sunrise',
-                  time: _result!.sunrise ?? '--:--',
-                  icon: FluentIcons.sunny,
-                  color: Colors.orange,
-                  description:
-                      'The moment when the upper limb of the sun appears above the horizon',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildTimeCard(
-                  title: 'Sunset',
-                  time: _result!.sunset ?? '--:--',
-                  icon: FluentIcons.clear_night,
-                  color: Colors.orange,
-                  description:
-                      'The moment when the upper limb of the sun disappears below the horizon',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTimeCard(
-                  title: 'Moonrise',
-                  time: _result!.moonrise ?? '--:--',
-                  icon: FluentIcons.up,
-                  color: Colors.purple,
-                  description:
-                      'The moment when the upper limb of the moon appears above the horizon',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildTimeCard(
-                  title: 'Moonset',
-                  time: _result!.moonset ?? '--:--',
-                  icon: FluentIcons.down,
-                  color: Colors.purple,
-                  description:
-                      'The moment when the upper limb of the moon disappears below the horizon',
-                ),
-              ),
-            ],
-          ),
-          if (_moonPhase != null) ...[
-            const SizedBox(height: 16),
-            Card(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Moon Phase',
-                    style: FluentTheme.of(context).typography.bodyStrong
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${_moonPhase!.phaseName} (${_moonPhase!.illumination.toStringAsFixed(1)}% illuminated)',
-                  ),
-                  Text(
-                    'Lunar Age: ${_moonPhase!.lunarAge.toStringAsFixed(1)} days',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  Text(
-                    _moonPhase!.isWaxing ? 'Waxing Moon' : 'Waning Moon',
-                    style: TextStyle(
-                      color: _moonPhase!.isWaxing
-                          ? Colors.green
-                          : Colors.orange,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          if (_eclipseData != null) ...[
-            const SizedBox(height: 16),
-            Card(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(FluentIcons.warning, color: Colors.orange, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Eclipse Alert',
-                        style: FluentTheme.of(
-                          context,
-                        ).typography.bodyStrong?.copyWith(color: Colors.orange),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(_eclipseData!.description),
-                  Text(
-                    'Magnitude: ${_eclipseData!.magnitude.toStringAsFixed(3)}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  if (_eclipseData!.isVisible)
-                    Text(
-                      'Visible from your location',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  else
-                    Text(
-                      'Not visible from your location',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  Text(
-                    'Date: ${AppFormatters.formatDateTime(_eclipseData!.date.toLocal())}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue.withAlpha(20),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue.withAlpha(50)),
-            ),
-            child: Row(
-              children: [
-                Icon(FluentIcons.info, size: 16, color: Colors.blue),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Times are calculated for ${_selectedCity?.displayName ?? 'the selected location'} and shown in local time.',
-                    style: FluentTheme.of(
-                      context,
-                    ).typography.caption?.copyWith(color: Colors.grey),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildTimeCard({
-    required String title,
-    required String time,
-    required IconData icon,
-    required Color color,
-    required String description,
-  }) {
-    return HoverButton(
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) => ContentDialog(
-            title: Row(
-              children: [
-                Icon(icon, color: color),
-                const SizedBox(width: 12),
-                Text(title),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  time,
-                  style: FluentTheme.of(
-                    context,
-                  ).typography.title?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Text(description),
-              ],
-            ),
-            actions: [
-              Button(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-        );
-      },
-      builder: (context, states) {
-        return Card(
-          borderRadius: BorderRadius.circular(12),
-          padding: const EdgeInsets.all(16.0),
-          backgroundColor: states.isHovered ? color.withAlpha(15) : null,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withAlpha(25),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 24, color: color),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey,
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                time,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPanchangCard({
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required String description,
-  }) {
-    return HoverButton(
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) => ContentDialog(
-            title: Row(
-              children: [
-                Icon(icon, color: color),
-                const SizedBox(width: 12),
-                Text(title),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: FluentTheme.of(
-                    context,
-                  ).typography.title?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  subtitle,
-                  style: TextStyle(color: color, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 16),
-                Text(description),
-              ],
-            ),
-            actions: [
-              Button(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-        );
-      },
-      builder: (context, states) {
-        return Card(
-          borderRadius: BorderRadius.circular(8),
-          padding: const EdgeInsets.all(8.0),
-          backgroundColor: states.isHovered ? color.withAlpha(15) : null,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: color.withAlpha(25),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(icon, size: 14, color: color),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey,
-                            fontSize: 10,
-                          ),
-                        ),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            fontSize: 8,
-                            color: color,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTransitsTab() {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      sliver: SliverList(
-        delegate: SliverChildListDelegate([
-          _buildSectionHeading('Special Transits'),
-          const SizedBox(height: 8),
-          _buildPanchakCard(),
-          const SizedBox(height: 12),
-          Card(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      FluentIcons.sync_occurence,
-                      size: 16,
-                      color: FluentTheme.of(context).accentColor,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Sade Sati & Dhaiya',
-                      style: FluentTheme.of(
-                        context,
-                      ).typography.body?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const InfoBar(
-                  title: Text('Birth Chart Required'),
-                  content: Text(
-                    'Sade Sati (Saturn\'s 7.5-year transit) and Dhaiya (2.5-year Panoti) '
-                    'are calculated from the natal Moon sign. '
-                    'Open a birth chart → Analysis → Transit to see personalized Saturn transit analysis.',
-                  ),
-                  severity: InfoBarSeverity.info,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildPanchakCard() {
-    final panchak = _panchak;
-    if (panchak == null) {
-      return const Card(
-        padding: EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(FluentIcons.sync_occurence),
-            SizedBox(width: 12),
-            Expanded(child: Text('Panchak information loading…')),
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: ProgressRing(strokeWidth: 2),
-            ),
-          ],
-        ),
-      );
-    }
-    final isActive = panchak.isActive;
-    final color = isActive ? Colors.orange : Colors.green;
-    final icon = isActive ? FluentIcons.warning : FluentIcons.completed;
-    return Card(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withAlpha(30),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Panchak',
-                      style: FluentTheme.of(
-                        context,
-                      ).typography.body?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const Text(
-                      'Moon in last 5 nakshatras (Dhanishta → Revati)',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: color.withAlpha(25),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color.withAlpha(80)),
-                ),
-                child: Text(
-                  isActive ? 'Active' : 'Inactive',
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (isActive) ...[
-            const SizedBox(height: 14),
-            Text(panchak.description, style: const TextStyle(fontSize: 13)),
-            if ((panchak.daysRemaining ?? 0) > 0) ...[
-              const SizedBox(height: 6),
-              Text(
-                '${panchak.daysRemaining} day(s) remaining',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.withAlpha(160),
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            Text(
-              'Precautions:',
-              style: FluentTheme.of(
-                context,
-              ).typography.body?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 6),
-            ...panchak.precautions.map(
-              (p) => Padding(
-                padding: const EdgeInsets.only(left: 8, bottom: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(FluentIcons.warning, size: 12, color: Colors.orange),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(p, style: const TextStyle(fontSize: 13)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ] else
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: Text(
-                'Moon is not in any Panchak nakshatra today. '
-                'Auspicious activities can proceed without Panchak restrictions.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.withAlpha(160),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

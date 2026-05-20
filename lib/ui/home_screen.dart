@@ -130,9 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         header: PageHeader(
           title: const Text('AstroNaksh'),
           commandBar: CommandBar(
-            overflowBehavior: isMobile
-                ? CommandBarOverflowBehavior.dynamicOverflow
-                : CommandBarOverflowBehavior.noWrap,
+            overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
             primaryItems: [
               CommandBarButton(
                 icon: const Icon(FluentIcons.add),

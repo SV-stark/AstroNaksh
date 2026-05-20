@@ -24,6 +24,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (currentSettings != null) {
         _settings = ChartCustomization.fromJson(currentSettings.toJson());
         _initialized = true;
+      } else {
+        _settings = ChartCustomization();
+        _initialized = true;
       }
     }
   }
@@ -53,6 +56,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: NavigationView(
         titleBar: TitleBar(
           title: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (!isMobile)
                 IconButton(
@@ -66,15 +70,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               const SizedBox(width: 8),
               const Text('Settings'),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: FilledButton(
-                  onPressed: _saveSettings,
-                  child: const Text('Save'),
-                ),
-              ),
             ],
+          ),
+          endHeader: Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: FilledButton(
+              onPressed: _saveSettings,
+              child: const Text('Save'),
+            ),
           ),
         ),
         pane: NavigationPane(

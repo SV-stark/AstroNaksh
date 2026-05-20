@@ -1213,8 +1213,26 @@ class _ChartComparisonScreenState extends ConsumerState<ChartComparisonScreen> {
                         try {
                           final completeData = await _kpChartService
                               .generateCompleteChart(result);
-                          if (context.mounted) {
-                            Navigator.pop(context, completeData);
+                          if (completeData == null) {
+                            if (context.mounted) {
+                              displayInfoBar(
+                                context,
+                                builder: (context, close) {
+                                  return InfoBar(
+                                    title: const Text('Error'),
+                                    content: const Text(
+                                      'Failed to generate chart (result is null)',
+                                    ),
+                                    severity: InfoBarSeverity.error,
+                                    onClose: close,
+                                  );
+                                },
+                              );
+                            }
+                          } else {
+                            if (context.mounted) {
+                              Navigator.pop(context, completeData);
+                            }
                           }
                         } catch (e) {
                           if (context.mounted) {
@@ -1301,11 +1319,41 @@ class _ChartComparisonScreenState extends ConsumerState<ChartComparisonScreen> {
                                     final service = KPChartService();
                                     final completeData = await service
                                         .generateCompleteChart(birthData);
-                                    if (context.mounted) {
-                                      Navigator.pop(context, completeData);
+                                    if (completeData != null) {
+                                      if (context.mounted) {
+                                        Navigator.pop(context, completeData);
+                                      }
+                                    } else {
+                                      if (context.mounted) {
+                                        displayInfoBar(
+                                          context,
+                                          builder: (context, close) {
+                                            return InfoBar(
+                                              title: const Text('Error'),
+                                              content: const Text(
+                                                'Failed to generate complete chart',
+                                              ),
+                                              severity: InfoBarSeverity.error,
+                                              onClose: close,
+                                            );
+                                          },
+                                        );
+                                      }
                                     }
                                   } catch (e) {
-                                    // Handle error
+                                    if (context.mounted) {
+                                      displayInfoBar(
+                                        context,
+                                        builder: (context, close) {
+                                          return InfoBar(
+                                            title: const Text('Error'),
+                                            content: Text('Error: $e'),
+                                            severity: InfoBarSeverity.error,
+                                            onClose: close,
+                                          );
+                                        },
+                                      );
+                                    }
                                   }
                                 },
                               ),

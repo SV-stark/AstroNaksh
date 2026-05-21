@@ -131,6 +131,8 @@ class VargasTab extends StatelessWidget {
               ascendantSign: (chart.ascendantSign ?? 0) + 1,
               style: style,
               size: chartSize,
+              completeData: data,
+              divisionalChart: chart,
               onHouseTapped: (houseIndex) {
                 showHouseDetailsPanel(
                   context: context,

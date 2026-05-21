@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:lat_lng_to_timezone/lat_lng_to_timezone.dart' as tzlookup;
 
 /// City Database with GPS Integration
 /// Comprehensive database of world cities with coordinates
@@ -24,13 +25,15 @@ class CityDatabase {
       final List<dynamic> jsonList = json.decode(jsonString);
 
       _cities = jsonList.map((json) {
+        final lat = (json['la'] as num).toDouble();
+        final lon = (json['lo'] as num).toDouble();
         return City(
           name: json['n'] as String,
           state: json['s'] as String,
           country: json['c'] as String,
-          latitude: (json['la'] as num).toDouble(),
-          longitude: (json['lo'] as num).toDouble(),
-          timezone: 'Asia/Kolkata', // Dataset is India-focused
+          latitude: lat,
+          longitude: lon,
+          timezone: tzlookup.latLngToTimezoneString(lat, lon),
         );
       }).toList();
 

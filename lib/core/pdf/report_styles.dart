@@ -4,11 +4,11 @@ import 'package:printing/printing.dart';
 
 class ReportStyles {
   // Colors
-  static const primaryColor = PdfColor.fromInt(0xFF1A237E); // Indigo 900
-  static const accentColor = PdfColor.fromInt(0xFFB8860B); // Dark Goldenrod
-  static const textColor = PdfColor.fromInt(0xFF212121); // Grey 900
-  static const secondaryTextColor = PdfColor.fromInt(0xFF757575); // Grey 600
-  static const lightBackgroundColor = PdfColor.fromInt(
+  static PdfColor primaryColor = const PdfColor.fromInt(0xFF1A237E); // Indigo 900
+  static PdfColor accentColor = const PdfColor.fromInt(0xFFB8860B); // Dark Goldenrod
+  static PdfColor textColor = const PdfColor.fromInt(0xFF212121); // Grey 900
+  static PdfColor secondaryTextColor = const PdfColor.fromInt(0xFF757575); // Grey 600
+  static PdfColor lightBackgroundColor = const PdfColor.fromInt(
     0xFFFFF8E1,
   ); // Amber 50 (subtle cream)
   static const white = PdfColors.white;
@@ -65,7 +65,7 @@ class ReportStyles {
   }
 
   // Decorations
-  static pw.BoxDecoration cardDecoration = pw.BoxDecoration(
+  static pw.BoxDecoration get cardDecoration => pw.BoxDecoration(
     color: white,
     borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
     border: pw.Border.all(color: primaryColor.shade(0.1), width: 1),

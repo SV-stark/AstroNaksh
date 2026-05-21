@@ -12,12 +12,14 @@ class AspectPainter extends CustomPainter {
     required this.ascendantSign,
     required this.colors,
     this.lineOpacity = 0.4,
+    this.activeHouse,
   });
   final List<PlanetaryAspect> aspects;
   final Map<int, List<String>> planetsBySign;
   final int ascendantSign;
   final ChartColors colors;
   final double lineOpacity;
+  final int? activeHouse;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -43,6 +45,8 @@ class AspectPainter extends CustomPainter {
       Offset(width * 0.75, height / 8), // 12th
     ];
 
+    final planetHouses = <j.Planet, int>{};
+
     // Map planets to their positions
     for (var houseIndex = 0; houseIndex < 12; houseIndex++) {
       final signIndex = ((ascendantSign - 1) + houseIndex) % 12;
@@ -59,6 +63,7 @@ class AspectPainter extends CustomPainter {
           final planet = _getPlanetFromName(planetName);
 
           if (planet != null) {
+            planetHouses[planet] = houseIndex;
             // Offset planets slightly so they don't all overlap
             final offsetX = (i % 3 - 1) * width / 15;
             final offsetY = (i ~/ 3 - 0.5) * height / 20;
@@ -77,10 +82,17 @@ class AspectPainter extends CustomPainter {
       final endPos = planetPositions[aspect.aspectedPlanet];
 
       if (startPos != null && endPos != null) {
+        final startHouse = planetHouses[aspect.aspectingPlanet];
+        final endHouse = planetHouses[aspect.aspectedPlanet];
+
+        final bool isLineActive = activeHouse == null ||
+            (startHouse == activeHouse || endHouse == activeHouse);
+        final double opacity = isLineActive ? lineOpacity : 0.05;
+
         final paint = Paint()
           ..color = PlanetaryAspectService.getAspectColor(
             aspect.type,
-            opacity: lineOpacity,
+            opacity: opacity,
           )
           ..strokeWidth = _getAspectLineWidth(aspect.type)
           ..style = PaintingStyle.stroke;
@@ -88,12 +100,14 @@ class AspectPainter extends CustomPainter {
         // Draw straight line between planets
         canvas.drawLine(startPos, endPos, paint);
 
-        // Draw small indicator at midpoint showing aspect symbol
-        final midPoint = Offset(
-          (startPos.dx + endPos.dx) / 2,
-          (startPos.dy + endPos.dy) / 2,
-        );
-        _drawAspectIndicator(canvas, midPoint, aspect.type);
+        if (isLineActive) {
+          // Draw small indicator at midpoint showing aspect symbol
+          final midPoint = Offset(
+            (startPos.dx + endPos.dx) / 2,
+            (startPos.dy + endPos.dy) / 2,
+          );
+          _drawAspectIndicator(canvas, midPoint, aspect.type);
+        }
       }
     }
   }

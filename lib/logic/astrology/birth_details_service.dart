@@ -1,4 +1,5 @@
 import 'package:jyotish/jyotish.dart';
+import 'package:timezone/timezone.dart' as tz;
 import '../../core/ayanamsa_calculator.dart';
 import '../../core/ephemeris_manager.dart';
 import '../../core/utils/formatters.dart';
@@ -60,7 +61,15 @@ class BirthDetailsService {
     final lmt = gmt.add(Duration(minutes: (lonHours * 60).round()));
 
     // LMT Correction (Correction from standard timezone)
-    final tzHours = double.tryParse(birthData.timezone) ?? 5.5;
+    double tzHours = 5.5;
+    try {
+      final loc = tz.getLocation(birthData.timezone);
+      final offsetMs = loc.timeZone(birthData.dateTime.millisecondsSinceEpoch).offset;
+      tzHours = offsetMs / 3600000.0;
+    } catch (e) {
+      final parsed = double.tryParse(birthData.timezone);
+      if (parsed != null) tzHours = parsed;
+    }
     final lmtCorrectionMinutes =
         (birthData.location.longitude - (tzHours * 15.0)) * 4.0;
     final lmtCorrection =

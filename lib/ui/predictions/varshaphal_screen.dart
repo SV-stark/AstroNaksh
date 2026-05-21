@@ -287,6 +287,7 @@ class _VarshaphalScreenState extends ConsumerState<VarshaphalScreen> {
               ascendantSign: ascSign,
               style: ChartStyle.northIndian,
               size: 300,
+              baseChart: chart.chart,
             ),
           ],
         ),

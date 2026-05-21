@@ -1587,6 +1587,7 @@ class _ChartComparisonScreenState extends ConsumerState<ChartComparisonScreen> {
       ascendantSign: ascSign,
       style: ChartStyle.northIndian,
       size: 300,
+      completeData: data,
     );
   }
 

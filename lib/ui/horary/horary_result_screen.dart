@@ -219,6 +219,7 @@ class _HoraryResultScreenState extends ConsumerState<HoraryResultScreen> {
                       ascendantSign: ascSign,
                       style: style,
                       size: chartSize,
+                      baseChart: chart.baseChart,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -232,6 +233,7 @@ class _HoraryResultScreenState extends ConsumerState<HoraryResultScreen> {
                         ascendantSign: ascSign,
                         style: style,
                         size: chartSize,
+                        baseChart: chart.baseChart,
                       ),
                       const SizedBox(width: 24),
                       Expanded(

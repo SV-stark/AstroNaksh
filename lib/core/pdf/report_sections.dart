@@ -16,6 +16,7 @@ class ReportSections {
     required String title,
     pw.MemoryImage? coverImage,
     pw.MemoryImage? backgroundImage,
+    pw.MemoryImage? logo,
   }) {
     return pw.Page(
       pageFormat: PdfPageFormat.a4,
@@ -43,6 +44,15 @@ class ReportSections {
                 child: pw.Column(
                   mainAxisAlignment: pw.MainAxisAlignment.center,
                   children: [
+                    if (logo != null) ...[
+                      pw.Container(
+                        height: 80,
+                        width: 80,
+                        alignment: pw.Alignment.center,
+                        child: pw.Image(logo),
+                      ),
+                      pw.SizedBox(height: 20),
+                    ],
                     pw.Text(
                       'ASTRONAKSH',
                       style: pw.TextStyle(

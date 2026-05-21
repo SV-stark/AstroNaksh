@@ -69,6 +69,7 @@ class D1Tab extends StatelessWidget {
               size: chartSize,
               aspects: aspects,
               showAspects: showAspects,
+              completeData: data,
               onHouseTapped: (houseIndex) {
                 showHouseDetailsPanel(
                   context: context,

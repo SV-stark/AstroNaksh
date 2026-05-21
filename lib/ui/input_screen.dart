@@ -3,6 +3,8 @@ import 'package:drift/drift.dart' as drift;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lat_lng_to_timezone/lat_lng_to_timezone.dart' as tzlookup;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../../core/database.dart';
 import '../../data/city_database.dart';
@@ -23,13 +25,64 @@ class _InputScreenState extends ConsumerState<InputScreen> {
   final TextEditingController _citySearchController = TextEditingController();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
+  final TextEditingController _timezoneController = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
   DateTime _selectedTime = DateTime.now();
   City? _selectedCity;
   List<AutoSuggestBoxItem<City>> _cityItems = [];
+  List<AutoSuggestBoxItem<String>> _timezoneItems = [];
   bool _isLoadingLocation = false;
   bool _useManualCoordinates = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _latitudeController.addListener(_updateTimezoneFromCoords);
+    _longitudeController.addListener(_updateTimezoneFromCoords);
+  }
+
+  void _updateTimezoneFromCoords() {
+    final lat = double.tryParse(_latitudeController.text);
+    final lon = double.tryParse(_longitudeController.text);
+    if (lat != null &&
+        lon != null &&
+        lat >= -90 &&
+        lat <= 90 &&
+        lon >= -180 &&
+        lon <= 180) {
+      try {
+        final guessed = tzlookup.latLngToTimezoneString(lat, lon);
+        if (_timezoneController.text != guessed) {
+          setState(() {
+            _timezoneController.text = guessed;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error looking up timezone: $e');
+      }
+    }
+  }
+
+  void _onTimezoneSearch(String text) {
+    final list = tz.timeZoneDatabase.locations.keys;
+    final results = list
+        .where((loc) => loc.toLowerCase().contains(text.toLowerCase()))
+        .take(15);
+    setState(() {
+      _timezoneItems = results.map((tzone) {
+        return AutoSuggestBoxItem<String>(
+          value: tzone,
+          label: tzone,
+          onSelected: () {
+            setState(() {
+              _timezoneController.text = tzone;
+            });
+          },
+        );
+      }).toList();
+    });
+  }
 
   void _onCitySearch(String text) {
     if (text.length < 2) {
@@ -196,7 +249,9 @@ class _InputScreenState extends ConsumerState<InputScreen> {
         long = double.parse(_longitudeController.text);
         locationName =
             'Lat: ${lat.toStringAsFixed(4)}, Long: ${long.toStringAsFixed(4)}';
-        timezone = DateTime.now().timeZoneName;
+        timezone = _timezoneController.text.isNotEmpty
+            ? _timezoneController.text
+            : 'UTC';
       } else {
         lat = _selectedCity!.latitude;
         long = _selectedCity!.longitude;
@@ -276,6 +331,7 @@ class _InputScreenState extends ConsumerState<InputScreen> {
     _citySearchController.dispose();
     _latitudeController.dispose();
     _longitudeController.dispose();
+    _timezoneController.dispose();
     super.dispose();
   }
 
@@ -499,77 +555,130 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                                       },
                                     ),
                                   ),
-                                ],
-                              )
-                            : Row(
-                                children: [
-                                  Expanded(
-                                    child: InfoLabel(
-                                      label: 'Latitude (-90 to 90)',
-                                      child: TextFormBox(
-                                        controller: _latitudeController,
-                                        placeholder: 'e.g., 28.6139',
-                                        prefix: const Padding(
-                                          padding: EdgeInsets.only(left: 8.0),
-                                          child: Icon(FluentIcons.globe),
-                                        ),
-                                        keyboardType:
-                                            const TextInputType.numberWithOptions(
-                                              decimal: true,
-                                              signed: true,
-                                            ),
-                                        validator: (value) {
-                                          if (!_useManualCoordinates) {
-                                            return null;
-                                          }
-                                          if (value == null || value.isEmpty) {
-                                            return 'Required';
-                                          }
-                                          final lat = double.tryParse(value);
-                                          if (lat == null) {
-                                            return 'Invalid number';
-                                          }
-                                          if (lat < -90 || lat > 90) {
-                                            return 'Must be -90 to 90';
-                                          }
-                                          return null;
-                                        },
-                                      ),
+                                  const SizedBox(height: 16),
+                                  InfoLabel(
+                                    label: 'Timezone Override',
+                                    child: AutoSuggestBox<String>(
+                                      controller: _timezoneController,
+                                      items: _timezoneItems,
+                                      onChanged: (text, reason) {
+                                        _onTimezoneSearch(text);
+                                      },
+                                      onSelected: (item) {
+                                        setState(() {
+                                          _timezoneController.text = item.value!;
+                                        });
+                                      },
+                                      placeholder: 'e.g., Europe/London',
+                                      validator: (value) {
+                                        if (!_useManualCoordinates) return null;
+                                        if (value == null || value.isEmpty) {
+                                          return 'Required';
+                                        }
+                                        return null;
+                                      },
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: InfoLabel(
-                                      label: 'Longitude (-180 to 180)',
-                                      child: TextFormBox(
-                                        controller: _longitudeController,
-                                        placeholder: 'e.g., 77.2090',
-                                        prefix: const Padding(
-                                          padding: EdgeInsets.only(left: 8.0),
-                                          child: Icon(FluentIcons.globe),
-                                        ),
-                                        keyboardType:
-                                            const TextInputType.numberWithOptions(
-                                              decimal: true,
-                                              signed: true,
+                                ],
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: InfoLabel(
+                                          label: 'Latitude (-90 to 90)',
+                                          child: TextFormBox(
+                                            controller: _latitudeController,
+                                            placeholder: 'e.g., 28.6139',
+                                            prefix: const Padding(
+                                              padding: EdgeInsets.only(left: 8.0),
+                                              child: Icon(FluentIcons.globe),
                                             ),
-                                        validator: (value) {
-                                          if (!_useManualCoordinates) {
-                                            return null;
-                                          }
-                                          if (value == null || value.isEmpty) {
-                                            return 'Required';
-                                          }
-                                          final long = double.tryParse(value);
-                                          if (long == null) {
-                                            return 'Invalid number';
-                                          }
-                                          if (long < -180 || long > 180) {
-                                            return 'Must be -180 to 180';
-                                          }
-                                          return null;
-                                        },
+                                            keyboardType:
+                                                const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                  signed: true,
+                                                ),
+                                            validator: (value) {
+                                              if (!_useManualCoordinates) {
+                                                return null;
+                                              }
+                                              if (value == null || value.isEmpty) {
+                                                return 'Required';
+                                              }
+                                              final lat = double.tryParse(value);
+                                              if (lat == null) {
+                                                return 'Invalid number';
+                                              }
+                                              if (lat < -90 || lat > 90) {
+                                                return 'Must be -90 to 90';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
                                       ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: InfoLabel(
+                                          label: 'Longitude (-180 to 180)',
+                                          child: TextFormBox(
+                                            controller: _longitudeController,
+                                            placeholder: 'e.g., 77.2090',
+                                            prefix: const Padding(
+                                              padding: EdgeInsets.only(left: 8.0),
+                                              child: Icon(FluentIcons.globe),
+                                            ),
+                                            keyboardType:
+                                                const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                  signed: true,
+                                                ),
+                                            validator: (value) {
+                                              if (!_useManualCoordinates) {
+                                                return null;
+                                              }
+                                              if (value == null || value.isEmpty) {
+                                                return 'Required';
+                                              }
+                                              final long = double.tryParse(value);
+                                              if (long == null) {
+                                                return 'Invalid number';
+                                              }
+                                              if (long < -180 || long > 180) {
+                                                return 'Must be -180 to 180';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  InfoLabel(
+                                    label: 'Timezone Override',
+                                    child: AutoSuggestBox<String>(
+                                      controller: _timezoneController,
+                                      items: _timezoneItems,
+                                      onChanged: (text, reason) {
+                                        _onTimezoneSearch(text);
+                                      },
+                                      onSelected: (item) {
+                                        setState(() {
+                                          _timezoneController.text = item.value!;
+                                        });
+                                      },
+                                      placeholder: 'e.g., Europe/London',
+                                      validator: (value) {
+                                        if (!_useManualCoordinates) return null;
+                                        if (value == null || value.isEmpty) {
+                                          return 'Required';
+                                        }
+                                        return null;
+                                      },
                                     ),
                                   ),
                                 ],

@@ -6,14 +6,21 @@ import '../data/models.dart';
 class DivisionalCharts {
   /// Calculate all 16 divisional charts for a given rasi chart
   /// Returns a map of chart codes to DivisionalChartData objects
-  static Map<String, DivisionalChartData> calculateAllCharts(VedicChart chart) {
+  static Map<String, DivisionalChartData> calculateAllCharts(
+    VedicChart chart, {
+    VargaConfiguration? config,
+  }) {
     _service ??= DivisionalChartService();
 
     final result = <String, DivisionalChartData>{};
 
     for (final type in DivisionalChartType.values) {
       final code = type.code.toUpperCase().replaceFirst('D', 'D-');
-      final dChart = _service!.calculateDivisionalChart(chart, type);
+      final dChart = _service!.calculateDivisionalChart(
+        chart,
+        type,
+        config: config,
+      );
 
       result[code] = _mapToData(dChart, type);
     }

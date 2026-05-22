@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:jyotish/jyotish.dart';
 
+import '../../core/ephemeris_manager.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 import 'matching_models.dart';
 
 /// Extensive Kundali Matching Service
-/// Uses library's CompatibilityService for core calculations
+/// Uses library's CompatibilityReport for core calculations
 class MatchingService {
-  static final CompatibilityService _compatibilityService =
-      CompatibilityService();
-
   /// Analyze compatibility extensively
   static MatchingReport analyzeCompatibility(
     CompleteChartData groom,
     CompleteChartData bride,
   ) {
     // Use library's core compatibility calculation
-    final libraryResult = _compatibilityService.calculateCompatibility(
+    final libraryReport = EphemerisManager.jyotish.calculateCompatibilityReport(
       groom.baseChart,
       bride.baseChart,
     );
@@ -33,7 +31,7 @@ class MatchingService {
     final dashaSandhi = _checkDashaSandhi(groom, bride);
 
     // Convert library's GunaScores to our KootaResult format
-    final libraryGuna = libraryResult.gunaScores;
+    final libraryGuna = libraryReport.gunaScores;
     final allKootas = <KootaResult>[
       _convertKoota('Varna', libraryGuna.varna, 1),
       _convertKoota('Vashya', libraryGuna.vashya, 2),
@@ -46,21 +44,66 @@ class MatchingService {
     ];
 
     // Convert library's Manglik/Dosha results
-    final manglikMatch = _convertManglikMatch(
-      libraryResult.doshaCheck,
-      groom,
-      bride,
+    final boyIsManglik = libraryReport.boyManglik;
+    final girlIsManglik = libraryReport.girlManglik;
+    final boyCancelled = libraryReport.boyManglikCancellations.isNotEmpty;
+    final girlCancelled = libraryReport.girlManglikCancellations.isNotEmpty;
+
+    var isMatch = false;
+    var description = '';
+    String? cancellationReason;
+
+    if (!boyIsManglik && !girlIsManglik) {
+      isMatch = true;
+      description = 'Neither is Manglik. Good compatibility.';
+    } else if (boyIsManglik && girlIsManglik) {
+      isMatch = true;
+      description = 'Both are Manglik. Dosha cancels out.';
+      cancellationReason = 'Mutual cancellation: both partners are Manglik.';
+    } else {
+      // One is Manglik, one is not
+      final isBoyManglikAndNotCancelled = boyIsManglik && !boyCancelled;
+      final isGirlManglikAndNotCancelled = girlIsManglik && !girlCancelled;
+
+      if (!isBoyManglikAndNotCancelled && !isGirlManglikAndNotCancelled) {
+        // This means whoever was Manglik has cancellation reasons!
+        isMatch = true;
+        if (boyIsManglik) {
+          description = 'Groom is Manglik (Cancelled). Compatible.';
+          cancellationReason = libraryReport.boyManglikCancellations.join('. ');
+        } else {
+          description = 'Bride is Manglik (Cancelled). Compatible.';
+          cancellationReason = libraryReport.girlManglikCancellations.join('. ');
+        }
+      } else {
+        isMatch = false;
+        final mPerson = boyIsManglik ? 'Groom' : 'Bride';
+        description = '$mPerson is Manglik, while the other is not.';
+        if (boyIsManglik && boyCancelled) {
+          cancellationReason = 'Groom has partial cancellations: ${libraryReport.boyManglikCancellations.join('. ')}';
+        } else if (girlIsManglik && girlCancelled) {
+          cancellationReason = 'Bride has partial cancellations: ${libraryReport.girlManglikCancellations.join('. ')}';
+        }
+      }
+    }
+
+    final manglikMatch = ManglikMatchResult(
+      isMatch: isMatch,
+      description: description,
+      maleManglik: boyIsManglik,
+      femaleManglik: girlIsManglik,
+      cancellationReason: cancellationReason,
     );
 
     // Build conclusion from library + extras
     String conclusion;
     Color color;
 
-    final totalScore = libraryResult.totalScore;
+    final totalScore = libraryReport.totalScore;
     final criticalDosha =
         !manglikMatch.isMatch ||
         !_areExtrasGood(extraChecks) ||
-        libraryResult.doshaCheck.hasNadiDosha;
+        libraryReport.hasNadiDosha;
 
     if (totalScore >= 28) {
       if (!criticalDosha) {
@@ -85,14 +128,14 @@ class MatchingService {
 
     // Convert DoshaSamyam from library
     final doshaSamyam = DoshaSamyamResult(
-      maleScore: libraryResult.doshaCheck.hasManglikDosha ? 1.0 : 0.0,
-      femaleScore: libraryResult.doshaCheck.hasNadiDosha ? 1.0 : 0.0,
-      isGood: !libraryResult.doshaCheck.hasNadiDosha,
-      description: libraryResult.analysis.join('. '),
+      maleScore: libraryReport.boyManglik ? 1.0 : 0.0,
+      femaleScore: libraryReport.girlManglik ? 1.0 : 0.0,
+      isGood: !libraryReport.hasNadiDosha && !libraryReport.hasBhakootDosha,
+      description: libraryReport.analysis.join('. '),
     );
 
     return MatchingReport(
-      ashtakootaScore: totalScore.toDouble(),
+      ashtakootaScore: totalScore,
       kootaResults: allKootas,
       manglikMatch: manglikMatch,
       extraChecks: extraChecks,
@@ -124,39 +167,6 @@ class MatchingService {
       description: description,
       detailedReason: '$name score: $score/$maxScore',
       color: color,
-    );
-  }
-
-  static ManglikMatchResult _convertManglikMatch(
-    DoshaCheck doshaCheck,
-    CompleteChartData groom,
-    CompleteChartData bride,
-  ) {
-    final manglikBoy = _compatibilityService.checkManglikDosha(groom.baseChart);
-    final manglikGirl = _compatibilityService.checkManglikDosha(
-      bride.baseChart,
-    );
-
-    var match = false;
-    var desc = '';
-
-    if (manglikBoy.isManglik && manglikGirl.isManglik) {
-      match = true;
-      desc = 'Both are Manglik. Dosha cancels out.';
-    } else if (!manglikBoy.isManglik && !manglikGirl.isManglik) {
-      match = true;
-      desc = 'Neither is Manglik. Good compatibility.';
-    } else {
-      match = false;
-      final mPerson = manglikBoy.isManglik ? 'Groom' : 'Bride';
-      desc = '$mPerson is Manglik, while the other is not.';
-    }
-
-    return ManglikMatchResult(
-      isMatch: match,
-      description: desc,
-      maleManglik: manglikBoy.isManglik,
-      femaleManglik: manglikGirl.isManglik,
     );
   }
 

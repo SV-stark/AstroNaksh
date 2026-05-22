@@ -6,7 +6,10 @@ import 'dasha_system.dart';
 import 'divisional_charts.dart';
 
 class KPChartService {
-  Future<CompleteChartData?> generateCompleteChart(BirthData birthData) async {
+  Future<CompleteChartData?> generateCompleteChart(
+    BirthData birthData, {
+    VargaConfiguration? vargaConfig,
+  }) async {
     return AppErrorHandler().safeAsync<CompleteChartData?>(
       () async {
         await EphemerisManager.ensureEphemerisData();
@@ -61,11 +64,23 @@ class KPChartService {
           dayLord: dayLord,
         ); // Use static
         final dashaData = await _calculateDashaSystems(chart);
-        final divisionalCharts = DivisionalCharts.calculateAllCharts(chart);
+        final divisionalCharts = DivisionalCharts.calculateAllCharts(
+          chart,
+          config: vargaConfig,
+        );
         final significatorTable = generateSignificatorTable(
           nativeKPData,
           chart,
         );
+
+        final grahaYuddha = EphemerisManager.jyotish.checkGrahaYuddha(chart);
+        SpecialLagnas? specialLagnas;
+        if (sunrise != null) {
+          specialLagnas = EphemerisManager.jyotish.calculateSpecialLagnas(
+            chart,
+            sunrise,
+          );
+        }
 
         return CompleteChartData(
           baseChart: chart,
@@ -74,6 +89,8 @@ class KPChartService {
           divisionalCharts: divisionalCharts,
           significatorTable: significatorTable,
           birthData: birthData,
+          grahaYuddha: grahaYuddha,
+          specialLagnas: specialLagnas,
         );
       },
       defaultValue: null,

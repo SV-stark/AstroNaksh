@@ -6,6 +6,7 @@ import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jyotish/jyotish.dart';
 
 import '../../core/ayanamsa_calculator.dart';
 import '../../core/chart_customization.dart';
@@ -17,6 +18,7 @@ import '../../core/settings_state.dart';
 import '../../data/models.dart';
 import '../../logic/kp_chart_service.dart';
 import 'analysis/gochara_vedha_screen.dart';
+import 'analysis/graha_yuddha_screen.dart';
 import 'analysis/jaimini_screen.dart';
 import 'analysis/nadi_screen.dart';
 import 'analysis/planetary_maitri_screen.dart';
@@ -117,8 +119,21 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
 
   void _loadChartData() {
     if (_birthData != null) {
+      final settingsState =
+          ref.read(settingsProvider).value ??
+          SettingsState(chartSettings: ChartCustomization());
+      final chartSettings = settingsState.chartSettings;
+      final vargaConfig = VargaConfiguration(
+        horaMethod: chartSettings.horaMethod,
+        drekkanaMethod: chartSettings.drekkanaMethod,
+        navamshaMethod: chartSettings.navamshaMethod,
+        dashamshaMethod: chartSettings.dashamshaMethod,
+      );
       setState(() {
-        _chartDataFuture = _kpChartService.generateCompleteChart(_birthData!);
+        _chartDataFuture = _kpChartService.generateCompleteChart(
+          _birthData!,
+          vargaConfig: vargaConfig,
+        );
       });
     }
   }
@@ -623,6 +638,9 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
       case 'gochara_vedha':
         screen = GocharaVedhaScreen(chartData: chartData);
         break;
+      case 'graha_yuddha':
+        screen = GrahaYuddhaScreen(chartData: chartData);
+        break;
       case 'pdf_report':
         screen = PDFReportScreen(chartData: chartData);
         break;
@@ -850,10 +868,15 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                                 leading: const Icon(FluentIcons.flow),
                                 onPressed: () => _navigateTo('nadi'),
                               ),
-                              MenuFlyoutItem(
+                               MenuFlyoutItem(
                                 text: const Text('Gochara Vedha'),
                                 leading: const Icon(FluentIcons.sync_occurence),
                                 onPressed: () => _navigateTo('gochara_vedha'),
+                              ),
+                              MenuFlyoutItem(
+                                text: const Text('Planetary War (Graha Yuddha)'),
+                                leading: const Icon(FluentIcons.warning),
+                                onPressed: () => _navigateTo('graha_yuddha'),
                               ),
                             ],
                           ),
@@ -937,6 +960,11 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                                       'Gochara Vedha',
                                       'gochara_vedha',
                                       FluentIcons.sync_occurence,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Planetary War (Graha Yuddha)',
+                                      'graha_yuddha',
+                                      FluentIcons.warning,
                                     ),
                                     const Divider(),
                                     _buildMobileAnalysisLink(
@@ -1278,6 +1306,11 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                                     'Comparison',
                                     'comparison',
                                     FluentIcons.compare,
+                                  ),
+                                  _buildMobileAnalysisLink(
+                                    'Planetary War (Graha Yuddha)',
+                                    'graha_yuddha',
+                                    FluentIcons.warning,
                                   ),
                                   const Divider(),
                                   _buildMobileAnalysisLink(

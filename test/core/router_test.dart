@@ -2,20 +2,20 @@ import 'dart:io';
 
 import 'package:astronaksh/core/database.dart';
 import 'package:astronaksh/core/router.dart';
+import 'package:astronaksh/ui/comparison/chart_comparison_screen.dart';
 import 'package:astronaksh/ui/home_screen.dart';
 import 'package:astronaksh/ui/input_screen.dart';
 import 'package:astronaksh/ui/loading_screen.dart';
 import 'package:astronaksh/ui/panchang_screen.dart';
 import 'package:astronaksh/ui/settings_screen.dart';
-import 'package:astronaksh/ui/comparison/chart_comparison_screen.dart';
 import 'package:astronaksh/ui/tools/muhurta_finder_screen.dart';
 import 'package:drift/native.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:flutter/services.dart';
 
 void main() {
   setUpAll(() async {
@@ -106,9 +106,7 @@ void main() {
       router.go('/panchang');
       await tester.pump();
       await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
-      await tester.pumpAndSettle();
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       expect(find.byType(PanchangScreen), findsOneWidget);
     });
 
@@ -123,9 +121,7 @@ void main() {
       router.go('/comparison');
       await tester.pump();
       await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
-      await tester.pumpAndSettle();
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       expect(find.byType(ChartComparisonScreen), findsOneWidget);
     });
 
@@ -139,10 +135,8 @@ void main() {
       );
       router.go('/muhurta');
       await tester.pump();
-      await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
-      await tester.pumpAndSettle();
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() => Future.delayed(const Duration(seconds: 6)));
+      await tester.pump(const Duration(seconds: 2));
       expect(find.byType(MuhurtaFinderScreen), findsOneWidget);
     });
   });

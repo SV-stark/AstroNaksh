@@ -61,11 +61,13 @@ class BirthDetailsService {
     final lmt = gmt.add(Duration(minutes: (lonHours * 60).round()));
 
     // LMT Correction (Correction from standard timezone)
-    double tzHours = 5.5;
+    var tzHours = 5.5;
     try {
       final loc = tz.getLocation(birthData.timezone);
-      final offsetMs = loc.timeZone(birthData.dateTime.millisecondsSinceEpoch).offset;
-      tzHours = offsetMs / 3600000.0;
+      final offsetMs = loc
+          .timeZone(birthData.dateTime.millisecondsSinceEpoch)
+          .offset;
+      tzHours = offsetMs.inMilliseconds / 3600000.0;
     } catch (e) {
       final parsed = double.tryParse(birthData.timezone);
       if (parsed != null) tzHours = parsed;

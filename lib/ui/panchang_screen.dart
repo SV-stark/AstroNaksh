@@ -708,36 +708,28 @@ class _PanchangScreenState extends State<PanchangScreen> {
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       sliver: SliverToBoxAdapter(
-                        child: PanchangHoraTab(
-                          horas: _horas,
-                        ),
+                        child: PanchangHoraTab(horas: _horas),
                       ),
                     )
                   else if (_selectedTabIndex == 5)
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       sliver: SliverToBoxAdapter(
-                        child: PanchangChoghadiyaTab(
-                          choghadiya: _choghadiya,
-                        ),
+                        child: PanchangChoghadiyaTab(choghadiya: _choghadiya),
                       ),
                     )
                   else if (_selectedTabIndex == 6)
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       sliver: SliverToBoxAdapter(
-                        child: PanchangGowriTab(
-                          gowri: _gowri,
-                        ),
+                        child: PanchangGowriTab(gowri: _gowri),
                       ),
                     )
                   else if (_selectedTabIndex == 7)
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       sliver: SliverToBoxAdapter(
-                        child: PanchangTransitsTab(
-                          panchak: _panchak,
-                        ),
+                        child: PanchangTransitsTab(panchak: _panchak),
                       ),
                     ),
 

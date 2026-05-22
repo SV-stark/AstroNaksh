@@ -184,11 +184,11 @@ class AppEnvironment {
       _logFile!
           .writeAsString('$logMessage\n', mode: FileMode.append)
           .catchError((_) {
-        try {
-          stdout.writeln(logMessage);
-        } catch (_) {}
-        return _logFile!;
-      });
+            try {
+              stdout.writeln(logMessage);
+            } catch (_) {}
+            return _logFile!;
+          });
     }
   }
 }

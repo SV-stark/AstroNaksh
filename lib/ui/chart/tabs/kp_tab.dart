@@ -1,7 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
 
-
 import '../../../data/models.dart';
 import '../../utils/responsive_helper.dart';
 import '../chart_helpers.dart';

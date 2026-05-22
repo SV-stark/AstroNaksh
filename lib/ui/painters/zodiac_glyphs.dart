@@ -18,7 +18,7 @@ class ZodiacGlyphs {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..antiAlias = true;
+      ..isAntiAlias = true;
 
     final path = getGlyphPath(signIndex);
 
@@ -52,7 +52,9 @@ class ZodiacGlyphs {
         path.moveTo(0.6, -0.5);
         path.cubicTo(0.5, -0.1, 0.3, -0.1, 0.3, -0.1);
         // Head circle
-        path.addOval(Rect.fromCircle(center: const Offset(0, 0.3), radius: 0.45));
+        path.addOval(
+          Rect.fromCircle(center: const Offset(0, 0.3), radius: 0.45),
+        );
         break;
 
       case 2: // Gemini (Roman Numeral II)
@@ -70,13 +72,17 @@ class ZodiacGlyphs {
 
       case 3: // Cancer (Crab claws - 69 shape sideways/vertical)
         // Top claw loop
-        path.addOval(Rect.fromCircle(center: const Offset(-0.35, -0.25), radius: 0.15));
+        path.addOval(
+          Rect.fromCircle(center: const Offset(-0.35, -0.25), radius: 0.15),
+        );
         path.moveTo(-0.2, -0.25);
         path.cubicTo(0.0, -0.25, 0.5, -0.25, 0.5, -0.55);
         path.cubicTo(0.5, -0.8, 0.1, -0.75, -0.1, -0.55);
-        
+
         // Bottom claw loop
-        path.addOval(Rect.fromCircle(center: const Offset(0.35, 0.25), radius: 0.15));
+        path.addOval(
+          Rect.fromCircle(center: const Offset(0.35, 0.25), radius: 0.15),
+        );
         path.moveTo(0.2, 0.25);
         path.cubicTo(0.0, 0.25, -0.5, 0.25, -0.5, 0.55);
         path.cubicTo(-0.5, 0.8, -0.1, 0.75, 0.1, 0.55);
@@ -84,7 +90,9 @@ class ZodiacGlyphs {
 
       case 4: // Leo (Lion's Tail & Mane)
         // Mane circle
-        path.addOval(Rect.fromCircle(center: const Offset(-0.35, 0.35), radius: 0.15));
+        path.addOval(
+          Rect.fromCircle(center: const Offset(-0.35, 0.35), radius: 0.15),
+        );
         // Wave/tail
         path.moveTo(-0.2, 0.35);
         path.cubicTo(-0.1, 0.35, -0.1, -0.55, -0.35, -0.55);

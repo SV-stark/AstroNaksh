@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:astronaksh/core/database.dart';
@@ -31,30 +32,28 @@ void main() {
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => const ScaffoldPage(content: SizedBox.shrink()),
+            builder: (context, state) =>
+                const ScaffoldPage(content: SizedBox.shrink()),
           ),
           GoRoute(
             path: '/input',
-            builder: (context, state) => const InputScreen(onSelectionMode: true),
+            builder: (context, state) =>
+                const InputScreen(onSelectionMode: true),
           ),
         ],
       );
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            databaseProvider.overrideWithValue(mockDb),
-          ],
-          child: FluentApp.router(
-            routerConfig: router,
-          ),
+          overrides: [databaseProvider.overrideWithValue(mockDb)],
+          child: FluentApp.router(routerConfig: router),
         ),
       );
 
       await tester.pumpAndSettle();
 
       // Push `/input` onto the stack
-      router.push('/input');
+      unawaited(router.push('/input'));
       await tester.pumpAndSettle();
 
       // Check fields existence

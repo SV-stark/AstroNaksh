@@ -1,42 +1,48 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:fluent_ui/fluent_ui.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
+
 import '../../core/pdf_report_service.dart';
 import '../../data/models.dart';
-import '../../ui/utils/responsive_helper.dart';
+import '../utils/responsive_helper.dart';
 
 class ColorPalette {
   final String name;
   final Color primary;
   final Color accent;
-  const ColorPalette({required this.name, required this.primary, required this.accent});
+  const ColorPalette({
+    required this.name,
+    required this.primary,
+    required this.accent,
+  });
 }
 
 const List<ColorPalette> _predefinedPalettes = [
   ColorPalette(
     name: 'Imperial',
     primary: Color(0xFF1A237E), // Indigo 900
-    accent: Color(0xFFB8860B),  // Dark Goldenrod
+    accent: Color(0xFFB8860B), // Dark Goldenrod
   ),
   ColorPalette(
     name: 'Royal Crimson',
     primary: Color(0xFF800000), // Maroon
-    accent: Color(0xFFCD7F32),  // Bronze
+    accent: Color(0xFFCD7F32), // Bronze
   ),
   ColorPalette(
     name: 'Forest Jade',
     primary: Color(0xFF1B5E20), // Forest Green
-    accent: Color(0xFF8FBC8F),  // Sage
+    accent: Color(0xFF8FBC8F), // Sage
   ),
   ColorPalette(
     name: 'Classic Navy',
     primary: Color(0xFF0D47A1), // Deep Blue
-    accent: Color(0xFFFFB300),  // Amber
+    accent: Color(0xFFFFB300), // Amber
   ),
 ];
 
@@ -87,10 +93,12 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
       text: '$name - Birth Chart Report',
     );
     _primaryColorController = TextEditingController(
-      text: '#${_primaryColor.value.toRadixString(16).substring(2).toUpperCase()}',
+      text:
+          '#${_primaryColor.value.toRadixString(16).substring(2).toUpperCase()}',
     );
     _accentColorController = TextEditingController(
-      text: '#${_accentColor.value.toRadixString(16).substring(2).toUpperCase()}',
+      text:
+          '#${_accentColor.value.toRadixString(16).substring(2).toUpperCase()}',
     );
   }
 
@@ -117,8 +125,10 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
     setState(() {
       _primaryColor = palette.primary;
       _accentColor = palette.accent;
-      _primaryColorController.text = '#${palette.primary.value.toRadixString(16).substring(2).toUpperCase()}';
-      _accentColorController.text = '#${palette.accent.value.toRadixString(16).substring(2).toUpperCase()}';
+      _primaryColorController.text =
+          '#${palette.primary.value.toRadixString(16).substring(2).toUpperCase()}';
+      _accentColorController.text =
+          '#${palette.accent.value.toRadixString(16).substring(2).toUpperCase()}';
     });
   }
 
@@ -189,11 +199,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                   const SizedBox(width: 24),
                   Expanded(
                     flex: 2,
-                    child: Column(
-                      children: [
-                        _buildPreviewCard(),
-                      ],
-                    ),
+                    child: Column(children: [_buildPreviewCard()]),
                   ),
                 ],
               ),
@@ -236,20 +242,14 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
           children: [
             const Text(
               'Live Cover Page Preview',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 12),
             _buildLivePreview(),
             const SizedBox(height: 8),
             const Text(
               'Mockup of the premium PDF cover page.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),
@@ -261,7 +261,8 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
     final name = widget.chartData.birthData.name.isNotEmpty
         ? widget.chartData.birthData.name
         : 'Unknown';
-    final dateStr = '${widget.chartData.birthData.dateTime.day.toString().padLeft(2, '0')}/${widget.chartData.birthData.dateTime.month.toString().padLeft(2, '0')}/${widget.chartData.birthData.dateTime.year}';
+    final dateStr =
+        '${widget.chartData.birthData.dateTime.day.toString().padLeft(2, '0')}/${widget.chartData.birthData.dateTime.month.toString().padLeft(2, '0')}/${widget.chartData.birthData.dateTime.year}';
     final place = widget.chartData.birthData.place.isNotEmpty
         ? widget.chartData.birthData.place
         : 'Unknown Place';
@@ -279,10 +280,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(
-          color: _accentColor.withOpacity(0.4),
-          width: 1.5,
-        ),
+        border: Border.all(color: _accentColor.withOpacity(0.4), width: 1.5),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -311,7 +309,10 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(color: _accentColor, width: 1.5),
                             borderRadius: BorderRadius.circular(4),
@@ -327,11 +328,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                           ),
                         ),
                       const SizedBox(height: 8),
-                      Container(
-                        height: 1.5,
-                        width: 40,
-                        color: _accentColor,
-                      ),
+                      Container(height: 1.5, width: 40, color: _accentColor),
                     ],
                   ),
                   Padding(
@@ -398,24 +395,31 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
           spacing: 12,
           runSpacing: 12,
           children: _predefinedPalettes.map((palette) {
-            final isSelected = _primaryColor.value == palette.primary.value &&
+            final isSelected =
+                _primaryColor.value == palette.primary.value &&
                 _accentColor.value == palette.accent.value;
 
             return Button(
               style: ButtonStyle(
-                padding: ButtonState.all(EdgeInsets.zero),
-                border: ButtonState.all(
-                  BorderSide(
-                    color: isSelected
-                        ? FluentTheme.of(context).accentColor
-                        : Colors.transparent,
-                    width: 2,
+                padding: WidgetStateProperty.all(EdgeInsets.zero),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: isSelected
+                          ? FluentTheme.of(context).accentColor
+                          : Colors.transparent,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
               ),
               onPressed: () => _selectPalette(palette),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: FluentTheme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(4),
@@ -507,7 +511,10 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
           children: [
             Expanded(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
                   borderRadius: BorderRadius.circular(4),
@@ -540,11 +547,50 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
               const SizedBox(width: 8),
               Button(
                 onPressed: _clearLogo,
-                child: const Icon(FluentIcons.clear, color: Colors.red),
+                child: Icon(FluentIcons.clear, color: Colors.red),
               ),
             ],
           ],
         ),
+        if (_logoBytes != null) ...[
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                height: 64,
+                width: 64,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: _accentColor.withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey.withOpacity(0.05),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6.5),
+                  child: Image.memory(_logoBytes!, fit: BoxFit.contain),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Thumbnail Preview',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Dimensions: 64x64 fit contain',
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -600,9 +646,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildLogoPicker(),
-              ],
+              children: [_buildLogoPicker()],
             ),
           ),
         ),
@@ -623,10 +667,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                   child: ComboBox<String>(
                     value: _reportType,
                     items: const [
-                      ComboBoxItem(
-                        value: 'basic',
-                        child: Text('Basic Report'),
-                      ),
+                      ComboBoxItem(value: 'basic', child: Text('Basic Report')),
                       ComboBoxItem(
                         value: 'standard',
                         child: Text('Standard Report'),
@@ -664,10 +705,7 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                 children: [
                   const Text(
                     'Select Sections',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 12),
                   ..._sections.entries.map((entry) {
@@ -712,8 +750,8 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
                 Text(
                   _isGenerating
                       ? _generationStatus.isNotEmpty
-                          ? '$_generationStatus (${(_generationProgress * 100).toInt()}%)'
-                          : 'Generating...'
+                            ? '$_generationStatus (${(_generationProgress * 100).toInt()}%)'
+                            : 'Generating...'
                       : 'Generate PDF Report',
                   style: const TextStyle(fontSize: 16),
                 ),

@@ -317,26 +317,27 @@ class PDFReportService {
 
         // Retrieve active Mahadasha and Antardasha
         final now = DateTime.now();
-        Mahadasha? activeM;
+        Mahadasha? tempM;
         for (final m in chartData.dashaData.vimshottari.mahadashas) {
           if (now.isAfter(m.startDate) && now.isBefore(m.endDate)) {
-            activeM = m;
+            tempM = m;
             break;
           }
         }
-        activeM ??= chartData.dashaData.vimshottari.mahadashas.first;
+        final activeM =
+            tempM ?? chartData.dashaData.vimshottari.mahadashas.first;
 
-        Antardasha? activeA;
+        Antardasha? tempA;
         for (final a in activeM.antardashas) {
           if (now.isAfter(a.startDate) && now.isBefore(a.endDate)) {
-            activeA = a;
+            tempA = a;
             break;
           }
         }
-        activeA ??= activeM.antardashas.first;
+        final activeA = tempA ?? activeM.antardashas.first;
 
-        final List<List<String>> sookshmaRows = [];
-        const List<String> vLords = [
+        final sookshmaRows = <List<String>>[];
+        const vLords = [
           'Ketu',
           'Venus',
           'Sun',
@@ -347,7 +348,7 @@ class PDFReportService {
           'Saturn',
           'Mercury',
         ];
-        const Map<String, double> vYears = {
+        const vYears = {
           'Ketu': 7,
           'Venus': 20,
           'Sun': 6,
@@ -365,25 +366,27 @@ class PDFReportService {
           final pdEnd = pd.endDate;
           final durationMs = pdEnd.difference(pdStart).inMilliseconds;
 
-          int startIdx = vLords.indexWhere(
+          var startIdx = vLords.indexWhere(
             (l) => l.toLowerCase() == pdLord.toLowerCase(),
           );
           if (startIdx == -1) startIdx = 0;
 
-          DateTime currentStart = pdStart;
-          for (int i = 0; i < 9; i++) {
+          var currentStart = pdStart;
+          for (var i = 0; i < 9; i++) {
             final lord = vLords[(startIdx + i) % 9];
             final ratio = vYears[lord]! / 120.0;
             final chunkMs = (durationMs * ratio).round();
-            DateTime currentEnd = currentStart.add(Duration(milliseconds: chunkMs));
-            
+            var currentEnd = currentStart.add(
+              Duration(milliseconds: chunkMs),
+            );
+
             if (i == 8) {
               currentEnd = pdEnd;
             }
 
             sookshmaRows.add([
               pd.lord, // Pratyantardasha Lord
-              lord,    // Sookshmadasha Lord
+              lord, // Sookshmadasha Lord
               _formatDate(currentStart),
               _formatDate(currentEnd),
             ]);
@@ -460,12 +463,17 @@ class PDFReportService {
               PdfWidgets.sectionHeader('Detailed 4-Level Dasha Breakdown', h2),
               pw.SizedBox(height: 5),
               pw.Text(
-                'Detailed Vimshottari Sookshmadasha cycles under the active Mahadasha (${activeM!.lord}) and active Antardasha (${activeA.lord}: ${_formatDate(activeA.startDate)} to ${_formatDate(activeA.endDate)}).',
+                'Detailed Vimshottari Sookshmadasha cycles under the active Mahadasha (${activeM.lord}) and active Antardasha (${activeA.lord}: ${_formatDate(activeA.startDate)} to ${_formatDate(activeA.endDate)}).',
                 style: body,
               ),
               pw.SizedBox(height: 15),
               PdfWidgets.premiumTable(
-                headers: ['Pratyantardasha', 'Sookshmadasha', 'Start Date', 'End Date'],
+                headers: [
+                  'Pratyantardasha',
+                  'Sookshmadasha',
+                  'Start Date',
+                  'End Date',
+                ],
                 rows: sookshmaRows,
                 bodyStyle: body,
               ),

@@ -141,9 +141,7 @@ class _PlanetaryTimelineState extends State<PlanetaryTimeline> {
                   value: _sliderValue,
                   onChanged: (newValue) {
                     setState(() => _sliderValue = newValue);
-                    widget.onDateChanged(
-                      _calculateDateFromSlider(newValue),
-                    );
+                    widget.onDateChanged(_calculateDateFromSlider(newValue));
                   },
                 ),
               ),

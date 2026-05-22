@@ -4,10 +4,16 @@ import 'package:printing/printing.dart';
 
 class ReportStyles {
   // Colors
-  static PdfColor primaryColor = const PdfColor.fromInt(0xFF1A237E); // Indigo 900
-  static PdfColor accentColor = const PdfColor.fromInt(0xFFB8860B); // Dark Goldenrod
+  static PdfColor primaryColor = const PdfColor.fromInt(
+    0xFF1A237E,
+  ); // Indigo 900
+  static PdfColor accentColor = const PdfColor.fromInt(
+    0xFFB8860B,
+  ); // Dark Goldenrod
   static PdfColor textColor = const PdfColor.fromInt(0xFF212121); // Grey 900
-  static PdfColor secondaryTextColor = const PdfColor.fromInt(0xFF757575); // Grey 600
+  static PdfColor secondaryTextColor = const PdfColor.fromInt(
+    0xFF757575,
+  ); // Grey 600
   static PdfColor lightBackgroundColor = const PdfColor.fromInt(
     0xFFFFF8E1,
   ); // Amber 50 (subtle cream)

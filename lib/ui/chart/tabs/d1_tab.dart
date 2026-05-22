@@ -1,7 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
 
-
 import '../../../core/chart_customization.dart';
 import '../../../data/models.dart';
 import '../../../logic/planetary_aspect_service.dart';
@@ -102,7 +101,8 @@ class D1Tab extends StatelessWidget {
                       const Spacer(),
                       Text(
                         'Drag to see planetary motion',
-                        style: FluentTheme.of(context).typography.caption?.copyWith(
+                        style: FluentTheme.of(context).typography.caption
+                            ?.copyWith(
                               color: FluentTheme.of(context).inactiveColor,
                             ),
                       ),
@@ -127,9 +127,9 @@ class D1Tab extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: FluentTheme.of(context)
-                          .accentColor
-                          .withValues(alpha: 0.1),
+                      color: FluentTheme.of(
+                        context,
+                      ).accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -148,7 +148,8 @@ class D1Tab extends StatelessWidget {
                         ),
                         Text(
                           isTimelinePlaying ? 'Playing' : 'Paused',
-                          style: FluentTheme.of(context).typography.caption?.copyWith(
+                          style: FluentTheme.of(context).typography.caption
+                              ?.copyWith(
                                 color: isTimelinePlaying
                                     ? m.Colors.green
                                     : FluentTheme.of(context).inactiveColor,
@@ -162,10 +163,7 @@ class D1Tab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ChartHelpers.buildPlanetPositionsTable(
-            data: data,
-            context: context,
-          ),
+          ChartHelpers.buildPlanetPositionsTable(data: data, context: context),
         ],
       ),
     );

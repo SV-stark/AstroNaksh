@@ -1,7 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
 
-
 import '../../../data/models.dart';
 import '../../utils/responsive_helper.dart';
 import '../chart_helpers.dart';
@@ -43,9 +42,9 @@ class DetailsTab extends StatelessWidget {
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
-                              color: FluentTheme.of(context)
-                                  .resources
-                                  .dividerStrokeColorDefault,
+                              color: FluentTheme.of(
+                                context,
+                              ).resources.dividerStrokeColorDefault,
                             ),
                           ),
                         ),
@@ -145,7 +144,8 @@ class DetailsTab extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 6),
                             child: Text(
                               ChartHelpers.getSignName(
-                                (data.baseChart.rahu.longitude / 30).floor() + 1,
+                                (data.baseChart.rahu.longitude / 30).floor() +
+                                    1,
                               ),
                             ),
                           ),
@@ -176,7 +176,8 @@ class DetailsTab extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 6),
                             child: Text(
                               ChartHelpers.getSignName(
-                                (data.baseChart.ketu.longitude / 30).floor() + 1,
+                                (data.baseChart.ketu.longitude / 30).floor() +
+                                    1,
                               ),
                             ),
                           ),
@@ -219,9 +220,9 @@ class DetailsTab extends StatelessWidget {
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
-                                color: FluentTheme.of(context)
-                                    .resources
-                                    .dividerStrokeColorDefault,
+                                color: FluentTheme.of(
+                                  context,
+                                ).resources.dividerStrokeColorDefault,
                               ),
                             ),
                           ),

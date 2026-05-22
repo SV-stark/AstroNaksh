@@ -120,7 +120,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = ResponsiveHelper.useMobileLayout(context);
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {

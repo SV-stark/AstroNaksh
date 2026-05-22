@@ -1,6 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
-
 import '../../../core/chart_customization.dart';
 import '../../../core/constants.dart';
 import '../../../data/models.dart';
@@ -40,47 +39,55 @@ class VargasTab extends StatelessWidget {
             height: ResponsiveHelper.useMobileLayout(context) ? 56 : 40,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              children: [
-                'D-1',
-                'D-2',
-                'D-3',
-                'D-4',
-                'D-7',
-                'D-9',
-                'D-10',
-                'D-12',
-                'D-16',
-                'D-20',
-                'D-24',
-                'D-27',
-                'D-30',
-                'D-40',
-                'D-45',
-                'D-60',
-                'D-150',
-                'D-249',
-              ].map(
-                (code) => Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: SizedBox(
-                    height: ResponsiveHelper.useMobileLayout(context) ? 48 : 32,
-                    child: ToggleButton(
-                      checked: selectedDivisionalChart == code,
-                      onChanged: (selected) {
-                        if (selected) {
-                          onDivisionalChartChanged(code);
-                        }
-                      },
-                      child: Text(
-                        code,
-                        style: TextStyle(
-                          fontSize: ResponsiveHelper.useMobileLayout(context) ? 16 : 14,
+              children:
+                  [
+                        'D-1',
+                        'D-2',
+                        'D-3',
+                        'D-4',
+                        'D-7',
+                        'D-9',
+                        'D-10',
+                        'D-12',
+                        'D-16',
+                        'D-20',
+                        'D-24',
+                        'D-27',
+                        'D-30',
+                        'D-40',
+                        'D-45',
+                        'D-60',
+                        'D-150',
+                        'D-249',
+                      ]
+                      .map(
+                        (code) => Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: SizedBox(
+                            height: ResponsiveHelper.useMobileLayout(context)
+                                ? 48
+                                : 32,
+                            child: ToggleButton(
+                              checked: selectedDivisionalChart == code,
+                              onChanged: (selected) {
+                                if (selected) {
+                                  onDivisionalChartChanged(code);
+                                }
+                              },
+                              child: Text(
+                                code,
+                                style: TextStyle(
+                                  fontSize:
+                                      ResponsiveHelper.useMobileLayout(context)
+                                      ? 16
+                                      : 14,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-              ).toList(),
+                      )
+                      .toList(),
             ),
           ),
           const SizedBox(height: 24),
@@ -90,7 +97,11 @@ class VargasTab extends StatelessWidget {
     );
   }
 
-  Widget _buildDivisionalChartDisplay(BuildContext context, CompleteChartData data, String code) {
+  Widget _buildDivisionalChartDisplay(
+    BuildContext context,
+    CompleteChartData data,
+    String code,
+  ) {
     final chart = data.divisionalCharts[code];
     final chartSize = ResponsiveHelper.getChartSize(context);
 
@@ -150,7 +161,10 @@ class VargasTab extends StatelessWidget {
     );
   }
 
-  Widget _buildDivisionalPlanetPositionsTable(BuildContext context, DivisionalChartData chart) {
+  Widget _buildDivisionalPlanetPositionsTable(
+    BuildContext context,
+    DivisionalChartData chart,
+  ) {
     final positions = chart.positions;
     const nakshatras = AppConstants.nakshatras;
 
@@ -215,7 +229,9 @@ class VargasTab extends StatelessWidget {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: FluentTheme.of(context).resources.dividerStrokeColorDefault,
+                          color: FluentTheme.of(
+                            context,
+                          ).resources.dividerStrokeColorDefault,
                         ),
                       ),
                     ),

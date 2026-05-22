@@ -1,6 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../core/chart_customization.dart';
-import 'zodiac_glyphs.dart';
 
 class NorthIndianChartPainter extends CustomPainter {
   NorthIndianChartPainter({
@@ -9,12 +8,16 @@ class NorthIndianChartPainter extends CustomPainter {
     required this.colors,
     this.hoveredHouse,
     this.selectedHouse,
+    this.showSigns = true,
+    this.showHouseNumbers = true,
   });
   final Map<int, List<String>> planetsBySign;
   final int ascendantSign;
   final ChartColors colors;
   final int? hoveredHouse;
   final int? selectedHouse;
+  final bool showSigns;
+  final bool showHouseNumbers;
 
   Path getHousePath(int houseIndex, double width, double height) {
     final path = Path();
@@ -201,16 +204,33 @@ class NorthIndianChartPainter extends CustomPainter {
     void drawContent(int houseIndex, Offset center, Offset glyphCenter) {
       final signIndex = ((ascendantSign - 1) + houseIndex) % 12;
 
-      // Draw Zodiac Glyph
-      final glyphSize = width / 22;
-      ZodiacGlyphs.drawGlyph(
-        canvas,
-        signIndex,
-        glyphCenter,
-        glyphSize,
-        colors.planetText.withAlpha(166),
-        strokeWidth: 1.5,
-      );
+      // Draw Zodiac Sign Number (standard Vedic North Indian style)
+      if (showSigns) {
+        final signNumber = signIndex + 1;
+        final fontSize = width / 26; // Responsive font size
+        
+        final textSpan = TextSpan(
+          text: '$signNumber',
+          style: TextStyle(
+            color: colors.planetText.withAlpha(180),
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+          ),
+        );
+
+        final textPainter = TextPainter(
+          text: textSpan,
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.ltr,
+        );
+
+        textPainter.layout();
+        final offset = Offset(
+          glyphCenter.dx - textPainter.width / 2,
+          glyphCenter.dy - textPainter.height / 2,
+        );
+        textPainter.paint(canvas, offset);
+      }
 
       // Draw Planets
       final planets = planetsBySign[signIndex + 1] ?? [];

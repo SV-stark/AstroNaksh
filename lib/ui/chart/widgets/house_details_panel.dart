@@ -1,6 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as m;
-import 'package:jyotish/jyotish.dart';
 
 import '../../../core/constants.dart';
 import '../../../data/models.dart';
@@ -52,19 +51,32 @@ class HouseDetailsPanel extends StatelessWidget {
 
   String _getSignLord(String signName) {
     switch (signName) {
-      case 'Aries': return 'Mars';
-      case 'Taurus': return 'Venus';
-      case 'Gemini': return 'Mercury';
-      case 'Cancer': return 'Moon';
-      case 'Leo': return 'Sun';
-      case 'Virgo': return 'Mercury';
-      case 'Libra': return 'Venus';
-      case 'Scorpio': return 'Mars';
-      case 'Sagittarius': return 'Jupiter';
-      case 'Capricorn': return 'Saturn';
-      case 'Aquarius': return 'Saturn';
-      case 'Pisces': return 'Jupiter';
-      default: return 'Unknown';
+      case 'Aries':
+        return 'Mars';
+      case 'Taurus':
+        return 'Venus';
+      case 'Gemini':
+        return 'Mercury';
+      case 'Cancer':
+        return 'Moon';
+      case 'Leo':
+        return 'Sun';
+      case 'Virgo':
+        return 'Mercury';
+      case 'Libra':
+        return 'Venus';
+      case 'Scorpio':
+        return 'Mars';
+      case 'Sagittarius':
+        return 'Jupiter';
+      case 'Capricorn':
+        return 'Saturn';
+      case 'Aquarius':
+        return 'Saturn';
+      case 'Pisces':
+        return 'Jupiter';
+      default:
+        return 'Unknown';
     }
   }
 
@@ -84,7 +96,7 @@ class HouseDetailsPanel extends StatelessWidget {
     // Calculate Sign and Sign Lord
     final int ascSign;
     final String signName;
-    final List<String> planets = [];
+    final planets = <String>[];
 
     if (divisionalChart != null) {
       ascSign = divisionalChart!.ascendantSign ?? 1;
@@ -125,10 +137,11 @@ class HouseDetailsPanel extends StatelessWidget {
     final signLord = _getSignLord(signName);
 
     // Cusp Info (only for base chart)
-    String cuspDegStr = '';
-    String cuspNak = '';
-    int cuspPada = 1;
-    if (divisionalChart == null && data.baseChart.houses.cusps.length >= houseIndex) {
+    var cuspDegStr = '';
+    var cuspNak = '';
+    var cuspPada = 1;
+    if (divisionalChart == null &&
+        data.baseChart.houses.cusps.length >= houseIndex) {
       final cuspLon = data.baseChart.houses.cusps[houseIndex - 1];
       cuspDegStr = _formatLongitude(cuspLon);
       final nakIndex = (cuspLon / 13.333333).floor() % 27;
@@ -138,7 +151,9 @@ class HouseDetailsPanel extends StatelessWidget {
 
     return Container(
       width: isMobile ? double.infinity : 380,
-      height: isMobile ? MediaQuery.of(context).size.height * 0.65 : double.infinity,
+      height: isMobile
+          ? MediaQuery.of(context).size.height * 0.65
+          : double.infinity,
       decoration: BoxDecoration(
         color: theme.brightness == Brightness.dark
             ? const Color(0xFF202020)
@@ -256,7 +271,8 @@ class HouseDetailsPanel extends StatelessWidget {
                         ),
                       ),
                     )
-                  else Column(
+                  else
+                    Column(
                       children: planets.map((planet) {
                         return Card(
                           margin: const EdgeInsets.only(bottom: 6),
@@ -305,7 +321,11 @@ class HouseDetailsPanel extends StatelessWidget {
                             const Divider(),
                             _buildInfoRow(context, 'Nakshatra', cuspNak),
                             const Divider(),
-                            _buildInfoRow(context, 'Nakshatra Pada', '$cuspPada'),
+                            _buildInfoRow(
+                              context,
+                              'Nakshatra Pada',
+                              '$cuspPada',
+                            ),
                           ],
                         ),
                       ),
@@ -326,9 +346,7 @@ class HouseDetailsPanel extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       child: Text(
                         _houseSignifications[houseIndex] ?? '',
-                        style: theme.typography.body?.copyWith(
-                          height: 1.4,
-                        ),
+                        style: theme.typography.body?.copyWith(height: 1.4),
                       ),
                     ),
                   ),
@@ -354,9 +372,7 @@ class HouseDetailsPanel extends StatelessWidget {
         ),
         Text(
           value,
-          style: theme.typography.body?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: theme.typography.body?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );

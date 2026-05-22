@@ -10,18 +10,6 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  const testColors = ChartColors(
-    background: Color(0xFF1a1a2e),
-    houseBorder: Color(0xFFe0e0e0),
-    houseFill: Color(0xFF16213e),
-    planetText: Color(0xFFFFFFFF),
-    retrogradeIndicator: Color(0xFFff6b6b),
-    ascendantMarker: Color(0xFF00e5ff),
-    beneficPlanet: Color(0xFF69f0ae),
-    maleficPlanet: Color(0xFFff8a80),
-    neutralPlanet: Color(0xFF82b1ff),
-  );
-
   group('ChartWidget Interactive Tap Tests', () {
     testWidgets('North Indian Chart taps on houses correctly', (tester) async {
       int? tappedHouseIndex;
@@ -108,14 +96,14 @@ void main() {
       // Each cell is 75x75.
       // Cell offsets from top-left:
       // Row 0, Col 1: Aries. Center at x: 1.5 * 75 = 112.5 (offset -37.5 from center), y: 0.5 * 75 = 37.5 (offset -112.5 from center)
-      final ariesOffset = const Offset(-37.5, -112.5);
+      const ariesOffset = Offset(-37.5, -112.5);
       await tester.tapAt(tester.getCenter(chartFinder) + ariesOffset);
       await tester.pump();
       // Since ascendantSign = 1 (Aries), Aries is House 1
       expect(tappedHouseIndex, equals(1));
 
       // Row 0, Col 3: Gemini. Center at x: 3.5 * 75 = 262.5 (offset 112.5 from center), y: 37.5 (offset -112.5 from center)
-      final geminiOffset = const Offset(112.5, -112.5);
+      const geminiOffset = Offset(112.5, -112.5);
       await tester.tapAt(tester.getCenter(chartFinder) + geminiOffset);
       await tester.pump();
       // Aries is 1, Taurus is 2, Gemini is 3. So Gemini is House 3
@@ -124,7 +112,9 @@ void main() {
       // Row 1, Col 1: Middle empty space. Center at x: 112.5 (-37.5), y: 112.5 (-37.5)
       // This should return null (i.e. not trigger callback)
       tappedHouseIndex = null;
-      await tester.tapAt(tester.getCenter(chartFinder) + const Offset(-37.5, -37.5));
+      await tester.tapAt(
+        tester.getCenter(chartFinder) + const Offset(-37.5, -37.5),
+      );
       await tester.pump();
       expect(tappedHouseIndex, isNull);
     });

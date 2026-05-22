@@ -26,15 +26,15 @@ void main() {
     test('Should be able to get New KP system', () {
       final system = AyanamsaCalculator.getSystem('newKP');
       expect(system, isNotNull);
-      expect(system!.name, equals('newKP'));
-      expect(system.description, equals('KP New'));
+      expect(system!.name, equals('Krishnamurti'));
+      expect(system.description, equals('Krishnamurti (New)'));
       expect(system.mode, equals(SiderealMode.krishnamurtiVP291));
     });
 
     test('Old KP should be renamed', () {
       final system = AyanamsaCalculator.getSystem('krishnamurti');
       expect(system, isNotNull);
-      expect(system!.description, equals('KP Old'));
+      expect(system!.description, equals('Krishnamurti (Old)'));
     });
 
     test('Should return null for invalid system', () {

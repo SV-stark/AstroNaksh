@@ -1,14 +1,5 @@
-import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../core/chart_customization.dart';
-import '../../core/settings_provider.dart';
-import '../../logic/planetary_aspect_service.dart';
-import '../painters/aspect_painter.dart';
-import '../painters/north_indian_chart_painter.dart';
-import '../painters/south_indian_chart_painter.dart';
-
 import 'dart:ui';
+
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jyotish/jyotish.dart' as j;
@@ -74,9 +65,9 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
         Offset(width * 0.875, height / 4), // 11th
         Offset(width * 0.75, height / 8), // 12th
       ];
-      int closestIndex = 0;
-      double minDistance = double.infinity;
-      for (int i = 0; i < 12; i++) {
+      var closestIndex = 0;
+      var minDistance = double.infinity;
+      for (var i = 0; i < 12; i++) {
         final dist = (offset - centers[i]).distance;
         if (dist < minDistance) {
           minDistance = dist;
@@ -95,21 +86,37 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
 
       int? signIndex;
       if (row == 0) {
-        if (col == 1) signIndex = 0; // Aries
-        else if (col == 2) signIndex = 1; // Taurus
-        else if (col == 3) signIndex = 2; // Gemini
-        else if (col == 0) signIndex = 11; // Pisces
+        if (col == 1) {
+          signIndex = 0; // Aries
+        } else if (col == 2) {
+          signIndex = 1; // Taurus
+        } else if (col == 3) {
+          signIndex = 2; // Gemini
+        } else if (col == 0) {
+          signIndex = 11; // Pisces
+        }
       } else if (row == 1) {
-        if (col == 3) signIndex = 3; // Cancer
-        else if (col == 0) signIndex = 10; // Aquarius
+        if (col == 3) {
+          signIndex = 3; // Cancer
+        } else if (col == 0) {
+          signIndex = 10; // Aquarius
+        }
       } else if (row == 2) {
-        if (col == 3) signIndex = 4; // Leo
-        else if (col == 0) signIndex = 9; // Capricorn
+        if (col == 3) {
+          signIndex = 4; // Leo
+        } else if (col == 0) {
+          signIndex = 9; // Capricorn
+        }
       } else if (row == 3) {
-        if (col == 3) signIndex = 5; // Virgo
-        else if (col == 2) signIndex = 6; // Libra
-        else if (col == 1) signIndex = 7; // Scorpio
-        else if (col == 0) signIndex = 8; // Sagittarius
+        if (col == 3) {
+          signIndex = 5; // Virgo
+        } else if (col == 2) {
+          signIndex = 6; // Libra
+        } else if (col == 1) {
+          signIndex = 7; // Scorpio
+        } else if (col == 0) {
+          signIndex = 8; // Sagittarius
+        }
       }
 
       if (signIndex == null) return null;
@@ -135,7 +142,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
         'Jupiter',
         'Saturn',
         'Saturn',
-        'Jupiter'
+        'Jupiter',
       ];
       return lords[signIndex % 12];
     }
@@ -154,7 +161,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
       'Rahu',
       'Jupiter',
       'Saturn',
-      'Mercury'
+      'Mercury',
     ];
 
     final chart = widget.baseChart ?? widget.completeData?.baseChart;
@@ -214,7 +221,8 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
           final nakName = AppConstants.nakshatras[nakIdx];
           final nakLordName = nakshatraLords[nakIdx % 9];
           list.add({
-            'name': planetName.substring(0, 1).toUpperCase() +
+            'name':
+                planetName.substring(0, 1).toUpperCase() +
                 planetName.substring(1),
             'degree': deg,
             'nakshatra': nakName,
@@ -254,7 +262,8 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
         Widget? tooltipCard;
 
         if (activeHouseIndex != null) {
-          final signIndex = ((widget.ascendantSign - 1) + activeHouseIndex) % 12;
+          final signIndex =
+              ((widget.ascendantSign - 1) + activeHouseIndex) % 12;
           final signName = AppConstants.signs[signIndex];
           final lordName = _getSignLordName(signIndex);
           final planetsInHouse = _getPlanetsInHouse(activeHouseIndex);
@@ -268,12 +277,15 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: colors.background.withOpacity(0.75),
+                    color: colors.background.withAlpha(191),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: colors.houseBorder.withOpacity(0.3),
+                      color: colors.houseBorder.withAlpha(76),
                       width: 1,
                     ),
                   ),
@@ -284,19 +296,23 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'House ${activeHouseIndex + 1} - $signName',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: colors.planetText,
-                              fontSize: 12,
+                          Expanded(
+                            child: Text(
+                              'House ${activeHouseIndex + 1} - $signName',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: colors.planetText,
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
                             'Lord: $lordName',
                             style: TextStyle(
                               fontSize: 11,
-                              color: colors.planetText.withOpacity(0.8),
+                              color: colors.planetText.withAlpha(204),
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -308,7 +324,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                           'No occupying planets',
                           style: TextStyle(
                             fontSize: 11,
-                            color: colors.planetText.withOpacity(0.6),
+                            color: colors.planetText.withAlpha(153),
                           ),
                         )
                       else
@@ -322,9 +338,12 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                             final nakL = p['nakLord'];
                             final isRetro = p['retrograde'] == true;
                             final retroStr = isRetro ? ' (R)' : '';
-                            final degStr =
-                                deg != null ? ' ${deg.toStringAsFixed(1)}°' : '';
-                            final detailsStr = nak != null ? ' ($nak - $nakL)' : '';
+                            final degStr = deg != null
+                                ? ' ${deg.toStringAsFixed(1)}°'
+                                : '';
+                            final detailsStr = nak != null
+                                ? ' ($nak - $nakL)'
+                                : '';
                             return Text(
                               '• $name$retroStr:$degStr$detailsStr',
                               style: TextStyle(
@@ -350,7 +369,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withAlpha(76),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -383,9 +402,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                   setState(() {
                     _selectedHouseIndex = house - 1;
                   });
-                  if (widget.onHouseTapped != null) {
-                    widget.onHouseTapped!(house);
-                  }
+                  widget.onHouseTapped?.call(house);
                 }
               },
               child: Stack(
@@ -422,7 +439,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                         activeHouse: _hoveredHouseIndex ?? _selectedHouseIndex,
                       ),
                     ),
-                  if (tooltipCard != null) tooltipCard,
+                  ?tooltipCard,
                 ],
               ),
             ),
@@ -432,7 +449,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
       orElse: () => Container(
         width: widget.size,
         height: widget.size,
-        color: Colors.grey.withOpacity(0.1),
+        color: Colors.grey.withAlpha(26),
         child: const Center(child: ProgressRing()),
       ),
     );

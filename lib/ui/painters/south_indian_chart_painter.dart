@@ -20,19 +20,57 @@ class SouthIndianChartPainter extends CustomPainter {
     final cellWidth = width / 4;
     final cellHeight = height / 4;
     switch (signIndex % 12) {
-      case 0: return Rect.fromLTWH(cellWidth * 1, 0, cellWidth, cellHeight);
-      case 1: return Rect.fromLTWH(cellWidth * 2, 0, cellWidth, cellHeight);
-      case 2: return Rect.fromLTWH(cellWidth * 3, 0, cellWidth, cellHeight);
-      case 3: return Rect.fromLTWH(cellWidth * 3, cellHeight * 1, cellWidth, cellHeight);
-      case 4: return Rect.fromLTWH(cellWidth * 3, cellHeight * 2, cellWidth, cellHeight);
-      case 5: return Rect.fromLTWH(cellWidth * 3, cellHeight * 3, cellWidth, cellHeight);
-      case 6: return Rect.fromLTWH(cellWidth * 2, cellHeight * 3, cellWidth, cellHeight);
-      case 7: return Rect.fromLTWH(cellWidth * 1, cellHeight * 3, cellWidth, cellHeight);
-      case 8: return Rect.fromLTWH(0, cellHeight * 3, cellWidth, cellHeight);
-      case 9: return Rect.fromLTWH(0, cellHeight * 2, cellWidth, cellHeight);
-      case 10: return Rect.fromLTWH(0, cellHeight * 1, cellWidth, cellHeight);
-      case 11: return Rect.fromLTWH(0, 0, cellWidth, cellHeight);
-      default: return Rect.zero;
+      case 0:
+        return Rect.fromLTWH(cellWidth * 1, 0, cellWidth, cellHeight);
+      case 1:
+        return Rect.fromLTWH(cellWidth * 2, 0, cellWidth, cellHeight);
+      case 2:
+        return Rect.fromLTWH(cellWidth * 3, 0, cellWidth, cellHeight);
+      case 3:
+        return Rect.fromLTWH(
+          cellWidth * 3,
+          cellHeight * 1,
+          cellWidth,
+          cellHeight,
+        );
+      case 4:
+        return Rect.fromLTWH(
+          cellWidth * 3,
+          cellHeight * 2,
+          cellWidth,
+          cellHeight,
+        );
+      case 5:
+        return Rect.fromLTWH(
+          cellWidth * 3,
+          cellHeight * 3,
+          cellWidth,
+          cellHeight,
+        );
+      case 6:
+        return Rect.fromLTWH(
+          cellWidth * 2,
+          cellHeight * 3,
+          cellWidth,
+          cellHeight,
+        );
+      case 7:
+        return Rect.fromLTWH(
+          cellWidth * 1,
+          cellHeight * 3,
+          cellWidth,
+          cellHeight,
+        );
+      case 8:
+        return Rect.fromLTWH(0, cellHeight * 3, cellWidth, cellHeight);
+      case 9:
+        return Rect.fromLTWH(0, cellHeight * 2, cellWidth, cellHeight);
+      case 10:
+        return Rect.fromLTWH(0, cellHeight * 1, cellWidth, cellHeight);
+      case 11:
+        return Rect.fromLTWH(0, 0, cellWidth, cellHeight);
+      default:
+        return Rect.zero;
     }
   }
 
@@ -46,14 +84,14 @@ class SouthIndianChartPainter extends CustomPainter {
     // 1. Draw Highlights
     if (hoveredHouse != null) {
       final fillPaint = Paint()
-        ..color = colors.houseBorder.withOpacity(0.08)
+        ..color = colors.houseBorder.withAlpha(20)
         ..style = PaintingStyle.fill;
       final idx = (ascendantSign - 1 + hoveredHouse!) % 12;
       canvas.drawRect(getCellRect(idx, width, height), fillPaint);
     }
     if (selectedHouse != null) {
       final fillPaint = Paint()
-        ..color = colors.houseBorder.withOpacity(0.15)
+        ..color = colors.houseBorder.withAlpha(38)
         ..style = PaintingStyle.fill;
       final borderPaint = Paint()
         ..color = colors.houseBorder
@@ -75,15 +113,47 @@ class SouthIndianChartPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, width, height), borderPaint);
 
     // Inner lines
-    canvas.drawLine(Offset(0, cellHeight), Offset(width, cellHeight), borderPaint);
-    canvas.drawLine(Offset(0, cellHeight * 2), Offset(cellWidth, cellHeight * 2), borderPaint);
-    canvas.drawLine(Offset(cellWidth * 3, cellHeight * 2), Offset(width, cellHeight * 2), borderPaint);
-    canvas.drawLine(Offset(0, cellHeight * 3), Offset(width, cellHeight * 3), borderPaint);
+    canvas.drawLine(
+      Offset(0, cellHeight),
+      Offset(width, cellHeight),
+      borderPaint,
+    );
+    canvas.drawLine(
+      Offset(0, cellHeight * 2),
+      Offset(cellWidth, cellHeight * 2),
+      borderPaint,
+    );
+    canvas.drawLine(
+      Offset(cellWidth * 3, cellHeight * 2),
+      Offset(width, cellHeight * 2),
+      borderPaint,
+    );
+    canvas.drawLine(
+      Offset(0, cellHeight * 3),
+      Offset(width, cellHeight * 3),
+      borderPaint,
+    );
 
-    canvas.drawLine(Offset(cellWidth, 0), Offset(cellWidth, height), borderPaint);
-    canvas.drawLine(Offset(cellWidth * 2, 0), Offset(cellWidth * 2, cellHeight), borderPaint);
-    canvas.drawLine(Offset(cellWidth * 2, cellHeight * 3), Offset(cellWidth * 2, height), borderPaint);
-    canvas.drawLine(Offset(cellWidth * 3, 0), Offset(cellWidth * 3, height), borderPaint);
+    canvas.drawLine(
+      Offset(cellWidth, 0),
+      Offset(cellWidth, height),
+      borderPaint,
+    );
+    canvas.drawLine(
+      Offset(cellWidth * 2, 0),
+      Offset(cellWidth * 2, cellHeight),
+      borderPaint,
+    );
+    canvas.drawLine(
+      Offset(cellWidth * 2, cellHeight * 3),
+      Offset(cellWidth * 2, height),
+      borderPaint,
+    );
+    canvas.drawLine(
+      Offset(cellWidth * 3, 0),
+      Offset(cellWidth * 3, height),
+      borderPaint,
+    );
 
     final cellOffsets = [
       Offset(cellWidth * 1.5, cellHeight * 0.5), // Aries
@@ -103,14 +173,17 @@ class SouthIndianChartPainter extends CustomPainter {
     for (var i = 0; i < 12; i++) {
       // 2. Draw Zodiac Glyph Watermark
       final rect = getCellRect(i, width, height);
-      final center = Offset(rect.left + cellWidth / 2, rect.top + cellHeight / 2);
+      final center = Offset(
+        rect.left + cellWidth / 2,
+        rect.top + cellHeight / 2,
+      );
       final glyphSize = cellWidth * 0.55;
       ZodiacGlyphs.drawGlyph(
         canvas,
         i,
         center,
         glyphSize,
-        colors.planetText.withOpacity(0.12),
+        colors.planetText.withAlpha(31),
         strokeWidth: 1.2,
       );
 

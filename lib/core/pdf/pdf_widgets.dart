@@ -62,7 +62,7 @@ class PdfWidgets {
       ),
       children: [
         pw.TableRow(
-          decoration: const pw.BoxDecoration(color: ReportStyles.primaryColor),
+          decoration: pw.BoxDecoration(color: ReportStyles.primaryColor),
           children: headers
               .map(
                 (h) => pw.Padding(

@@ -26,7 +26,9 @@ class KPChartService {
         );
 
         // Use library's native KP calculation
-        final nativeKPData = await EphemerisManager.jyotish.calculateKPData(chart);
+        final nativeKPData = await EphemerisManager.jyotish.calculateKPData(
+          chart,
+        );
 
         // Calculate correct Day Lord (Sunrise based)
         // We need to fetch sunrise for the location
@@ -45,7 +47,9 @@ class KPChartService {
           // Assuming straightforward comparison
           var effectiveDate = birthData.dateTime;
           if (birthData.dateTime.isBefore(sunrise)) {
-            effectiveDate = birthData.dateTime.subtract(const Duration(days: 1));
+            effectiveDate = birthData.dateTime.subtract(
+              const Duration(days: 1),
+            );
           }
           dayLord = KPChartService._getDayLord(effectiveDate.weekday);
         }
@@ -58,7 +62,10 @@ class KPChartService {
         ); // Use static
         final dashaData = await _calculateDashaSystems(chart);
         final divisionalCharts = DivisionalCharts.calculateAllCharts(chart);
-        final significatorTable = generateSignificatorTable(nativeKPData, chart);
+        final significatorTable = generateSignificatorTable(
+          nativeKPData,
+          chart,
+        );
 
         return CompleteChartData(
           baseChart: chart,
@@ -71,7 +78,8 @@ class KPChartService {
       },
       defaultValue: null,
       context: 'KPChartService.generateCompleteChart',
-      userMessage: 'Failed to generate complete chart. The birth details might contain invalid coordinates or FFI calculations failed.',
+      userMessage:
+          'Failed to generate complete chart. The birth details might contain invalid coordinates or FFI calculations failed.',
     );
   }
 

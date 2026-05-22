@@ -66,7 +66,9 @@ class StrengthTab extends StatelessWidget {
                           horizontal: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: FluentTheme.of(context).accentColor.withAlpha(30),
+                          color: FluentTheme.of(
+                            context,
+                          ).accentColor.withAlpha(30),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Row(
@@ -118,7 +120,9 @@ class StrengthTab extends StatelessWidget {
                           shadbalaStrength: shadbalaStrength,
                         );
                         final net = ishta - kashta;
-                        final netColor = net > 0 ? m.Colors.green : m.Colors.red;
+                        final netColor = net > 0
+                            ? m.Colors.green
+                            : m.Colors.red;
                         return Container(
                           margin: const EdgeInsets.only(bottom: 3),
                           padding: const EdgeInsets.symmetric(
@@ -228,8 +232,8 @@ class StrengthTab extends StatelessWidget {
                                       color: pct >= 0.7
                                           ? m.Colors.green.withAlpha(30)
                                           : pct >= 0.4
-                                              ? m.Colors.orange.withAlpha(30)
-                                              : m.Colors.red.withAlpha(30),
+                                          ? m.Colors.orange.withAlpha(30)
+                                          : m.Colors.red.withAlpha(30),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -240,8 +244,8 @@ class StrengthTab extends StatelessWidget {
                                         color: pct >= 0.7
                                             ? m.Colors.green
                                             : pct >= 0.4
-                                                ? m.Colors.orange
-                                                : m.Colors.red,
+                                            ? m.Colors.orange
+                                            : m.Colors.red,
                                       ),
                                     ),
                                   ),
@@ -257,7 +261,9 @@ class StrengthTab extends StatelessWidget {
                                         Container(
                                           decoration: BoxDecoration(
                                             color: m.Colors.grey.withAlpha(40),
-                                            borderRadius: BorderRadius.circular(3),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
                                           ),
                                         ),
                                         FractionallySizedBox(
@@ -267,9 +273,10 @@ class StrengthTab extends StatelessWidget {
                                               color: pct >= 0.7
                                                   ? m.Colors.green
                                                   : pct >= 0.4
-                                                      ? m.Colors.orange
-                                                      : m.Colors.red,
-                                              borderRadius: BorderRadius.circular(3),
+                                                  ? m.Colors.orange
+                                                  : m.Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
                                             ),
                                           ),
                                         ),
@@ -331,16 +338,22 @@ class StrengthTab extends StatelessWidget {
                                         children: [
                                           Container(
                                             decoration: BoxDecoration(
-                                              color: m.Colors.grey.withAlpha(40),
-                                              borderRadius: BorderRadius.circular(3),
+                                              color: m.Colors.grey.withAlpha(
+                                                40,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
                                             ),
                                           ),
                                           FractionallySizedBox(
                                             widthFactor: pct.clamp(0.0, 1.0),
                                             child: Container(
                                               decoration: BoxDecoration(
-                                                color: FluentTheme.of(context).accentColor,
-                                                borderRadius: BorderRadius.circular(3),
+                                                color: FluentTheme.of(
+                                                  context,
+                                                ).accentColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(3),
                                               ),
                                             ),
                                           ),

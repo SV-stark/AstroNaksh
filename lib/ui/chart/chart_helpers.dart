@@ -36,7 +36,9 @@ class ChartHelpers {
     return map;
   }
 
-  static Map<int, List<String>> getDivisionalPlanetsMap(DivisionalChartData chart) {
+  static Map<int, List<String>> getDivisionalPlanetsMap(
+    DivisionalChartData chart,
+  ) {
     final map = <int, List<String>>{};
     chart.positions.forEach((planetName, longitude) {
       final sign = (longitude / 30).floor() + 1; // 1-12
@@ -92,7 +94,7 @@ class ChartHelpers {
       'Sagittarius',
       'Capricorn',
       'Aquarius',
-      'Pisces'
+      'Pisces',
     ];
     if (signNumber >= 1 && signNumber <= 12) {
       return signs[signNumber - 1];
@@ -235,9 +237,9 @@ class ChartHelpers {
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: FluentTheme.of(context)
-                            .resources
-                            .dividerStrokeColorDefault,
+                        color: FluentTheme.of(
+                          context,
+                        ).resources.dividerStrokeColorDefault,
                       ),
                     ),
                   ),
@@ -267,8 +269,8 @@ class ChartHelpers {
                   final degInSign = longitude % 30;
                   final degrees = degInSign.floor();
                   final minutes = ((degInSign - degrees) * 60).floor();
-                  final seconds =
-                      (((degInSign - degrees) * 60 - minutes) * 60).round();
+                  final seconds = (((degInSign - degrees) * 60 - minutes) * 60)
+                      .round();
                   final degStr =
                       '${degrees.toString().padLeft(2, '0')}°${minutes.toString().padLeft(2, '0')}\'${seconds.toString().padLeft(2, '0')}"';
 

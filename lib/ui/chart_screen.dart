@@ -43,7 +43,6 @@ import 'strength/shadbala_screen.dart';
 import 'tools/birth_time_rectifier_screen.dart';
 import 'utils/responsive_helper.dart';
 
-
 class ChartScreen extends ConsumerStatefulWidget {
   const ChartScreen({super.key, this.birthData});
   final BirthData? birthData;
@@ -369,30 +368,34 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.contact_card),
             title: const Text('D-1 Rashi'),
-            body: _buildBody((data) => D1Tab(
-                  data: data,
-                  style: _style,
-                  showAspects: _showAspects,
-                  timelineCurrentDate: _timelineCurrentDate,
-                  isTimelinePlaying: _isTimelinePlaying,
-                  timelineSpeed: _timelineSpeed,
-                  d1ChartKey: _d1ChartKey,
-                  onTimelineDateChanged: _onTimelineDateChanged,
-                  onTimelinePlay: _onTimelinePlay,
-                  onTimelinePause: _onTimelinePause,
-                  onTimelineSpeedChanged: _onTimelineSpeedChanged,
-                )),
+            body: _buildBody(
+              (data) => D1Tab(
+                data: data,
+                style: _style,
+                showAspects: _showAspects,
+                timelineCurrentDate: _timelineCurrentDate,
+                isTimelinePlaying: _isTimelinePlaying,
+                timelineSpeed: _timelineSpeed,
+                d1ChartKey: _d1ChartKey,
+                onTimelineDateChanged: _onTimelineDateChanged,
+                onTimelinePlay: _onTimelinePlay,
+                onTimelinePause: _onTimelinePause,
+                onTimelineSpeedChanged: _onTimelineSpeedChanged,
+              ),
+            ),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.grid_view_large),
             title: const Text('Vargas'),
-            body: _buildBody((data) => VargasTab(
-                  data: data,
-                  selectedDivisionalChart: _selectedDivisionalChart,
-                  style: _style,
-                  onDivisionalChartChanged: (code) =>
-                      setState(() => _selectedDivisionalChart = code),
-                )),
+            body: _buildBody(
+              (data) => VargasTab(
+                data: data,
+                selectedDivisionalChart: _selectedDivisionalChart,
+                style: _style,
+                onDivisionalChartChanged: (code) =>
+                    setState(() => _selectedDivisionalChart = code),
+              ),
+            ),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.scatter_chart),
@@ -402,12 +405,14 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.timer),
             title: const Text('Dasha Periods'),
-            body: _buildBody((data) => DashaTab(
-                  data: data,
-                  dashaTabIndex: _dashaTabIndex,
-                  onDashaTabChanged: (idx) =>
-                      setState(() => _dashaTabIndex = idx),
-                )),
+            body: _buildBody(
+              (data) => DashaTab(
+                data: data,
+                dashaTabIndex: _dashaTabIndex,
+                onDashaTabChanged: (idx) =>
+                    setState(() => _dashaTabIndex = idx),
+              ),
+            ),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.list),
@@ -650,7 +655,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                   const Icon(FluentIcons.error, size: 48, color: m.Colors.red),
                   const SizedBox(height: 16),
                   Text(
-                     'Error: ${snapshot.error}',
+                    'Error: ${snapshot.error}',
                     textAlign: TextAlign.center,
                     style: FluentTheme.of(context).typography.bodyLarge,
                   ),

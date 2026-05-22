@@ -1,4 +1,6 @@
-// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
+import 'dart:async';
+import 'dart:io';
+
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' show showDatePicker;
 import 'package:jyotish/jyotish.dart';
@@ -103,8 +105,8 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      if (mounted) {
-        displayInfoBar(
+      if (mounted && !Platform.environment.containsKey('FLUTTER_TEST')) {
+        unawaited(displayInfoBar(
           context,
           builder: (context, close) => InfoBar(
             title: const Text('Error'),
@@ -112,7 +114,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
             severity: InfoBarSeverity.error,
             onClose: close,
           ),
-        );
+        ));
       }
     }
   }
@@ -159,7 +161,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
           _showLocationEditor = false;
           _isLoadingLocation = false;
         });
-        _calculateMuhurta();
+        unawaited(_calculateMuhurta());
       } else {
         setState(() => _isLoadingLocation = false);
       }
@@ -270,7 +272,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                           );
                           if (date != null) {
                             setState(() => _selectedDate = date);
-                            _calculateMuhurta();
+                            unawaited(_calculateMuhurta());
                           }
                         },
                         child: Text(

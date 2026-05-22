@@ -566,17 +566,11 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                                       },
                                       onSelected: (item) {
                                         setState(() {
-                                          _timezoneController.text = item.value!;
+                                          _timezoneController.text =
+                                              item.value!;
                                         });
                                       },
                                       placeholder: 'e.g., Europe/London',
-                                      validator: (value) {
-                                        if (!_useManualCoordinates) return null;
-                                        if (value == null || value.isEmpty) {
-                                          return 'Required';
-                                        }
-                                        return null;
-                                      },
                                     ),
                                   ),
                                 ],
@@ -593,7 +587,9 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                                             controller: _latitudeController,
                                             placeholder: 'e.g., 28.6139',
                                             prefix: const Padding(
-                                              padding: EdgeInsets.only(left: 8.0),
+                                              padding: EdgeInsets.only(
+                                                left: 8.0,
+                                              ),
                                               child: Icon(FluentIcons.globe),
                                             ),
                                             keyboardType:
@@ -605,10 +601,13 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                                               if (!_useManualCoordinates) {
                                                 return null;
                                               }
-                                              if (value == null || value.isEmpty) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
                                                 return 'Required';
                                               }
-                                              final lat = double.tryParse(value);
+                                              final lat = double.tryParse(
+                                                value,
+                                              );
                                               if (lat == null) {
                                                 return 'Invalid number';
                                               }
@@ -628,7 +627,9 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                                             controller: _longitudeController,
                                             placeholder: 'e.g., 77.2090',
                                             prefix: const Padding(
-                                              padding: EdgeInsets.only(left: 8.0),
+                                              padding: EdgeInsets.only(
+                                                left: 8.0,
+                                              ),
                                               child: Icon(FluentIcons.globe),
                                             ),
                                             keyboardType:
@@ -640,10 +641,13 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                                               if (!_useManualCoordinates) {
                                                 return null;
                                               }
-                                              if (value == null || value.isEmpty) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
                                                 return 'Required';
                                               }
-                                              final long = double.tryParse(value);
+                                              final long = double.tryParse(
+                                                value,
+                                              );
                                               if (long == null) {
                                                 return 'Invalid number';
                                               }
@@ -668,17 +672,11 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                                       },
                                       onSelected: (item) {
                                         setState(() {
-                                          _timezoneController.text = item.value!;
+                                          _timezoneController.text =
+                                              item.value!;
                                         });
                                       },
                                       placeholder: 'e.g., Europe/London',
-                                      validator: (value) {
-                                        if (!_useManualCoordinates) return null;
-                                        if (value == null || value.isEmpty) {
-                                          return 'Required';
-                                        }
-                                        return null;
-                                      },
                                     ),
                                   ),
                                 ],

@@ -1,7 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
 
-
 import '../../../data/models.dart';
 import '../chart_helpers.dart';
 
@@ -77,7 +76,10 @@ class DashaTab extends StatelessWidget {
           child: IndexedStack(
             index: dashaTabIndex,
             children: [
-              _buildVimshottariDashaContent(context, data.dashaData.vimshottari),
+              _buildVimshottariDashaContent(
+                context,
+                data.dashaData.vimshottari,
+              ),
               _buildYoginiDashaContent(context, data.dashaData.yogini),
               _buildCharaDashaContent(context, data.dashaData.chara),
               _buildAshtottariDashaContent(context, data.dashaData.ashtottari),
@@ -136,7 +138,10 @@ class DashaTab extends StatelessWidget {
     );
   }
 
-  Widget _buildVimshottariDashaContent(BuildContext context, VimshottariDasha dasha) {
+  Widget _buildVimshottariDashaContent(
+    BuildContext context,
+    VimshottariDasha dasha,
+  ) {
     final now = DateTime.now();
     final currentMahaIndex = dasha.mahadashas.indexWhere(
       (m) => now.isAfter(m.startDate) && now.isBefore(m.endDate),
@@ -248,8 +253,8 @@ class DashaTab extends StatelessWidget {
                         color: isCurrent
                             ? FluentTheme.of(context).accentColor.withAlpha(40)
                             : (index % 2 == 0
-                                ? m.Colors.grey.withAlpha(10)
-                                : null),
+                                  ? m.Colors.grey.withAlpha(10)
+                                  : null),
                         borderRadius: BorderRadius.circular(4),
                         border: isCurrent
                             ? Border.all(
@@ -272,7 +277,9 @@ class DashaTab extends StatelessWidget {
                                       height: 8,
                                       margin: const EdgeInsets.only(right: 8),
                                       decoration: BoxDecoration(
-                                        color: FluentTheme.of(context).accentColor,
+                                        color: FluentTheme.of(
+                                          context,
+                                        ).accentColor,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -336,7 +343,9 @@ class DashaTab extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isCurrentAntar
-                                      ? FluentTheme.of(context).accentColor.withAlpha(20)
+                                      ? FluentTheme.of(
+                                          context,
+                                        ).accentColor.withAlpha(20)
                                       : null,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
@@ -499,8 +508,8 @@ class DashaTab extends StatelessWidget {
                         color: isCurrent
                             ? FluentTheme.of(context).accentColor.withAlpha(40)
                             : (index % 2 == 0
-                                ? m.Colors.grey.withAlpha(10)
-                                : null),
+                                  ? m.Colors.grey.withAlpha(10)
+                                  : null),
                         borderRadius: BorderRadius.circular(4),
                         border: isCurrent
                             ? Border.all(
@@ -523,7 +532,9 @@ class DashaTab extends StatelessWidget {
                                       height: 8,
                                       margin: const EdgeInsets.only(right: 8),
                                       decoration: BoxDecoration(
-                                        color: FluentTheme.of(context).accentColor,
+                                        color: FluentTheme.of(
+                                          context,
+                                        ).accentColor,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -590,7 +601,9 @@ class DashaTab extends StatelessWidget {
                                 margin: const EdgeInsets.only(bottom: 4),
                                 decoration: BoxDecoration(
                                   color: isCurrentAntar
-                                      ? FluentTheme.of(context).accentColor.withAlpha(20)
+                                      ? FluentTheme.of(
+                                          context,
+                                        ).accentColor.withAlpha(20)
                                       : null,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
@@ -620,7 +633,8 @@ class DashaTab extends StatelessWidget {
                                     ],
                                   ),
                                   content: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Padding(
                                         padding: EdgeInsets.only(bottom: 4),
@@ -643,7 +657,9 @@ class DashaTab extends StatelessWidget {
                                             horizontal: 4,
                                           ),
                                           color: isCurrentPratyan
-                                              ? FluentTheme.of(context).accentColor.withAlpha(10)
+                                              ? FluentTheme.of(
+                                                  context,
+                                                ).accentColor.withAlpha(10)
                                               : null,
                                           child: Row(
                                             children: [
@@ -808,8 +824,8 @@ class DashaTab extends StatelessWidget {
                         color: isCurrent
                             ? FluentTheme.of(context).accentColor.withAlpha(40)
                             : (index % 2 == 0
-                                ? m.Colors.grey.withAlpha(10)
-                                : null),
+                                  ? m.Colors.grey.withAlpha(10)
+                                  : null),
                         borderRadius: BorderRadius.circular(4),
                         border: isCurrent
                             ? Border.all(
@@ -830,7 +846,9 @@ class DashaTab extends StatelessWidget {
                                     height: 8,
                                     margin: const EdgeInsets.only(right: 8),
                                     decoration: BoxDecoration(
-                                      color: FluentTheme.of(context).accentColor,
+                                      color: FluentTheme.of(
+                                        context,
+                                      ).accentColor,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -885,7 +903,10 @@ class DashaTab extends StatelessWidget {
     );
   }
 
-  Widget _buildAshtottariDashaContent(BuildContext context, AshtottariDasha dasha) {
+  Widget _buildAshtottariDashaContent(
+    BuildContext context,
+    AshtottariDasha dasha,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -944,7 +965,10 @@ class DashaTab extends StatelessWidget {
     );
   }
 
-  Widget _buildKalachakraDashaContent(BuildContext context, KalachakraDasha dasha) {
+  Widget _buildKalachakraDashaContent(
+    BuildContext context,
+    KalachakraDasha dasha,
+  ) {
     return _buildSignBasedDashaContent(
       context: context,
       title: 'Kalachakra Dasha Periods',

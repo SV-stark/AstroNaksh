@@ -485,7 +485,7 @@ class ReportSections {
               pw.Spacer(),
               pw.Container(
                 padding: const pw.EdgeInsets.all(10),
-                decoration: const pw.BoxDecoration(
+                decoration: pw.BoxDecoration(
                   shape: pw.BoxShape.circle,
                   color: ReportStyles.primaryColor,
                 ),

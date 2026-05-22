@@ -1,18 +1,19 @@
 import 'package:astronaksh/data/models.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jyotish/jyotish.dart';
 
 void main() {
   group('AstrologyConstants Tests', () {
-    test('nakshatraNames has 27 nakshatras', () {
-      expect(AstrologyConstants.nakshatraNames.length, equals(27));
+    test('nakshatraNames has 28 nakshatras', () {
+      expect(AstrologyConstants.nakshatraNames.length, equals(28));
     });
 
     test('nakshatraNames starts with Ashwini', () {
       expect(AstrologyConstants.nakshatraNames.first, equals('Ashwini'));
     });
 
-    test('nakshatraNames ends with Revati', () {
-      expect(AstrologyConstants.nakshatraNames.last, equals('Revati'));
+    test('nakshatraNames ends with Abhijit', () {
+      expect(AstrologyConstants.nakshatraNames.last, equals('Abhijit'));
     });
 
     test('signNames has 12 signs', () {
@@ -63,25 +64,40 @@ void main() {
     });
 
     test('getSignLord returns correct lord for each sign', () {
-      expect(AstrologyConstants.getSignLord(0), equals('Mars')); // Aries
-      expect(AstrologyConstants.getSignLord(1), equals('Venus')); // Taurus
-      expect(AstrologyConstants.getSignLord(2), equals('Mercury')); // Gemini
-      expect(AstrologyConstants.getSignLord(3), equals('Moon')); // Cancer
-      expect(AstrologyConstants.getSignLord(4), equals('Sun')); // Leo
-      expect(AstrologyConstants.getSignLord(5), equals('Mercury')); // Virgo
-      expect(AstrologyConstants.getSignLord(6), equals('Venus')); // Libra
-      expect(AstrologyConstants.getSignLord(7), equals('Mars')); // Scorpio
+      expect(AstrologyConstants.getSignLord(0), equals(Planet.mars)); // Aries
+      expect(AstrologyConstants.getSignLord(1), equals(Planet.venus)); // Taurus
+      expect(
+        AstrologyConstants.getSignLord(2),
+        equals(Planet.mercury),
+      ); // Gemini
+      expect(AstrologyConstants.getSignLord(3), equals(Planet.moon)); // Cancer
+      expect(AstrologyConstants.getSignLord(4), equals(Planet.sun)); // Leo
+      expect(
+        AstrologyConstants.getSignLord(5),
+        equals(Planet.mercury),
+      ); // Virgo
+      expect(AstrologyConstants.getSignLord(6), equals(Planet.venus)); // Libra
+      expect(AstrologyConstants.getSignLord(7), equals(Planet.mars)); // Scorpio
       expect(
         AstrologyConstants.getSignLord(8),
-        equals('Jupiter'),
+        equals(Planet.jupiter),
       ); // Sagittarius
-      expect(AstrologyConstants.getSignLord(9), equals('Saturn')); // Capricorn
-      expect(AstrologyConstants.getSignLord(10), equals('Saturn')); // Aquarius
-      expect(AstrologyConstants.getSignLord(11), equals('Jupiter')); // Pisces
+      expect(
+        AstrologyConstants.getSignLord(9),
+        equals(Planet.saturn),
+      ); // Capricorn
+      expect(
+        AstrologyConstants.getSignLord(10),
+        equals(Planet.saturn),
+      ); // Aquarius
+      expect(
+        AstrologyConstants.getSignLord(11),
+        equals(Planet.jupiter),
+      ); // Pisces
     });
 
     test('getSignLord wraps around for indices >= 12', () {
-      expect(AstrologyConstants.getSignLord(12), equals('Mars'));
+      expect(AstrologyConstants.getSignLord(12), equals(Planet.mars));
     });
   });
 

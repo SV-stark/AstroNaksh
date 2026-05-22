@@ -29,7 +29,7 @@ class Settings extends Table {
 @DriftDatabase(tables: [Charts, Settings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  AppDatabase.connect(QueryExecutor connection) : super(connection);
+  AppDatabase.connect(super.connection);
 
   @override
   int get schemaVersion => 2;

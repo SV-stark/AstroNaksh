@@ -114,13 +114,13 @@ class NorthIndianChartPainter extends CustomPainter {
     // 1. Draw Highlights
     if (hoveredHouse != null) {
       final fillPaint = Paint()
-        ..color = colors.houseBorder.withOpacity(0.08)
+        ..color = colors.houseBorder.withAlpha(20)
         ..style = PaintingStyle.fill;
       canvas.drawPath(getHousePath(hoveredHouse!, width, height), fillPaint);
     }
     if (selectedHouse != null) {
       final fillPaint = Paint()
-        ..color = colors.houseBorder.withOpacity(0.15)
+        ..color = colors.houseBorder.withAlpha(38)
         ..style = PaintingStyle.fill;
       final borderPaint = Paint()
         ..color = colors.houseBorder
@@ -145,13 +145,21 @@ class NorthIndianChartPainter extends CustomPainter {
 
     // 4. Draw Inner Diamond
     canvas.drawLine(Offset(width / 2, 0), Offset(0, height / 2), borderPaint);
-    canvas.drawLine(Offset(0, height / 2), Offset(width / 2, height), borderPaint);
+    canvas.drawLine(
+      Offset(0, height / 2),
+      Offset(width / 2, height),
+      borderPaint,
+    );
     canvas.drawLine(
       Offset(width / 2, height),
       Offset(width, height / 2),
       borderPaint,
     );
-    canvas.drawLine(Offset(width, height / 2), Offset(width / 2, 0), borderPaint);
+    canvas.drawLine(
+      Offset(width, height / 2),
+      Offset(width / 2, 0),
+      borderPaint,
+    );
 
     // 5. Centers & Glyph Positions
     final w4 = width / 4;
@@ -200,7 +208,7 @@ class NorthIndianChartPainter extends CustomPainter {
         signIndex,
         glyphCenter,
         glyphSize,
-        colors.planetText.withOpacity(0.65),
+        colors.planetText.withAlpha(166),
         strokeWidth: 1.5,
       );
 
@@ -223,16 +231,18 @@ class NorthIndianChartPainter extends CustomPainter {
 
       if (lines.isNotEmpty) {
         final textSpan = TextSpan(
-          children: lines.map(
-            (line) => TextSpan(
-              text: '$line\n',
-              style: TextStyle(
-                color: colors.planetText,
-                fontSize: fontSize,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ).toList(),
+          children: lines
+              .map(
+                (line) => TextSpan(
+                  text: '$line\n',
+                  style: TextStyle(
+                    color: colors.planetText,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+              .toList(),
           style: const TextStyle(height: 1.2),
         );
 

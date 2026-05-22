@@ -85,9 +85,10 @@ class AspectPainter extends CustomPainter {
         final startHouse = planetHouses[aspect.aspectingPlanet];
         final endHouse = planetHouses[aspect.aspectedPlanet];
 
-        final bool isLineActive = activeHouse == null ||
+        final isLineActive =
+            activeHouse == null ||
             (startHouse == activeHouse || endHouse == activeHouse);
-        final double opacity = isLineActive ? lineOpacity : 0.05;
+        final opacity = isLineActive ? lineOpacity : 0.05;
 
         final paint = Paint()
           ..color = PlanetaryAspectService.getAspectColor(

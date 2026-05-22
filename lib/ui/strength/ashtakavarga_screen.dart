@@ -135,6 +135,11 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
             body: _buildBody(_buildBhinnashtakavargaTab()),
           ),
           PaneItem(
+            icon: const Icon(FluentIcons.grid_view_small),
+            title: const Text('Prastara Grid'),
+            body: _buildBody(_buildPrastaraGridTab()),
+          ),
+          PaneItem(
             icon: const Icon(FluentIcons.decrease_indent_arrow),
             title: const Text('Reductions'),
             body: _buildBody(_buildReductionsTab()),
@@ -335,6 +340,244 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
         // Heat map
         _buildHeatMap(bhinna, isBhinna: true),
       ],
+    );
+  }
+
+  Widget _buildPrastaraGridTab() {
+    Planet? target;
+    for (final p in Planet.traditionalPlanets) {
+      if (p.name.toLowerCase() == _selectedPlanet.toLowerCase()) {
+        target = p;
+        break;
+      }
+    }
+
+    if (target == null) {
+      return const Center(child: Text('Please select a planet.'));
+    }
+
+    final chart = widget.chartData.baseChart;
+    final jyotish = EphemerisManager.jyotish;
+    final prastara = jyotish.calculatePrastaraAshtakavarga(chart, target);
+
+    final contributors = [
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
+      'Lagna',
+    ];
+
+    // Compute column totals
+    final columnTotals = List<int>.generate(12, (colIndex) {
+      var sum = 0;
+      for (var rowIndex = 0; rowIndex < 8; rowIndex++) {
+        sum += prastara.getContribution(rowIndex, colIndex);
+      }
+      return sum;
+    });
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          backgroundColor: Colors.teal.withValues(alpha: 0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(FluentIcons.grid_view_small, color: Colors.teal),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'About Prastara Ashtakavarga Grid',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'The Prastara Grid decomposes the Bhinnashtakavarga score into its individual planetary contributors. '
+                  'Each of the 8 points (7 planets + Lagna) contributes either 1 (Benefic Point) or 0 to the 12 signs. '
+                  'The sum of all contributors for a sign equals its Bhinnashtakavarga score.',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        const Text(
+          'Select Planet:',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _planets.map((planet) {
+            final isSelected = _selectedPlanet == planet;
+            return Button(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                  isSelected ? Colors.teal.withValues(alpha: 0.1) : null,
+                ),
+              ),
+              onPressed: () {
+                setState(() {
+                  _selectedPlanet = planet;
+                });
+              },
+              child: Text(planet),
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: 24),
+
+        const Text(
+          'Prastara Ashtakavarga Grid (8x12)',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+
+        Card(
+          padding: EdgeInsets.zero,
+          child: Scrollbar(
+            controller: ScrollController(),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Table(
+                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                  columnWidths: {
+                    0: const FixedColumnWidth(120),
+                    for (var i = 1; i <= 12; i++) i: const FixedColumnWidth(55),
+                  },
+                  children: [
+                    TableRow(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: FluentTheme.of(context).resources.dividerStrokeColorDefault,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                          child: Text(
+                            'Contributor',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        ..._signNames.map((sign) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                              child: Text(
+                                sign.substring(0, 3),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                            )),
+                      ],
+                    ),
+                    for (var rowIndex = 0; rowIndex < 8; rowIndex++)
+                      TableRow(
+                        decoration: BoxDecoration(
+                          color: rowIndex % 2 == 0
+                              ? FluentTheme.of(context).resources.controlAltFillColorTertiary
+                              : null,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: FluentTheme.of(context).resources.dividerStrokeColorDefault,
+                            ),
+                          ),
+                        ),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            child: Text(
+                              contributors[rowIndex],
+                              style: const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          for (var colIndex = 0; colIndex < 12; colIndex++)
+                            _buildGridCell(
+                              prastara.getContribution(rowIndex, colIndex),
+                              context,
+                            ),
+                        ],
+                      ),
+                    TableRow(
+                      decoration: BoxDecoration(
+                        color: Colors.teal.withValues(alpha: 0.15),
+                        border: Border(
+                          top: BorderSide(
+                            color: FluentTheme.of(context).accentColor,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                          child: Text(
+                            'Total Bindus',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        ...columnTotals.map((total) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                              child: Text(
+                                total.toString(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            )),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGridCell(int value, BuildContext context) {
+    final isBenefic = value == 1;
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      color: isBenefic
+          ? Colors.teal.withValues(alpha: 0.08)
+          : null,
+      child: Text(
+        value.toString(),
+        style: TextStyle(
+          fontWeight: isBenefic ? FontWeight.bold : FontWeight.normal,
+          color: isBenefic
+              ? FluentTheme.of(context).accentColor
+              : FluentTheme.of(context).typography.caption?.color,
+        ),
+      ),
     );
   }
 

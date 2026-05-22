@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:jyotish/jyotish.dart' hide HouseSystem;
 
 import '../core/ayanamsa_calculator.dart';
 import '../core/chart_customization.dart';
@@ -119,6 +120,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: const Icon(FluentIcons.timer),
               title: const Text('Dasha'),
               body: _buildDashaSettings(),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.grid_view_small),
+              title: const Text('Vargas'),
+              body: _buildVargaSettings(),
             ),
           ],
           footerItems: [
@@ -764,6 +770,110 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           break;
       }
     });
+  }
+
+  Widget _buildVargaSettings() {
+    return ScaffoldPage.scrollable(
+      header: const PageHeader(title: Text('Divisional Charts (Vargas)')),
+      children: [
+        const Text(
+          'Configure divisional chart calculation methods. These settings determine which algorithms are used when generating the Hora, Drekkana, Navamsha, and Dashamsha charts.',
+          style: TextStyle(color: Colors.grey),
+        ),
+        const SizedBox(height: 24),
+        
+        const Text('Hora (D-2) Calculation Method'),
+        const SizedBox(height: 8),
+        Card(
+          child: SizedBox(
+            width: double.infinity,
+            child: ComboBox<HoraMethod>(
+              value: _settings.horaMethod,
+              items: HoraMethod.values.map((method) {
+                return ComboBoxItem<HoraMethod>(
+                  value: method,
+                  child: Text(_formatEnumName(method.name)),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _settings.horaMethod = value);
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        const Text('Drekkana (D-3) Calculation Method'),
+        const SizedBox(height: 8),
+        Card(
+          child: SizedBox(
+            width: double.infinity,
+            child: ComboBox<DrekkanaMethod>(
+              value: _settings.drekkanaMethod,
+              items: DrekkanaMethod.values.map((method) {
+                return ComboBoxItem<DrekkanaMethod>(
+                  value: method,
+                  child: Text(_formatEnumName(method.name)),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _settings.drekkanaMethod = value);
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        const Text('Navamsha (D-9) Calculation Method'),
+        const SizedBox(height: 8),
+        Card(
+          child: SizedBox(
+            width: double.infinity,
+            child: ComboBox<NavamshaMethod>(
+              value: _settings.navamshaMethod,
+              items: NavamshaMethod.values.map((method) {
+                return ComboBoxItem<NavamshaMethod>(
+                  value: method,
+                  child: Text(_formatEnumName(method.name)),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _settings.navamshaMethod = value);
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        const Text('Dashamsha (D-10) Calculation Method'),
+        const SizedBox(height: 8),
+        Card(
+          child: SizedBox(
+            width: double.infinity,
+            child: ComboBox<DashamshaMethod>(
+              value: _settings.dashamshaMethod,
+              items: DashamshaMethod.values.map((method) {
+                return ComboBoxItem<DashamshaMethod>(
+                  value: method,
+                  child: Text(_formatEnumName(method.name)),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _settings.dashamshaMethod = value);
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   String _formatEnumName(String name) {

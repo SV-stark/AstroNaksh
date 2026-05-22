@@ -284,6 +284,152 @@ class DetailsTab extends StatelessWidget {
               ),
             ),
           ],
+          if (data.specialLagnas != null) ...[
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Special Mathematical Lagnas',
+                      style: FluentTheme.of(context).typography.subtitle,
+                    ),
+                    const SizedBox(height: 16),
+                    Table(
+                      columnWidths: const {
+                        0: FlexColumnWidth(1.5),
+                        1: FlexColumnWidth(1),
+                        2: FlexColumnWidth(1),
+                      },
+                      children: [
+                        TableRow(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: FluentTheme.of(
+                                  context,
+                                ).resources.dividerStrokeColorDefault,
+                              ),
+                            ),
+                          ),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                'Lagna Type',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: FluentTheme.of(context).accentColor,
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                'Sign',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                'Degree',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const TableRow(
+                          children: [
+                            SizedBox(height: 8),
+                            SizedBox(),
+                            SizedBox(),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                'Hora Lagna (HL)',
+                                style: TextStyle(fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                ChartHelpers.getSignName(
+                                  (data.specialLagnas!.horaLagna / 30).floor() + 1,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                (data.specialLagnas!.horaLagna % 30).toStringAsFixed(2),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                'Ghati Lagna (GL)',
+                                style: TextStyle(fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                ChartHelpers.getSignName(
+                                  (data.specialLagnas!.ghatiLagna / 30).floor() + 1,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                (data.specialLagnas!.ghatiLagna % 30).toStringAsFixed(2),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                'Sree Lagna (SL)',
+                                style: TextStyle(fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                ChartHelpers.getSignName(
+                                  (data.specialLagnas!.sreeLagna / 30).floor() + 1,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                (data.specialLagnas!.sreeLagna % 30).toStringAsFixed(2),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

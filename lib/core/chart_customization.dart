@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:jyotish/jyotish.dart';
 
 /// Chart Customization Settings
 /// Manages user preferences for chart display
@@ -75,6 +76,23 @@ class ChartCustomization {
       settings.notificationMinute = int.parse(parts[1]);
     }
 
+    settings.horaMethod = HoraMethod.values.firstWhere(
+      (e) => e.toString() == json['horaMethod'],
+      orElse: () => HoraMethod.parashara,
+    );
+    settings.drekkanaMethod = DrekkanaMethod.values.firstWhere(
+      (e) => e.toString() == json['drekkanaMethod'],
+      orElse: () => DrekkanaMethod.parashara,
+    );
+    settings.navamshaMethod = NavamshaMethod.values.firstWhere(
+      (e) => e.toString() == json['navamshaMethod'],
+      orElse: () => NavamshaMethod.parashara,
+    );
+    settings.dashamshaMethod = DashamshaMethod.values.firstWhere(
+      (e) => e.toString() == json['dashamshaMethod'],
+      orElse: () => DashamshaMethod.parashara,
+    );
+
     return settings;
   }
   // Chart Style Settings
@@ -141,6 +159,12 @@ class ChartCustomization {
   int notificationHour = 8;
   int notificationMinute = 0;
 
+  // Varga Settings
+  HoraMethod horaMethod = HoraMethod.parashara;
+  DrekkanaMethod drekkanaMethod = DrekkanaMethod.parashara;
+  NavamshaMethod navamshaMethod = NavamshaMethod.parashara;
+  DashamshaMethod dashamshaMethod = DashamshaMethod.parashara;
+
   /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {
@@ -180,6 +204,10 @@ class ChartCustomization {
       'includeOuterPlanets': includeOuterPlanets,
       'dailyTransitNotifications': dailyTransitNotifications,
       'notificationTime': '$notificationHour:$notificationMinute',
+      'horaMethod': horaMethod.toString(),
+      'drekkanaMethod': drekkanaMethod.toString(),
+      'navamshaMethod': navamshaMethod.toString(),
+      'dashamshaMethod': dashamshaMethod.toString(),
     };
   }
 
@@ -222,6 +250,10 @@ class ChartCustomization {
     dailyTransitNotifications = true;
     notificationHour = 8;
     notificationMinute = 0;
+    horaMethod = HoraMethod.parashara;
+    drekkanaMethod = DrekkanaMethod.parashara;
+    navamshaMethod = NavamshaMethod.parashara;
+    dashamshaMethod = DashamshaMethod.parashara;
   }
 
   ChartCustomization copyWith({
@@ -262,6 +294,10 @@ class ChartCustomization {
     bool? dailyTransitNotifications,
     int? notificationHour,
     int? notificationMinute,
+    HoraMethod? horaMethod,
+    DrekkanaMethod? drekkanaMethod,
+    NavamshaMethod? navamshaMethod,
+    DashamshaMethod? dashamshaMethod,
   }) {
     final result = ChartCustomization();
     result.chartStyle = chartStyle ?? this.chartStyle;
@@ -308,6 +344,10 @@ class ChartCustomization {
         dailyTransitNotifications ?? this.dailyTransitNotifications;
     result.notificationHour = notificationHour ?? this.notificationHour;
     result.notificationMinute = notificationMinute ?? this.notificationMinute;
+    result.horaMethod = horaMethod ?? this.horaMethod;
+    result.drekkanaMethod = drekkanaMethod ?? this.drekkanaMethod;
+    result.navamshaMethod = navamshaMethod ?? this.navamshaMethod;
+    result.dashamshaMethod = dashamshaMethod ?? this.dashamshaMethod;
     return result;
   }
 }

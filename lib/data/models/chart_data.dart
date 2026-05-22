@@ -20,6 +20,8 @@ class CompleteChartData {
     required this.divisionalCharts,
     required this.significatorTable,
     required this.birthData,
+    this.grahaYuddha,
+    this.specialLagnas,
   });
   final VedicChart baseChart;
   final KPData kpData;
@@ -27,6 +29,8 @@ class CompleteChartData {
   final Map<String, DivisionalChartData> divisionalCharts;
   final Map<String, Map<String, dynamic>> significatorTable;
   final BirthData birthData;
+  final WarDetails? grahaYuddha;
+  final SpecialLagnas? specialLagnas;
 
   /// Get planet info with KP data
   Map<String, dynamic>? getPlanetInfo(String planetName) {

@@ -416,6 +416,8 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                             colors: colors,
                             hoveredHouse: _hoveredHouseIndex,
                             selectedHouse: _selectedHouseIndex,
+                            showSigns: chartSettings.showSigns,
+                            showHouseNumbers: chartSettings.showHouseNumbers,
                           )
                         : SouthIndianChartPainter(
                             planetsBySign: widget.planetsBySign,
@@ -423,6 +425,8 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                             colors: colors,
                             hoveredHouse: _hoveredHouseIndex,
                             selectedHouse: _selectedHouseIndex,
+                            showSigns: chartSettings.showSigns,
+                            showHouseNumbers: chartSettings.showHouseNumbers,
                           ),
                   ),
                   if (widget.showAspects &&

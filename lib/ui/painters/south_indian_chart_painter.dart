@@ -9,12 +9,16 @@ class SouthIndianChartPainter extends CustomPainter {
     required this.colors,
     this.hoveredHouse,
     this.selectedHouse,
+    this.showSigns = true,
+    this.showHouseNumbers = true,
   });
   final Map<int, List<String>> planetsBySign;
   final int ascendantSign; // 1-12
   final ChartColors colors;
   final int? hoveredHouse;
   final int? selectedHouse;
+  final bool showSigns;
+  final bool showHouseNumbers;
 
   Rect getCellRect(int signIndex, double width, double height) {
     final cellWidth = width / 4;
@@ -172,20 +176,44 @@ class SouthIndianChartPainter extends CustomPainter {
 
     for (var i = 0; i < 12; i++) {
       // 2. Draw Zodiac Glyph Watermark
-      final rect = getCellRect(i, width, height);
-      final center = Offset(
-        rect.left + cellWidth / 2,
-        rect.top + cellHeight / 2,
-      );
-      final glyphSize = cellWidth * 0.55;
-      ZodiacGlyphs.drawGlyph(
-        canvas,
-        i,
-        center,
-        glyphSize,
-        colors.planetText.withAlpha(31),
-        strokeWidth: 1.2,
-      );
+      if (showSigns) {
+        final rect = getCellRect(i, width, height);
+        final center = Offset(
+          rect.left + cellWidth / 2,
+          rect.top + cellHeight / 2,
+        );
+        final glyphSize = cellWidth * 0.55;
+        ZodiacGlyphs.drawGlyph(
+          canvas,
+          i,
+          center,
+          glyphSize,
+          colors.planetText.withAlpha(31),
+          strokeWidth: 1.2,
+        );
+      }
+
+      // 2b. Draw House Number (subtle number in top-left of the cell)
+      if (showHouseNumbers) {
+        final houseNum = (i - (ascendantSign - 1) + 12) % 12 + 1;
+        final rect = getCellRect(i, width, height);
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: '$houseNum',
+            style: TextStyle(
+              color: colors.planetText.withAlpha(80),
+              fontSize: cellWidth / 10,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+        textPainter.paint(
+          canvas,
+          Offset(rect.left + 4, rect.top + 4),
+        );
+      }
 
       // 3. Draw Planets
       final planets = planetsBySign[i + 1] ?? [];

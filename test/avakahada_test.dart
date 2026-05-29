@@ -1,5 +1,4 @@
 import 'package:astronaksh/logic/astrology/avakahada_service.dart';
-import 'package:astronaksh/logic/chart_comparison.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

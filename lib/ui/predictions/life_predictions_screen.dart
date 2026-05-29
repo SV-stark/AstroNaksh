@@ -646,7 +646,9 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
 
       if (trimmed.startsWith('###')) {
         widgets.add(_buildHeadingLine(context, trimmed));
-      } else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+      } else if ((trimmed.startsWith('-') || trimmed.startsWith('*')) &&
+          !trimmed.startsWith('**') &&
+          !trimmed.startsWith('***')) {
         widgets.add(_buildBulletLine(context, trimmed));
       } else {
         widgets.add(

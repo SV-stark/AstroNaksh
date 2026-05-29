@@ -789,27 +789,26 @@ class ChartComparison {
   static String _calculateGana(int nak1, int nak2) {
     // Correct Gana groups - 9 nakshatras each
     // Deva Gana (divine temperament)
-    const deva = [0, 4, 6, 7, 12, 14, 20, 21, 26];
-    // Ashwini, Mrigashira, Punarvasu, Pushya, Hasta, Swati, Shravana, Dhanishta, Revati
+    const deva = [0, 4, 6, 7, 12, 14, 16, 21, 26];
+    // Ashwini, Mrigashira, Punarvasu, Pushya, Hasta, Swati, Anuradha, Shravana, Revati
 
     // Manushya Gana (human temperament)
-    const manushya = [1, 3, 5, 10, 11, 13, 15, 17, 24];
-    // Bharani, Rohini, Ardra, Purva Phalguni, Uttara Phalguni, Chitra, Vishakha, Jyeshtha, Purva Bhadrapada
+    const manushya = [1, 3, 5, 10, 11, 19, 20, 24, 25];
+    // Bharani, Rohini, Ardra, Purva Phalguni, Uttara Phalguni, Purva Ashadha, Uttara Ashadha, Purva Bhadrapada, Uttara Bhadrapada
 
     // Rakshasa Gana (demonic/fierce temperament) - remaining 9
-    // Krittika, Ashlesha, Magha, Anuradha, Mula, Purva Ashadha, Uttara Ashadha, Shatabhisha, Uttara Bhadrapada
-    // Indices: 2, 8, 9, 16, 18, 19, 20, 23, 25
+    // Krittika, Ashlesha, Magha, Chitra, Vishakha, Jyeshtha, Moola, Dhanishta, Shatabhisha
 
     final g1 = deva.contains(nak1 % 27)
         ? 'Deva'
         : manushya.contains(nak1 % 27)
-        ? 'Manushya'
-        : 'Rakshasa';
+            ? 'Manushya'
+            : 'Rakshasa';
     final g2 = deva.contains(nak2 % 27)
         ? 'Deva'
         : manushya.contains(nak2 % 27)
-        ? 'Manushya'
-        : 'Rakshasa';
+            ? 'Manushya'
+            : 'Rakshasa';
 
     if (g1 == g2) return '$g1 - $g1: Excellent';
     if ((g1 == 'Deva' && g2 == 'Manushya') ||
@@ -820,23 +819,19 @@ class ChartComparison {
   }
 
   static String _calculateNadi(int nak1, int nak2) {
-    // Correct Nadi groups - 9 nakshatras each in cyclic pattern
-    // Adi (Vata): 0, 3, 6, 9, 12, 15, 18, 21, 24
-    // Madhya (Pitta): 1, 4, 7, 10, 13, 16, 19, 22, 25
-    // Antya (Kapha): 2, 5, 8, 11, 14, 17, 20, 23, 26
-    // Each Nadi = nakshatras where (index % 3) equals Nadi number
+    // Correct Nadi groups - 9 nakshatras each in serpentine pattern
+    // Adi (Vata): Ashwini, Ardra, Punarvasu, Uttaraphalguni, Hasta, Jyeshta, Moola, Shatabhisha, Poorva Bhadrapada
+    // Madhya (Pitta): Bharani, Mrigashira, Pushya, Poorva Phalguni, Chitra, Anuradha, Poorvashada, Dhanishta, Uttara Bhadrapada
+    // Antya (Kapha): Krittika, Rohini, Ashlesha, Magha, Swati, Vishakha, Uttarashada, Shravana, Revati
 
     String getNadi(int nakshatra) {
-      final remainder = (nakshatra % 27) % 3;
-      switch (remainder) {
-        case 0:
-          return 'Adi';
-        case 1:
-          return 'Madhya';
-        case 2:
-          return 'Antya';
-        default:
-          return 'Adi';
+      final remainder = (nakshatra % 27) % 6;
+      if (remainder == 0 || remainder == 5) {
+        return 'Adi';
+      } else if (remainder == 1 || remainder == 4) {
+        return 'Madhya';
+      } else {
+        return 'Antya';
       }
     }
 

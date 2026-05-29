@@ -172,7 +172,7 @@ class AstroUtils {
 
   /// Exaltation sign and degree for each planet.
   static const exaltations = {
-    Planet.sun: (4, 10.0), // Aries, 10°
+    Planet.sun: (0, 10.0), // Aries, 10°
     Planet.moon: (1, 3.0), // Taurus, 3°
     Planet.mars: (9, 28.0), // Capricorn, 28°
     Planet.mercury: (5, 15.0), // Virgo, 15°
@@ -206,12 +206,12 @@ class AstroUtils {
   /// Moola trikona signs for each planet.
   static const moolaTrikona = {
     Planet.sun: [4], // Leo
-    Planet.moon: [3], // Cancer
+    Planet.moon: [1], // Taurus
     Planet.mars: [0], // Aries
     Planet.mercury: [5], // Virgo
     Planet.jupiter: [8], // Sagittarius
     Planet.venus: [6], // Libra
-    Planet.saturn: [9], // Capricorn
+    Planet.saturn: [10], // Aquarius
   };
 
   /// Natural planetary friendship matrix.

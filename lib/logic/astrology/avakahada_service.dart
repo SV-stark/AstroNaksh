@@ -18,8 +18,8 @@ class AvakahadaService {
 
   /// Get Gana based on Moon Nakshatra index (0-26)
   static String getGana(int nakshatraIndex) {
-    const deva = [0, 4, 6, 7, 12, 14, 20, 21, 26];
-    const manushya = [1, 3, 5, 10, 11, 13, 15, 17, 24];
+    const deva = [0, 4, 6, 7, 12, 14, 16, 21, 26];
+    const manushya = [1, 3, 5, 10, 11, 19, 20, 24, 25];
 
     if (deva.contains(nakshatraIndex)) return 'Deva (Divine)';
     if (manushya.contains(nakshatraIndex)) return 'Manushya (Human)';
@@ -62,16 +62,13 @@ class AvakahadaService {
 
   /// Get Nadi based on Moon Nakshatra index (0-26)
   static String getNadi(int nakshatraIndex) {
-    final remainder = nakshatraIndex % 3;
-    switch (remainder) {
-      case 0:
-        return 'Adi (Beginning)';
-      case 1:
-        return 'Madhya (Middle)';
-      case 2:
-        return 'Antya (End)';
-      default:
-        return 'Unknown';
+    final remainder = nakshatraIndex % 6;
+    if (remainder == 0 || remainder == 5) {
+      return 'Adi (Beginning)';
+    } else if (remainder == 1 || remainder == 4) {
+      return 'Madhya (Middle)';
+    } else {
+      return 'Antya (End)';
     }
   }
 

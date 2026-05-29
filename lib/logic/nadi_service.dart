@@ -28,8 +28,14 @@ class NadiService {
   }
 
   String _getNadiType(int nakshatraIndex) {
-    final pattern = ['Adi (Vata)', 'Madhya (Pitta)', 'Antya (Kapha)'];
-    return pattern[nakshatraIndex % 3];
+    final remainder = nakshatraIndex % 6;
+    if (remainder == 0 || remainder == 5) {
+      return 'Adi (Vata)';
+    } else if (remainder == 1 || remainder == 4) {
+      return 'Madhya (Pitta)';
+    } else {
+      return 'Antya (Kapha)';
+    }
   }
 
   int _calculateNadiStrength(int nakshatraIndex, CompleteChartData chartData) {

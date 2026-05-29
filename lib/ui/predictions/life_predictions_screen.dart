@@ -269,10 +269,7 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Detailed Prediction
-                  Text(
-                    aspect.prediction,
-                    style: FluentTheme.of(context).typography.body,
-                  ),
+                  _buildParsedPrediction(context, aspect.prediction),
                   const SizedBox(height: 16),
 
                   // Planetary Influences
@@ -571,5 +568,103 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
       default:
         return FluentIcons.circle_ring;
     }
+  }
+
+  Widget _buildFormattedText(BuildContext context, String text, TextStyle? baseStyle) {
+    final spans = <TextSpan>[];
+    final parts = text.split('**');
+    for (var i = 0; i < parts.length; i++) {
+      final isBold = i % 2 == 1;
+      spans.add(
+        TextSpan(
+          text: parts[i],
+          style: isBold
+              ? const TextStyle(fontWeight: FontWeight.bold)
+              : null,
+        ),
+      );
+    }
+    return RichText(
+      text: TextSpan(
+        style: baseStyle ?? FluentTheme.of(context).typography.body,
+        children: spans,
+      ),
+    );
+  }
+
+  Widget _buildBulletLine(BuildContext context, String line) {
+    final cleanLine = line.replaceFirst(RegExp(r'^[-*]\s*'), '');
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '• ',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: FluentTheme.of(context).accentColor,
+            ),
+          ),
+          Expanded(
+            child: _buildFormattedText(
+              context,
+              cleanLine,
+              FluentTheme.of(context).typography.body,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeadingLine(BuildContext context, String line) {
+    final cleanLine = line.replaceFirst(RegExp(r'^###\s*'), '');
+    return Padding(
+      padding: const EdgeInsets.only(top: 14, bottom: 8),
+      child: _buildFormattedText(
+        context,
+        cleanLine,
+        FluentTheme.of(context).typography.bodyStrong?.copyWith(
+          fontSize: 15,
+          color: FluentTheme.of(context).accentColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildParsedPrediction(BuildContext context, String prediction) {
+    final lines = prediction.split('\n');
+    final widgets = <Widget>[];
+
+    for (final line in lines) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) {
+        widgets.add(const SizedBox(height: 8));
+        continue;
+      }
+
+      if (trimmed.startsWith('###')) {
+        widgets.add(_buildHeadingLine(context, trimmed));
+      } else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+        widgets.add(_buildBulletLine(context, trimmed));
+      } else {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: _buildFormattedText(
+              context,
+              trimmed,
+              FluentTheme.of(context).typography.body,
+            ),
+          ),
+        );
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
   }
 }

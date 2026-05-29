@@ -5,6 +5,8 @@ import '../data/models.dart';
 import 'bhava_bala.dart';
 import 'shadbala.dart';
 
+enum FunctionalStatus { benefic, malefic, neutral }
+
 /// Life Prediction Service
 /// Generates comprehensive life predictions based on Vedic astrology principles
 class LifePredictionService {
@@ -157,6 +159,11 @@ class LifePredictionService {
 
     // Determine planetary status
     final status = planetInfo.dignity.name;
+    final isRetrograde = planetInfo.isRetrograde;
+    final isCombust = planetInfo.isCombust;
+
+    final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
+    final functionalStatus = _getFunctionalStatus(ascSign, planet);
 
     // Determine if benefic for this aspect
     final isBenefic = _isBeneficForAspect(
@@ -166,10 +173,11 @@ class LifePredictionService {
       sign,
       house,
       status,
+      isCombust: isCombust,
     );
 
     // Build position description with degrees
-    String position;
+    var position = '';
     if (isHouseLord && houseNumber != null) {
       position =
           '${_getOrdinal(houseNumber)} Lord ${planet.displayName} at $degreeStr $signName in ${_getOrdinal(house)} House';
@@ -177,6 +185,9 @@ class LifePredictionService {
       position =
           '${planet.displayName} at $degreeStr $signName in ${_getOrdinal(house)} House';
     }
+
+    if (isRetrograde) position += ' (Retrograde)';
+    if (isCombust) position += ' (Combust)';
 
     // Generate effect description
     final effect = _generateEffectDescription(
@@ -190,6 +201,9 @@ class LifePredictionService {
       signName: signName,
       degreeStr: degreeStr,
       strength: strength,
+      isRetrograde: isRetrograde,
+      isCombust: isCombust,
+      functionalStatus: functionalStatus,
     );
 
     return PlanetaryInfluence(
@@ -215,6 +229,61 @@ class LifePredictionService {
     return AstrologyConstants.getSignLord(houseSign);
   }
 
+  /// Get functional relationship status based on Lagna
+  FunctionalStatus _getFunctionalStatus(int ascendant, Planet planet) {
+    switch (ascendant) {
+      case 0: // Aries
+        if ([Planet.sun, Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 1: // Taurus
+        if ([Planet.sun, Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 2: // Gemini
+        if ([Planet.mercury, Planet.venus].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.sun, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 3: // Cancer
+        if ([Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 4: // Leo
+        if ([Planet.sun, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.moon, Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 5: // Virgo
+        if ([Planet.mercury, Planet.venus].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.sun, Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 6: // Libra
+        if ([Planet.moon, Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.sun, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 7: // Scorpio
+        if ([Planet.sun, Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 8: // Sagittarius
+        if ([Planet.sun, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.moon, Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 9: // Capricorn
+        if ([Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.sun, Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 10: // Aquarius
+        if ([Planet.sun, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.malefic;
+        break;
+      case 11: // Pisces
+        if ([Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) return FunctionalStatus.benefic;
+        if ([Planet.sun, Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) return FunctionalStatus.malefic;
+        break;
+    }
+    return FunctionalStatus.neutral;
+  }
+
   /// Determine if planet's influence is benefic for this aspect
   bool _isBeneficForAspect(
     CompleteChartData chartData,
@@ -222,9 +291,29 @@ class LifePredictionService {
     LifeAspect aspect,
     int sign,
     int house,
-    String status,
-  ) {
-    // Natural benefics
+    String status, {
+    bool isCombust = false,
+  }) {
+    if (isCombust) return false; // Combustion burns out the planet's positive externals
+
+    final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
+    final functional = _getFunctionalStatus(ascSign, planet);
+
+    // Exalted and own sign generally support well unless they are functional malefics placed in Dusthanas
+    if (status == 'Exalted' || status == 'Own Sign') {
+      return functional != FunctionalStatus.malefic || ![6, 8, 12].contains(house);
+    }
+
+    // Debilitated status indicates challenges
+    if (status == 'Debilitated') {
+      return false;
+    }
+
+    // Functional status has high weight
+    if (functional == FunctionalStatus.benefic) return true;
+    if (functional == FunctionalStatus.malefic) return false;
+
+    // Fallback to natural benefics
     final naturalBenefics = [
       Planet.jupiter,
       Planet.venus,
@@ -232,28 +321,8 @@ class LifePredictionService {
       Planet.moon,
     ];
 
-    // If exalted or in own sign, generally benefic
-    if (status == 'Exalted' || status == 'Own Sign') {
-      return true;
-    }
-
-    // If debilitated, generally malefic for the aspect
-    if (status == 'Debilitated') {
-      return false;
-    }
-
-    // Check if planet is placed in relevant houses (good placement)
     if (aspect.houses.contains(house)) {
       return naturalBenefics.contains(planet) || status == 'Friendly Sign';
-    }
-
-    // Check if in kendra or trikona from relevant houses
-    for (final aspectHouse in aspect.houses) {
-      final distance = ((house - aspectHouse + 12) % 12) + 1;
-      // Kendras (1, 4, 7, 10) and Trikonas (1, 5, 9) are good
-      if ([1, 4, 5, 7, 9, 10].contains(distance)) {
-        return naturalBenefics.contains(planet);
-      }
     }
 
     return naturalBenefics.contains(planet);
@@ -271,41 +340,71 @@ class LifePredictionService {
     String signName = '',
     String degreeStr = '',
     double strength = 50,
+    bool isRetrograde = false,
+    bool isCombust = false,
+    FunctionalStatus functionalStatus = FunctionalStatus.neutral,
   }) {
-    final strengthWord = isBenefic ? 'supports' : 'challenges';
-    final aspectArea = aspect.name.split(' ')[0].toLowerCase();
-    final strengthLabel = strength >= 70
-        ? 'strong'
-        : (strength >= 40 ? 'moderate' : 'weak');
-    final signRef = signName.isNotEmpty ? ' in $signName' : '';
-    final degRef = degreeStr.isNotEmpty ? ' at $degreeStr' : '';
+    final buffer = StringBuffer();
+    final planetName = planet.displayName;
+    final aspectArea = aspect.name.toLowerCase();
 
-    String baseEffect;
-
+    // 1. Lordship or general influence
     if (isHouseLord && houseNumber != null) {
-      final houseSignificance = _getHouseSignificance(houseNumber);
-      baseEffect =
-          'Lord of $houseSignificance placed$degRef$signRef in ${_getOrdinal(house)} house (Shadbala: $strengthLabel, ${strength.toStringAsFixed(0)}%)';
+      final significance = _getHouseSignificance(houseNumber);
+      buffer.write('As the Lord of the ${houseNumber}th house ($significance), ');
     } else {
-      baseEffect =
-          '${planet.displayName}$degRef$signRef $strengthWord $aspectArea matters (Shadbala: $strengthLabel, ${strength.toStringAsFixed(0)}%)';
+      buffer.write('As a primary planetary significator of $aspectArea, ');
     }
 
-    // Add status-specific details
+    // 2. Functional status
+    final functionalLabel = switch (functionalStatus) {
+      FunctionalStatus.benefic => 'highly supportive functional benefic',
+      FunctionalStatus.malefic => 'challenging functional malefic',
+      FunctionalStatus.neutral => 'neutral planetary force',
+    };
+    buffer.write('$planetName acts as a $functionalLabel for your Ascendant. ');
+
+    // 3. Placement, degrees, and dignity
+    buffer.write('It is positioned at $degreeStr in $signName in the ${_getOrdinal(house)} house');
     switch (status) {
       case 'Exalted':
-        return '$baseEffect. Being exalted$signRef, ${planet.displayName} delivers maximum strength and highly positive results for this area.';
-      case 'Debilitated':
-        return '$baseEffect. ${planet.displayName} is debilitated$signRef, indicating challenges that require persistent effort and remedial measures to overcome.';
+        buffer.write(' in an Exalted state, providing outstanding strength and highly auspicious energy for these matters.');
+        break;
       case 'Own Sign':
-        return '$baseEffect. ${planet.displayName} is in its own sign ($signName), providing stability, confidence, and naturally good results.';
+        buffer.write(' in its own sign, granting excellent stability, natural confidence, and smooth operations.');
+        break;
       case 'Friendly Sign':
-        return '$baseEffect. ${planet.displayName} is well-disposed in a friendly sign ($signName), enabling comfortable expression of its qualities.';
+        buffer.write(' in a friendly sign, enabling a comfortable and supportive expression of its positive vibrations.');
+        break;
       case 'Enemy Sign':
-        return '$baseEffect. ${planet.displayName} struggles in an inimical sign ($signName), facing resistance in expressing its natural qualities.';
+        buffer.write(' in an enemy sign, causing friction, resistance, and requiring self-discipline to channel constructively.');
+        break;
+      case 'Debilitated':
+        buffer.write(' in a debilitated state, pointing to structural weaknesses, energy blocks, or lessons that demand persistent discipline.');
+        break;
       default:
-        return '$baseEffect. ${planet.displayName} is in a neutral disposition.';
+        buffer.write(' in a neutral state.');
     }
+
+    // 4. Retrograde or combustion modifiers
+    if (isRetrograde) {
+      buffer.write(' Being Retrograde (Rx), its energy is turned inward, prompting self-reflection, potential delays, or a karmic re-examination.');
+    }
+    if (isCombust) {
+      buffer.write(' Because it is Combust (too close to the Sun), its external capabilities are obscured, indicating hidden trials or self-limitations.');
+    }
+
+    // 5. Normalized strength
+    buffer.write(' Shadbala strength is ${strength.toStringAsFixed(0)}% (');
+    if (strength >= 70) {
+      buffer.write('exceptionally strong).');
+    } else if (strength >= 40) {
+      buffer.write('moderately stable).');
+    } else {
+      buffer.write('delicate, needing conscious reinforcement).');
+    }
+
+    return buffer.toString();
   }
 
   /// Get house significance
@@ -336,103 +435,115 @@ class LifePredictionService {
     Map<int, BhavaStrength> bhavaBala,
   ) {
     final buffer = StringBuffer();
+    final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
+    final ascSignName = AstrologyConstants.getSignName(ascSign);
 
-    // Opening with chart-specific planetary reference
-    final beneficInfluences = influences.where((i) => i.isBenefic).toList();
-    final maleficInfluences = influences.where((i) => !i.isBenefic).toList();
+    // 1. Executive Synthesis
+    buffer.write('### Cosmic Overview & Analysis\n');
+    buffer.write(
+      'For your **$ascSignName Ascendant (Lagna)**, the astrological indicators governing **${aspect.name}** are analyzed. '
+    );
 
     if (score >= 80) {
       buffer.write(
-        'Your chart shows excellent indications for ${aspect.name.toLowerCase()}. ',
+        'Your birth chart indicates exceptional strength in this sphere, rated at an **Excellent** overall index of **$score%**. '
+        'This represents highly favorable alignment of planetary forces, providing native ease, abundance, and structural support for these matters. '
       );
-      if (beneficInfluences.isNotEmpty) {
-        final topPlanet = beneficInfluences.first;
-        buffer.write(
-          'This is primarily driven by ${topPlanet.position} (${topPlanet.status}, Shadbala: ${topPlanet.strength.toStringAsFixed(0)}%). ',
-        );
-      }
     } else if (score >= 65) {
       buffer.write(
-        'The planetary positions indicate good potential for ${aspect.name.toLowerCase()}. ',
+        'The alignments indicate a **Favorable** and stable pattern, rated at **$score%**. '
+        'This shows stable support with constructive opportunities, where consistent effort will bring growth and rewarding results. '
       );
-      if (beneficInfluences.isNotEmpty) {
-        final topPlanet = beneficInfluences.first;
-        buffer.write(
-          '${topPlanet.planetName} positioned ${topPlanet.position.replaceFirst(topPlanet.planetName, '').trim()} provides a favorable foundation. ',
-        );
-      }
     } else if (score >= 50) {
       buffer.write(
-        'Mixed influences affect your ${aspect.name.toLowerCase()}, with both opportunities and challenges. ',
+        'Your chart exhibits **Mixed** influences, rated at **$score%**. '
+        'While there are active sources of strength, certain planetary frictions, debilitations, or placement challenges create obstacles that require awareness and focus. '
       );
-      if (maleficInfluences.isNotEmpty) {
-        buffer.write(
-          '${maleficInfluences.first.planetName} (${maleficInfluences.first.status}) at its current position creates some friction. ',
-        );
-      }
     } else {
       buffer.write(
-        'Your chart indicates some challenges in ${aspect.name.toLowerCase()} that require focused attention. ',
+        'This area presents **Challenging** indications, rated at **$score%**. '
+        'Planetary blockages, debilitations, or unfavorable placements demand caution. Focused discipline, inner growth, and remedial support are recommended. '
       );
-      if (maleficInfluences.isNotEmpty) {
-        final troublePlanet = maleficInfluences.first;
-        buffer.write(
-          '${troublePlanet.planetName} is ${troublePlanet.status.toLowerCase()} at ${troublePlanet.position.replaceFirst(troublePlanet.planetName, '').trim()}, weakening support for this area. ',
-        );
-      }
     }
 
-    // House analysis with planetary details
-    buffer.write('\n\n');
+    // 2. House Lord Placement
+    buffer.write('\n\n### Bhava (House) & Lordship Analysis\n');
     for (final house in aspect.houses) {
       final bhava = bhavaBala[house];
-      if (bhava != null) {
-        final strength = bhava.totalStrength;
-        final houseDesc = _getHouseSignificance(house);
-        final houseLord = _getHouseLord(chartData, house);
-        final lordInfo = chartData.baseChart.planets[houseLord];
-        var lordPosition = '';
-        if (lordInfo != null) {
-          final lordSignIdx = lordInfo.position.zodiacSignIndex;
-          final lordHouse = _getHouseFromSign(chartData, lordSignIdx);
-          lordPosition =
-              ' Its lord ${houseLord.displayName} is placed in the ${_getOrdinal(lordHouse)} house (${AstrologyConstants.getSignName(lordSignIdx)}).';
+      final strength = bhava?.totalStrength ?? 50.0;
+      final houseDesc = _getHouseSignificance(house);
+      final houseLord = _getHouseLord(chartData, house);
+      final lordInfo = chartData.baseChart.planets[houseLord];
+
+      buffer.write('**The ${_getOrdinal(house)} House ($houseDesc):** ');
+      buffer.write(
+        'This house has a Bhava Bala of **${strength.toStringAsFixed(0)}%**, representing a '
+      );
+      if (strength >= 60) {
+        buffer.write('highly robust foundation. ');
+      } else if (strength >= 40) {
+        buffer.write('moderately stable foundation. ');
+      } else {
+        buffer.write('delicate foundation that requires conscious strengthening. ');
+      }
+
+      if (lordInfo != null) {
+        final lordSignIdx = lordInfo.position.zodiacSignIndex;
+        final lordSignName = AstrologyConstants.getSignName(lordSignIdx);
+        final lordHouse = _getHouseFromSign(chartData, lordSignIdx);
+        final lordDignity = lordInfo.dignity.name;
+        final isLordRetro = lordInfo.isRetrograde;
+        final isLordCombust = lordInfo.isCombust;
+
+        buffer.write(
+          'Its lord, **${houseLord.displayName}**, is positioned in the **${_getOrdinal(lordHouse)} house** ($lordSignName). '
+        );
+
+        if ([6, 8, 12].contains(lordHouse)) {
+          buffer.write(
+            'Because the house lord is placed in a Dusthana (difficult) house, it indicates that the benefits of the ${house}th house may feel obstructed, delayed, or require spiritual transformation to manifest. '
+          );
+        } else if ([1, 4, 7, 10, 5, 9].contains(lordHouse)) {
+          buffer.write(
+            'Since the house lord resides in an auspicious Kendra or Trikona house, it channels highly positive, progressive energy, ensuring that this house\'s indications are well-supported. '
+          );
         }
-        if (strength >= 60) {
-          buffer.write(
-            'The ${_getOrdinal(house)} house ($houseDesc) is strong at ${strength.toStringAsFixed(0)}%, providing a solid foundation.$lordPosition ',
-          );
-        } else if (strength >= 40) {
-          buffer.write(
-            'The ${_getOrdinal(house)} house ($houseDesc) has moderate strength at ${strength.toStringAsFixed(0)}%.$lordPosition ',
-          );
-        } else {
-          buffer.write(
-            'The ${_getOrdinal(house)} house ($houseDesc) is weak at ${strength.toStringAsFixed(0)}%, requiring remedial attention.$lordPosition ',
-          );
+
+        if (lordDignity == 'Exalted') {
+          buffer.write('The lord\'s Exalted state further magnifies its capacity to deliver extraordinary outcomes. ');
+        } else if (lordDignity == 'Debilitated') {
+          buffer.write('The lord\'s Debilitated status indicates a lack of external power, suggesting that you must build inner resilience to overcome related challenges. ');
+        } else if (lordDignity == 'Own Sign') {
+          buffer.write('Placed in its own sign, the lord remains highly stable and self-sufficient. ');
+        }
+
+        if (isLordRetro) {
+          buffer.write('Being Retrograde, the lord\'s influence is introspective, requiring internal reflection before external success. ');
+        }
+        if (isLordCombust) {
+          buffer.write('Since it is Combust, the lord\'s outer expression is weakened, bringing hidden vulnerabilities. ');
         }
       }
+      buffer.write('\n\n');
     }
 
-    // Key planetary influences — detailed
-    final strongInfluences = influences.where((i) => i.strength >= 60).toList();
-    final weakInfluences = influences.where((i) => i.strength < 40).toList();
+    // 3. Synthesis of Key Influences
+    buffer.write('### Key Astrological Influences\n');
+    final beneficInfluences = influences.where((i) => i.isBenefic).toList();
+    final maleficInfluences = influences.where((i) => !i.isBenefic).toList();
 
-    if (strongInfluences.isNotEmpty) {
-      buffer.write('\n\n**Supportive Factors:** ');
-      for (final influence in strongInfluences.take(3)) {
-        buffer.write(
-          '${influence.position} [${influence.status}, Shadbala: ${influence.strength.toStringAsFixed(0)}%]. ',
-        );
+    if (beneficInfluences.isNotEmpty) {
+      buffer.write('**Positive Assets:**\n');
+      for (final influence in beneficInfluences) {
+        buffer.write('- **${influence.position}**: ${influence.effect}\n');
       }
+      buffer.write('\n');
     }
 
-    if (weakInfluences.isNotEmpty) {
-      buffer.write('\n\n**Areas of Attention:** ');
-      for (final influence in weakInfluences.take(3)) {
-        buffer.write(
-          '${influence.position} [${influence.status}, Shadbala: ${influence.strength.toStringAsFixed(0)}%] needs strengthening. ',
-        );
+    if (maleficInfluences.isNotEmpty) {
+      buffer.write('**Areas needing Awareness:**\n');
+      for (final influence in maleficInfluences) {
+        buffer.write('- **${influence.position}**: ${influence.effect}\n');
       }
     }
 
@@ -445,47 +556,54 @@ class LifePredictionService {
     List<PlanetaryInfluence> influences,
     int score,
   ) {
-    final weakPlanets = influences
-        .where((i) => !i.isBenefic || i.strength < 50)
-        .toList();
+    final buffer = StringBuffer();
 
-    if (weakPlanets.isEmpty || score >= 80) {
-      // For strong charts, still reference key planet
-      final topPlanet = influences.isNotEmpty ? influences.first : null;
-      final planetRef = topPlanet != null
-          ? ' Your ${topPlanet.planetName} (${topPlanet.status} at ${topPlanet.position.replaceFirst(topPlanet.planetName, '').trim()}) is your strongest ally here.'
-          : '';
-      switch (aspect) {
-        case LifeAspect.career:
-          return 'Continue leveraging your natural talents. Worship Sun on Sundays for sustained success.$planetRef';
-        case LifeAspect.wealth:
-          return 'Your financial prospects are favorable. Maintain gratitude and donate regularly to sustain prosperity.$planetRef';
-        case LifeAspect.family:
-          return 'Nurture family bonds with quality time. Worship Moon on Mondays for domestic harmony.$planetRef';
-        case LifeAspect.romance:
-          return 'Your relationship sector is blessed. Honor Venus on Fridays through acts of love and beauty.$planetRef';
-        case LifeAspect.health:
-          return 'Maintain your healthy routines. Sun Salutations at dawn enhance vitality.$planetRef';
-        case LifeAspect.children:
-          return 'Creative and offspring matters flourish. Jupiter worship on Thursdays enhances blessings.$planetRef';
-        case LifeAspect.education:
-          return 'Knowledge acquisition comes naturally. Honor Saraswati and study during Mercury Hours.$planetRef';
-        case LifeAspect.spirituality:
-          return 'Your spiritual path is illuminated. Continue meditation practices and self-inquiry.$planetRef';
-      }
+    // 1. Overall guidance based on aspect type
+    switch (aspect) {
+      case LifeAspect.career:
+        buffer.write('To elevate your career: focus on establishing long-term professional discipline. ');
+        break;
+      case LifeAspect.wealth:
+        buffer.write('To cultivate financial abundance: maintain rigorous budget habits and prioritize asset accumulation. ');
+        break;
+      case LifeAspect.family:
+        buffer.write('To nourish family harmony: practice empathetic communication and create a calm domestic routine. ');
+        break;
+      case LifeAspect.romance:
+        buffer.write('To harmonize relationships: foster mutual respect, transparency, and balance of power. ');
+        break;
+      case LifeAspect.health:
+        buffer.write('To maximize vitality: implement daily physical activity, proper diet, and rhythmic sleep cycles. ');
+        break;
+      case LifeAspect.children:
+        buffer.write('To support creative growth and children: encourage playfulness, intellect, and constructive guidance. ');
+        break;
+      case LifeAspect.education:
+        buffer.write('To enhance wisdom: cultivate continuous study, analytical training, and respect for mentors. ');
+        break;
+      case LifeAspect.spirituality:
+        buffer.write('To deepen spiritual connection: dedicate time for daily introspection, meditation, and self-inquiry. ');
+        break;
     }
 
-    // Provide remedial suggestions for weak planets with position references
-    final buffer = StringBuffer();
-    buffer.write('To enhance ${aspect.name.toLowerCase()}: ');
-
-    for (final planet in weakPlanets.take(2)) {
-      buffer.write(
-        '${planet.planetName} (${planet.status}, currently ${planet.position.replaceFirst(planet.planetName, '').trim()}) needs strengthening — ',
-      );
-      final remedy = _getRemedyForPlanet(planet.planet);
-      buffer.write(remedy);
-      buffer.write(' ');
+    // 2. Weak/Malefic planetary remedies
+    final weakInfluences = influences.where((i) => !i.isBenefic || i.strength < 50).toList();
+    if (weakInfluences.isNotEmpty) {
+      buffer.write('\n\n**Remedial Measures (Upayas):** ');
+      for (final influence in weakInfluences.take(2)) {
+        buffer.write(
+          'For **${influence.planetName}** (${influence.status}, currently placed in the ${influence.position.split('in ').last}): '
+        );
+        buffer.write(_getRemedyForPlanet(influence.planet));
+        buffer.write(' ');
+      }
+    } else {
+      // If everything is extremely strong, give a positive booster remedy
+      final topPlanet = influences.isNotEmpty ? influences.first : null;
+      if (topPlanet != null) {
+        buffer.write('\n\nYour **${topPlanet.planetName}** is exceptionally well-placed. You can further amplify its positive vibration: ');
+        buffer.write(_getRemedyForPlanet(topPlanet.planet));
+      }
     }
 
     return buffer.toString();

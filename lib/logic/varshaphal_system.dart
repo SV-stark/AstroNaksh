@@ -2,6 +2,7 @@ import 'package:jyotish/jyotish.dart';
 
 import '../core/chart_customization.dart';
 import '../data/models.dart';
+import '../core/ephemeris_manager.dart';
 import 'custom_chart_service.dart';
 
 /// Varshaphal (Annual Chart) System
@@ -16,17 +17,36 @@ class VarshaphalSystem {
   }) async {
     final chartSettings = chartCustomization ?? ChartCustomization();
 
+    await EphemerisManager.ensureEphemerisData();
+    final varshapalService = EphemerisManager.jyotish.systems.varshapal;
+    final tajakaService = EphemerisManager.jyotish.systems.tajaka;
+
+    final location = GeographicLocation(
+      latitude: birthData.location.latitude,
+      longitude: birthData.location.longitude,
+      timezone: birthData.timezone.isNotEmpty ? birthData.timezone : null,
+    );
+
+    final activeFlags = CalculationFlags(
+      siderealMode: SiderealMode.lahiri,
+      nodeType: chartSettings.useTrueNode ? NodeType.trueNode : NodeType.meanNode,
+      useTopocentric: chartSettings.useTopocentric,
+      calculateSpeed: chartSettings.calculateSpeed,
+    );
+
     // 1. Calculate rigorous Solar Return Time (High Precision)
-    final solarReturnTime = await calculateSolarReturn(birthData, year);
+    final solarReturnTime = await varshapalService.calculateSolarReturn(
+      birthDateTime: birthData.dateTime,
+      targetYear: year,
+      location: location,
+      flags: activeFlags,
+    );
 
     // 2. Calculate Chart for Solar Return Moment (Varsha Lagna)
     final charService = CustomChartService();
     final varshaChart = await charService.calculateChart(
       dateTime: solarReturnTime,
-      location: GeographicLocation(
-        latitude: birthData.location.latitude,
-        longitude: birthData.location.longitude,
-      ),
+      location: location,
       ayanamsaMode: SiderealMode.lahiri,
       useTrueNode: chartSettings.useTrueNode,
       useTopocentric: chartSettings.useTopocentric,
@@ -36,55 +56,173 @@ class VarshaphalSystem {
     // 3. Get Natal Information (Needed for Muntha and Varshesh)
     final natalChart = await charService.calculateChart(
       dateTime: birthData.dateTime,
-      location: GeographicLocation(
-        latitude: birthData.location.latitude,
-        longitude: birthData.location.longitude,
-      ),
+      location: location,
       ayanamsaMode: SiderealMode.lahiri,
       useTrueNode: chartSettings.useTrueNode,
       useTopocentric: chartSettings.useTopocentric,
       calculateSpeed: chartSettings.calculateSpeed,
     );
-    final natalAsc = getAscendantSign(natalChart);
-    final isDay = isDayBirth(varshaChart); // For Varsha chart day/night
 
-    // 4. Calculate Muntha
-    final birthYear = birthData.dateTime.year;
-    final munthaSign = calculateMuntha(natalAsc, birthYear, year);
-    final munthaLord = getSignLord(munthaSign);
+    // 4. Calculate Muntha and Tajaka enhancements
+    final age = year - birthData.dateTime.year;
+    final tajakaEnhancement = tajakaService.calculateTajakaEnhancements(
+      natalChart: natalChart,
+      annualChart: varshaChart,
+      age: age,
+    );
+
+    final munthaSign = tajakaEnhancement.munthaSign.number;
+    final munthaLord = tajakaEnhancement.munthaLord.displayName;
 
     // 5. Calculate Panchavargiya Bala (5-Fold Strength)
-    // Used to determine the Varshesh (Year Lord)
-    final panchavargiyaBala = calculatePanchavargiyaBala(
-      varshaChart,
-      isDay,
-      varshaChart.houses.cusps[0], // Varsha Lagna
-    );
+    final panchavargiyaBala = <String, PanchavargiyaStrength>{};
+    final balaMap = <Planet, PanchavargiyaBalaResult>{};
+    for (final planet in Planet.traditionalPlanets) {
+      final res = varshapalService.calculatePanchavargiyaBala(planet, varshaChart);
+      balaMap[planet] = res;
+      panchavargiyaBala[planet.displayName] = PanchavargiyaStrength(
+        kshetra: res.kshetraBala,
+        uchcha: res.ucchaBala,
+        hadda: res.haddaBala,
+        drekkana: res.drekkanaBala,
+        navamsa: res.navamsaBala,
+      );
+    }
 
     // 6. Determine Varshesh (Year Lord)
-    // Candidates: Muntha Lord, Birth Lagna Lord, Varsha Lagna Lord, Tri-Rashi Lord, Din/Ratri Lord
-    final varsheshData = determineVarshesh(
-      varshaChart,
-      panchavargiyaBala,
-      munthaLord,
-      getSignLord(natalAsc),
-      getSignLord(getAscendantSign(varshaChart)),
-      isDay,
+    final varsheshPlanet = varshapalService.determineVarshesh(
+      natalChart: natalChart,
+      annualChart: varshaChart,
+      balaMap: balaMap,
+      varshaDateTime: solarReturnTime,
+      birthDateTime: birthData.dateTime,
     );
+    final yearLord = varsheshPlanet.displayName;
+
+    // Format candidate list for UI
+    final natalAsc = getAscendantSign(natalChart);
+    final birthLagnaLord = getSignLord(natalAsc);
+    final varshaLagnaLord = getSignLord(getAscendantSign(varshaChart));
+    final sunHouse = varshaChart.getPlanet(Planet.sun)?.house ?? 1;
+    final isDay = sunHouse >= 7 && sunHouse <= 12;
+    final dinRatriLord = isDay ? 'Sun' : 'Moon';
+    final triRashiLord = varshapalService.getTrirashiLord(
+      Rashi.fromLongitude(varshaChart.ascendant),
+      isDay,
+    ).displayName;
+
+    final candidatesMap = {
+      'Muntha Lord': munthaLord,
+      'Birth Lagna Lord': birthLagnaLord,
+      'Varsha Lagna Lord': varshaLagnaLord,
+      'Tri-Rashi Lord': triRashiLord,
+      'Din-Ratri Lord': dinRatriLord,
+    };
+
+    final varsheshCandidates = <String>[];
+    candidatesMap.forEach((role, planetName) {
+      final pEnum = getPlanetFromString(planetName);
+      final h = varshaChart.getPlanet(pEnum)?.house;
+      final aspectsLagna = h != null && [1, 3, 4, 5, 7, 9, 10, 11].contains(h);
+      final strength = panchavargiyaBala[planetName]?.total ?? 0;
+      varsheshCandidates.add(
+        '$role ($planetName): ${strength.toStringAsFixed(1)} ${aspectsLagna ? "[Aspects]" : "[No Aspect]"}',
+      );
+    });
 
     // 7. Calculate Mudda Dasha (Vimshottari-based Annual Dasha)
-    final varshikDasha = calculateMuddaDasha(varshaChart, solarReturnTime);
+    final muddaPeriods = await varshapalService.calculateMuddaDasha(
+      birthDateTime: birthData.dateTime,
+      varshaDateTime: solarReturnTime,
+      annualChart: varshaChart,
+      location: location,
+      flags: activeFlags,
+    );
+
+    final varshikDasha = <VarshikDashaPeriod>[];
+    for (final period in muddaPeriods) {
+      final planetName = period.lord.displayName;
+      final duration = period.duration.inMinutes / 1440.0;
+      final prediction = getMuddaPrediction(planetName, varshaChart);
+      varshikDasha.add(
+        VarshikDashaPeriod(
+          planet: planetName,
+          startDate: period.startDate,
+          endDate: period.endDate,
+          durationDays: duration,
+          prediction: prediction['main'],
+          keyThemes: prediction['themes'],
+          cautions: prediction['cautions'],
+          favorableScore: prediction['score'],
+        ),
+      );
+    }
 
     // 8. Calculate Sahams (Arabic Parts)
-    final sahams = calculateSahams(varshaChart, isDay);
+    final sahams = <String, SahamPoint>{};
+    tajakaEnhancement.sahams.forEach((key, long) {
+      String name = '$key Saham';
+      String interpretation = '';
+      String fullKey = key;
+      if (key == 'Punya') {
+        fullKey = 'Punya (Fortune)';
+        interpretation = 'Wealth, success, and fulfillment of desires.';
+      } else if (key == 'Vidya') {
+        fullKey = 'Vidya (Education)';
+        interpretation = 'Education, learning, and intellectual pursuits.';
+      } else if (key == 'Yasas') {
+        fullKey = 'Yasha (Fame)';
+        name = 'Yasha Saham';
+        interpretation = 'Fame, reputation, and public recognition.';
+      } else if (key == 'Karma') {
+        fullKey = 'Karma (Career)';
+        interpretation = 'Career, profession, and life purpose.';
+      } else if (key == 'Putra') {
+        fullKey = 'Putra (Children)';
+        interpretation = 'Children, creativity, and progeny matters.';
+      } else if (key == 'Vivaha') {
+        fullKey = 'Vivaha (Marriage)';
+        interpretation = 'Marriage and partnership matters.';
+      } else {
+        interpretation = 'Significance of $key in annual chart.';
+      }
+      sahams[fullKey] = SahamPoint(
+        name: name,
+        longitude: long,
+        interpretation: interpretation,
+      );
+    });
 
-    // 9. Calculate Tajik Yogas
-    final tajikYogas = calculateTajikYogas(
-      varshaChart,
-      getSignLord(getAscendantSign(varshaChart)), // Varsha Lagna Lord
-      munthaLord,
-      varsheshData['varshesh'] as String,
-    );
+    if (!sahams.containsKey('Raja (Authority)')) {
+      final saturn = getPlanetLongitude(varshaChart, Planet.saturn);
+      final sun = getPlanetLongitude(varshaChart, Planet.sun);
+      final asc = varshaChart.houses.cusps[0];
+      var rajaLong = isDay ? (asc + saturn - sun) : (asc + sun - saturn);
+      rajaLong = (rajaLong + 360) % 360;
+      sahams['Raja (Authority)'] = SahamPoint(
+        name: 'Raja Saham',
+        longitude: rajaLong,
+        interpretation: 'Authority, government favor, and power.',
+      );
+    }
+    if (!sahams.containsKey('Mitra (Friends)')) {
+      final mercury = getPlanetLongitude(varshaChart, Planet.mercury);
+      final moon = getPlanetLongitude(varshaChart, Planet.moon);
+      final asc = varshaChart.houses.cusps[0];
+      var mitraLong = isDay ? (asc + mercury - moon) : (asc + moon - mercury);
+      mitraLong = (mitraLong + 360) % 360;
+      sahams['Mitra (Friends)'] = SahamPoint(
+        name: 'Mitra Saham',
+        longitude: mitraLong,
+        interpretation: 'Friendships, alliances, and social connections.',
+      );
+    }
+
+    // 9. Tajik Yogas
+    final tajikYogas = tajakaEnhancement.yogas.map((y) => y.interpretation).toList();
+    if (tajikYogas.isEmpty) {
+      tajikYogas.add('No major Tajik Yogas active');
+    }
 
     return VarshaphalChart(
       year: year,
@@ -94,16 +232,16 @@ class VarshaphalSystem {
       munthaLord: munthaLord,
       varshikDasha: varshikDasha,
       sahams: sahams,
-      yearLord: varsheshData['varshesh'] as String,
+      yearLord: yearLord,
       panchavargiyaBala: panchavargiyaBala,
-      varsheshCandidates: varsheshData['candidates'] as List<String>,
+      varsheshCandidates: varsheshCandidates,
       tajikYogas: tajikYogas,
       isDayBirth: isDay,
       interpretation: generateInterpretation(
         varshaChart,
         munthaSign,
         sahams,
-        varsheshData['varshesh'] as String,
+        yearLord,
       ),
     );
   }
@@ -114,76 +252,23 @@ class VarshaphalSystem {
     BirthData birthData,
     int year,
   ) async {
-    final chartService = CustomChartService();
-
-    // Natal Sun Position
-    final natalChart = await chartService.calculateChart(
-      dateTime: birthData.dateTime,
-      location: GeographicLocation(
-        latitude: birthData.location.latitude,
-        longitude: birthData.location.longitude,
-      ),
-      ayanamsaMode: SiderealMode.lahiri,
+    await EphemerisManager.ensureEphemerisData();
+    final varshapalService = EphemerisManager.jyotish.systems.varshapal;
+    final location = GeographicLocation(
+      latitude: birthData.location.latitude,
+      longitude: birthData.location.longitude,
+      timezone: birthData.timezone.isNotEmpty ? birthData.timezone : null,
     );
-    final natalSunLong = getPlanetLongitude(natalChart, Planet.sun);
-
-    // Initial Guess: Same day/month as birth
-    final searchDate = DateTime(
-      year,
-      birthData.dateTime.month,
-      birthData.dateTime.day,
-      birthData.dateTime.hour,
-      birthData.dateTime.minute,
+    final activeFlags = CalculationFlags(
+      siderealMode: SiderealMode.lahiri,
+      nodeType: NodeType.meanNode,
     );
-
-    // Binary Search Window: +/- 2 days
-    var start = searchDate.subtract(const Duration(days: 2));
-    var end = searchDate.add(const Duration(days: 2));
-
-    // Iterative refinement for < 1 second precision
-    // 20 iterations is more than enough for seconds precision over 4 days
-    for (var i = 0; i < 20; i++) {
-      final midMillis =
-          (start.millisecondsSinceEpoch + end.millisecondsSinceEpoch) ~/ 2;
-      final mid = DateTime.fromMillisecondsSinceEpoch(midMillis);
-
-      final testChart = await chartService.calculateChart(
-        dateTime: mid,
-        location: GeographicLocation(
-          latitude: birthData.location.latitude,
-          longitude: birthData.location.longitude,
-        ),
-        ayanamsaMode: SiderealMode.lahiri,
-      );
-
-      final testSunLong = getPlanetLongitude(testChart, Planet.sun);
-
-      // Calculate difference accounting for 360 wrap
-      var diff = testSunLong - natalSunLong;
-      while (diff > 180) {
-        diff -= 360;
-      }
-      while (diff < -180) {
-        diff += 360;
-      }
-
-      // If diff is close enough (e.g. 1 arc second ~ 0.00027 degrees)
-      if (diff.abs() < 0.00001) {
-        return mid;
-      }
-
-      // Sun moves forward ~1 degree per day.
-      // If diff is positive (Test > Natal), we are ahead, need to go back.
-      if (diff > 0) {
-        end = mid;
-      } else {
-        start = mid;
-      }
-    }
-
-    // Return best approximation (usually 'mid' from last step is better than 'start', but 'start' is safe lower bound)
-    // Actually, binary search converges 'start' and 'end'.
-    return start;
+    return await varshapalService.calculateSolarReturn(
+      birthDateTime: birthData.dateTime,
+      targetYear: year,
+      location: location,
+      flags: activeFlags,
+    );
   }
 
   // --- 4. Muntha Calculation ---
@@ -195,220 +280,7 @@ class VarshaphalSystem {
     return (natalAscSign + age) % 12;
   }
 
-  // --- 5. Panchavargiya Bala ---
-
-  static Map<String, PanchavargiyaStrength> calculatePanchavargiyaBala(
-    VedicChart chart,
-    bool isDayBirth,
-    double ascendant,
-  ) {
-    final strengths = <String, PanchavargiyaStrength>{};
-    final planets = [
-      'Sun',
-      'Moon',
-      'Mars',
-      'Mercury',
-      'Jupiter',
-      'Venus',
-      'Saturn',
-    ];
-
-    for (final planet in planets) {
-      final pEnum = getPlanetFromString(planet);
-      final pLong = getPlanetLongitude(chart, pEnum);
-      final pSign = (pLong / 30).floor();
-
-      // 1. Kshetra Bala (Residential Strength)
-      // Based on relationship with house lord (Friend/Enemy/Own)
-      final kshetra = calculateKshetraBala(pEnum, pSign, chart);
-
-      // 2. Uchcha Bala (Exaltation Strength)
-      final uchcha = calculateUchchaBala(pEnum, pLong);
-
-      // 3. Hadda (Term) Bala
-      final hadda = calculateHaddaBala(pEnum, pLong, chart);
-
-      // 4. Drekkana Bala
-      final drekkana = calculateDrekkanaBala(pEnum, pLong, chart);
-
-      // 5. Navamas Bala
-      final navamas = calculateNavamsaBala(pEnum, pLong, chart);
-
-      strengths[planet] = PanchavargiyaStrength(
-        kshetra: kshetra,
-        uchcha: uchcha,
-        hadda: hadda,
-        drekkana: drekkana,
-        navamsa: navamas,
-      );
-    }
-    return strengths;
-  }
-
-  // --- 6. Varshesh Selection ---
-
-  static Map<String, dynamic> determineVarshesh(
-    VedicChart chart,
-    Map<String, PanchavargiyaStrength> strengths,
-    String munthaLord,
-    String birthLagnaLord,
-    String varshaLagnaLord,
-    bool isDayBirth,
-  ) {
-    // 1. Identify 5 Candidates (Panchadhikaris)
-    final varshaAsc = chart.houses.cusps[0];
-    final varshaSign = (varshaAsc / 30).floor();
-
-    // Tri-Rashi Lord Calculation
-    final triRashiLord = getTriRashiLord(varshaSign, isDayBirth);
-
-    // Din-Ratri Lord
-    final dinRatriLord = isDayBirth ? 'Sun' : 'Moon';
-
-    final candidates = {
-      'Muntha Lord': munthaLord,
-      'Birth Lagna Lord': birthLagnaLord,
-      'Varsha Lagna Lord': varshaLagnaLord,
-      'Tri-Rashi Lord': triRashiLord,
-      'Din-Ratri Lord': dinRatriLord,
-    };
-
-    // 2. Rule: Candidate must aspect Varsha Lagna to be eligible
-    // Exception: If Moon is Munthapati, it can be Varshesh even without aspect (some schools).
-    // We enforce Aspect rule strictly as per standard Tajik.
-
-    var bestCandidate = 'None';
-    var maxStrength = -1.0;
-
-    // Track candidates list for UI
-    final candList = <String>[];
-
-    candidates.forEach((role, planetName) {
-      final pEnum = getPlanetFromString(planetName);
-      final pLong = getPlanetLongitude(chart, pEnum);
-      final aspectsLagna = checkTajikAspect(pLong, varshaAsc);
-
-      final strength = strengths[planetName]?.total ?? 0;
-      candList.add(
-        '$role ($planetName): ${strength.toStringAsFixed(1)} ${aspectsLagna ? "[Aspects]" : "[No Aspect]"}',
-      );
-
-      if (aspectsLagna) {
-        if (strength > maxStrength) {
-          maxStrength = strength;
-          bestCandidate = planetName;
-        }
-      }
-    });
-
-    // Fallback: If no candidate aspects Lagna, use Muntha Lord (standard fallback)
-    if (bestCandidate == 'None') {
-      bestCandidate = munthaLord;
-      candList.add('Fallback to Muntha Lord ($munthaLord)');
-    }
-
-    return {'varshesh': bestCandidate, 'candidates': candList};
-  }
-
-  // --- 7. Mudda Dasha (Vimshottari based) ---
-
-  static List<VarshikDashaPeriod> calculateMuddaDasha(
-    VedicChart chart,
-    DateTime returnTime,
-  ) {
-    // Determine Nakshatra of Moon at Solar Return
-    final moonLong = getPlanetLongitude(chart, Planet.moon);
-    final nakshatraData = getNakshatra(moonLong);
-
-    final nakshatraLord = nakshatraData.lord;
-    final moonProgress = nakshatraData.progress; // 0.0 to 1.0 passed
-
-    // Vimshottari Sequence & Duration
-    final dashaOrder = [
-      'Ketu',
-      'Venus',
-      'Sun',
-      'Moon',
-      'Mars',
-      'Rahu',
-      'Jupiter',
-      'Saturn',
-      'Mercury',
-    ];
-    final dashaYears = {
-      'Ketu': 7,
-      'Venus': 20,
-      'Sun': 6,
-      'Moon': 10,
-      'Mars': 7,
-      'Rahu': 18,
-      'Jupiter': 16,
-      'Saturn': 19,
-      'Mercury': 17,
-    };
-
-    // Find starting dasha
-    final startIndex = dashaOrder.indexOf(nakshatraLord);
-
-    // Balance at birth (proportion of nakshatra remaining)
-    final remainingFactor = 1.0 - moonProgress;
-
-    final periods = <VarshikDashaPeriod>[];
-    var current = returnTime;
-
-    // Total Year days = 365.25 (Solar Year)
-    // Scale: 120 Vimshottari Years = 365.25 Days
-    // Factor = 365.25 / 120 = 3.04375 days per dasha year
-    const dayFactor = 365.25 / 120.0;
-
-    // First period (Remainder)
-    final firstPeriodDays =
-        dashaYears[nakshatraLord]! * dayFactor * remainingFactor;
-
-    // We add periods until we cover 365.25 days.
-    // However, Mudda dasha usually runs strictly in sequence.
-    // Let's generate a full cycle starting from the balance.
-
-    double totalDaysCovered = 0;
-
-    for (var i = 0; i < 9; i++) {
-      // Max 9 periods ensures full cycle check
-      final planet = dashaOrder[(startIndex + i) % 9];
-      final fullDuration = dashaYears[planet]! * dayFactor;
-
-      final duration = (i == 0) ? firstPeriodDays : fullDuration;
-
-      // Stop if we exceeded 365 days significantly?
-      // Standard Mudda simply runs through.
-      // Often it repeats if year is somehow longer (it isn't).
-      // We just list the meaningful ones within the year.
-
-      if (totalDaysCovered >= 366) break; // Optimization
-
-      final end = current.add(Duration(minutes: (duration * 1440).round()));
-
-      // Prediction logic
-      final prediction = getMuddaPrediction(planet, chart);
-
-      periods.add(
-        VarshikDashaPeriod(
-          planet: planet,
-          startDate: current,
-          endDate: end,
-          durationDays: duration,
-          prediction: prediction['main'],
-          keyThemes: prediction['themes'],
-          cautions: prediction['cautions'],
-          favorableScore: prediction['score'],
-        ),
-      );
-
-      current = end;
-      totalDaysCovered += duration;
-    }
-
-    return periods;
-  }
+  // Panchavargiya Bala, Varshesh selection, and Mudda Dasha are calculated natively via VarshapalService.
 
   // --- Helpers for Calculations ---
 
@@ -449,416 +321,11 @@ class VarshaphalSystem {
   static String getSignLord(int sign) =>
       AstrologyConstants.getSignLord(sign).displayName;
 
-  // --- Strength Calculation Helpers ---
-
-  static double calculateKshetraBala(
-    Planet planet,
-    int sign,
-    VedicChart chart,
-  ) {
-    final lordName = getSignLord(sign);
-    final lord = getPlanetFromString(lordName);
-
-    // 1. Own Sign Check
-    if (lord == planet) return 30.0;
-
-    // 2. Panchadha Maitri
-    final relationship = _calculatePanchadhaMaitri(planet, lord, chart);
-
-    // 3. Score
-    switch (relationship) {
-      case 'Great Friend':
-        return 22.5;
-      case 'Friend':
-        return 15.0;
-      case 'Neutral':
-        return 7.5;
-      case 'Enemy':
-        return 3.75;
-      case 'Great Enemy':
-        return 1.875;
-      default:
-        return 7.5;
-    }
-  }
-
-  static String _calculatePanchadhaMaitri(
-    Planet p1,
-    Planet p2,
-    VedicChart chart,
-  ) {
-    // 1. Natural Relationship
-    final natural = _getNaturalRelationship(p1, p2); // 1, 0, -1
-
-    // 2. Temporary Relationship
-    // Planets in 2, 3, 4, 10, 11, 12 from each other are friends
-    final p1Long = getPlanetLongitude(chart, p1);
-    final p2Long = getPlanetLongitude(chart, p2);
-    final houseDiff = getHouseNumber(
-      p1Long,
-      p2Long,
-    ); // House of p2 relative to p1
-
-    final isTempFriend = [2, 3, 4, 10, 11, 12].contains(houseDiff);
-    final tempScore = isTempFriend ? 1 : -1;
-
-    // 3. Combined
-    final total = natural + tempScore;
-
-    if (total == 2) return 'Great Friend';
-    if (total == 1) return 'Friend';
-    if (total == 0) return 'Neutral';
-    if (total == -1) return 'Enemy';
-    if (total == -2) return 'Great Enemy';
-    return 'Neutral';
-  }
-
-  static int _getNaturalRelationship(Planet p1, Planet p2) {
-    // 1 = Friend, 0 = Neutral, -1 = Enemy
-    // Standard table
-    final rels = {
-      Planet.sun: {
-        Planet.moon: 1,
-        Planet.mars: 1,
-        Planet.jupiter: 1,
-        Planet.mercury: 0,
-        Planet.venus: -1,
-        Planet.saturn: -1,
-      },
-      Planet.moon: {
-        Planet.sun: 1,
-        Planet.mercury: 1,
-        Planet.mars: 0,
-        Planet.jupiter: 0,
-        Planet.venus: 0,
-        Planet.saturn: 0,
-      },
-      Planet.mars: {
-        Planet.sun: 1,
-        Planet.moon: 1,
-        Planet.jupiter: 1,
-        Planet.venus: 0,
-        Planet.saturn: 0,
-        Planet.mercury: -1,
-      },
-      Planet.mercury: {
-        Planet.sun: 1,
-        Planet.venus: 1,
-        Planet.mars: 0,
-        Planet.jupiter: 0,
-        Planet.saturn: 0,
-        Planet.moon: -1,
-      },
-      Planet.jupiter: {
-        Planet.sun: 1,
-        Planet.moon: 1,
-        Planet.mars: 1,
-        Planet.saturn: 0,
-        Planet.mercury: -1,
-        Planet.venus: -1,
-      },
-      Planet.venus: {
-        Planet.mercury: 1,
-        Planet.saturn: 1,
-        Planet.mars: 0,
-        Planet.jupiter: 0,
-        Planet.sun: -1,
-        Planet.moon: -1,
-      },
-      Planet.saturn: {
-        Planet.mercury: 1,
-        Planet.venus: 1,
-        Planet.jupiter: 0,
-        Planet.sun: -1,
-        Planet.moon: -1,
-        Planet.mars: -1,
-      },
-    };
-    return rels[p1]?[p2] ?? 0;
-  }
-
-  static double calculateUchchaBala(Planet planet, double longitude) {
-    final exaltPoints = {
-      Planet.sun: 10.0, // Aries 10
-      Planet.moon: 33.0, // Taurus 3
-      Planet.mars: 298.0, // Capricorn 28
-      Planet.mercury: 165.0, // Virgo 15
-      Planet.jupiter: 95.0, // Cancer 5
-      Planet.venus: 357.0, // Pisces 27
-      Planet.saturn: 200.0, // Libra 20
-    };
-
-    final exalt = exaltPoints[planet] ?? 0.0;
-    var diff = (longitude - exalt).abs();
-    if (diff > 180) diff = 360 - diff;
-
-    // Formula: (180 - diff) / 9
-    // Max 20 units
-    return (180 - diff) / 9.0;
-  }
-
-  static double calculateHaddaBala(
-    Planet planet,
-    double long,
-    VedicChart chart,
-  ) {
-    // Egyptian Terms (Standard for Tajik)
-    // Structure: Sign Index -> List of Term(Planet, Degrees)
-    // Example: Aries(0) -> Jup(6), Ven(6), Mer(8), Mar(5), Sat(5)
-    // Degrees are cumulative: 6, 12, 20, 25, 30
-
-    final sign = (long / 30).floor();
-    final degreeInSign = long % 30;
-
-    final terms = _getEgyptianTerms(sign);
-
-    var termLord = 'None';
-    double currentLimit = 0;
-
-    for (final term in terms) {
-      currentLimit += term.degrees;
-      if (degreeInSign < currentLimit) {
-        termLord = term.planetName;
-        break;
-      }
-    }
-
-    // Check if planet is the term lord
-    final termLordPlanet = getPlanetFromString(termLord);
-
-    // Own Term
-    if (termLordPlanet == planet) return 15.0;
-
-    // Use Maitri
-    final relationship = _calculatePanchadhaMaitri(
-      planet,
-      termLordPlanet,
-      chart,
-    );
-    switch (relationship) {
-      case 'Great Friend':
-        return 11.25;
-      case 'Friend':
-        return 7.5;
-      case 'Neutral':
-        return 3.75;
-      case 'Enemy':
-        return 1.875;
-      case 'Great Enemy':
-        return 0.9375;
-      default:
-        return 3.75;
-    }
-  }
-
-  static List<_Term> _getEgyptianTerms(int sign) {
-    // 0=Aries...
-    switch (sign) {
-      case 0:
-        return [
-          _t('Jupiter', 6),
-          _t('Venus', 6),
-          _t('Mercury', 8),
-          _t('Mars', 5),
-          _t('Saturn', 5),
-        ];
-      case 1:
-        return [
-          _t('Venus', 8),
-          _t('Mercury', 6),
-          _t('Jupiter', 8),
-          _t('Saturn', 5),
-          _t('Mars', 3),
-        ];
-      case 2:
-        return [
-          _t('Mercury', 6),
-          _t('Jupiter', 6),
-          _t('Venus', 5),
-          _t('Mars', 7),
-          _t('Saturn', 6),
-        ];
-      case 3:
-        return [
-          _t('Mars', 7),
-          _t('Venus', 6),
-          _t('Mercury', 6),
-          _t('Jupiter', 7),
-          _t('Saturn', 4),
-        ];
-      case 4:
-        return [
-          _t('Jupiter', 6),
-          _t('Venus', 5),
-          _t('Saturn', 7),
-          _t('Mercury', 6),
-          _t('Mars', 6),
-        ];
-      case 5:
-        return [
-          _t('Mercury', 7),
-          _t('Venus', 10),
-          _t('Jupiter', 4),
-          _t('Mars', 7),
-          _t('Saturn', 2),
-        ];
-      case 6:
-        return [
-          _t('Saturn', 6),
-          _t('Venus', 8),
-          _t('Jupiter', 7),
-          _t('Mercury', 7),
-          _t('Mars', 2),
-        ];
-      case 7:
-        return [
-          _t('Mars', 7),
-          _t('Venus', 4),
-          _t('Mercury', 8),
-          _t('Jupiter', 5),
-          _t('Saturn', 6),
-        ];
-      case 8:
-        return [
-          _t('Jupiter', 12),
-          _t('Venus', 5),
-          _t('Mercury', 4),
-          _t('Saturn', 5),
-          _t('Mars', 4),
-        ];
-      case 9:
-        return [
-          _t('Mercury', 7),
-          _t('Jupiter', 7),
-          _t('Venus', 8),
-          _t('Saturn', 4),
-          _t('Mars', 4),
-        ];
-      case 10:
-        return [
-          _t('Mercury', 7),
-          _t('Venus', 6),
-          _t('Jupiter', 7),
-          _t('Mars', 5),
-          _t('Saturn', 5),
-        ];
-      case 11:
-        return [
-          _t('Venus', 12),
-          _t('Jupiter', 4),
-          _t('Mercury', 3),
-          _t('Mars', 9),
-          _t('Saturn', 2),
-        ];
-      default:
-        return [];
-    }
-  }
-
-  static _Term _t(String name, double deg) => _Term(name, deg);
-
-  static double calculateDrekkanaBala(
-    Planet planet,
-    double long,
-    VedicChart chart,
-  ) {
-    // Drekkana (D3): Each sign is divided into 3 parts of 10 degrees
-    // 1st Drekkana (0-10): Same sign
-    // 2nd Drekkana (10-20): 5th sign from it
-    // 3rd Drekkana (20-30): 9th sign from it
-    final signIndex = (long / 30).floor();
-    final degreeInSign = long % 30;
-    final part = (degreeInSign / 10).floor(); // 0, 1, 2
-
-    int drekkanaSign;
-    if (part == 0) {
-      drekkanaSign = signIndex;
-    } else if (part == 1) {
-      drekkanaSign = (signIndex + 4) % 12;
-    } else {
-      drekkanaSign = (signIndex + 8) % 12;
-    }
-
-    final lordName = getSignLord(drekkanaSign);
-    final lord = getPlanetFromString(lordName);
-
-    // Own Drekkana
-    if (lord == planet) return 10.0;
-
-    // Use Maitri
-    final relationship = _calculatePanchadhaMaitri(planet, lord, chart);
-    switch (relationship) {
-      case 'Great Friend':
-        return 7.5;
-      case 'Friend':
-        return 5.0;
-      case 'Neutral':
-        return 2.5;
-      case 'Enemy':
-        return 1.25;
-      case 'Great Enemy':
-        return 0.625;
-      default:
-        return 2.5;
-    }
-  }
-
-  static double calculateNavamsaBala(
-    Planet planet,
-    double long,
-    VedicChart chart,
-  ) {
-    // Navamsa (D9): Each sign is divided into 9 parts of 3.33 degrees
-    // Starting sign depends on the element of the Rashi sign:
-    // Fire (Aries, Leo, Sag): Start from Aries
-    // Earth (Tau, Vir, Cap): Start from Capricorn
-    // Air (Gem, Lib, Aqu): Start from Libra
-    // Water (Can, Sco, Pis): Start from Cancer
-    final signIndex = (long / 30).floor();
-    final degreeInSign = long % 30;
-    final part = (degreeInSign / (30 / 9)).floor(); // 0-8
-
-    final element = signIndex % 4; // 0=Fire, 1=Earth, 2=Air, 3=Water
-    final startMap = {0: 0, 1: 9, 2: 6, 3: 3}; // Aries, Cap, Libra, Cancer
-    final startSignIndex = startMap[element]!;
-    final navamsaSign = (startSignIndex + part) % 12;
-
-    final lordName = getSignLord(navamsaSign);
-    final lord = getPlanetFromString(lordName);
-
-    // Own Navamsa
-    if (lord == planet) return 5.0;
-
-    // Use Maitri
-    final relationship = _calculatePanchadhaMaitri(planet, lord, chart);
-    switch (relationship) {
-      case 'Great Friend':
-        return 3.75;
-      case 'Friend':
-        return 2.5;
-      case 'Neutral':
-        return 1.25;
-      case 'Enemy':
-        return 0.625;
-      case 'Great Enemy':
-        return 0.3125;
-      default:
-        return 1.25;
-    }
-  }
+  // Ancient strength calculation helpers (Kshetra, Hadda, Drekkana, Navamsa) removed as they are now natively calculated in VarshapalService.
 
   static String getTriRashiLord(int sign, bool isDay) {
-    // Standard Tajik Tri-Rashi Table
-    // Fiery (0,4,8): Day=Sun, Night=Jupiter
-    // Earthy (1,5,9): Day=Venus, Night=Moon
-    // Airy (2,6,10): Day=Saturn, Night=Mercury
-    // Watery (3,7,11): Day=Venus, Night=Mars
-
-    if ([0, 4, 8].contains(sign)) return isDay ? 'Sun' : 'Jupiter';
-    if ([1, 5, 9].contains(sign)) return isDay ? 'Venus' : 'Moon';
-    if ([2, 6, 10].contains(sign)) return isDay ? 'Saturn' : 'Mercury';
-    if ([3, 7, 11].contains(sign)) return isDay ? 'Venus' : 'Mars';
-    return 'Sun';
+    final varshapalService = EphemerisManager.jyotish.systems.varshapal;
+    return varshapalService.getTrirashiLord(Rashi.values[sign % 12], isDay).displayName;
   }
 
   static bool checkTajikAspect(double p1, double p2) {

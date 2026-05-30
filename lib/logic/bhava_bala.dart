@@ -8,16 +8,6 @@ import 'shadbala.dart';
 /// Uses the jyotish library's StrengthAnalysisService for accurate calculations
 class BhavaBala {
   static StrengthAnalysisService? _strengthService;
-  static HouseStrengthService? _houseStrengthService;
-
-  static Future<Map<int, EnhancedBhavaBalaResult>> calculateEnhancedBhavaBala(
-    CompleteChartData chart,
-  ) async {
-    _houseStrengthService ??= HouseStrengthService(
-      ShadbalaService(EphemerisManager.service),
-    );
-    return _houseStrengthService!.calculateEnhancedBhavaBala(chart.baseChart);
-  }
 
   /// Calculate strength of all 12 houses using library's native implementation
   static Future<Map<int, BhavaStrength>> calculateBhavaBala(

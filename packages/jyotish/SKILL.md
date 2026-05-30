@@ -39,6 +39,9 @@ final chart = await jyotish.calculateVedicChart(
 - **PrastaraResult**: Holds the 96-cell binary Ashtakavarga contribution grid (8 points × 12 signs) for a planet.
 - **SpecialLagnas**: Carries calculated degrees for Hora Lagna (HL), Ghati Lagna (GL), and Sree Lagna (SL).
 - **CompatibilityReport**: Contains Guna Milan score/details, Nadi & Bhakoot doshas, Manglik status, and cancellations.
+- **VargottamaStatus**: Enum representing planet's Vargottama state (`none`, `vargottama`, `neechaVargottama`, `ucchaVargottama`).
+- **CompoundRelationship**: Enum representing Panchadha Maitri relationship (`greatFriend`, `friend`, `neutral`, `enemy`, `greatEnemy`).
+- **House**: Model representing individual houses with attributes (`number`, `cusp`, `zodiacSign`) and classifications (`isKendra`, `isTrikona`, `isDusthana`, `isUpachaya`).
 
 ## 4. Common Tasks & Service Access
 | Task | Recommended Method |
@@ -53,6 +56,16 @@ final chart = await jyotish.calculateVedicChart(
 | **Compatibility Report** | `jyotish.calculateCompatibilityReport(boyChart, girlChart)` |
 | **Special Yogas**| Access `muhurta.specialYogas` for Sarvartha Siddhi, Guru Pushya, etc. |
 | **Julian Day** | `ephemerisService.dateTimeToJulianDay(dateTime, timezoneId: tz)` |
+| **Moolatrikona Check** | `planetInfo.isMoolatrikona` |
+| **Vargottama Check** | `chart.isVargottama(planet)` / `chart.getVargottamaStatus(planet)` |
+| **Deep Exalt/Debilit Check** | `planetInfo.isDeepExalted(orb)` / `planetInfo.isDeepDebilitated(orb)` |
+| **Combustion Distance** | `planetInfo.combustionDistance` |
+| **Compound Friendship** | `chart.getCompoundRelationship(planetA, planetB)` |
+| **House Classification** | `house.isKendra` / `house.isTrikona` / `house.isDusthana` / `house.isUpachaya` |
+| **True Solar Return** | `varshapalService.calculateSolarReturn(birthDateTime: dt, targetYear: yr, location: loc)` |
+| **Panchavargiya Bala** | `varshapalService.calculatePanchavargiyaBala(planet, chart)` |
+| **Varshesh Determination** | `varshapalService.determineVarshesh(natalChart: nc, annualChart: ac, balaMap: bm, varshaDateTime: vdt, birthDateTime: bdt)` |
+| **Mudda Dasha** | `varshapalService.calculateMuddaDasha(birthDateTime: bdt, varshaDateTime: vdt, annualChart: ac, location: loc, flags: f)` |
 
 ## 5. System Differentiator: Traditional vs KP
 Crucial for v2.5.0+:
@@ -62,7 +75,7 @@ Crucial for v2.5.0+:
 ## 6. Performance, Threads, & Tree Shaking
 - For batch calculations (e.g., searching periods), use `Async` variants like `getAllPlanetsVimshopakBalaAsync` to avoid blocking the UI thread.
 - `EphemerisService` is a singleton; do not re-initialize it unnecessarily.
-- **Tree Shaking & Module Imports (v2.10.0+)**: To reduce application compiled sizes, import micro-targeted barrel files instead of the monolithic `package:jyotish/jyotish.dart`. Available barrel modules:
+- **Tree Shaking & Module Imports (v2.12.0+)**: To reduce application compiled sizes, import micro-targeted barrel files instead of the monolithic `package:jyotish/jyotish.dart`. Available barrel modules:
   - `package:jyotish/core.dart` (facade, location, flags, planets, rashis)
   - `package:jyotish/panchanga.dart` (tithi, vara, nakshatra, yoga, karana, masa)
   - `package:jyotish/systems.dart` (dashas, ashtakavarga, KP system, Varshapal, Jaimini, Prashna)
@@ -85,4 +98,4 @@ Crucial for v2.5.0+:
 - **House Systems**: 'W' (Whole Sign - Default), 'P' (Placidus - Mandatory for KP).
 
 ---
-*This skill file was automatically generated based on API_REFERENCE.md v2.10.0.*
+*This skill file was automatically generated based on API_REFERENCE.md v2.12.0.*

@@ -602,18 +602,13 @@ class LifePredictionService {
         ? (vb.totalScore / 20.0) * 100.0
         : ((ctx.shadbala[planet] ?? 300) / 600 * 100).clamp(0.0, 100.0);
 
-    var status = planetInfo.dignity.name;
+    var status = planetInfo.dignity.english;
+    if (status == 'Moola Trikona') status = 'Moolatrikona';
     final isRetrograde = planetInfo.isRetrograde;
 
-    // A. Check Vargottama (placed in same sign in Rashi and Navamsa D-9)
-    var isVargottama = false;
-    final navamsaChart = ctx.divisionalCharts['D-9'];
-    if (navamsaChart != null) {
-      final navamsaSign = navamsaChart.getPlanetSign(planet.displayName);
-      if (navamsaSign == sign) {
-        isVargottama = true;
-      }
-    }
+    // A. Check Vargottama using native library APIs
+    final vargottamaStatus = ctx.baseChart.getVargottamaStatus(planet);
+    final isVargottama = vargottamaStatus != VargottamaStatus.none;
 
     if (isVargottama) {
       if (status == 'Debilitated') {
@@ -623,23 +618,19 @@ class LifePredictionService {
       }
     }
 
-    // B. Check Deep Exaltation / Deep Debilitation (within 3° of deep degree)
-    final exaltInfo = AstroUtils.exaltations[planet];
-    final debilInfo = AstroUtils.debilitations[planet];
-    var isDeepExalt = false;
-    var isDeepDebil = false;
-    if (exaltInfo != null && sign == exaltInfo.$1 && (degreeInSign - exaltInfo.$2).abs() <= 3.0) {
-      isDeepExalt = true;
+    // B. Check Deep Exaltation / Deep Debilitation using native library APIs
+    final isDeepExalt = planetInfo.isDeepExalted(3.0);
+    final isDeepDebil = planetInfo.isDeepDebilitated(3.0);
+    if (isDeepExalt) {
       status = 'Deep Exaltation (Param Uchha)';
-    } else if (debilInfo != null && sign == debilInfo.$1 && (degreeInSign - debilInfo.$2).abs() <= 3.0) {
-      isDeepDebil = true;
+    } else if (isDeepDebil) {
       status = 'Deep Debilitation (Param Neecha)';
     }
 
     // C. Check Moolatrikona
     if (status != 'Exalted' && status != 'Deep Exaltation (Param Uchha)' &&
         status != 'Vargottama' && status != 'Neecha-Vargottama' &&
-        _isMoolatrikona(planet, sign, degreeInSign)) {
+        planetInfo.dignity == PlanetaryDignity.moolaTrikona) {
       status = 'Moolatrikona';
     }
 
@@ -826,7 +817,7 @@ class LifePredictionService {
     final moonLord = AstroUtils.vimshottariOrder[ctx.moonNakshatraIndex % 9];
     final moonLordVb = ctx.vimshopak[moonLord];
     final moonLordStrength = moonLordVb != null ? (moonLordVb.totalScore / 20.0) * 100.0 : 50.0;
-    final moonLordStatus = chartData.baseChart.planets[moonLord]?.dignity.name ?? 'Neutral';
+    final moonLordStatus = chartData.baseChart.planets[moonLord]?.dignity.english ?? 'Neutral';
     buffer.write(
       'Your emotional foundation is governed by the Moon placed in **${ctx.moonNakshatra}** Nakshatra (Pada ${ctx.moonNakshatraPada}). '
       'The Nakshatra lord is **${moonLord.displayName}**, which is currently placed in a **$moonLordStatus** state with a strength index of **${moonLordStrength.toStringAsFixed(0)}%**. '
@@ -874,8 +865,8 @@ class LifePredictionService {
         final lordHouse = _getHouseFromSign(chartData, lordSignIdx);
         final lordLongitude = lordInfo.longitude;
         final lordDegreeInSign = lordLongitude % 30;
-        var lordDignity = lordInfo.dignity.name;
-        if (lordDignity != 'Exalted' && _isMoolatrikona(houseLord, lordSignIdx, lordDegreeInSign)) {
+        var lordDignity = lordInfo.dignity.english;
+        if (lordDignity == 'Moola Trikona') {
           lordDignity = 'Moolatrikona';
         }
         final isLordRetro = lordInfo.isRetrograde;
@@ -1106,15 +1097,8 @@ class LifePredictionService {
       
       for (final planet in aspect.primaryPlanets) {
         final rashiPlanetInfo = chartData.baseChart.planets[planet];
-        var rashiDignity = rashiPlanetInfo?.dignity.name ?? 'Neutral';
-        if (rashiPlanetInfo != null && rashiDignity != 'Exalted') {
-          final rashiSign = rashiPlanetInfo.position.zodiacSignIndex;
-          final rashiLongitude = rashiPlanetInfo.longitude;
-          final rashiDegreeInSign = rashiLongitude % 30;
-          if (_isMoolatrikona(planet, rashiSign, rashiDegreeInSign)) {
-            rashiDignity = 'Moolatrikona';
-          }
-        }
+        var rashiDignity = rashiPlanetInfo?.dignity.english ?? 'Neutral';
+        if (rashiDignity == 'Moola Trikona') rashiDignity = 'Moolatrikona';
         final signIdx = vargaChart.getPlanetSign(planet.displayName);
         final signName = AstroUtils.getSignName(signIdx);
         

@@ -15,8 +15,6 @@ enum RelationshipType {
   String toString() => displayName;
 }
 
-<<<<<<< HEAD
-=======
 /// Compound relationships between planets (Panchadha Maitri).
 enum CompoundRelationship {
   greatFriend('Great Friend'),
@@ -31,8 +29,6 @@ enum CompoundRelationship {
   @override
   String toString() => displayName;
 }
-
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 /// Nature of a planetary relationship component.
 enum RelationshipNature { natural, temporary, compound }
 

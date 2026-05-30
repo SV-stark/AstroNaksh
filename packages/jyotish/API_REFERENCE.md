@@ -11,10 +11,7 @@ A comprehensive API reference for the Jyotish Flutter library - production-ready
   - [Jyotish](#jyotish)
   - [GeographicLocation](#geographiclocation)
   - [CalculationFlags](#calculationflags)
-<<<<<<< HEAD
-=======
 - [New in v2.12.0 — Tajika Varshapal (Solar Return) Engine Suite](#new-in-v2120--tajika-varshapal-solar-return-engine-suite)
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 - [New in v2.11.0 — Advanced Jyotish Feature Suite](#new-in-v2110--advanced-jyotish-feature-suite)
 - [New in v2.10.0 — Tree Shaking & Module Isolation](#new-in-v2100--tree-shaking--module-isolation)
 - [New in v2.9.0 & v2.9.1 — JSON, Sanskrit, Jaimini, and Julian Day](#new-in-v290--v291--json-sanskrit-jaimini-and-julian-day)
@@ -953,17 +950,12 @@ final service = VarshapalService(ephemerisService);
 |--------|---------|-------------|
 | `calculateVarshapal({birthDateTime, varshaDateTime, location, houseSystem?, checkDate?})` | `Future<Varshapal>` | Annual chart for a specific year |
 | `calculateCurrentVarshapal({birthDateTime, location, houseSystem?, checkDate?})` | `Future<Varshapal>` | Current year's annual chart |
-<<<<<<< HEAD
-| `getVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateVarshapal` |
-| `getCurrentVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateCurrentVarshapal` |
-=======
 | `calculateSolarReturn({birthDateTime, targetYear, location, flags?})` | `Future<DateTime>` | Exact millisecond the transiting Sun returns to its natal longitude |
 | `calculatePanchavargiyaBala(Planet planet, VedicChart chart)` | `PanchavargiyaBalaResult` | Calculates the five-fold strength of a planet |
 | `determineVarshesh({natalChart, annualChart, balaMap, varshaDateTime, birthDateTime})` | `Planet` | Selects Year Lord based on classical Panchadhikari rules |
 | `calculateMuddaDasha({birthDateTime, varshaDateTime, annualChart, location, flags})` | `Future<List<VarshapalPeriod>>` | Calculates scaled Vimshottari periods for the annual year |
 | `getVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateVarshapal` |
 | `calculateCurrentVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateCurrentVarshapal` (corrected description/redundancy check) |
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 | `getSamvatsaraName(int yearNumber)` | `static String` | Gets Samvatsara name from year number (1-60) |
 | `getCurrentVarshaNumber(DateTime date, {int? referenceYear})` | `static int` | Gets current varsha number (1-60). `referenceYear` defaults to `DateTime.now().year`; reference epoch: 1983 = Prabhava (year 1). |
 
@@ -2872,8 +2864,6 @@ Type of eclipse.
 | `solar` | Solar eclipse |
 | `lunar` | Lunar eclipse |
 
-<<<<<<< HEAD
-=======
 ## New in v2.12.0 — Tajika Varshapal (Solar Return) Engine Suite
 
 This update adds a suite of precise Tajika Varshapal calculations to the `jyotish` library:
@@ -2935,8 +2925,6 @@ final muddaPeriods = await jyotish.varshapal.calculateMuddaDasha(
 ```
 
 ---
-
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 ## New in v2.11.0 — Advanced Jyotish Feature Suite
 
 This update adds an extensive suite of advanced mathematical, divisional, and compatibility features to the `jyotish` library:
@@ -3017,8 +3005,6 @@ print('Has Nadi Dosha: ${report.hasNadiDosha}');
 print('Has Bhakoot Dosha: ${report.hasBhakootDosha}');
 ```
 
-<<<<<<< HEAD
-=======
 ### 6. Native Moolatrikona Dignity Detection
 Provides native detection for whether a planet resides within its specific Moolatrikona sign and degree ranges.
 - Property: `bool get isMoolatrikona` on `VedicPlanetInfo`.
@@ -3103,8 +3089,6 @@ if (house5.isTrikona) {
   print('5th house is a Trikona (Trine) house.');
 }
 ```
-
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 ---
 
 ## New in v2.10.0 — Tree Shaking & Module Isolation

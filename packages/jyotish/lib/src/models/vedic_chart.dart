@@ -2,13 +2,10 @@ import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/models/rashi.dart';
 import 'package:jyotish/src/astronomy/planet_position.dart';
 import 'package:jyotish/src/models/calculation_flags.dart';
-<<<<<<< HEAD
-=======
 import 'package:jyotish/src/models/divisional_chart_type.dart';
 import 'package:jyotish/src/analysis/divisional_chart_service.dart';
 import 'package:jyotish/src/strength/planetary_relationship_service.dart';
 import 'package:jyotish/src/strength/relationship.dart';
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 
 /// Represents Vedic astrology house system information.
 ///
@@ -83,8 +80,6 @@ class HouseSystem {
         'cusps': cusps,
       };
 
-<<<<<<< HEAD
-=======
   /// Gets a list of all 12 houses as [House] models.
   List<House> get individualHouses {
     return List.generate(12, (index) {
@@ -112,8 +107,6 @@ class HouseSystem {
       zodiacSign: _zodiacSigns[signIndex],
     );
   }
-
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
   static const List<String> _zodiacSigns = [
     'Aries',
     'Taurus',
@@ -336,8 +329,6 @@ class VedicPlanetInfo {
   /// Formatted position
   String get formattedPosition => position.formattedPosition;
 
-<<<<<<< HEAD
-=======
   /// Checks if the planet is in its Moola Trikona sign and degree range.
   bool get isMoolatrikona => dignity == PlanetaryDignity.moolaTrikona;
 
@@ -369,8 +360,6 @@ class VedicPlanetInfo {
       _ => null,
     };
   }
-
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
   /// Converts this VedicPlanetInfo to a JSON map.
   Map<String, dynamic> toJson() => {
         'planet': position.planet.displayName,
@@ -485,9 +474,6 @@ class VedicChart {
         'rahu': rahu.toJson(),
         'ketu': ketu.toJson(),
       };
-<<<<<<< HEAD
-}
-=======
 
   /// Gets the zodiac sign index (0-11) for any planet in the chart.
   int? getPlanetSignIndex(Planet planet) {
@@ -617,4 +603,3 @@ class House {
 }
 
 typedef VedicHouse = House;
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8

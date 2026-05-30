@@ -63,3 +63,7 @@ nul
 
 # Desloppify artifacts
 .desloppify/
+
+# Antigravity artifacts
+.antigravity/
+.antigravitycli/

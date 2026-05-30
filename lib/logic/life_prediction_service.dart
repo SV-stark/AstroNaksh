@@ -1,4 +1,4 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/jyotish.dart' hide CompoundRelationship;
 
 import '../core/astro_utils.dart';
 import '../data/life_prediction_models.dart';
@@ -140,13 +140,6 @@ class LifePredictionService {
   ) async {
     // ── Gather all analytical inputs ──────────────────────────────────
 
-<<<<<<< HEAD
-    // 1. Shadbala
-    final shadbala = await ShadbalaCalculator.calculateShadbala(chartData);
-
-    // 2. Bhava Bala
-    final bhavaBala = await BhavaBala.calculateBhavaBala(chartData);
-=======
     // Fetch all independent asynchronous operations concurrently
     final results = await Future.wait([
       ShadbalaCalculator.calculateShadbala(chartData),
@@ -155,6 +148,7 @@ class LifePredictionService {
       DashaSystem.getCurrentDashaFromChart(chartData.baseChart, DateTime.now()),
       TransitAnalysis()
           .calculateTransitChart(chartData, DateTime.now())
+          .then<TransitChart?>((value) => value)
           .catchError((_) => null),
     ]);
 
@@ -163,7 +157,6 @@ class LifePredictionService {
     final planetFruits = results[2] as Map<Planet, ({double ishtaphala, double kashtaphala})>;
     final dashaDetails = results[3] as Map<String, dynamic>;
     final currentTransit = results[4] as TransitChart?;
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 
     // 3. Ashtakavarga bindus per house sign (0-indexed sign → bindus 0-56)
     final avBindus = AshtakavargaSystem.calculateSarvashtakavarga(
@@ -180,21 +173,10 @@ class LifePredictionService {
     // 4. Vimshopak Bala (0–20 scale per planet)
     final vimshopak = BhavaBala.calculateAllVimshopakBala(chartData);
 
-<<<<<<< HEAD
-    // 5. Ishtaphala / Kashtaphala (async — net fruit of each planet)
-    final planetFruits = await BhavaBala.calculateAllPlanetFruits(chartData);
-
-    // 6. Yoga / Dosha analysis
-    final yogaDosha = YogaDoshaAnalyzer.analyze(chartData);
-
-    // 7. Current Vimshottari Dasha
-    final dashaDetails = await DashaSystem.getCurrentDashaFromChart(chartData.baseChart, DateTime.now());
-=======
     // 6. Yoga / Dosha analysis
     final yogaDosha = YogaDoshaAnalyzer.analyze(chartData);
 
     // Dasha details parsing
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     final currentMahaDashaLord = dashaDetails['mahadasha'] as String? ?? '';
     final currentAntarDashaLord = dashaDetails['antardasha'] as String? ?? '';
     final currentPratyantarDashaLord = dashaDetails['pratyantardasha'] as String? ?? '';
@@ -214,15 +196,6 @@ class LifePredictionService {
     final jaimini = JaiminiAnalysisService();
     final atmakaraka = jaimini.getAtmakaraka(chartData);
 
-<<<<<<< HEAD
-    // 10. Transit Overlay (NEW)
-    TransitChart? currentTransit;
-    try {
-      currentTransit = await TransitAnalysis().calculateTransitChart(chartData, DateTime.now());
-    } catch (_) {}
-
-=======
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     // 11. Divisional Charts (NEW)
     final divisionalCharts = DivisionalCharts.calculateAllCharts(chartData.baseChart);
 
@@ -237,6 +210,7 @@ class LifePredictionService {
 
     // ── Build prediction context ──────────────────────────────────────
     final ctx = _PredictionContext(
+      baseChart: chartData.baseChart,
       shadbala: shadbala,
       bhavaBala: bhavaBala,
       houseAvBindus: houseAvBindus,
@@ -524,17 +498,11 @@ class LifePredictionService {
           if (relMap != null) {
             final rel = relMap[houseLord];
             if (rel == CompoundRelationship.bestFriend) {
-<<<<<<< HEAD
-              maitriModifier += 3.0;
-            } else if (rel == CompoundRelationship.enemy) {
-              maitriModifier -= 3.0;
-=======
               maitriModifier += 5.0;
             } else if (rel == CompoundRelationship.friend) {
               maitriModifier += 2.5;
             } else if (rel == CompoundRelationship.enemy) {
               maitriModifier -= 4.0;
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
             }
           }
         }
@@ -552,8 +520,6 @@ class LifePredictionService {
       }
     }
 
-<<<<<<< HEAD
-=======
     // ── KP System Lord Refinement (NEW) ──────────────────────────────
     var kpModifier = 0.0;
     if (chartData.kpData.subLords.isNotEmpty) {
@@ -590,7 +556,6 @@ class LifePredictionService {
       }
     }
 
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     // ── Final weighted score ──────────────────────────────────────────
     final rawScore = baseScore * 0.25 +
         houseScore * 0.20 +
@@ -602,12 +567,8 @@ class LifePredictionService {
         atmaBonus +
         upachayaBonus +
         maitriModifier +
-<<<<<<< HEAD
-        nakshatraModifier;
-=======
         nakshatraModifier +
         kpModifier;
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 
     return rawScore.clamp(30.0, 98.0).round();
   }
@@ -639,19 +600,7 @@ class LifePredictionService {
 
     // Use Vimshopak Bala as primary strength indicator (more holistic)
     final vb = ctx.vimshopak[planet];
-    final strength = vb != null
-        ? (vb.totalScore / 20.0) * 100.0
-        : ((ctx.shadbala[planet] ?? 300) / 600 * 100).clamp(0.0, 100.0);
 
-<<<<<<< HEAD
-    var status = planetInfo.dignity.name;
-    final isRetrograde = planetInfo.isRetrograde;
-    final isCombust = planetInfo.isCombust;
-
-    // Check Neecha Bhanga Cancellation
-    var hasNeecha = false;
-    if (status == 'Debilitated') {
-=======
     var status = planetInfo.dignity.english;
     if (status == 'Moola Trikona') status = 'Moolatrikona';
     final isRetrograde = planetInfo.isRetrograde;
@@ -687,7 +636,6 @@ class LifePredictionService {
     // Check Neecha Bhanga Cancellation
     var hasNeecha = false;
     if (status == 'Debilitated' || status == 'Deep Debilitation (Param Neecha)') {
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
       final neechaBhangaResult = ctx.yogaDosha.yogas.firstWhere(
         (y) => y.name == 'Neecha Bhanga Raja Yoga',
         orElse: () => BhangaResult.inactive('Neecha Bhanga Raja Yoga'),
@@ -696,21 +644,15 @@ class LifePredictionService {
         for (final r in neechaBhangaResult.cancellationReasons) {
           if (r.contains(planet.displayName)) {
             hasNeecha = true;
-<<<<<<< HEAD
-            status = 'Debilitated (Cancelled - Neecha Bhanga Raja Yoga Active)';
-=======
             status = status == 'Deep Debilitation (Param Neecha)'
                 ? 'Deep Debilitation (Cancelled - Neecha Bhanga Raja Yoga Active)'
                 : 'Debilitated (Cancelled - Neecha Bhanga Raja Yoga Active)';
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
             break;
           }
         }
       }
     }
 
-<<<<<<< HEAD
-=======
     // E. Combustion Refined (Planet-specific limits)
     final sunInfo = chartData.baseChart.planets[Planet.sun];
     var isCombustRefined = planetInfo.isCombust;
@@ -765,7 +707,6 @@ class LifePredictionService {
       finalStrength = (finalStrength * 0.5); // Defeat cuts strength by 50%
     }
 
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
     final functionalStatus = _getFunctionalStatus(ascSign, planet);
 
@@ -773,23 +714,13 @@ class LifePredictionService {
     final isUpachaya = _naturalMalefics.contains(planet) &&
         _upachayaHouses.contains(house);
 
-<<<<<<< HEAD
-    final isBenefic = isUpachaya || hasNeecha ||
-=======
     var isBenefic = isUpachaya || hasNeecha ||
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
         _isBeneficForAspect(
           chartData,
           planet,
           aspect,
           sign,
           house,
-<<<<<<< HEAD
-          planetInfo.dignity.name,
-          isCombust: isCombust,
-        );
-
-=======
           status,
           isCombust: isCombustRefined,
         );
@@ -798,7 +729,6 @@ class LifePredictionService {
       isBenefic = false;
     }
 
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     var position = '';
     if (isHouseLord && houseNumber != null) {
       position =
@@ -808,11 +738,7 @@ class LifePredictionService {
           '${planet.displayName} at $degreeStr $signName in ${_getOrdinal(house)} House';
     }
     if (isRetrograde) position += ' (Retrograde)';
-<<<<<<< HEAD
-    if (isCombust) position += ' (Combust)';
-=======
     if (isCombustRefined) position += ' (Combust)';
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     if (isUpachaya) position += ' [Upachaya — improves over time]';
 
     final effect = _generateEffectDescription(
@@ -825,15 +751,9 @@ class LifePredictionService {
       houseNumber,
       signName: signName,
       degreeStr: degreeStr,
-<<<<<<< HEAD
-      strength: strength,
-      isRetrograde: isRetrograde,
-      isCombust: isCombust,
-=======
       strength: finalStrength,
       isRetrograde: isRetrograde,
       isCombust: isCombustRefined,
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
       functionalStatus: functionalStatus,
       isUpachaya: isUpachaya,
     );
@@ -842,11 +762,7 @@ class LifePredictionService {
       planet: planet,
       position: position,
       status: status,
-<<<<<<< HEAD
-      strength: strength,
-=======
       strength: finalStrength,
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
       effect: effect,
       isBenefic: isBenefic,
     );
@@ -900,11 +816,7 @@ class LifePredictionService {
     final moonLord = AstroUtils.vimshottariOrder[ctx.moonNakshatraIndex % 9];
     final moonLordVb = ctx.vimshopak[moonLord];
     final moonLordStrength = moonLordVb != null ? (moonLordVb.totalScore / 20.0) * 100.0 : 50.0;
-<<<<<<< HEAD
-    final moonLordStatus = chartData.baseChart.planets[moonLord]?.dignity.name ?? 'Neutral';
-=======
     final moonLordStatus = chartData.baseChart.planets[moonLord]?.dignity.english ?? 'Neutral';
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     buffer.write(
       'Your emotional foundation is governed by the Moon placed in **${ctx.moonNakshatra}** Nakshatra (Pada ${ctx.moonNakshatraPada}). '
       'The Nakshatra lord is **${moonLord.displayName}**, which is currently placed in a **$moonLordStatus** state with a strength index of **${moonLordStrength.toStringAsFixed(0)}%**. '
@@ -950,16 +862,10 @@ class LifePredictionService {
         final lordSignIdx = lordInfo.position.zodiacSignIndex;
         final lordSignName = AstrologyConstants.getSignName(lordSignIdx);
         final lordHouse = _getHouseFromSign(chartData, lordSignIdx);
-<<<<<<< HEAD
-        final lordDignity = lordInfo.dignity.name;
-=======
-        final lordLongitude = lordInfo.longitude;
-        final lordDegreeInSign = lordLongitude % 30;
         var lordDignity = lordInfo.dignity.english;
         if (lordDignity == 'Moola Trikona') {
           lordDignity = 'Moolatrikona';
         }
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
         final isLordRetro = lordInfo.isRetrograde;
         final isLordCombust = lordInfo.isCombust;
 
@@ -981,13 +887,10 @@ class LifePredictionService {
           buffer.write(
             'The lord\'s Exalted state further magnifies its capacity to deliver extraordinary outcomes. ',
           );
-<<<<<<< HEAD
-=======
         } else if (lordDignity == 'Moolatrikona') {
           buffer.write(
             'The lord\'s Moolatrikona state grants it outstanding strength, natural alignment, and power to manifest positive results. ',
           );
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
         } else if (lordDignity == 'Debilitated') {
           // Check Neecha Bhanga
           final neechaBhangaResult = ctx.yogaDosha.yogas.firstWhere(
@@ -1190,13 +1093,9 @@ class LifePredictionService {
       );
       
       for (final planet in aspect.primaryPlanets) {
-<<<<<<< HEAD
-        final rashiDignity = chartData.baseChart.planets[planet]?.dignity.name ?? 'Neutral';
-=======
         final rashiPlanetInfo = chartData.baseChart.planets[planet];
         var rashiDignity = rashiPlanetInfo?.dignity.english ?? 'Neutral';
         if (rashiDignity == 'Moola Trikona') rashiDignity = 'Moolatrikona';
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
         final signIdx = vargaChart.getPlanetSign(planet.displayName);
         final signName = AstroUtils.getSignName(signIdx);
         
@@ -1584,11 +1483,7 @@ class LifePredictionService {
     buffer.write(
       'It is positioned at $degreeStr in $signName in the ${_getOrdinal(house)} house',
     );
-<<<<<<< HEAD
-    if (status.contains('Debilitated (Cancelled')) {
-=======
     if (status.contains('Debilitated (Cancelled') || status.contains('Deep Debilitation (Cancelled')) {
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
       buffer.write(
         ' in a Debilitated state that is beautifully cancelled via Neecha Bhanga Raja Yoga, transforming its weak potential into grand success.',
       );
@@ -1598,8 +1493,6 @@ class LifePredictionService {
           buffer.write(
             ' in an Exalted state, providing outstanding strength and highly auspicious energy for these matters.',
           );
-<<<<<<< HEAD
-=======
         case 'Deep Exaltation (Param Uchha)':
           buffer.write(
             ' in a state of Deep Exaltation (Param Uchha), representing the absolute zenith of its strength and delivering highly auspicious, peak manifestation power.',
@@ -1616,7 +1509,6 @@ class LifePredictionService {
           buffer.write(
             ' in a Neecha-Vargottama state (debilitated in both Rashi and Navamsa), which cancels standard debilitation distress and represents a powerful hidden resilience that yields success through persistence.',
           );
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
         case 'Own Sign':
           buffer.write(
             ' in its own sign, granting excellent stability, natural confidence, and smooth operations.',
@@ -1633,8 +1525,6 @@ class LifePredictionService {
           buffer.write(
             ' in a debilitated state, pointing to structural weaknesses, energy blocks, or lessons that demand persistent discipline.',
           );
-<<<<<<< HEAD
-=======
         case 'Deep Debilitation (Param Neecha)':
           buffer.write(
             ' in a state of Deep Debilitation (Param Neecha), marking its lowest point of strength and presenting significant structural vulnerability or intense lessons that demand awareness.',
@@ -1643,7 +1533,6 @@ class LifePredictionService {
           buffer.write(
             ' defeated in a Planetary War (Graha Yuddha) by being within 1° of its competitor. This severely drains its energy, indicating deep inner conflicts or critical setbacks in these matters.',
           );
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
         default:
           buffer.write(' in a neutral state.');
       }
@@ -1788,25 +1677,17 @@ class LifePredictionService {
     final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
     final functional = _getFunctionalStatus(ascSign, planet);
 
-<<<<<<< HEAD
-    if (status == 'Exalted' || status == 'Own Sign') {
-=======
     if (status == 'Exalted' ||
         status == 'Deep Exaltation (Param Uchha)' ||
         status == 'Moolatrikona' ||
         status == 'Vargottama' ||
         status == 'Neecha-Vargottama' ||
         status == 'Own Sign') {
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
       return functional != FunctionalStatus.malefic ||
           ![6, 8, 12].contains(house);
     }
 
-<<<<<<< HEAD
-    if (status == 'Debilitated') return false;
-=======
     if (status == 'Debilitated' || status == 'Deep Debilitation (Param Neecha)') return false;
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 
     if (functional == FunctionalStatus.benefic) return true;
     if (functional == FunctionalStatus.malefic) return false;
@@ -1945,29 +1826,7 @@ class LifePredictionService {
         return 'Under $nakshatra Nakshatra, your soul has a strong affinity for higher wisdom, meditation, and self-inquiry. You seek liberation and have a natural capability to detach from material desires.';
     }
   }
-<<<<<<< HEAD
-=======
 
-  bool _isMoolatrikona(Planet planet, int signIndex, double degreeInSign) {
-    switch (planet) {
-      case Planet.sun:
-        return signIndex == 4 && degreeInSign >= 0.0 && degreeInSign <= 20.0;
-      case Planet.moon:
-        return signIndex == 1 && degreeInSign > 3.0 && degreeInSign <= 30.0;
-      case Planet.mars:
-        return signIndex == 0 && degreeInSign >= 0.0 && degreeInSign <= 12.0;
-      case Planet.mercury:
-        return signIndex == 5 && degreeInSign >= 15.0 && degreeInSign <= 20.0;
-      case Planet.jupiter:
-        return signIndex == 8 && degreeInSign >= 0.0 && degreeInSign <= 10.0;
-      case Planet.venus:
-        return signIndex == 6 && degreeInSign >= 0.0 && degreeInSign <= 15.0;
-      case Planet.saturn:
-        return signIndex == 10 && degreeInSign >= 0.0 && degreeInSign <= 20.0;
-      default:
-        return false;
-    }
-  }
 
   Planet? _parsePlanetName(String name) {
     final cleanName = name.toLowerCase().replaceAll(' ', '');
@@ -1984,7 +1843,6 @@ class LifePredictionService {
     }
     return null;
   }
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1993,6 +1851,7 @@ class LifePredictionService {
 
 class _PredictionContext {
   _PredictionContext({
+    required this.baseChart,
     required this.shadbala,
     required this.bhavaBala,
     required this.houseAvBindus,
@@ -2018,6 +1877,7 @@ class _PredictionContext {
     required this.moonNakshatraIndex,
   });
 
+  final VedicChart baseChart;
   final Map<Planet, double> shadbala;
   final Map<int, BhavaStrength> bhavaBala;
   final Map<int, int> houseAvBindus;

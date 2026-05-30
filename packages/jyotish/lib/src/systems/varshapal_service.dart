@@ -4,13 +4,10 @@ import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/systems/varshapal.dart';
 import 'package:jyotish/src/astronomy/ephemeris_service.dart';
 import 'package:jyotish/src/analysis/vedic_chart_service.dart';
-<<<<<<< HEAD
-=======
 import 'package:jyotish/src/models/vedic_chart.dart';
 import 'package:jyotish/src/models/rashi.dart';
 import 'package:jyotish/src/strength/relationship.dart';
 import 'package:jyotish/src/astronomy/astrology_time_service.dart';
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 
 /// Service for calculating Varshapal (Annual Chart) and its periods.
 ///
@@ -148,11 +145,6 @@ class VarshapalService {
     DateTime? checkDate,
   }) async {
     checkDate ??= DateTime.now();
-<<<<<<< HEAD
-
-    // Calculate the annual chart for the varsha date
-    final vedicChartService = VedicChartService(_ephemerisService);
-=======
     final activeFlags = flags ?? CalculationFlags.defaultFlags();
 
     final vedicChartService = VedicChartService(_ephemerisService);
@@ -166,28 +158,10 @@ class VarshapalService {
     );
 
     // 2. Calculate annual chart for the varsha date
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     final chart = await vedicChartService.calculateChart(
       dateTime: varshaDateTime,
       location: location,
       houseSystem: houseSystem,
-<<<<<<< HEAD
-      flags: flags ?? CalculationFlags.defaultFlags(),
-    );
-
-    // Get Jupiter's position to determine varsha lord
-    final jupiterInfo = chart.getPlanet(Planet.jupiter);
-    final jupiterLongitude = jupiterInfo?.longitude ?? 0;
-
-    // Calculate varsha number (1-60) based on Jupiter's position
-    final varshaNumber = _calculateVarshaNumber(jupiterLongitude);
-    final samvatsaraName = samvatsaraNames[(varshaNumber - 1) % 60];
-
-    // Determine varsha lord from the 60-year cycle
-    final varshaLord = _getVarshaLord(varshaNumber);
-
-    // Calculate all periods
-=======
       flags: activeFlags,
     );
 
@@ -222,7 +196,6 @@ class VarshapalService {
     );
 
     // 7. Calculate legacy periods based on the calculated Year Lord (varshaLord)
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     final allVarshaPeriods = _calculateVarshaPeriods(
       startDate: varshaDateTime,
       varshaLord: varshaLord,
@@ -264,11 +237,8 @@ class VarshapalService {
       currentMaasaPeriod: currentMaasaPeriod,
       currentDinaPeriod: currentDinaPeriod,
       currentHoraPeriod: currentHoraPeriod,
-<<<<<<< HEAD
-=======
       panchavargiyaBala: panchavargiyaBala,
       muddaDasha: muddaDashaList,
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
     );
   }
 
@@ -299,28 +269,6 @@ class VarshapalService {
     DateTime? checkDate,
   }) async {
     checkDate ??= DateTime.now();
-<<<<<<< HEAD
-
-    // Calculate this year's birthday
-    final thisYearBirthday = DateTime(
-      checkDate.year,
-      birthDateTime.month,
-      birthDateTime.day,
-      birthDateTime.hour,
-      birthDateTime.minute,
-    );
-
-    // If birthday hasn't occurred yet this year, use last year's
-    final varshaDateTime = thisYearBirthday.isAfter(checkDate)
-        ? DateTime(
-            checkDate.year - 1,
-            birthDateTime.month,
-            birthDateTime.day,
-            birthDateTime.hour,
-            birthDateTime.minute,
-          )
-        : thisYearBirthday;
-=======
     final activeFlags = flags ?? CalculationFlags.defaultFlags();
 
     final thisYearSolarReturn = await calculateSolarReturn(
@@ -338,18 +286,13 @@ class VarshapalService {
             flags: activeFlags,
           )
         : thisYearSolarReturn;
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 
     return calculateVarshapal(
       birthDateTime: birthDateTime,
       varshaDateTime: varshaDateTime,
       location: location,
       houseSystem: houseSystem,
-<<<<<<< HEAD
-      flags: flags,
-=======
       flags: activeFlags,
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
       checkDate: checkDate,
     );
   }
@@ -370,8 +313,7 @@ class VarshapalService {
         checkDate: checkDate,
       );
 
-<<<<<<< HEAD
-=======
+
   /// Calculates the exact millisecond the transiting Sun returns to its natal longitude.
   Future<DateTime> calculateSolarReturn({
     required DateTime birthDateTime,
@@ -920,7 +862,7 @@ class VarshapalService {
     }
   }
 
->>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
+
   /// Calculates the varsha number (1-60) based on Jupiter's longitude.
   int _calculateVarshaNumber(double jupiterLongitude) {
     // Jupiter moves approximately 30 per year in the zodiac

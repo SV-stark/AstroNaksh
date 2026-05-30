@@ -86,6 +86,7 @@ class AstrologyTimeService {
       return utcDt.toLocal();
     }
   }
+
   /// Gets a list of all available IANA timezone IDs.
   static List<String> get availableTimezones =>
       tz.timeZoneDatabase.locations.keys.toList();

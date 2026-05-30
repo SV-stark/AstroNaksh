@@ -49,6 +49,7 @@ class VarshapalPeriod {
   String get periodString {
     return '${lord.displayName} - ${startDate.day}/${startDate.month} to ${endDate.day}/${endDate.month}';
   }
+
   /// Converts this period to a JSON map
   Map<String, dynamic> toJson() {
     return {
@@ -134,11 +135,13 @@ class Varshapal {
 
   /// Current active Hora period at the given date
   final VarshapalPeriod? currentHoraPeriod;
+
   /// Panchavargiya Bala (5-fold strength) for each traditional planet
   final Map<Planet, PanchavargiyaBalaResult> panchavargiyaBala;
 
   /// Mudda Dasha (scaled annual Vimshottari dasha) periods
   final List<VarshapalPeriod> muddaDasha;
+
   /// Alias for [currentMaasaPeriod?.lord] for legacy tests.
   Planet? get maasLord => currentMaasaPeriod?.lord;
 
@@ -245,6 +248,7 @@ class PanchavargiyaBalaResult {
     return '${planet.displayName}: Total $totalBala (Vishwa: $vishwaBala)';
   }
 }
+
 /// Holds the current periods at all levels.
 class VarshapalCurrentPeriods {
   const VarshapalCurrentPeriods({

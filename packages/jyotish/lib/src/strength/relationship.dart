@@ -29,6 +29,7 @@ enum CompoundRelationship {
   @override
   String toString() => displayName;
 }
+
 /// Nature of a planetary relationship component.
 enum RelationshipNature { natural, temporary, compound }
 

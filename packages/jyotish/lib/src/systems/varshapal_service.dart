@@ -313,7 +313,6 @@ class VarshapalService {
         checkDate: checkDate,
       );
 
-
   /// Calculates the exact millisecond the transiting Sun returns to its natal longitude.
   Future<DateTime> calculateSolarReturn({
     required DateTime birthDateTime,
@@ -861,7 +860,6 @@ class VarshapalService {
       return RelationshipType.neutral;
     }
   }
-
 
   /// Calculates the varsha number (1-60) based on Jupiter's longitude.
   int _calculateVarshaNumber(double jupiterLongitude) {

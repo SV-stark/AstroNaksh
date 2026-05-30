@@ -107,6 +107,7 @@ class HouseSystem {
       zodiacSign: _zodiacSigns[signIndex],
     );
   }
+
   static const List<String> _zodiacSigns = [
     'Aries',
     'Taurus',
@@ -360,6 +361,7 @@ class VedicPlanetInfo {
       _ => null,
     };
   }
+
   /// Converts this VedicPlanetInfo to a JSON map.
   Map<String, dynamic> toJson() => {
         'planet': position.planet.displayName,

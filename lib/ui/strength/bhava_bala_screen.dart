@@ -1,7 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 import '../../data/models.dart';
+<<<<<<< HEAD
 import '../../logic/bhava_bala.dart';
+=======
+import '../../core/ephemeris_manager.dart';
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 import '../../ui/utils/responsive_helper.dart';
 
 class BhavaBalaScreen extends StatefulWidget {
@@ -18,7 +22,11 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<int, EnhancedBhavaBalaResult>>(
+<<<<<<< HEAD
       future: BhavaBala.calculateEnhancedBhavaBala(widget.chartData),
+=======
+      future: EphemerisManager.jyotish.getEnhancedBhavaBala(widget.chartData.baseChart),
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return ScaffoldPage(

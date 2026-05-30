@@ -11,6 +11,10 @@ A comprehensive API reference for the Jyotish Flutter library - production-ready
   - [Jyotish](#jyotish)
   - [GeographicLocation](#geographiclocation)
   - [CalculationFlags](#calculationflags)
+<<<<<<< HEAD
+=======
+- [New in v2.12.0 — Tajika Varshapal (Solar Return) Engine Suite](#new-in-v2120--tajika-varshapal-solar-return-engine-suite)
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 - [New in v2.11.0 — Advanced Jyotish Feature Suite](#new-in-v2110--advanced-jyotish-feature-suite)
 - [New in v2.10.0 — Tree Shaking & Module Isolation](#new-in-v2100--tree-shaking--module-isolation)
 - [New in v2.9.0 & v2.9.1 — JSON, Sanskrit, Jaimini, and Julian Day](#new-in-v290--v291--json-sanskrit-jaimini-and-julian-day)
@@ -949,8 +953,17 @@ final service = VarshapalService(ephemerisService);
 |--------|---------|-------------|
 | `calculateVarshapal({birthDateTime, varshaDateTime, location, houseSystem?, checkDate?})` | `Future<Varshapal>` | Annual chart for a specific year |
 | `calculateCurrentVarshapal({birthDateTime, location, houseSystem?, checkDate?})` | `Future<Varshapal>` | Current year's annual chart |
+<<<<<<< HEAD
 | `getVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateVarshapal` |
 | `getCurrentVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateCurrentVarshapal` |
+=======
+| `calculateSolarReturn({birthDateTime, targetYear, location, flags?})` | `Future<DateTime>` | Exact millisecond the transiting Sun returns to its natal longitude |
+| `calculatePanchavargiyaBala(Planet planet, VedicChart chart)` | `PanchavargiyaBalaResult` | Calculates the five-fold strength of a planet |
+| `determineVarshesh({natalChart, annualChart, balaMap, varshaDateTime, birthDateTime})` | `Planet` | Selects Year Lord based on classical Panchadhikari rules |
+| `calculateMuddaDasha({birthDateTime, varshaDateTime, annualChart, location, flags})` | `Future<List<VarshapalPeriod>>` | Calculates scaled Vimshottari periods for the annual year |
+| `getVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateVarshapal` |
+| `calculateCurrentVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateCurrentVarshapal` (corrected description/redundancy check) |
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 | `getSamvatsaraName(int yearNumber)` | `static String` | Gets Samvatsara name from year number (1-60) |
 | `getCurrentVarshaNumber(DateTime date, {int? referenceYear})` | `static int` | Gets current varsha number (1-60). `referenceYear` defaults to `DateTime.now().year`; reference epoch: 1983 = Prabhava (year 1). |
 
@@ -2859,6 +2872,71 @@ Type of eclipse.
 | `solar` | Solar eclipse |
 | `lunar` | Lunar eclipse |
 
+<<<<<<< HEAD
+=======
+## New in v2.12.0 — Tajika Varshapal (Solar Return) Engine Suite
+
+This update adds a suite of precise Tajika Varshapal calculations to the `jyotish` library:
+
+### 1. True Solar Return Moment (calculateSolarReturn)
+Calculates the exact millisecond the transiting Sun returns to its natal longitude, resolving leap-years and timezone drift using UTC binary search.
+- Method on `VarshapalService`: `Future<DateTime> calculateSolarReturn({required DateTime birthDateTime, required int targetYear, required GeographicLocation location, CalculationFlags? flags})`
+
+#### Usage Example:
+```dart
+final solarReturnTime = await jyotish.varshapal.calculateSolarReturn(
+  birthDateTime: DateTime(1990, 5, 15, 14, 30),
+  targetYear: 2026,
+  location: location,
+);
+print('Exact Solar Return Moment: $solarReturnTime');
+```
+
+### 2. Panchavargiya Bala (5-fold planetary strength)
+Natively calculates the five traditional strengths of any planet (Kshetra, Hadda, Drekkana, Navamsa, and Uccha Bala).
+- Method on `VarshapalService`: `PanchavargiyaBalaResult calculatePanchavargiyaBala(Planet planet, VedicChart chart)`
+- Properties on `PanchavargiyaBalaResult`: `kshetraBala`, `haddaBala`, `drekkanaBala`, `navamsaBala`, `ucchaBala`, `totalBala`, `vishwaBala`
+
+#### Usage Example:
+```dart
+final result = jyotish.varshapal.calculatePanchavargiyaBala(Planet.sun, annualChart);
+print('Sun Vishwa Bala: ${result.vishwaBala} / 20');
+```
+
+### 3. Varshesh (Year Lord) Determination
+Selects the Year Lord from the five candidate planets (Panchadhikaris) using strict aspect checks to Lagna and Panchavargiya Bala tie-breakers.
+- Method on `VarshapalService`: `Planet determineVarshesh(...)`
+
+#### Usage Example:
+```dart
+final varshesh = jyotish.varshapal.determineVarshesh(
+  natalChart: natalChart,
+  annualChart: annualChart,
+  balaMap: balaMap,
+  varshaDateTime: varshaDateTime,
+  birthDateTime: birthDateTime,
+);
+print('Varshesha for the year: ${varshesh.displayName}');
+```
+
+### 4. Mudda Dasha (Annual Dasha)
+Calculates annual Vimshottari period durations scaled to the exact Varshapal year, starting with the Nakshatra ruler's balance.
+- Method on `VarshapalService`: `Future<List<VarshapalPeriod>> calculateMuddaDasha(...)`
+
+#### Usage Example:
+```dart
+final muddaPeriods = await jyotish.varshapal.calculateMuddaDasha(
+  birthDateTime: birthDateTime,
+  varshaDateTime: varshaDateTime,
+  annualChart: annualChart,
+  location: location,
+  flags: flags,
+);
+```
+
+---
+
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 ## New in v2.11.0 — Advanced Jyotish Feature Suite
 
 This update adds an extensive suite of advanced mathematical, divisional, and compatibility features to the `jyotish` library:
@@ -2939,6 +3017,94 @@ print('Has Nadi Dosha: ${report.hasNadiDosha}');
 print('Has Bhakoot Dosha: ${report.hasBhakootDosha}');
 ```
 
+<<<<<<< HEAD
+=======
+### 6. Native Moolatrikona Dignity Detection
+Provides native detection for whether a planet resides within its specific Moolatrikona sign and degree ranges.
+- Property: `bool get isMoolatrikona` on `VedicPlanetInfo`.
+
+#### Usage Example:
+```dart
+final sunInfo = chart.getPlanet(Planet.sun);
+if (sunInfo != null && sunInfo.isMoolatrikona) {
+  print('Sun is in Moolatrikona!');
+}
+```
+
+### 7. Vargottama & Neecha-Vargottama State Calculations
+Detects when a planet occupies the same sign index in both the natal Rashi chart (D-1) and the Navamsa chart (D-9).
+- Methods on `VedicChart`:
+  - `bool isVargottama(Planet planet)`
+  - `VargottamaStatus getVargottamaStatus(Planet planet)`
+
+#### Usage Example:
+```dart
+final isVarg = chart.isVargottama(Planet.jupiter);
+final status = chart.getVargottamaStatus(Planet.jupiter);
+if (status == VargottamaStatus.ucchaVargottama) {
+  print('Jupiter is in Exalted Vargottama state!');
+}
+```
+
+### 8. Deep Exaltation & Debilitation Degrees (Param Uccha / Param Neecha)
+Checks if a planet is placed close to its peak exaltation or debilitation degree coordinates.
+- Methods on `VedicPlanetInfo`:
+  - `bool isDeepExalted(double orb)`
+  - `bool isDeepDebilitated(double orb)`
+
+#### Usage Example:
+```dart
+final sunInfo = chart.getPlanet(Planet.sun);
+// Check if Sun is within a 2-degree orb of peak exaltation (10° Aries)
+if (sunInfo != null && sunInfo.isDeepExalted(2.0)) {
+  print('Sun is in deep exaltation!');
+}
+```
+
+### 9. Planet-Specific Combustion (Kopa) Ranges
+Exposes the exact combustion threshold in degrees based on the planet's specific combustion rules and retrograde status.
+- Property: `double? get combustionDistance` on `VedicPlanetInfo`.
+
+#### Usage Example:
+```dart
+final mercuryInfo = chart.getPlanet(Planet.mercury);
+if (mercuryInfo != null) {
+  print('Mercury combustion limit: ${mercuryInfo.combustionDistance}°');
+}
+```
+
+### 10. Simplified Compound Friendship (Panchadha Maitri) Queries
+Allows direct querying of compound friendship relationship states without manually looking up or calculating natural/temporary matrices.
+- Method on `VedicChart`: `CompoundRelationship getCompoundRelationship(Planet planetA, Planet planetB)`
+
+#### Usage Example:
+```dart
+final friendship = chart.getCompoundRelationship(Planet.sun, Planet.saturn);
+print('Relationship: ${friendship.displayName}'); // e.g. "Great Enemy"
+```
+
+### 11. Astrological House Classifications
+Exposes boolean flags on individual house models to easily check house groups and properties (Kendra, Trikona, Dusthana, Upachaya).
+- Model: `House` (aliased as `VedicHouse`).
+- Properties:
+  - `number`: House number (1-12)
+  - `cusp`: Cusp degree (0-360)
+  - `zodiacSign`: Sign name
+  - `isKendra`
+  - `isTrikona`
+  - `isDusthana`
+  - `isUpachaya`
+- Access via `HouseSystem`: `List<House> get individualHouses` and `House getHouse(int number)`.
+
+#### Usage Example:
+```dart
+final house5 = chart.houses.getHouse(5);
+if (house5.isTrikona) {
+  print('5th house is a Trikona (Trine) house.');
+}
+```
+
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 ---
 
 ## New in v2.10.0 — Tree Shaking & Module Isolation

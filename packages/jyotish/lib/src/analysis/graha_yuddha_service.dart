@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+import 'dart:math' as math;
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/models/vedic_chart.dart';
 import 'package:jyotish/src/models/graha_yuddha.dart';

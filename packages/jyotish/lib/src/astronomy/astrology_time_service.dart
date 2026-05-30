@@ -65,6 +65,31 @@ class AstrologyTimeService {
     }
   }
 
+<<<<<<< HEAD
+=======
+  /// Converts a UTC date and time to a local date and time using a specific IANA timezone ID.
+  static DateTime utcToLocal(DateTime utcDt, String zoneId) {
+    _ensureInitialized();
+    try {
+      final location = tz.getLocation(zoneId);
+      final tzDt = tz.TZDateTime.from(utcDt, location);
+      return DateTime(
+        tzDt.year,
+        tzDt.month,
+        tzDt.day,
+        tzDt.hour,
+        tzDt.minute,
+        tzDt.second,
+        tzDt.millisecond,
+        tzDt.microsecond,
+      );
+    } catch (e) {
+      // Fallback
+      return utcDt.toLocal();
+    }
+  }
+
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
   /// Gets a list of all available IANA timezone IDs.
   static List<String> get availableTimezones =>
       tz.timeZoneDatabase.locations.keys.toList();

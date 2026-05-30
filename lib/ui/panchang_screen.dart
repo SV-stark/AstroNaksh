@@ -5,8 +5,11 @@ import 'package:jyotish/jyotish.dart';
 import '../core/ephemeris_manager.dart';
 import '../core/utils/formatters.dart';
 import '../data/city_database.dart';
+<<<<<<< HEAD
 import '../data/models.dart';
 import '../logic/gowri_panchanga_service.dart';
+=======
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
 import '../logic/panchang_service.dart';
 import '../ui/utils/responsive_helper.dart';
 import 'panchang/panchang.dart';
@@ -21,7 +24,10 @@ class PanchangScreen extends StatefulWidget {
 class _PanchangScreenState extends State<PanchangScreen> {
   DateTime _selectedDate = DateTime.now();
   final PanchangService _panchangService = PanchangService();
+<<<<<<< HEAD
   final GowriPanchangaService _gowriService = GowriPanchangaService();
+=======
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
   PanchangResult? _result;
   GowriPanchangamInfo? _gowri;
   List<PanchangInauspicious> _inauspicious = [];
@@ -93,9 +99,19 @@ class _PanchangScreenState extends State<PanchangScreen> {
         location,
       );
 
+<<<<<<< HEAD
       final gowri = await _gowriService.getCurrentGowriPanchanga(
         _selectedDate,
         location,
+=======
+      final gowri = await EphemerisManager.jyotish.getCurrentGowriPanchangam(
+        dateTime: _selectedDate,
+        location: GeographicLocation(
+          latitude: location.latitude,
+          longitude: location.longitude,
+          altitude: 0,
+        ),
+>>>>>>> cca0eff3474f357d387ecf7db02cf0e0869049e8
       );
 
       final moonPhase = await _panchangService.getMoonPhaseDetails(

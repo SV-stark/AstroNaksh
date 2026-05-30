@@ -1,8 +1,8 @@
 import 'package:jyotish/jyotish.dart';
 
 import '../core/chart_customization.dart';
-import '../data/models.dart';
 import '../core/ephemeris_manager.dart';
+import '../data/models.dart';
 import 'custom_chart_service.dart';
 
 /// Varshaphal (Annual Chart) System
@@ -161,9 +161,9 @@ class VarshaphalSystem {
     // 8. Calculate Sahams (Arabic Parts)
     final sahams = <String, SahamPoint>{};
     tajakaEnhancement.sahams.forEach((key, long) {
-      String name = '$key Saham';
-      String interpretation = '';
-      String fullKey = key;
+      var name = '$key Saham';
+      var interpretation = '';
+      var fullKey = key;
       if (key == 'Punya') {
         fullKey = 'Punya (Fortune)';
         interpretation = 'Wealth, success, and fulfillment of desires.';
@@ -259,11 +259,11 @@ class VarshaphalSystem {
       longitude: birthData.location.longitude,
       timezone: birthData.timezone.isNotEmpty ? birthData.timezone : null,
     );
-    final activeFlags = CalculationFlags(
+    const activeFlags = CalculationFlags(
       siderealMode: SiderealMode.lahiri,
       nodeType: NodeType.meanNode,
     );
-    return await varshapalService.calculateSolarReturn(
+    return varshapalService.calculateSolarReturn(
       birthDateTime: birthData.dateTime,
       targetYear: year,
       location: location,

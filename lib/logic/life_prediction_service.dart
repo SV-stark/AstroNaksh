@@ -704,7 +704,7 @@ class LifePredictionService {
       finalStrength = (finalStrength - 5.0).clamp(0.0, 100.0);
     }
     if (isLoserInWar) {
-      finalStrength = (finalStrength * 0.5); // Defeat cuts strength by 50%
+      finalStrength = finalStrength * 0.5; // Defeat cuts strength by 50%
     }
 
     final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;

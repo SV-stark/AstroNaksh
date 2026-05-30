@@ -11,10 +11,10 @@ class ProgenyService {
 
     // 1. 5th House Strength (normalized from 40 max to 100%)
     final fifthHousePct = (libResult.fifthHouseStrength.score / 40 * 100).round().clamp(0, 100);
-    final List<String> fifthHousePlanets = libResult.fifthHouseStrength.planetsInHouse.map((p) => p.displayName).toList();
-    final List<String> fifthHouseAspects = libResult.fifthHouseStrength.aspectsOnHouse.map((p) => p.displayName).toList();
+    final fifthHousePlanets = libResult.fifthHouseStrength.planetsInHouse.map((p) => p.displayName).toList();
+    final fifthHouseAspects = libResult.fifthHouseStrength.aspectsOnHouse.map((p) => p.displayName).toList();
     
-    String fifthHouseDesc = '5th House score is ${libResult.fifthHouseStrength.score}/40.';
+    var fifthHouseDesc = '5th House score is ${libResult.fifthHouseStrength.score}/40.';
     if (fifthHousePlanets.isNotEmpty) {
       fifthHouseDesc += ' Occupied by: ${fifthHousePlanets.join(", ")}.';
     } else {
@@ -37,7 +37,7 @@ class ProgenyService {
 
     // 2. Jupiter Condition (normalized from 50 max to 100%)
     final jupiterPct = (libResult.jupiterCondition.score / 50 * 100).round().clamp(0, 100);
-    String jupiterDesc = 'Jupiter resides in house ${libResult.jupiterCondition.house} (Score: ${libResult.jupiterCondition.score}/50).';
+    var jupiterDesc = 'Jupiter resides in house ${libResult.jupiterCondition.house} (Score: ${libResult.jupiterCondition.score}/50).';
     if (libResult.jupiterCondition.isExalted) jupiterDesc += ' Exalted.';
     if (libResult.jupiterCondition.isOwnSign) jupiterDesc += ' In own sign.';
     if (libResult.jupiterCondition.isDebilitated) jupiterDesc += ' Debilitated.';
@@ -51,7 +51,7 @@ class ProgenyService {
 
     // 3. Saptamsha D7 Chart (normalized from 30 max to 100%)
     final d7Pct = (libResult.d7Analysis.score / 30 * 100).round().clamp(0, 100);
-    String d7Desc = 'Saptamsha (D7) divisional chart score is ${libResult.d7Analysis.score}/30.';
+    var d7Desc = 'Saptamsha (D7) divisional chart score is ${libResult.d7Analysis.score}/30.';
     if (libResult.d7Analysis.fifthLordD7 != null) {
       d7Desc += ' 5th Lord placement in D7: ${libResult.d7Analysis.fifthLordD7!.displayName}.';
     }

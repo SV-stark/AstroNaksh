@@ -1,6 +1,6 @@
 import 'package:astronaksh/logic/progeny_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/jyotish.dart' hide ProgenyService;
 import '../utils/test_chart_builder.dart';
 
 void main() {

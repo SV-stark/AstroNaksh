@@ -52,10 +52,12 @@ class ProgenyService {
         'Jupiter resides in house ${libResult.jupiterCondition.house} (Score: ${libResult.jupiterCondition.score}/50).';
     if (libResult.jupiterCondition.isExalted) jupiterDesc += ' Exalted.';
     if (libResult.jupiterCondition.isOwnSign) jupiterDesc += ' In own sign.';
-    if (libResult.jupiterCondition.isDebilitated)
+    if (libResult.jupiterCondition.isDebilitated) {
       jupiterDesc += ' Debilitated.';
-    if (libResult.jupiterCondition.isCombust)
+    }
+    if (libResult.jupiterCondition.isCombust) {
       jupiterDesc += ' Combust (afflicted by Sun).';
+    }
 
     factors.add(
       ProgenyFactor(

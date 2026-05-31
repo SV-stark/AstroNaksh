@@ -93,8 +93,8 @@ class _VedicClockCardState extends State<VedicClockCard> {
       padding: EdgeInsets.zero,
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [const Color(0xFF1A1A2E), const Color(0xFF16213E)],
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -209,7 +209,7 @@ class _VedicClockCardState extends State<VedicClockCard> {
                       getSunriseSunset:
                           EphemerisManager.jyotish.getSunriseSunset,
                       showLocalTime: true,
-                      showSunrise: true,
+                      showSunriseSunset: true,
                     ),
                   ],
                 ),
@@ -364,7 +364,7 @@ class _VedicClockCardState extends State<VedicClockCard> {
                   Row(
                     children: [
                       const Icon(
-                        FluentIcons.circle_right,
+                        FluentIcons.chevron_right,
                         size: 14,
                         color: Colors.white70,
                       ),

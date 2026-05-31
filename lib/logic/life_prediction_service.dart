@@ -1791,8 +1791,9 @@ class LifePredictionService {
           ![6, 8, 12].contains(house);
     }
 
-    if (status == 'Debilitated' || status == 'Deep Debilitation (Param Neecha)')
+    if (status == 'Debilitated' || status == 'Deep Debilitation (Param Neecha)') {
       return false;
+    }
 
     if (functional == FunctionalStatus.benefic) return true;
     if (functional == FunctionalStatus.malefic) return false;

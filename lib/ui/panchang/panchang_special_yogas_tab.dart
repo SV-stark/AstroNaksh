@@ -76,7 +76,6 @@ class PanchangSpecialYogasTab extends StatelessWidget {
       SpecialYogaType.raviPushya => '☀️ Sun + Pushya',
       SpecialYogaType.dwiPushkar => '🔁 Results Doubled',
       SpecialYogaType.triPushkar => '🔁 Results Tripled',
-      _ => isAuspicious ? '✨ Auspicious' : '🔁 Repetitive',
     };
 
     return Padding(
@@ -145,7 +144,7 @@ class PanchangSpecialYogasTab extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(FluentIcons.clock, size: 13, color: Colors.grey),
+                        const Icon(FluentIcons.clock, size: 13, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text(
                           '${_fmt(yoga.startTime)} – ${_fmt(yoga.endTime)}',

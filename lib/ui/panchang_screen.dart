@@ -662,7 +662,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     _buildTabButton(
-                                      icon: FluentIcons.sparkle,
+                                      icon: FluentIcons.starburst,
                                       label: 'Special Yogas',
                                       isSelected: _selectedTabIndex == 8,
                                       onTap: () =>

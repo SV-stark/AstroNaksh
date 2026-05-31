@@ -29,7 +29,9 @@ class VarshaphalSystem {
 
     final activeFlags = CalculationFlags(
       siderealMode: SiderealMode.lahiri,
-      nodeType: chartSettings.useTrueNode ? NodeType.trueNode : NodeType.meanNode,
+      nodeType: chartSettings.useTrueNode
+          ? NodeType.trueNode
+          : NodeType.meanNode,
       useTopocentric: chartSettings.useTopocentric,
       calculateSpeed: chartSettings.calculateSpeed,
     );
@@ -78,7 +80,10 @@ class VarshaphalSystem {
     final panchavargiyaBala = <String, PanchavargiyaStrength>{};
     final balaMap = <Planet, PanchavargiyaBalaResult>{};
     for (final planet in Planet.traditionalPlanets) {
-      final res = varshapalService.calculatePanchavargiyaBala(planet, varshaChart);
+      final res = varshapalService.calculatePanchavargiyaBala(
+        planet,
+        varshaChart,
+      );
       balaMap[planet] = res;
       panchavargiyaBala[planet.displayName] = PanchavargiyaStrength(
         kshetra: res.kshetraBala,
@@ -106,10 +111,9 @@ class VarshaphalSystem {
     final sunHouse = varshaChart.getPlanet(Planet.sun)?.house ?? 1;
     final isDay = sunHouse >= 7 && sunHouse <= 12;
     final dinRatriLord = isDay ? 'Sun' : 'Moon';
-    final triRashiLord = varshapalService.getTrirashiLord(
-      Rashi.fromLongitude(varshaChart.ascendant),
-      isDay,
-    ).displayName;
+    final triRashiLord = varshapalService
+        .getTrirashiLord(Rashi.fromLongitude(varshaChart.ascendant), isDay)
+        .displayName;
 
     final candidatesMap = <String, String>{
       'Muntha Lord': munthaLord,
@@ -219,7 +223,9 @@ class VarshaphalSystem {
     }
 
     // 9. Tajik Yogas
-    final tajikYogas = tajakaEnhancement.yogas.map((y) => y.interpretation).toList();
+    final tajikYogas = tajakaEnhancement.yogas
+        .map((y) => y.interpretation)
+        .toList();
     if (tajikYogas.isEmpty) {
       tajikYogas.add('No major Tajik Yogas active');
     }
@@ -325,7 +331,9 @@ class VarshaphalSystem {
 
   static String getTriRashiLord(int sign, bool isDay) {
     final varshapalService = EphemerisManager.jyotish.systems.varshapal;
-    return varshapalService.getTrirashiLord(Rashi.values[sign % 12], isDay).displayName;
+    return varshapalService
+        .getTrirashiLord(Rashi.values[sign % 12], isDay)
+        .displayName;
   }
 
   static bool checkTajikAspect(double p1, double p2) {
@@ -888,4 +896,3 @@ class PanchavargiyaStrength {
 
   double get total => kshetra + uchcha + hadda + drekkana + navamsa;
 }
-

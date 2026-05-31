@@ -18,7 +18,9 @@ class _BhavaBalaScreenState extends State<BhavaBalaScreen> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<int, EnhancedBhavaBalaResult>>(
-      future: EphemerisManager.jyotish.getEnhancedBhavaBala(widget.chartData.baseChart),
+      future: EphemerisManager.jyotish.getEnhancedBhavaBala(
+        widget.chartData.baseChart,
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return ScaffoldPage(

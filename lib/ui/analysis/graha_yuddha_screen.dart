@@ -42,11 +42,7 @@ class GrahaYuddhaScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            FluentIcons.shield,
-            size: 64,
-            color: m.Colors.green,
-          ),
+          const Icon(FluentIcons.shield, size: 64, color: m.Colors.green),
           const SizedBox(height: 16),
           Text(
             'Peaceful Skies',
@@ -81,11 +77,7 @@ class GrahaYuddhaScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Icon(
-                FluentIcons.warning,
-                color: theme.accentColor,
-                size: 28,
-              ),
+              Icon(FluentIcons.warning, color: theme.accentColor, size: 28),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -111,10 +103,7 @@ class GrahaYuddhaScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Text(
-          'Combatants & Measurements',
-          style: theme.typography.subtitle,
-        ),
+        Text('Combatants & Measurements', style: theme.typography.subtitle),
         const SizedBox(height: 12),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -208,14 +197,13 @@ class GrahaYuddhaScreen extends StatelessWidget {
     bool isWinner,
   ) {
     final theme = FluentTheme.of(context);
-    final borderColor = isWinner ? theme.accentColor : theme.resources.dividerStrokeColorDefault;
+    final borderColor = isWinner
+        ? theme.accentColor
+        : theme.resources.dividerStrokeColorDefault;
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(
-          color: borderColor,
-          width: isWinner ? 2.0 : 1.0,
-        ),
+        border: Border.all(color: borderColor, width: isWinner ? 2.0 : 1.0),
         borderRadius: BorderRadius.circular(8),
         color: theme.cardColor,
       ),
@@ -239,7 +227,9 @@ class GrahaYuddhaScreen extends StatelessWidget {
                   Text(
                     planet.sanskritName,
                     style: TextStyle(
-                      color: theme.typography.bodyLarge?.color?.withValues(alpha: 0.6),
+                      color: theme.typography.bodyLarge?.color?.withValues(
+                        alpha: 0.6,
+                      ),
                       fontSize: 13,
                     ),
                   ),
@@ -248,11 +238,7 @@ class GrahaYuddhaScreen extends StatelessWidget {
               if (isWinner)
                 const Row(
                   children: [
-                    Icon(
-                      m.Icons.emoji_events,
-                      color: m.Colors.amber,
-                      size: 24,
-                    ),
+                    Icon(m.Icons.emoji_events, color: m.Colors.amber, size: 24),
                     SizedBox(width: 4),
                     Text(
                       'WINNER',
@@ -279,16 +265,10 @@ class GrahaYuddhaScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 13),
-        ),
+        Text(label, style: const TextStyle(fontSize: 13)),
         Text(
           value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         ),
       ],
     );
@@ -303,10 +283,7 @@ class GrahaYuddhaScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
               Text(
                 note,
                 style: const TextStyle(fontSize: 11, color: m.Colors.grey),
@@ -315,10 +292,7 @@ class GrahaYuddhaScreen extends StatelessWidget {
           ),
           Text(
             value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
         ],
       ),

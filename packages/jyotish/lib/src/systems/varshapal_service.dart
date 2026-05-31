@@ -250,15 +250,14 @@ class VarshapalService {
     String houseSystem = 'W',
     CalculationFlags? flags,
     DateTime? checkDate,
-  }) =>
-      calculateVarshapal(
-        birthDateTime: birthDateTime,
-        varshaDateTime: varshaDateTime,
-        location: location,
-        houseSystem: houseSystem,
-        flags: flags,
-        checkDate: checkDate,
-      );
+  }) => calculateVarshapal(
+    birthDateTime: birthDateTime,
+    varshaDateTime: varshaDateTime,
+    location: location,
+    houseSystem: houseSystem,
+    flags: flags,
+    checkDate: checkDate,
+  );
 
   /// Calculates Varshapal for the current year (from birthday to next birthday).
   Future<Varshapal> calculateCurrentVarshapal({
@@ -304,14 +303,13 @@ class VarshapalService {
     String houseSystem = 'W',
     CalculationFlags? flags,
     DateTime? checkDate,
-  }) =>
-      calculateCurrentVarshapal(
-        birthDateTime: birthDateTime,
-        location: location,
-        houseSystem: houseSystem,
-        flags: flags,
-        checkDate: checkDate,
-      );
+  }) => calculateCurrentVarshapal(
+    birthDateTime: birthDateTime,
+    location: location,
+    houseSystem: houseSystem,
+    flags: flags,
+    checkDate: checkDate,
+  );
 
   /// Calculates the exact millisecond the transiting Sun returns to its natal longitude.
   Future<DateTime> calculateSolarReturn({
@@ -324,10 +322,15 @@ class VarshapalService {
     final birthUtc = birthDateTime.isUtc
         ? birthDateTime
         : AstrologyTimeService.localToUtc(
-            birthDateTime, location.timezone ?? 'UTC');
+            birthDateTime,
+            location.timezone ?? 'UTC',
+          );
 
-    final natalSunLong =
-        await _getSunLongitude(birthUtc, location, activeFlags);
+    final natalSunLong = await _getSunLongitude(
+      birthUtc,
+      location,
+      activeFlags,
+    );
 
     // Initial guess: same month/day/time in the target year in local time, then to UTC
     final approxLocal = DateTime(
@@ -340,7 +343,9 @@ class VarshapalService {
       birthDateTime.millisecond,
     );
     final approxUtc = AstrologyTimeService.localToUtc(
-        approxLocal, location.timezone ?? 'UTC');
+      approxLocal,
+      location.timezone ?? 'UTC',
+    );
 
     var low = approxUtc.subtract(const Duration(days: 2));
     var high = approxUtc.add(const Duration(days: 2));
@@ -396,7 +401,9 @@ class VarshapalService {
 
   /// Calculates Panchavargiya Bala (5-fold planetary strength) for a planet in a VedicChart.
   PanchavargiyaBalaResult calculatePanchavargiyaBala(
-      Planet planet, VedicChart chart) {
+    Planet planet,
+    VedicChart chart,
+  ) {
     final planetInfo = chart.getPlanet(planet);
     if (planetInfo == null) {
       return PanchavargiyaBalaResult(
@@ -538,8 +545,10 @@ class VarshapalService {
     final dinaRatriLord = isDay ? Planet.sun : Planet.moon;
 
     // Trirashi Lord
-    final trirashiLord =
-        getTrirashiLord(Rashi.fromLongitude(annualChart.ascendant), isDay);
+    final trirashiLord = getTrirashiLord(
+      Rashi.fromLongitude(annualChart.ascendant),
+      isDay,
+    );
 
     final candidates = [
       janmaLagnaLord,
@@ -563,8 +572,9 @@ class VarshapalService {
           h == 11;
     }).toList();
 
-    final List<Planet> activeCandidates =
-        eligibleCandidates.isNotEmpty ? eligibleCandidates : candidates;
+    final List<Planet> activeCandidates = eligibleCandidates.isNotEmpty
+        ? eligibleCandidates
+        : candidates;
 
     Planet bestPlanet = activeCandidates.first;
     double maxBala = -1.0;
@@ -700,13 +710,15 @@ class VarshapalService {
 
     if (startBalanceDuration.inMilliseconds > 0) {
       final end = currentStart.add(startBalanceDuration);
-      muddaDashaList.add(VarshapalPeriod(
-        type: VarshapalPeriodType.varsha,
-        lord: startPlanet,
-        startDate: currentStart,
-        endDate: end,
-        duration: startBalanceDuration,
-      ));
+      muddaDashaList.add(
+        VarshapalPeriod(
+          type: VarshapalPeriodType.varsha,
+          lord: startPlanet,
+          startDate: currentStart,
+          endDate: end,
+          duration: startBalanceDuration,
+        ),
+      );
       currentStart = end;
     }
 
@@ -718,13 +730,15 @@ class VarshapalService {
       final pDuration = Duration(milliseconds: pFullMs.round());
 
       final end = currentStart.add(pDuration);
-      muddaDashaList.add(VarshapalPeriod(
-        type: VarshapalPeriodType.varsha,
-        lord: p,
-        startDate: currentStart,
-        endDate: end,
-        duration: pDuration,
-      ));
+      muddaDashaList.add(
+        VarshapalPeriod(
+          type: VarshapalPeriodType.varsha,
+          lord: p,
+          startDate: currentStart,
+          endDate: end,
+          duration: pDuration,
+        ),
+      );
       currentStart = end;
     }
 
@@ -735,13 +749,15 @@ class VarshapalService {
     if (startElapsedDuration.inMilliseconds > 0) {
       final end = nextVarshaDateTime;
       final finalDuration = end.difference(currentStart);
-      muddaDashaList.add(VarshapalPeriod(
-        type: VarshapalPeriodType.varsha,
-        lord: startPlanet,
-        startDate: currentStart,
-        endDate: end,
-        duration: finalDuration,
-      ));
+      muddaDashaList.add(
+        VarshapalPeriod(
+          type: VarshapalPeriodType.varsha,
+          lord: startPlanet,
+          startDate: currentStart,
+          endDate: end,
+          duration: finalDuration,
+        ),
+      );
     }
 
     return muddaDashaList;
@@ -846,7 +862,10 @@ class VarshapalService {
   }
 
   RelationshipType _getTajikaFriendship(
-      Planet planetA, Planet planetB, VedicChart chart) {
+    Planet planetA,
+    Planet planetB,
+    VedicChart chart,
+  ) {
     if (planetA == planetB) return RelationshipType.friend;
     final hA = chart.getPlanet(planetA)?.house;
     final hB = chart.getPlanet(planetB)?.house;
@@ -886,16 +905,19 @@ class VarshapalService {
     for (var i = 0; i < 7; i++) {
       final lord = varshaDasaOrder[currentLordIndex % 7];
       final durationYears = _getVarshaDuration(lord);
-      final endDate =
-          currentDate.add(Duration(days: (durationYears * 365.25).round()));
+      final endDate = currentDate.add(
+        Duration(days: (durationYears * 365.25).round()),
+      );
 
-      periods.add(VarshapalPeriod(
-        type: VarshapalPeriodType.varsha,
-        lord: lord,
-        startDate: currentDate,
-        endDate: endDate,
-        duration: endDate.difference(currentDate),
-      ));
+      periods.add(
+        VarshapalPeriod(
+          type: VarshapalPeriodType.varsha,
+          lord: lord,
+          startDate: currentDate,
+          endDate: endDate,
+          duration: endDate.difference(currentDate),
+        ),
+      );
 
       currentDate = endDate;
       currentLordIndex++;
@@ -917,13 +939,15 @@ class VarshapalService {
       final lord = maasaDasaOrder[currentLordIndex % 7];
       final endDate = _addMaasaDuration(currentDate, lord);
 
-      periods.add(VarshapalPeriod(
-        type: VarshapalPeriodType.maasa,
-        lord: lord,
-        startDate: currentDate,
-        endDate: endDate,
-        duration: endDate.difference(currentDate),
-      ));
+      periods.add(
+        VarshapalPeriod(
+          type: VarshapalPeriodType.maasa,
+          lord: lord,
+          startDate: currentDate,
+          endDate: endDate,
+          duration: endDate.difference(currentDate),
+        ),
+      );
 
       currentDate = endDate;
       currentLordIndex++;
@@ -946,13 +970,15 @@ class VarshapalService {
       final lord = dinaDasaOrder[currentLordIndex % 7];
       final endDate = currentDate.add(const Duration(days: 1));
 
-      periods.add(VarshapalPeriod(
-        type: VarshapalPeriodType.dina,
-        lord: lord,
-        startDate: currentDate,
-        endDate: endDate,
-        duration: const Duration(days: 1),
-      ));
+      periods.add(
+        VarshapalPeriod(
+          type: VarshapalPeriodType.dina,
+          lord: lord,
+          startDate: currentDate,
+          endDate: endDate,
+          duration: const Duration(days: 1),
+        ),
+      );
 
       currentDate = endDate;
       currentLordIndex++;
@@ -975,13 +1001,15 @@ class VarshapalService {
       final lord = horaDasaOrder[currentLordIndex % 7];
       final endDate = currentDate.add(const Duration(hours: 1));
 
-      periods.add(VarshapalPeriod(
-        type: VarshapalPeriodType.hora,
-        lord: lord,
-        startDate: currentDate,
-        endDate: endDate,
-        duration: const Duration(hours: 1),
-      ));
+      periods.add(
+        VarshapalPeriod(
+          type: VarshapalPeriodType.hora,
+          lord: lord,
+          startDate: currentDate,
+          endDate: endDate,
+          duration: const Duration(hours: 1),
+        ),
+      );
 
       currentDate = endDate;
       currentLordIndex++;

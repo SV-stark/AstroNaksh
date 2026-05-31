@@ -207,7 +207,8 @@ class MasaService {
     var normalizedLongitude = longitude % 360;
     if (normalizedLongitude < 0) normalizedLongitude += 360;
 
-    final isAbhijit = normalizedLongitude >= NakshatraInfo.abhijitStart &&
+    final isAbhijit =
+        normalizedLongitude >= NakshatraInfo.abhijitStart &&
         normalizedLongitude < NakshatraInfo.abhijitEnd;
 
     int nakshatraNumber;
@@ -231,7 +232,7 @@ class MasaService {
 
     final abhijitPortion = isAbhijit
         ? (normalizedLongitude - NakshatraInfo.abhijitStart) /
-            (NakshatraInfo.abhijitEnd - NakshatraInfo.abhijitStart)
+              (NakshatraInfo.abhijitEnd - NakshatraInfo.abhijitStart)
         : 0.0;
 
     return NakshatraInfo(
@@ -301,10 +302,7 @@ class MasaService {
     required DateTime dateTime,
     required GeographicLocation location,
   }) async {
-    final masa = await calculateMasa(
-      dateTime: dateTime,
-      location: location,
-    );
+    final masa = await calculateMasa(dateTime: dateTime, location: location);
 
     final ritu = getRitu(masa);
 
@@ -363,8 +361,10 @@ class MasaService {
       gujaratiSamvat = vikramSamvat - 1;
     }
 
-    final samvatsaraName =
-        await getSamvatsara(dateTime: dateTime, location: location);
+    final samvatsaraName = await getSamvatsara(
+      dateTime: dateTime,
+      location: location,
+    );
     const yugaStartYear = 1986;
     final yearDifference = dateTime.year - yugaStartYear;
     final samvatsaraNumber = (yearDifference + 48) % 60;
@@ -431,16 +431,13 @@ class MasaService {
       'Dhanu',
       'Makara',
       'Kumbha',
-      'Meena'
+      'Meena',
     ];
 
     final monthName = rashiNames[rashiIndex];
     final degreesInSign = sunLongitude % 30;
     final dayNumber = (degreesInSign / 0.9856).floor() + 1;
 
-    return PravishteInfo(
-      day: dayNumber,
-      monthName: monthName,
-    );
+    return PravishteInfo(day: dayNumber, monthName: monthName);
   }
 }

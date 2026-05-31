@@ -361,14 +361,16 @@ class DetailsTab extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(
                                 ChartHelpers.getSignName(
-                                  (data.specialLagnas!.horaLagna / 30).floor() + 1,
+                                  (data.specialLagnas!.horaLagna / 30).floor() +
+                                      1,
                                 ),
                               ),
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(
-                                (data.specialLagnas!.horaLagna % 30).toStringAsFixed(2),
+                                (data.specialLagnas!.horaLagna % 30)
+                                    .toStringAsFixed(2),
                               ),
                             ),
                           ],
@@ -386,14 +388,17 @@ class DetailsTab extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(
                                 ChartHelpers.getSignName(
-                                  (data.specialLagnas!.ghatiLagna / 30).floor() + 1,
+                                  (data.specialLagnas!.ghatiLagna / 30)
+                                          .floor() +
+                                      1,
                                 ),
                               ),
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(
-                                (data.specialLagnas!.ghatiLagna % 30).toStringAsFixed(2),
+                                (data.specialLagnas!.ghatiLagna % 30)
+                                    .toStringAsFixed(2),
                               ),
                             ),
                           ],
@@ -411,14 +416,16 @@ class DetailsTab extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(
                                 ChartHelpers.getSignName(
-                                  (data.specialLagnas!.sreeLagna / 30).floor() + 1,
+                                  (data.specialLagnas!.sreeLagna / 30).floor() +
+                                      1,
                                 ),
                               ),
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               child: Text(
-                                (data.specialLagnas!.sreeLagna % 30).toStringAsFixed(2),
+                                (data.specialLagnas!.sreeLagna % 30)
+                                    .toStringAsFixed(2),
                               ),
                             ),
                           ],

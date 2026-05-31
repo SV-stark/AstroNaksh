@@ -11,6 +11,8 @@ A comprehensive API reference for the Jyotish Flutter library - production-ready
   - [Jyotish](#jyotish)
   - [GeographicLocation](#geographiclocation)
   - [CalculationFlags](#calculationflags)
+- [New in v2.14.0 — Natal Dosha Detection Engine](#new-in-v2140--natal-dosha-detection-engine)
+- [New in v2.13.0 — Natal & Raja Yoga Detection Engine](#new-in-v2130--natal-raja-yoga-detection-engine)
 - [New in v2.12.0 — Tajika Varshapal (Solar Return) Engine Suite](#new-in-v2120--tajika-varshapal-solar-return-engine-suite)
 - [New in v2.11.0 — Advanced Jyotish Feature Suite](#new-in-v2110--advanced-jyotish-feature-suite)
 - [New in v2.10.0 — Tree Shaking & Module Isolation](#new-in-v2100--tree-shaking--module-isolation)
@@ -453,6 +455,26 @@ No initialization required — call directly on the class.
 | `detectChildYogas(chart)` | `List<ChildYoga>` | Favorable combinations |
 | `analyzeD7Chart(chart)` | `D7Analysis` | D7 chart analysis for progeny |
 
+#### Natal & Raja Yoga Methods
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `detectNatalYogas(chart)` | `List<NatalYoga>` | Detects 50+ core solar, lunar, Nabhasa, and Raja yogas |
+
+#### Dosha Detection Methods
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `checkNatalDoshas(chart)` | `FullDoshaReport` | Full report of all individual natal doshas (parity with PyJHora) |
+| `checkKalaSarpaDosha(chart)` | `KalaSarpaDoshaResult` | Scans if all planets are hemmed between Rahu and Ketu |
+| `checkManglikDoshaWithRamanExceptions(chart)` | `ManglikDoshaResult` | Checks Manglik placement applying 17 Raman exceptions |
+| `checkPitruDosha(chart)` | `PitruDoshaResult` | Scans Sun/Moon/9th house node afflictions |
+| `checkGuruChandalaDosha(chart)` | `GuruChandalaDoshaResult` | Jupiter conjoined Rahu/Ketu with strength mitigation |
+| `checkGandaMoolaDosha(chart)` | `GandaMoolaDoshaResult` | Moon birth in Ketu/Mercury junction Nakshatras |
+| `checkKalathraDosha(chart)` | `KalathraDoshaResult` | Malefics in spouse houses (1, 2, 4, 7, 8, 12) from Lagna/Moon |
+| `checkGhataDosha(chart)` | `ConjunctionDoshaResult` | Mars and Saturn conjoined in the same house |
+| `checkShrapitDosha(chart)` | `ConjunctionDoshaResult` | Saturn and Rahu conjoined in the same house |
+
 #### Marriage Compatibility Methods
 
 | Method | Returns | Description |
@@ -820,6 +842,23 @@ await service.initialize();
 | `dateTimeToJulianDay(dateTime, {timezoneId?})` | `double` | Converts a DateTime to Julian Day number |
 | `dispose()` | `void` | Release resources |
 | `isInitialized` | `bool` | Whether the service has been initialized |
+
+---
+
+### EclipseService
+
+Predicts future and past solar and lunar eclipses.
+
+```dart
+final service = EclipseService(ephemerisService.bindings);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `predictLunarEclipses({startDate, count})` | `Future<List<EclipseData>>` | Predicts the next `count` lunar eclipses globally |
+| `predictSolarEclipses({startDate, count, location?})` | `Future<List<EclipseData>>` | Predicts the next `count` solar eclipses. If `location` is provided, filters for visibility at that location, otherwise searches globally. |
+| `predictEclipses({startDate, count, location?, type})` | `Future<List<EclipseData>>` | Predicts the next `count` solar/lunar eclipses starting from `startDate` |
+| `predictEclipsesInYear({year, location?})` | `Future<List<EclipseData>>` | Predicts all eclipses occurring in a specific Gregorian year |
 
 ---
 
@@ -1221,6 +1260,42 @@ final service = MuhurtaService();
 
 ---
 
+### VedicTime & VedicClock
+
+Converts standard Gregorian time to traditional Vedic time units since local Sunrise, and provides interactive Flutter widgets.
+
+#### VedicTime Model
+
+Represents the Vedic time elapsed since Sunrise.
+
+```dart
+final vedicTime = await VedicTime.calculate(
+  time: DateTime.now(),
+  location: location,
+  getSunriseSunset: jyotish.getSunriseSunset,
+);
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `ghati` | `int` | Ghatis elapsed since Sunrise (0 to 59) |
+| `vighati` | `int` | Vighatis elapsed within the current Ghati (0 to 59) |
+| `lipta` | `int` | Liptas elapsed within the current Vighati (0 to 59) |
+| `prana` | `int` | Pranas (breaths) elapsed within the current Vighati (0 to 5) |
+| `currentSunrise` | `DateTime` | Sunrise starting the current Vedic day |
+| `nextSunrise` | `DateTime` | Sunrise ending the current Vedic day |
+| `totalGhatis` | `double` | Raw elapsed Ghatis as a double (0.0 to 60.0) |
+| `format({includeLipta, includePr})` | `String` | Formats time as a String (e.g. `32 : 15 : 04`) |
+
+#### Vedic Clock Widgets
+
+Reusable Flutter widgets to display live Vedic Time.
+
+- **`VedicDigitalClock`**: Digital clock displaying `Ghatis : Vighatis : Liptas` with optional local time and sunrise display.
+- **`VedicAnalogClock`**: CustomPainter-based circular clock face divided into 60 Ghatis with smooth hands.
+
+---
+
 ### MasaService
 
 Lunar month (Masa) and calendar calculations.
@@ -1499,6 +1574,73 @@ final service = ProgenyService();
 | `detectChildYogas(chart)` | `List<ChildYoga>` | Favorable combinations |
 | `analyzeD7Chart(chart)` | `D7Analysis` | Analyzes the D7 (Saptamsa) chart for progeny |
 | `analyzeKalatrakaraka(chart)` | `KalatrakarakaInfo` | Analyzes Kalatrakaraka (spouse/child karaka) |
+
+---
+
+### YogaService
+
+A comprehensive yoga detection module to identify natal, Raja, and Nabhasa yogas at par with PyJHora.
+
+```dart
+final service = YogaService();
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `detectNatalYogas(chart)` | `List<NatalYoga>` | Detects 50+ core solar, lunar, Nabhasa, and Raja yogas |
+
+#### Example Usage
+```dart
+final jyotish = Jyotish();
+final chart = await jyotish.calculateChart(...);
+
+// Detect yogas using the core delegator
+final yogas = jyotish.detectNatalYogas(chart);
+
+for (final yoga in yogas.where((y) => y.isPresent)) {
+  print('Yoga: ${yoga.name}');
+  print('Criteria: ${yoga.description}');
+  print('Effects: ${yoga.benefits}');
+  print('Explanation: ${yoga.explanation}');
+}
+```
+### DoshaService
+
+Analyzes natal planetary afflictions (Doshas) on individual birth charts (parity with PyJHora).
+
+```dart
+final service = DoshaService();
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateFullDoshaReport(chart)` | `FullDoshaReport` | Computes all 8 natal doshas at once |
+| `checkKalaSarpaDosha(chart)` | `KalaSarpaDoshaResult` | Evaluates Kala Sarpa axis and sub-type |
+| `checkManglikDoshaWithRamanExceptions(chart)` | `ManglikDoshaResult` | Evaluates Mars placement applying 17 Raman exceptions |
+| `checkPitruDosha(chart)` | `PitruDoshaResult` | Identifies ancestral afflictions (Sun/Moon/Nodes) |
+| `checkGuruChandalaDosha(chart)` | `GuruChandalaDoshaResult` | Conjunction of Jupiter-Rahu/Ketu with mitigation checks |
+| `checkGandaMoolaDosha(chart)` | `GandaMoolaDoshaResult` | Identifies Mercury/Ketu sandhi Nakshatra births |
+| `checkKalathraDosha(chart)` | `KalathraDoshaResult` | Checks malefic placements in spouse/partner houses |
+| `checkGhataDosha(chart)` | `ConjunctionDoshaResult` | Evaluates Mars-Saturn conjunction |
+| `checkShrapitDosha(chart)` | `ConjunctionDoshaResult` | Evaluates Saturn-Rahu conjunction |
+
+#### Example Usage
+```dart
+final jyotish = Jyotish();
+final chart = await jyotish.calculateChart(...);
+
+// Get the full report
+final report = jyotish.checkNatalDoshas(chart);
+
+if (report.kalaSarpa.hasDosha) {
+  print('Kala Sarpa type: ${report.kalaSarpa.type}');
+  print('Description: ${report.kalaSarpa.description}');
+}
+
+if (report.guruChandala.hasDosha) {
+  print('Guru Chandala is active? ${!report.guruChandala.jupiterIsStronger}');
+}
+```
 
 ---
 
@@ -2863,6 +3005,141 @@ Type of eclipse.
 |-------|-------------|
 | `solar` | Solar eclipse |
 | `lunar` | Lunar eclipse |
+
+## New in v2.14.0 — Natal Dosha Detection Engine
+
+This update introduces a comprehensive engine to check and analyze individual natal and conjunction-based astrological flaws (Doshas), achieving complete parity with PyJHora/JHora.
+
+### 1. Kala Sarpa Dosha
+Evaluates whether all seven traditional planets are hemmed between the Rahu-Ketu axis, and determines the specific name/type of Kala Sarpa Dosha based on Rahu's house position:
+- **12 Types Support**: `Anant` (1st house Rahu), `Kulik` (2nd house), `Vasuki` (3rd), `Shankhapal` (4th), `Padma` (5th), `Mahapadma` (6th), `Takshak` (7th), `Karkotak` (8th), `Shankhachur` (9th), `Ghatak` (10th), `Vishdhar` (11th), `Sheshnag` (12th).
+- **Methods**:
+  - `checkKalaSarpaDosha(chart)` on `Jyotish` facade or `DoshaService`.
+
+#### Usage Example:
+```dart
+final result = jyotish.checkKalaSarpaDosha(chart);
+if (result.hasDosha) {
+  print('Detected Kala Sarpa type: ${result.type}');
+  print('Description: ${result.description}');
+}
+```
+
+### 2. Manglik Dosha with 17 BV Raman Exceptions
+Evaluates Mars placement in standard houses (1, 2, 4, 7, 8, 12) from Lagna, Moon, and Venus. It integrates all 17 BV Raman exceptions (Pariharas) for accurate cancellation matching:
+- **Exceptions Evaluated**: Mars in Leo/Aquarius, Mars in 2nd and in Gemini/Virgo, Mars in 4th and in Aries/Scorpio, Mars in 7th and in Cancer/Capricorn, Mars in 8th and in Sagittarius/Pisces, Mars in 12th and in Taurus/Libra, Mars conjoined/aspected by Jupiter/Saturn, Retrograde Mars, Combust or Rasi Sandhi Mars, Mars as Lagna Lord, Mars in own/exalted/friendly sign, Mars in movable signs, Yoga Karaka Lagna (Cancer/Leo), Mars conjoined Jupiter/Moon, and Jupiter/Venus in Lagna.
+- **Methods**:
+  - `checkManglikDoshaWithRamanExceptions(chart)` on `Jyotish` facade or `DoshaService`.
+
+#### Usage Example:
+```dart
+final result = jyotish.checkManglikDoshaWithRamanExceptions(chart);
+print('Is Manglik: ${result.isManglik}');
+print('Severity: ${result.severity}');
+print('Remedies: ${result.remedies}');
+```
+
+### 3. Pitru Dosha (Ancestral Afflictions)
+Scans ancestral karmic afflictions using 5 classical JHora rules:
+1. Sun, Moon, or Rahu in 9th house (Ancestral Lineage).
+2. Ketu in 4th house (Maternal Karma).
+3. Sun, Moon, Rahu, or Ketu conjoined/aspected by Mars/Saturn.
+4. 9th Lord conjoined/aspected by Mars/Saturn.
+5. 9th house containing Mars/Saturn.
+- **Methods**:
+  - `checkPitruDosha(chart)` on `Jyotish` facade or `DoshaService`.
+
+#### Usage Example:
+```dart
+final result = jyotish.checkPitruDosha(chart);
+if (result.hasDosha) {
+  print('Factors matched: ${result.factorsMatched}');
+  print('Remedies: ${result.remedies}');
+}
+```
+
+### 4. Guru Chandala Dosha
+Conjunction of Jupiter with Rahu, Ketu, or True Rahu. It includes an astronomical planetary strength comparison: if Jupiter's longitude position/dignity is stronger than the node, the dosha is mitigated.
+- **Methods**:
+  - `checkGuruChandalaDosha(chart)` on `Jyotish` facade or `DoshaService`.
+
+#### Usage Example:
+```dart
+final result = jyotish.checkGuruChandalaDosha(chart);
+if (result.hasDosha) {
+  print('Guru Chandala caused by: ${result.conjoiningNode}');
+  print('Is Mitigated by strong Jupiter? ${result.jupiterIsStronger}');
+}
+```
+
+### 5. Ganda Moola Dosha
+Evaluates if the natal Moon falls within the sandhi junction Nakshatras between Ketu and Mercury:
+- **Nakshatras Checked**: Ashwini, Ashlesha, Magha, Jyeshtha, Mula, and Revati.
+- **Methods**:
+  - `checkGandaMoolaDosha(chart)` on `Jyotish` facade or `DoshaService`.
+
+#### Usage Example:
+```dart
+final result = jyotish.checkGandaMoolaDosha(chart);
+if (result.hasDosha) {
+  print('Ganda Moola Nakshatra: ${result.nakshatra}');
+}
+```
+
+### 6. Kalathra Dosha (Spouse/Partner Afflictions)
+Identifies spouse/partner afflictions by checking for natural malefics (Mars, Saturn, Sun, Rahu, Ketu) placed in relationship houses (1, 2, 4, 7, 8, 12) from both Lagna and Moon.
+- **Methods**:
+  - `checkKalathraDosha(chart)` on `Jyotish` facade or `DoshaService`.
+
+#### Usage Example:
+```dart
+final result = jyotish.checkKalathraDosha(chart);
+if (result.hasDosha) {
+  print('Causing malefics: ${result.causingMalefics}');
+}
+```
+
+### 7. Ghata & Shrapit Conjunction Doshas
+- **Ghata Dosha**: Mars and Saturn conjoined in the same house.
+- **Shrapit Dosha**: Saturn and Rahu conjoined in the same house.
+- **Methods**:
+  - `checkGhataDosha(chart)` and `checkShrapitDosha(chart)` on `Jyotish` facade or `DoshaService`.
+
+#### Usage Example:
+```dart
+final ghata = jyotish.checkGhataDosha(chart);
+final shrapit = jyotish.checkShrapitDosha(chart);
+print('Has Ghata: ${ghata.hasDosha}');
+print('Has Shrapit: ${shrapit.hasDosha}');
+```
+
+---
+
+## New in v2.13.0 — Natal & Raja Yoga Detection Engine
+
+This major update introduces a comprehensive, high-precision yoga detection engine capable of evaluating 287 different standard and Raja yogas in natal charts:
+
+### 1. Sun/Moon Flanking Configurations
+Detects planetary placements relative to the Sun and Moon:
+- **Vesi, Vosi, Sunapha, Anapha, Duradhara, and Kemadruma Yogas**.
+
+### 2. Pancha Mahapurusha Yogas
+Checks for the five major planetary configurations based on exalted or own-sign placement in quadrants (Kendras) from Lagna:
+- **Ruchaka** (Mars), **Bhadra** (Mercury), **Hamsa** (Jupiter), **Malavya** (Venus), **Sasa** (Saturn).
+
+### 3. Nabhasa Yogas Suite
+- **Aasraya Yogas** (3 types), **Dala Yogas** (2 types), **Aakriti Yogas** (8 types), **Sankhya Yogas** (7 types).
+
+### 4. Core Raja Yogas & Cancellations
+Evaluates premier status configurations:
+- **Dharma-Karmadhipati Yoga**: Conjunction/aspect/exchange of 9th and 10th lords.
+- **Vipareetha Raja Yoga**: 6th, 8th, or 12th lords placed in other dusthanas without connection to benefics.
+- **Neecha-Bhanga Raja Yoga**: 5 automatic debilitation cancellation rules (such as dispositor/exaltation lord in Kendra from Lagna/Moon).
+
+### 5. Vedic Time Round-Trip Conversion
+Added `toDateTime()` in `VedicTime` to convert traditional Vedic time (Ghati, Vighati, Lipta) back to standard Gregorian `DateTime`.
+
+---
 
 ## New in v2.12.0 — Tajika Varshapal (Solar Return) Engine Suite
 

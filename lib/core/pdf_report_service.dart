@@ -376,9 +376,7 @@ class PDFReportService {
             final lord = vLords[(startIdx + i) % 9];
             final ratio = vYears[lord]! / 120.0;
             final chunkMs = (durationMs * ratio).round();
-            var currentEnd = currentStart.add(
-              Duration(milliseconds: chunkMs),
-            );
+            var currentEnd = currentStart.add(Duration(milliseconds: chunkMs));
 
             if (i == 8) {
               currentEnd = pdEnd;

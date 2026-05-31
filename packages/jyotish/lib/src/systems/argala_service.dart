@@ -98,13 +98,16 @@ class ArgalaService {
       final offset = ((planetHouse - targetHouse + 12) % 12) + 1;
       final type = (offset == 5) ? ArgalaType.secondary : ArgalaType.primary;
 
-      argalas.add(ArgalaInfo(
-        sourceHouse: planetHouse,
-        targetHouse: targetHouse,
-        type: type,
-        causingPlanets: [planet],
-        isObstructed: false, // Simplified - full check would verify obstruction
-      ));
+      argalas.add(
+        ArgalaInfo(
+          sourceHouse: planetHouse,
+          targetHouse: targetHouse,
+          type: type,
+          causingPlanets: [planet],
+          isObstructed:
+              false, // Simplified - full check would verify obstruction
+        ),
+      );
     }
 
     return argalas;
@@ -138,18 +141,21 @@ class ArgalaService {
     // Calculate strength (reduced if obstructed)
     double strength = 1.0;
     if (planetsInObstruct.isNotEmpty) {
-      strength = planetsInSource.length /
+      strength =
+          planetsInSource.length /
           (planetsInSource.length + planetsInObstruct.length);
     }
 
-    argalas.add(ArgalaInfo(
-      sourceHouse: sourceHouse,
-      targetHouse: targetHouse,
-      type: isObstructed ? ArgalaType.virodha : type,
-      causingPlanets: planetsInSource.map((p) => p.planet).toList(),
-      isObstructed: isObstructed,
-      obstructingPlanets: planetsInObstruct.map((p) => p.planet).toList(),
-      strength: strength,
-    ));
+    argalas.add(
+      ArgalaInfo(
+        sourceHouse: sourceHouse,
+        targetHouse: targetHouse,
+        type: isObstructed ? ArgalaType.virodha : type,
+        causingPlanets: planetsInSource.map((p) => p.planet).toList(),
+        isObstructed: isObstructed,
+        obstructingPlanets: planetsInObstruct.map((p) => p.planet).toList(),
+        strength: strength,
+      ),
+    );
   }
 }

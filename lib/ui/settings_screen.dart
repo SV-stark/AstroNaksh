@@ -781,7 +781,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           style: TextStyle(color: Colors.grey),
         ),
         const SizedBox(height: 24),
-        
+
         const Text('Hora (D-2) Calculation Method'),
         const SizedBox(height: 8),
         Card(

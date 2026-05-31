@@ -74,11 +74,11 @@ class HouseSystem {
 
   /// Converts this HouseSystem to a JSON map.
   Map<String, dynamic> toJson() => {
-        'system': system,
-        'ascendant': ascendant,
-        'midheaven': midheaven,
-        'cusps': cusps,
-      };
+    'system': system,
+    'ascendant': ascendant,
+    'midheaven': midheaven,
+    'cusps': cusps,
+  };
 
   /// Gets a list of all 12 houses as [House] models.
   List<House> get individualHouses {
@@ -182,11 +182,7 @@ class KetuPosition {
     final minutes = minutesDecimal.floor();
     final seconds = (minutesDecimal - minutes) * 60;
 
-    return {
-      'degrees': degrees,
-      'minutes': minutes,
-      'seconds': seconds,
-    };
+    return {'degrees': degrees, 'minutes': minutes, 'seconds': seconds};
   }
 
   /// DateTime of the calculation
@@ -194,16 +190,16 @@ class KetuPosition {
 
   /// Converts this KetuPosition to a JSON map.
   Map<String, dynamic> toJson() => {
-        'longitude': longitude,
-        'latitude': latitude,
-        'distance': distance,
-        'longitudeSpeed': longitudeSpeed,
-        'isRetrograde': isRetrograde,
-        'zodiacSign': zodiacSign,
-        'positionInSign': positionInSign,
-        'nakshatra': nakshatra,
-        'nakshatraPada': nakshatraPada,
-      };
+    'longitude': longitude,
+    'latitude': latitude,
+    'distance': distance,
+    'longitudeSpeed': longitudeSpeed,
+    'isRetrograde': isRetrograde,
+    'zodiacSign': zodiacSign,
+    'positionInSign': positionInSign,
+    'nakshatra': nakshatra,
+    'nakshatraPada': nakshatraPada,
+  };
 
   static const List<String> _zodiacSigns = [
     'Aries',
@@ -364,15 +360,15 @@ class VedicPlanetInfo {
 
   /// Converts this VedicPlanetInfo to a JSON map.
   Map<String, dynamic> toJson() => {
-        'planet': position.planet.displayName,
-        'house': house,
-        'dignity': dignity.english,
-        'dignitySanskrit': dignity.sanskrit,
-        'isCombust': isCombust,
-        'exaltationDegree': exaltationDegree,
-        'debilitationDegree': debilitationDegree,
-        'position': position.toJson(),
-      };
+    'planet': position.planet.displayName,
+    'house': house,
+    'dignity': dignity.english,
+    'dignitySanskrit': dignity.sanskrit,
+    'isCombust': isCombust,
+    'exaltationDegree': exaltationDegree,
+    'debilitationDegree': debilitationDegree,
+    'position': position.toJson(),
+  };
 }
 
 /// Complete Vedic astrology chart data.
@@ -463,19 +459,19 @@ class VedicChart {
 
   /// Converts this VedicChart to a JSON map.
   Map<String, dynamic> toJson() => {
-        'dateTime': dateTime.toIso8601String(),
-        'location': location,
-        'latitude': latitude,
-        'longitude': longitudeCoord,
-        'ascendant': ascendant,
-        'ascendantSign': ascendantSign,
-        'houses': houses.toJson(),
-        'planets': planets.map(
-          (planet, info) => MapEntry(planet.displayName, info.toJson()),
-        ),
-        'rahu': rahu.toJson(),
-        'ketu': ketu.toJson(),
-      };
+    'dateTime': dateTime.toIso8601String(),
+    'location': location,
+    'latitude': latitude,
+    'longitude': longitudeCoord,
+    'ascendant': ascendant,
+    'ascendantSign': ascendantSign,
+    'houses': houses.toJson(),
+    'planets': planets.map(
+      (planet, info) => MapEntry(planet.displayName, info.toJson()),
+    ),
+    'rahu': rahu.toJson(),
+    'ketu': ketu.toJson(),
+  };
 
   /// Gets the zodiac sign index (0-11) for any planet in the chart.
   int? getPlanetSignIndex(Planet planet) {
@@ -497,8 +493,10 @@ class VedicChart {
     final originalSignIndex = getPlanetSignIndex(planet);
     if (originalSignIndex == null) return false;
 
-    final d9Chart = DivisionalChartService()
-        .calculateDivisionalChart(this, DivisionalChartType.d9);
+    final d9Chart = DivisionalChartService().calculateDivisionalChart(
+      this,
+      DivisionalChartType.d9,
+    );
     final d9SignIndex = d9Chart.getPlanetSignIndex(planet);
     return originalSignIndex == d9SignIndex;
   }
@@ -552,8 +550,11 @@ class VedicChart {
 
   /// Returns the simplified compound relationship (Panchadha Maitri) between two planets.
   CompoundRelationship getCompoundRelationship(Planet planetA, Planet planetB) {
-    final rel =
-        PlanetaryRelationshipService().getRelationship(planetA, planetB, this);
+    final rel = PlanetaryRelationshipService().getRelationship(
+      planetA,
+      planetB,
+      this,
+    );
     return switch (rel.compound) {
       RelationshipType.greatFriend => CompoundRelationship.greatFriend,
       RelationshipType.friend => CompoundRelationship.friend,
@@ -565,12 +566,7 @@ class VedicChart {
 }
 
 /// The Vargottama status of a planet.
-enum VargottamaStatus {
-  none,
-  vargottama,
-  neechaVargottama,
-  ucchaVargottama,
-}
+enum VargottamaStatus { none, vargottama, neechaVargottama, ucchaVargottama }
 
 /// Represents an individual house in a Vedic chart.
 class House {

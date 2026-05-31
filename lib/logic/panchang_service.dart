@@ -436,4 +436,62 @@ class PanchangService {
       );
     }).toList();
   }
+
+  /// Get Special Muhurta Yogas for the day (Guru Pushya, Sarvartha Siddhi, etc.)
+  /// Uses MuhurtaService directly to supply tithiPeriods and nakshatraPeriods
+  /// for accurate intersection calculation.
+  Future<List<SpecialYoga>> getSpecialYogas(
+    DateTime date,
+    Location location,
+  ) async {
+    await _jyotish.initialize();
+    _panchangaService ??= PanchangaService(EphemerisManager.service);
+
+    final geoLoc = GeographicLocation(
+      latitude: location.latitude,
+      longitude: location.longitude,
+    );
+
+    final (sr, ss) = await _jyotish.getSunriseSunset(
+      date: date,
+      location: geoLoc,
+    );
+
+    if (sr == null || ss == null) return [];
+
+    // Calculate Panchanga for tithi and nakshatra info
+    final panchanga = await _jyotish.calculatePanchanga(
+      dateTime: date,
+      location: geoLoc,
+    );
+
+    // Get precise tithi end time
+    final tithiEnd = await _panchangaService!.getTithiEndTime(
+      dateTime: date,
+      location: geoLoc,
+    );
+
+    // Build tithi period record
+    final tithiPeriods = [(panchanga.tithi.number, date, tithiEnd)];
+
+    // Build nakshatra period record; estimate end as next sunrise (24 h)
+    final nakshatraEnd = sr.add(const Duration(hours: 24));
+    final nakshatraPeriods = [
+      (panchanga.nakshatra.index + 1, date, nakshatraEnd),
+    ];
+
+    // Call MuhurtaService directly — jyotish_core wrapper doesn't expose
+    // tithiPeriods/nakshatraPeriods, so we bypass it here.
+    final muhurtaService = MuhurtaService();
+    final muhurta = muhurtaService.calculateMuhurta(
+      date: date,
+      sunrise: sr,
+      sunset: ss,
+      location: geoLoc,
+      tithiPeriods: tithiPeriods,
+      nakshatraPeriods: nakshatraPeriods,
+    );
+
+    return muhurta.specialYogas;
+  }
 }

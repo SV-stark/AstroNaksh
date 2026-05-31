@@ -40,24 +40,10 @@ const _aspectYogaMap = <LifeAspect, List<String>>{
     'Parvata Yoga',
     'Amala Yoga',
   ],
-  LifeAspect.romance: [
-    'Gajakesari Yoga',
-    'Chandra Mangala Yoga',
-  ],
-  LifeAspect.health: [
-    'Amala Yoga',
-    'Pancha Mahapurusha',
-  ],
-  LifeAspect.children: [
-    'Kahala Yoga',
-    'Gajakesari Yoga',
-    'Saraswati Yoga',
-  ],
-  LifeAspect.education: [
-    'Saraswati Yoga',
-    'Budhaditya Yoga',
-    'Chamara Yoga',
-  ],
+  LifeAspect.romance: ['Gajakesari Yoga', 'Chandra Mangala Yoga'],
+  LifeAspect.health: ['Amala Yoga', 'Pancha Mahapurusha'],
+  LifeAspect.children: ['Kahala Yoga', 'Gajakesari Yoga', 'Saraswati Yoga'],
+  LifeAspect.education: ['Saraswati Yoga', 'Budhaditya Yoga', 'Chamara Yoga'],
   LifeAspect.spirituality: [
     'Vipreet Raj Yoga',
     'Adhi Yoga',
@@ -154,7 +140,8 @@ class LifePredictionService {
 
     final shadbala = results[0] as Map<Planet, double>;
     final bhavaBala = results[1] as Map<int, BhavaStrength>;
-    final planetFruits = results[2] as Map<Planet, ({double ishtaphala, double kashtaphala})>;
+    final planetFruits =
+        results[2] as Map<Planet, ({double ishtaphala, double kashtaphala})>;
     final dashaDetails = results[3] as Map<String, dynamic>;
     final currentTransit = results[4] as TransitChart?;
 
@@ -179,7 +166,8 @@ class LifePredictionService {
     // Dasha details parsing
     final currentMahaDashaLord = dashaDetails['mahadasha'] as String? ?? '';
     final currentAntarDashaLord = dashaDetails['antardasha'] as String? ?? '';
-    final currentPratyantarDashaLord = dashaDetails['pratyantardasha'] as String? ?? '';
+    final currentPratyantarDashaLord =
+        dashaDetails['pratyantardasha'] as String? ?? '';
     final mahaStart = dashaDetails['mahaStart'] as DateTime?;
     final mahaEnd = dashaDetails['mahaEnd'] as DateTime?;
     final antarStart = dashaDetails['antarStart'] as DateTime?;
@@ -197,10 +185,15 @@ class LifePredictionService {
     final atmakaraka = jaimini.getAtmakaraka(chartData);
 
     // 11. Divisional Charts (NEW)
-    final divisionalCharts = DivisionalCharts.calculateAllCharts(chartData.baseChart);
+    final divisionalCharts = DivisionalCharts.calculateAllCharts(
+      chartData.baseChart,
+    );
 
     // 12. Compound planetary relationships (NEW)
-    final compoundRelationships = PlanetaryMaitriService.calculateCompoundRelationships(chartData.baseChart);
+    final compoundRelationships =
+        PlanetaryMaitriService.calculateCompoundRelationships(
+          chartData.baseChart,
+        );
 
     // 13. Moon Nakshatra (NEW)
     final moonPlanetInfo = chartData.baseChart.planets[Planet.moon];
@@ -239,9 +232,7 @@ class LifePredictionService {
     // ── Generate per-aspect predictions ──────────────────────────────
     final predictions = <LifeAspectPrediction>[];
     for (final aspect in LifeAspect.values) {
-      predictions.add(
-        _generateAspectPrediction(chartData, aspect, ctx),
-      );
+      predictions.add(_generateAspectPrediction(chartData, aspect, ctx));
     }
 
     return LifePredictionsResult.fromAspects(predictions);
@@ -335,9 +326,9 @@ class LifePredictionService {
     }
     final baseScore = fruitCount > 0
         ? ((ishtaTotal - kashtaTotal + fruitCount * 60) /
-                (fruitCount * 120) *
-                100)
-            .clamp(0, 100)
+                  (fruitCount * 120) *
+                  100)
+              .clamp(0, 100)
         : 50.0;
 
     // ── Component B: House Strength — Bhava Bala + Ashtakavarga (20%) ─
@@ -349,8 +340,9 @@ class LifePredictionService {
       final avScore = (bindus / 56.0) * 100.0;
       houseScoreTotal += bhava * 0.5 + avScore * 0.5;
     }
-    final houseScore =
-        aspect.houses.isEmpty ? 50.0 : houseScoreTotal / aspect.houses.length;
+    final houseScore = aspect.houses.isEmpty
+        ? 50.0
+        : houseScoreTotal / aspect.houses.length;
 
     // ── Component C: Vimshopak Bala (15%) ────────────────────────────
     var vimshopakTotal = 0.0;
@@ -363,8 +355,9 @@ class LifePredictionService {
         vimshopakCount++;
       }
     }
-    final vimshopakScore =
-        vimshopakCount > 0 ? vimshopakTotal / vimshopakCount : 50.0;
+    final vimshopakScore = vimshopakCount > 0
+        ? vimshopakTotal / vimshopakCount
+        : 50.0;
 
     // ── Component D: Yoga / Dosha bonus/penalty (12%) ─────────────────
     final relevantYogas = _aspectYogaMap[aspect] ?? [];
@@ -394,8 +387,8 @@ class LifePredictionService {
     final dashaScore = (mahaIsRelevant && antarIsRelevant)
         ? 80.0
         : (mahaIsRelevant || antarIsRelevant)
-            ? 65.0
-            : 45.0;
+        ? 65.0
+        : 45.0;
 
     // ── Component F: Transit Overlay (NEW) (10%) ──────────────────────
     var transitScore = 50.0;
@@ -441,7 +434,7 @@ class LifePredictionService {
         final exaltInfo = AstroUtils.exaltations[planet];
         final debilInfo = AstroUtils.debilitations[planet];
         final ownSigns = AstroUtils.ownSigns[planet] ?? [];
-        
+
         if (exaltInfo != null && exaltInfo.$1 == signIdx) {
           dignitySum += 90;
         } else if (debilInfo != null && debilInfo.$1 == signIdx) {
@@ -480,8 +473,7 @@ class LifePredictionService {
     for (final planet in relevantPlanets) {
       if (_naturalMalefics.contains(planet)) {
         final planetInfo = chartData.baseChart.planets[planet];
-        if (planetInfo != null &&
-            _upachayaHouses.contains(planetInfo.house)) {
+        if (planetInfo != null && _upachayaHouses.contains(planetInfo.house)) {
           upachayaBonus += 3.0;
         }
       }
@@ -511,12 +503,15 @@ class LifePredictionService {
 
     // ── Nakshatra Lord Condition Modifier ─────────────────────────────
     var nakshatraModifier = 0.0;
-    if (aspect == LifeAspect.family || aspect == LifeAspect.romance || aspect == LifeAspect.health) {
+    if (aspect == LifeAspect.family ||
+        aspect == LifeAspect.romance ||
+        aspect == LifeAspect.health) {
       final moonLord = AstroUtils.vimshottariOrder[ctx.moonNakshatraIndex % 9];
       final vb = ctx.vimshopak[moonLord];
       final strength = vb != null ? (vb.totalScore / 20.0) * 100.0 : 50.0;
       if (strength < 40) {
-        nakshatraModifier -= 3.0; // Afflicted moon nakshatra lord hurts emotional stability
+        nakshatraModifier -=
+            3.0; // Afflicted moon nakshatra lord hurts emotional stability
       }
     }
 
@@ -526,7 +521,11 @@ class LifePredictionService {
       final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
       final planetsList = chartData.baseChart.planets.keys.toList();
       final kpSubLords = <Planet, KPSubLord>{};
-      for (var i = 0; i < planetsList.length && i < chartData.kpData.subLords.length; i++) {
+      for (
+        var i = 0;
+        i < planetsList.length && i < chartData.kpData.subLords.length;
+        i++
+      ) {
         kpSubLords[planetsList[i]] = chartData.kpData.subLords[i];
       }
 
@@ -549,7 +548,8 @@ class LifePredictionService {
           if (starLordPlanet != null) {
             final starInfo = chartData.baseChart.planets[starLordPlanet];
             if (starInfo != null && aspect.houses.contains(starInfo.house)) {
-              kpModifier += 3.0; // Nakshatra Lord placed in a key house for the aspect!
+              kpModifier +=
+                  3.0; // Nakshatra Lord placed in a key house for the aspect!
             }
           }
         }
@@ -557,7 +557,8 @@ class LifePredictionService {
     }
 
     // ── Final weighted score ──────────────────────────────────────────
-    final rawScore = baseScore * 0.25 +
+    final rawScore =
+        baseScore * 0.25 +
         houseScore * 0.20 +
         vimshopakScore * 0.15 +
         yogaComponent * 0.12 +
@@ -627,15 +628,18 @@ class LifePredictionService {
     }
 
     // C. Check Moolatrikona
-    if (status != 'Exalted' && status != 'Deep Exaltation (Param Uchha)' &&
-        status != 'Vargottama' && status != 'Neecha-Vargottama' &&
+    if (status != 'Exalted' &&
+        status != 'Deep Exaltation (Param Uchha)' &&
+        status != 'Vargottama' &&
+        status != 'Neecha-Vargottama' &&
         planetInfo.dignity == PlanetaryDignity.moolaTrikona) {
       status = 'Moolatrikona';
     }
 
     // Check Neecha Bhanga Cancellation
     var hasNeecha = false;
-    if (status == 'Debilitated' || status == 'Deep Debilitation (Param Neecha)') {
+    if (status == 'Debilitated' ||
+        status == 'Deep Debilitation (Param Neecha)') {
       final neechaBhangaResult = ctx.yogaDosha.yogas.firstWhere(
         (y) => y.name == 'Neecha Bhanga Raja Yoga',
         orElse: () => BhangaResult.inactive('Neecha Bhanga Raja Yoga'),
@@ -656,7 +660,10 @@ class LifePredictionService {
     // E. Combustion Refined (Planet-specific limits)
     final sunInfo = chartData.baseChart.planets[Planet.sun];
     var isCombustRefined = planetInfo.isCombust;
-    if (sunInfo != null && planet != Planet.sun && planet != Planet.meanNode && planet != Planet.trueNode) {
+    if (sunInfo != null &&
+        planet != Planet.sun &&
+        planet != Planet.meanNode &&
+        planet != Planet.trueNode) {
       final diff = (longitude - sunInfo.longitude).abs();
       final distance = diff > 180.0 ? 360.0 - diff : diff;
       final limit = switch (planet) {
@@ -711,10 +718,12 @@ class LifePredictionService {
     final functionalStatus = _getFunctionalStatus(ascSign, planet);
 
     // Upachaya rule: malefics in 3/6/10/11 are treated as benefic
-    final isUpachaya = _naturalMalefics.contains(planet) &&
-        _upachayaHouses.contains(house);
+    final isUpachaya =
+        _naturalMalefics.contains(planet) && _upachayaHouses.contains(house);
 
-    var isBenefic = isUpachaya || hasNeecha ||
+    var isBenefic =
+        isUpachaya ||
+        hasNeecha ||
         _isBeneficForAspect(
           chartData,
           planet,
@@ -815,16 +824,23 @@ class LifePredictionService {
     buffer.write('\n\n### Nakshatra Foundation\n');
     final moonLord = AstroUtils.vimshottariOrder[ctx.moonNakshatraIndex % 9];
     final moonLordVb = ctx.vimshopak[moonLord];
-    final moonLordStrength = moonLordVb != null ? (moonLordVb.totalScore / 20.0) * 100.0 : 50.0;
-    final moonLordStatus = chartData.baseChart.planets[moonLord]?.dignity.english ?? 'Neutral';
+    final moonLordStrength = moonLordVb != null
+        ? (moonLordVb.totalScore / 20.0) * 100.0
+        : 50.0;
+    final moonLordStatus =
+        chartData.baseChart.planets[moonLord]?.dignity.english ?? 'Neutral';
     buffer.write(
       'Your emotional foundation is governed by the Moon placed in **${ctx.moonNakshatra}** Nakshatra (Pada ${ctx.moonNakshatraPada}). '
-      'The Nakshatra lord is **${moonLord.displayName}**, which is currently placed in a **$moonLordStatus** state with a strength index of **${moonLordStrength.toStringAsFixed(0)}%**. '
+      'The Nakshatra lord is **${moonLord.displayName}**, which is currently placed in a **$moonLordStatus** state with a strength index of **${moonLordStrength.toStringAsFixed(0)}%**. ',
     );
     if (moonLordStrength >= 65) {
-      buffer.write('This strong Nakshatra lord placement gives your emotional core resilience, allowing you to navigate fluctuations with ease. ');
+      buffer.write(
+        'This strong Nakshatra lord placement gives your emotional core resilience, allowing you to navigate fluctuations with ease. ',
+      );
     } else {
-      buffer.write('This delicate Nakshatra lord placement suggests that conscious emotional centering and mindfulness are highly beneficial. ');
+      buffer.write(
+        'This delicate Nakshatra lord placement suggests that conscious emotional centering and mindfulness are highly beneficial. ',
+      );
     }
     buffer.write('${_getNakshatraTraits(ctx.moonNakshatra, aspect)}\n\n');
 
@@ -847,15 +863,17 @@ class LifePredictionService {
       } else if (bhavaStrength >= 40) {
         buffer.write('moderately stable foundation. ');
       } else {
-        buffer.write('delicate foundation that requires conscious strengthening. ');
+        buffer.write(
+          'delicate foundation that requires conscious strengthening. ',
+        );
       }
 
       // Ashtakavarga bindus
       final avLabel = bindus >= 30
           ? 'strong ($bindus/56 bindus)'
           : bindus >= 25
-              ? 'average ($bindus/56 bindus)'
-              : 'weak ($bindus/56 bindus — remedial attention advised)';
+          ? 'average ($bindus/56 bindus)'
+          : 'weak ($bindus/56 bindus — remedial attention advised)';
       buffer.write('Ashtakavarga score is **$avLabel**. ');
 
       if (lordInfo != null) {
@@ -944,24 +962,30 @@ class LifePredictionService {
         final phase = transit.saturnTransit.sadeSatiPhase.name;
         buffer.write(
           '**Sade Sati Alert:** You are running the **$phase phase** of Sade Sati (Saturn\'s transit over natal Moon). '
-          'This transit demands rigorous discipline, patience, and realistic expectations. '
+          'This transit demands rigorous discipline, patience, and realistic expectations. ',
         );
         if (transit.saturnTransit.effects.isNotEmpty) {
           buffer.write('${transit.saturnTransit.effects.first} ');
         }
       } else {
-        buffer.write('Saturn is currently in House **${transit.saturnTransit.houseFromMoon}** from your natal Moon, ensuring a relatively stable pressure environment. ');
+        buffer.write(
+          'Saturn is currently in House **${transit.saturnTransit.houseFromMoon}** from your natal Moon, ensuring a relatively stable pressure environment. ',
+        );
       }
-      
+
       // Jupiter Transit
       final jupHouse = transit.jupiterTransit.houseFromMoon;
       buffer.write(
-        '**Jupiter Transit:** Jupiter is transiting your **${_getOrdinal(jupHouse)} house** from the Moon. '
+        '**Jupiter Transit:** Jupiter is transiting your **${_getOrdinal(jupHouse)} house** from the Moon. ',
       );
       if (transit.jupiterTransit.isBenefic) {
-        buffer.write('This is highly favorable, casting a protective, expansive glance that brings opportunities and grace to your path. ');
+        buffer.write(
+          'This is highly favorable, casting a protective, expansive glance that brings opportunities and grace to your path. ',
+        );
       } else {
-        buffer.write('This placement emphasizes internal growth, wisdom accumulation, and steady consolidation rather than outward expansion. ');
+        buffer.write(
+          'This placement emphasizes internal growth, wisdom accumulation, and steady consolidation rather than outward expansion. ',
+        );
       }
 
       // Rahu/Ketu transit
@@ -969,10 +993,10 @@ class LifePredictionService {
       if (affectedNatal.isNotEmpty) {
         buffer.write(
           '**Node Interventions:** Rahu/Ketu transits are actively touching your natal **${affectedNatal.join(', ')}**. '
-          'This introduces sudden insights, shifts, or intense desires that require conscious moderation. '
+          'This introduces sudden insights, shifts, or intense desires that require conscious moderation. ',
         );
       }
-      
+
       // Favorable transits for aspect planets
       final transitFav = <String>[];
       final transitUnfav = <String>[];
@@ -988,10 +1012,14 @@ class LifePredictionService {
         }
       }
       if (transitFav.isNotEmpty) {
-        buffer.write('\nCurrently, transit positions are highly supportive for **${transitFav.join(', ')}**, magnifying your capability to take progressive action. ');
+        buffer.write(
+          '\nCurrently, transit positions are highly supportive for **${transitFav.join(', ')}**, magnifying your capability to take progressive action. ',
+        );
       }
       if (transitUnfav.isNotEmpty) {
-        buffer.write('However, transits present minor friction for **${transitUnfav.join(', ')}**, indicating that patience is advised before making major decisions.');
+        buffer.write(
+          'However, transits present minor friction for **${transitUnfav.join(', ')}**, indicating that patience is advised before making major decisions.',
+        );
       }
       buffer.write('\n\n');
     }
@@ -1022,18 +1050,10 @@ class LifePredictionService {
     final relevantDoshaNames = _aspectDoshaMap[aspect] ?? [];
 
     final activeYogas = ctx.yogaDosha.yogas
-        .where(
-          (y) =>
-              y.isActive &&
-              relevantYogaNames.any(y.name.contains),
-        )
+        .where((y) => y.isActive && relevantYogaNames.any(y.name.contains))
         .toList();
     final activeDoshas = ctx.yogaDosha.doshas
-        .where(
-          (d) =>
-              d.isActive &&
-              relevantDoshaNames.any(d.name.contains),
-        )
+        .where((d) => d.isActive && relevantDoshaNames.any(d.name.contains))
         .toList();
 
     if (activeYogas.isNotEmpty || activeDoshas.isNotEmpty) {
@@ -1045,8 +1065,8 @@ class LifePredictionService {
           final strengthLabel = yoga.strength >= 80
               ? 'Strong'
               : yoga.strength >= 50
-                  ? 'Moderate'
-                  : 'Mild';
+              ? 'Moderate'
+              : 'Mild';
           buffer.write(
             '- **${yoga.name}** ($strengthLabel, ${yoga.strength.toStringAsFixed(0)}% strength): ${yoga.description} ',
           );
@@ -1089,21 +1109,21 @@ class LifePredictionService {
     if (vargaChart != null) {
       buffer.write('### Divisional Chart Verification ($vargaCode)\n');
       buffer.write(
-        'For highly professional depth, we cross-verify the Rashi placements against the **$vargaCode (${vargaChart.name}) divisional chart**, which specifically governs **${vargaChart.description}**. '
+        'For highly professional depth, we cross-verify the Rashi placements against the **$vargaCode (${vargaChart.name}) divisional chart**, which specifically governs **${vargaChart.description}**. ',
       );
-      
+
       for (final planet in aspect.primaryPlanets) {
         final rashiPlanetInfo = chartData.baseChart.planets[planet];
         var rashiDignity = rashiPlanetInfo?.dignity.english ?? 'Neutral';
         if (rashiDignity == 'Moola Trikona') rashiDignity = 'Moolatrikona';
         final signIdx = vargaChart.getPlanetSign(planet.displayName);
         final signName = AstroUtils.getSignName(signIdx);
-        
+
         // Exaltation, debilitation, own sign
         final exaltInfo = AstroUtils.exaltations[planet];
         final debilInfo = AstroUtils.debilitations[planet];
         final ownSigns = AstroUtils.ownSigns[planet] ?? [];
-        
+
         var vargaDignity = 'Neutral';
         if (exaltInfo != null && exaltInfo.$1 == signIdx) {
           vargaDignity = 'Exalted';
@@ -1112,14 +1132,22 @@ class LifePredictionService {
         } else if (ownSigns.contains(signIdx)) {
           vargaDignity = 'Own Sign';
         }
-        
-        buffer.write('\n- **${planet.displayName}** is placed in **$signName** in the $vargaCode chart ($vargaDignity). ');
+
+        buffer.write(
+          '\n- **${planet.displayName}** is placed in **$signName** in the $vargaCode chart ($vargaDignity). ',
+        );
         if (rashiDignity == 'Debilitated' && vargaDignity == 'Exalted') {
-          buffer.write('**Neecha Bhanga / Neecha-Vargottama:** While structurally weak in Rashi, its exalted state in the divisional chart represents extraordinary *hidden strength* that emerges with time and persistence. ');
+          buffer.write(
+            '**Neecha Bhanga / Neecha-Vargottama:** While structurally weak in Rashi, its exalted state in the divisional chart represents extraordinary *hidden strength* that emerges with time and persistence. ',
+          );
         } else if (rashiDignity == 'Exalted' && vargaDignity == 'Debilitated') {
-          buffer.write('**Hidden Weakness:** While externally promising, its debilitation in the divisional chart suggests internal friction or challenges that require deeper introspection. ');
+          buffer.write(
+            '**Hidden Weakness:** While externally promising, its debilitation in the divisional chart suggests internal friction or challenges that require deeper introspection. ',
+          );
         } else if (vargaDignity == 'Exalted' || vargaDignity == 'Own Sign') {
-          buffer.write('This highly dignified placement confirms that the potential of this planet is completely integrated and supported at a subconscious level. ');
+          buffer.write(
+            'This highly dignified placement confirms that the potential of this planet is completely integrated and supported at a subconscious level. ',
+          );
         }
       }
       buffer.write('\n\n');
@@ -1129,35 +1157,51 @@ class LifePredictionService {
     buffer.write('### Jaimini Professional-Grade Indicators\n');
     final jaiminiService = JaiminiAnalysisService();
     final jaiminiAnalysis = jaiminiService.getJaiminiAnalysis(chartData);
-    
+
     // Karakamsa
     final karakamsaSign = jaiminiAnalysis.karakamsa.karakamsaSign.name;
     buffer.write(
-      'By Jaimini principles, your **Atmakaraka (${jaiminiAnalysis.atmakaraka.displayName})** is placed in **$karakamsaSign** in the Navamsa chart, establishing **$karakamsaSign** as your **Karakamsha Lagna**. '
+      'By Jaimini principles, your **Atmakaraka (${jaiminiAnalysis.atmakaraka.displayName})** is placed in **$karakamsaSign** in the Navamsa chart, establishing **$karakamsaSign** as your **Karakamsha Lagna**. ',
     );
     if (aspect == LifeAspect.career) {
-      buffer.write('The Karakamsha sign indicates that your soul\'s true calling and professional growth are highly aligned with the qualities of $karakamsaSign, prompting you to seek purpose and leadership. ');
-      buffer.write('Your **Arudha Lagna (AL)** falls in **${jaiminiAnalysis.arudhaLagna.sign.name}** (House ${jaiminiAnalysis.arudhaLagna.houseFromLagna} from Lagna), representing your public standing, status, and how the external world perceives your accomplishments. ');
+      buffer.write(
+        'The Karakamsha sign indicates that your soul\'s true calling and professional growth are highly aligned with the qualities of $karakamsaSign, prompting you to seek purpose and leadership. ',
+      );
+      buffer.write(
+        'Your **Arudha Lagna (AL)** falls in **${jaiminiAnalysis.arudhaLagna.sign.name}** (House ${jaiminiAnalysis.arudhaLagna.houseFromLagna} from Lagna), representing your public standing, status, and how the external world perceives your accomplishments. ',
+      );
     } else if (aspect == LifeAspect.romance) {
-      buffer.write('Your **Upapada Lagna (UL)** (spouse indicator) falls in **${jaiminiAnalysis.upapada.sign.name}** (House ${jaiminiAnalysis.upapada.houseFromLagna} from Lagna). This reveals key information about your life partner\'s family background, values, and the general quality of your marital bond. ');
+      buffer.write(
+        'Your **Upapada Lagna (UL)** (spouse indicator) falls in **${jaiminiAnalysis.upapada.sign.name}** (House ${jaiminiAnalysis.upapada.houseFromLagna} from Lagna). This reveals key information about your life partner\'s family background, values, and the general quality of your marital bond. ',
+      );
     }
-    
+
     // Argala
     final houseArgalas = <String>[];
     for (final house in aspect.houses) {
       final list = jaiminiAnalysis.argalas[house] ?? [];
-      final active = list.where((a) => !a.isObstructed && a.type != ArgalaType.virodha).toList();
+      final active = list
+          .where((a) => !a.isObstructed && a.type != ArgalaType.virodha)
+          .toList();
       if (active.isNotEmpty) {
         for (final arg in active) {
-          final planetsStr = arg.causingPlanets.map((p) => p.displayName).join(', ');
-          houseArgalas.add('benefic intervention from House ${arg.sourceHouse} via $planetsStr on your ${house}th house');
+          final planetsStr = arg.causingPlanets
+              .map((p) => p.displayName)
+              .join(', ');
+          houseArgalas.add(
+            'benefic intervention from House ${arg.sourceHouse} via $planetsStr on your ${house}th house',
+          );
         }
       }
     }
     if (houseArgalas.isNotEmpty) {
-      buffer.write('Furthermore, we detect **Argala (planetary interventions)**: ${houseArgalas.join('; ')}. This acts as secondary support or catalyst, helping you overcome obstacles in this aspect of life.');
+      buffer.write(
+        'Furthermore, we detect **Argala (planetary interventions)**: ${houseArgalas.join('; ')}. This acts as secondary support or catalyst, helping you overcome obstacles in this aspect of life.',
+      );
     } else {
-      buffer.write('No major unobstructed Argalas are active, meaning your progress in this area is primarily driven by direct planetary placements and personal effort.');
+      buffer.write(
+        'No major unobstructed Argalas are active, meaning your progress in this area is primarily driven by direct planetary placements and personal effort.',
+      );
     }
     buffer.write('\n\n');
 
@@ -1168,23 +1212,25 @@ class LifePredictionService {
       final mahaActive = dashaLords.contains(ctx.currentMahaDashaLord);
       final antarActive = dashaLords.contains(ctx.currentAntarDashaLord);
       final pratyanActive = dashaLords.contains(ctx.currentPratyantarDashaLord);
-      
-      final mahaRange = ctx.mahaStart != null && ctx.mahaEnd != null 
-          ? '(${ctx.mahaStart!.year} to ${ctx.mahaEnd!.year})' 
+
+      final mahaRange = ctx.mahaStart != null && ctx.mahaEnd != null
+          ? '(${ctx.mahaStart!.year} to ${ctx.mahaEnd!.year})'
           : '';
-      final antarRange = ctx.antarStart != null && ctx.antarEnd != null 
-          ? '(${ctx.antarStart!.day}/${ctx.antarStart!.month}/${ctx.antarStart!.year} to ${ctx.antarEnd!.day}/${ctx.antarEnd!.month}/${ctx.antarEnd!.year})' 
+      final antarRange = ctx.antarStart != null && ctx.antarEnd != null
+          ? '(${ctx.antarStart!.day}/${ctx.antarStart!.month}/${ctx.antarStart!.year} to ${ctx.antarEnd!.day}/${ctx.antarEnd!.month}/${ctx.antarEnd!.year})'
           : '';
-      final pratyanRange = ctx.pratyanStart != null && ctx.pratyanEnd != null 
-          ? '(${ctx.pratyanStart!.day}/${ctx.pratyanStart!.month}/${ctx.pratyanStart!.year} to ${ctx.pratyanEnd!.day}/${ctx.pratyanEnd!.month}/${ctx.pratyanEnd!.year})' 
+      final pratyanRange = ctx.pratyanStart != null && ctx.pratyanEnd != null
+          ? '(${ctx.pratyanStart!.day}/${ctx.pratyanStart!.month}/${ctx.pratyanStart!.year} to ${ctx.pratyanEnd!.day}/${ctx.pratyanEnd!.month}/${ctx.pratyanEnd!.year})'
           : '';
 
       buffer.write(
         'You are currently running the **${ctx.currentMahaDashaLord} Mahadasha** $mahaRange '
-        '→ **${ctx.currentAntarDashaLord} Antardasha** $antarRange '
+        '→ **${ctx.currentAntarDashaLord} Antardasha** $antarRange ',
       );
       if (ctx.currentPratyantarDashaLord.isNotEmpty) {
-        buffer.write('→ **${ctx.currentPratyantarDashaLord} Pratyantardasha** $pratyanRange. ');
+        buffer.write(
+          '→ **${ctx.currentPratyantarDashaLord} Pratyantardasha** $pratyanRange. ',
+        );
       } else {
         buffer.write('. ');
       }
@@ -1192,22 +1238,22 @@ class LifePredictionService {
       if (mahaActive && antarActive && pratyanActive) {
         buffer.write(
           '**Triple Activation Alert:** Your Mahadasha, Antardasha, and Pratyantardasha lords are all key significators for **${aspect.name}**! '
-          'This is a highly rare and intensely activated window. Major events, breakthroughs, and rapid developments are highly likely now. Take decisive action.'
+          'This is a highly rare and intensely activated window. Major events, breakthroughs, and rapid developments are highly likely now. Take decisive action.',
         );
       } else if (mahaActive && antarActive) {
         buffer.write(
           'Both your Mahadasha and Antardasha lords are primary significators for **${aspect.name}** — this is a **highly activated period** for this life area. '
-          'Events, decisions, and results related to ${aspect.name.toLowerCase()} are prominent and highly supported now. '
+          'Events, decisions, and results related to ${aspect.name.toLowerCase()} are prominent and highly supported now. ',
         );
       } else if (mahaActive || antarActive) {
         buffer.write(
           'Your Dasha cycle provides **secondary activation** for **${aspect.name}**. '
-          'While progress will be steady, it is a great time to establish solid foundations and make deliberate moves.'
+          'While progress will be steady, it is a great time to establish solid foundations and make deliberate moves.',
         );
       } else {
         buffer.write(
           'The current Dasha period is not a primary activator for **${aspect.name}** at this time. '
-          'This indicates a relatively quiet, reflective period for these matters, allowing you to focus energy on other activated spheres of your life.'
+          'This indicates a relatively quiet, reflective period for these matters, allowing you to focus energy on other activated spheres of your life.',
         );
       }
       buffer.write('\n\n');
@@ -1320,11 +1366,11 @@ class LifePredictionService {
     if (ctx.currentTransit != null) {
       if (ctx.currentTransit!.saturnTransit.isSadeSati) {
         buffer.write(
-          '\n\n**Transit Guidance (Sade Sati):** During this active Sade Sati period, prioritize slow, methodical planning and health routines. Avoid rash decisions and impulsive financial commitments. '
+          '\n\n**Transit Guidance (Sade Sati):** During this active Sade Sati period, prioritize slow, methodical planning and health routines. Avoid rash decisions and impulsive financial commitments. ',
         );
       }
       buffer.write(
-        '\n\n**Transit Action Window:** Leverage currently supportive planetary transits by initiating important dialogues and long-term projects while Gochara forces are aligned. '
+        '\n\n**Transit Action Window:** Leverage currently supportive planetary transits by initiating important dialogues and long-term projects while Gochara forces are aligned. ',
       );
     }
 
@@ -1332,7 +1378,7 @@ class LifePredictionService {
     final moonLord = AstroUtils.vimshottariOrder[ctx.moonNakshatraIndex % 9];
     buffer.write(
       '\n\n**Nakshatra Lord Remedy (${moonLord.displayName}):** To strengthen your birth Moon Nakshatra foundation (${ctx.moonNakshatra}), '
-      'consider performing remedies for its ruler: ${_getRemedyForPlanet(moonLord)} '
+      'consider performing remedies for its ruler: ${_getRemedyForPlanet(moonLord)} ',
     );
 
     // 5. Weak/Malefic planetary remedies
@@ -1352,7 +1398,7 @@ class LifePredictionService {
       final topPlanet = influences.first;
       buffer.write(
         '\n\nYour **${topPlanet.planetName}** is exceptionally well-placed. '
-        'You can further amplify its positive vibration: '
+        'You can further amplify its positive vibration: ',
       );
       buffer.write(_getRemedyForPlanet(topPlanet.planet));
     }
@@ -1360,11 +1406,7 @@ class LifePredictionService {
     // 6. Active dosha remedies
     final relevantDoshaNames = _aspectDoshaMap[aspect] ?? [];
     final activeDoshas = ctx.yogaDosha.doshas
-        .where(
-          (d) =>
-              d.isActive &&
-              relevantDoshaNames.any(d.name.contains),
-        )
+        .where((d) => d.isActive && relevantDoshaNames.any(d.name.contains))
         .take(1)
         .toList();
     if (activeDoshas.isNotEmpty) {
@@ -1392,14 +1434,17 @@ class LifePredictionService {
     };
 
     final seen = <String>{};
-    return allAspects.where((a) {
-      if (!relevantPlanets.contains(a.aspectedPlanet)) return false;
-      if (a.orb > 8) return false;
-      final key = '${a.aspectingPlanet}-${a.aspectedPlanet}-${a.type}';
-      if (seen.contains(key)) return false;
-      seen.add(key);
-      return true;
-    }).take(4).toList();
+    return allAspects
+        .where((a) {
+          if (!relevantPlanets.contains(a.aspectedPlanet)) return false;
+          if (a.orb > 8) return false;
+          final key = '${a.aspectingPlanet}-${a.aspectedPlanet}-${a.type}';
+          if (seen.contains(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .take(4)
+        .toList();
   }
 
   List<pa.PlanetaryAspect> _getSignificantAspects(
@@ -1468,7 +1513,9 @@ class LifePredictionService {
 
     if (isHouseLord && houseNumber != null) {
       final significance = _getHouseSignificance(houseNumber);
-      buffer.write('As the Lord of the ${houseNumber}th house ($significance), ');
+      buffer.write(
+        'As the Lord of the ${houseNumber}th house ($significance), ',
+      );
     } else {
       buffer.write('As a primary planetary significator of $aspectArea, ');
     }
@@ -1483,7 +1530,8 @@ class LifePredictionService {
     buffer.write(
       'It is positioned at $degreeStr in $signName in the ${_getOrdinal(house)} house',
     );
-    if (status.contains('Debilitated (Cancelled') || status.contains('Deep Debilitation (Cancelled')) {
+    if (status.contains('Debilitated (Cancelled') ||
+        status.contains('Deep Debilitation (Cancelled')) {
       buffer.write(
         ' in a Debilitated state that is beautifully cancelled via Neecha Bhanga Raja Yoga, transforming its weak potential into grand success.',
       );
@@ -1555,7 +1603,9 @@ class LifePredictionService {
       );
     }
 
-    buffer.write(' Vimshopak/Shadbala strength is ${strength.toStringAsFixed(0)}% (');
+    buffer.write(
+      ' Vimshopak/Shadbala strength is ${strength.toStringAsFixed(0)}% (',
+    );
     if (strength >= 70) {
       buffer.write('exceptionally strong).');
     } else if (strength >= 40) {
@@ -1585,14 +1635,26 @@ class LifePredictionService {
   FunctionalStatus _getFunctionalStatus(int ascendant, Planet planet) {
     switch (ascendant) {
       case 0: // Aries
-        if ([Planet.sun, Planet.moon, Planet.mars, Planet.jupiter]
-            .contains(planet)) { return FunctionalStatus.benefic; }
+        if ([
+          Planet.sun,
+          Planet.moon,
+          Planet.mars,
+          Planet.jupiter,
+        ].contains(planet)) {
+          return FunctionalStatus.benefic;
+        }
         if ([Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) {
           return FunctionalStatus.malefic;
         }
       case 1: // Taurus
-        if ([Planet.sun, Planet.mercury, Planet.venus, Planet.saturn]
-            .contains(planet)) { return FunctionalStatus.benefic; }
+        if ([
+          Planet.sun,
+          Planet.mercury,
+          Planet.venus,
+          Planet.saturn,
+        ].contains(planet)) {
+          return FunctionalStatus.benefic;
+        }
         if ([Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) {
           return FunctionalStatus.malefic;
         }
@@ -1614,23 +1676,47 @@ class LifePredictionService {
         if ([Planet.sun, Planet.mars, Planet.jupiter].contains(planet)) {
           return FunctionalStatus.benefic;
         }
-        if ([Planet.moon, Planet.mercury, Planet.venus, Planet.saturn]
-            .contains(planet)) { return FunctionalStatus.malefic; }
+        if ([
+          Planet.moon,
+          Planet.mercury,
+          Planet.venus,
+          Planet.saturn,
+        ].contains(planet)) {
+          return FunctionalStatus.malefic;
+        }
       case 5: // Virgo
         if ([Planet.mercury, Planet.venus].contains(planet)) {
           return FunctionalStatus.benefic;
         }
-        if ([Planet.sun, Planet.moon, Planet.mars, Planet.jupiter]
-            .contains(planet)) { return FunctionalStatus.malefic; }
+        if ([
+          Planet.sun,
+          Planet.moon,
+          Planet.mars,
+          Planet.jupiter,
+        ].contains(planet)) {
+          return FunctionalStatus.malefic;
+        }
       case 6: // Libra
-        if ([Planet.moon, Planet.mercury, Planet.venus, Planet.saturn]
-            .contains(planet)) { return FunctionalStatus.benefic; }
+        if ([
+          Planet.moon,
+          Planet.mercury,
+          Planet.venus,
+          Planet.saturn,
+        ].contains(planet)) {
+          return FunctionalStatus.benefic;
+        }
         if ([Planet.sun, Planet.mars, Planet.jupiter].contains(planet)) {
           return FunctionalStatus.malefic;
         }
       case 7: // Scorpio
-        if ([Planet.sun, Planet.moon, Planet.mars, Planet.jupiter]
-            .contains(planet)) { return FunctionalStatus.benefic; }
+        if ([
+          Planet.sun,
+          Planet.moon,
+          Planet.mars,
+          Planet.jupiter,
+        ].contains(planet)) {
+          return FunctionalStatus.benefic;
+        }
         if ([Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) {
           return FunctionalStatus.malefic;
         }
@@ -1638,14 +1724,26 @@ class LifePredictionService {
         if ([Planet.sun, Planet.mars, Planet.jupiter].contains(planet)) {
           return FunctionalStatus.benefic;
         }
-        if ([Planet.moon, Planet.mercury, Planet.venus, Planet.saturn]
-            .contains(planet)) { return FunctionalStatus.malefic; }
+        if ([
+          Planet.moon,
+          Planet.mercury,
+          Planet.venus,
+          Planet.saturn,
+        ].contains(planet)) {
+          return FunctionalStatus.malefic;
+        }
       case 9: // Capricorn
         if ([Planet.mercury, Planet.venus, Planet.saturn].contains(planet)) {
           return FunctionalStatus.benefic;
         }
-        if ([Planet.sun, Planet.moon, Planet.mars, Planet.jupiter]
-            .contains(planet)) { return FunctionalStatus.malefic; }
+        if ([
+          Planet.sun,
+          Planet.moon,
+          Planet.mars,
+          Planet.jupiter,
+        ].contains(planet)) {
+          return FunctionalStatus.malefic;
+        }
       case 10: // Aquarius
         if ([Planet.sun, Planet.venus, Planet.saturn].contains(planet)) {
           return FunctionalStatus.benefic;
@@ -1657,8 +1755,14 @@ class LifePredictionService {
         if ([Planet.moon, Planet.mars, Planet.jupiter].contains(planet)) {
           return FunctionalStatus.benefic;
         }
-        if ([Planet.sun, Planet.mercury, Planet.venus, Planet.saturn]
-            .contains(planet)) { return FunctionalStatus.malefic; }
+        if ([
+          Planet.sun,
+          Planet.mercury,
+          Planet.venus,
+          Planet.saturn,
+        ].contains(planet)) {
+          return FunctionalStatus.malefic;
+        }
     }
     return FunctionalStatus.neutral;
   }
@@ -1687,7 +1791,8 @@ class LifePredictionService {
           ![6, 8, 12].contains(house);
     }
 
-    if (status == 'Debilitated' || status == 'Deep Debilitation (Param Neecha)') return false;
+    if (status == 'Debilitated' || status == 'Deep Debilitation (Param Neecha)')
+      return false;
 
     if (functional == FunctionalStatus.benefic) return true;
     if (functional == FunctionalStatus.malefic) return false;
@@ -1745,7 +1850,8 @@ class LifePredictionService {
       Planet.trueNode:
           'Worship Lord Ganesha and recite Ketu Mantra. Practice detachment.',
     };
-    return remedies[planet] ?? 'Consult a Vedic astrologer for specific remedies.';
+    return remedies[planet] ??
+        'Consult a Vedic astrologer for specific remedies.';
   }
 
   String _getDoshaRemedy(String doshaName) {
@@ -1827,7 +1933,6 @@ class LifePredictionService {
     }
   }
 
-
   Planet? _parsePlanetName(String name) {
     final cleanName = name.toLowerCase().replaceAll(' ', '');
     for (final p in Planet.traditionalPlanets) {
@@ -1835,7 +1940,9 @@ class LifePredictionService {
         return p;
       }
     }
-    if (cleanName.contains('rahu') || cleanName.contains('node') || cleanName.contains('mean')) {
+    if (cleanName.contains('rahu') ||
+        cleanName.contains('node') ||
+        cleanName.contains('mean')) {
       return Planet.meanNode;
     }
     if (cleanName.contains('ketu')) {
@@ -1886,7 +1993,8 @@ class _PredictionContext {
   final YogaDoshaAnalysisResult yogaDosha;
   final String currentMahaDashaLord;
   final String currentAntarDashaLord;
-  final List<pa.PlanetaryAspect> aspects; // ignore: library_private_types_in_public_api
+  final List<pa.PlanetaryAspect>
+  aspects; // ignore: library_private_types_in_public_api
   final Planet atmakaraka;
 
   // New fields

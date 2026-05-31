@@ -30,6 +30,10 @@ import 'package:jyotish/src/strength/house_strength.dart';
 import 'package:jyotish/src/nadi/nadi.dart';
 import 'package:jyotish/src/analysis/progeny.dart';
 import 'package:jyotish/src/analysis/compatibility.dart';
+import 'package:jyotish/src/analysis/yoga.dart';
+import 'package:jyotish/src/analysis/yoga_service.dart';
+import 'package:jyotish/src/analysis/dosha.dart';
+import 'package:jyotish/src/analysis/dosha_service.dart';
 import 'package:jyotish/src/strength/graha_avastha.dart';
 import 'package:jyotish/src/strength/strength_report.dart';
 import 'package:jyotish/src/analysis/event_timing.dart';
@@ -51,6 +55,7 @@ import 'package:jyotish/src/astronomy/astrology_time_service.dart';
 import 'package:jyotish/src/systems/dasha_service.dart';
 import 'package:jyotish/src/analysis/divisional_chart_service.dart';
 import 'package:jyotish/src/astronomy/ephemeris_service.dart';
+import 'package:jyotish/src/astronomy/eclipse_service.dart';
 import 'package:jyotish/src/systems/kp_service.dart';
 import 'package:jyotish/src/panchanga/masa_service.dart';
 import 'package:jyotish/src/muhurta/muhurta_service.dart';
@@ -167,6 +172,9 @@ class Jyotish {
   RitualService? _ritualService;
   GrahaYuddhaService? _grahaYuddhaService;
   SpecialLagnasService? _specialLagnasService;
+  EclipseService? _eclipseService;
+  YogaService? _yogaService;
+  DoshaService? _doshaService;
   bool _isInitialized = false;
 
   /// Access point for specialized systems like Argala, Arudha Pada, etc.
@@ -174,6 +182,9 @@ class Jyotish {
 
   /// Gets the underlying ephemeris service.
   EphemerisService get ephemeris => _ephemerisService!;
+
+  /// Gets the eclipse prediction service.
+  EclipseService get eclipse => _eclipseService!;
 
   // ============================================================
   // ASTROLOGY TIME SERVICE — STATIC CONVENIENCE PROXIES
@@ -277,6 +288,9 @@ class Jyotish {
       _ritualService = RitualService();
       _grahaYuddhaService = const GrahaYuddhaService();
       _specialLagnasService = const SpecialLagnasService();
+      _eclipseService = EclipseService(_ephemerisService!.bindings);
+      _yogaService = const YogaService();
+      _doshaService = const DoshaService();
       _isInitialized = true;
     } catch (e) {
       throw JyotishException(
@@ -444,14 +458,13 @@ class Jyotish {
     String houseSystem = 'W',
     bool includeOuterPlanets = false,
     CalculationFlags? flags,
-  }) async =>
-      calculateVedicChart(
-        dateTime: dateTime,
-        location: location,
-        houseSystem: houseSystem,
-        includeOuterPlanets: includeOuterPlanets,
-        flags: flags,
-      );
+  }) async => calculateVedicChart(
+    dateTime: dateTime,
+    location: location,
+    houseSystem: houseSystem,
+    includeOuterPlanets: includeOuterPlanets,
+    flags: flags,
+  );
 
   // ============================================================
   // DIVISIONAL CHART CALCULATIONS
@@ -475,8 +488,11 @@ class Jyotish {
   }) {
     // _ensureInitialized(); // Not needed for pure math
     _divisionalChartService ??= DivisionalChartService();
-    return _divisionalChartService!
-        .calculateDivisionalChart(rashiChart, type, config: config);
+    return _divisionalChartService!.calculateDivisionalChart(
+      rashiChart,
+      type,
+      config: config,
+    );
   }
 
   // ============================================================
@@ -497,7 +513,9 @@ class Jyotish {
   ///
   /// Returns [PrastaraResult] containing the binary grid.
   PrastaraResult calculatePrastaraAshtakavarga(
-      VedicChart chart, Planet planet) {
+    VedicChart chart,
+    Planet planet,
+  ) {
     _ensureInitialized();
     return _ashtakavargaService!.calculatePrastaraAshtakavarga(chart, planet);
   }
@@ -516,10 +534,14 @@ class Jyotish {
   ///
   /// Returns a [CompatibilityReport] with unified details.
   CompatibilityReport calculateCompatibilityReport(
-      VedicChart boyChart, VedicChart girlChart) {
+    VedicChart boyChart,
+    VedicChart girlChart,
+  ) {
     _ensureInitialized();
-    return _compatibilityService!
-        .calculateCompatibilityReport(boyChart, girlChart);
+    return _compatibilityService!.calculateCompatibilityReport(
+      boyChart,
+      girlChart,
+    );
   }
 
   // ============================================================
@@ -616,7 +638,8 @@ class Jyotish {
     _ensureInitialized();
 
     final positions = Map<Planet, PlanetPosition>.from(
-        chart.planets.map((k, v) => MapEntry(k, v.position)));
+      chart.planets.map((k, v) => MapEntry(k, v.position)),
+    );
 
     // Explicitly add nodes if they aren't in the main map
     if (config.includeNodes) {
@@ -914,7 +937,8 @@ class Jyotish {
   /// 2. Ekadhipati Shodhana (Reduction for same lordship)
   /// 3. Shodhya Pinda calculation
   AshtakavargaWithShodhana calculateAshtakavargaWithShodhana(
-      VedicChart natalChart) {
+    VedicChart natalChart,
+  ) {
     _ensureInitialized();
     final raw = _ashtakavargaService!.calculateAshtakavarga(natalChart);
     final trikona = _ashtakavargaService!.applyTrikonaShodhana(raw);
@@ -1265,8 +1289,10 @@ class Jyotish {
     required GeographicLocation location,
   }) async {
     _ensureInitialized();
-    return await _horaService!
-        .getCurrentHora(dateTime: dateTime, location: location);
+    return await _horaService!.getCurrentHora(
+      dateTime: dateTime,
+      location: location,
+    );
   }
 
   /// Gets Horas for a complete day.
@@ -1293,8 +1319,10 @@ class Jyotish {
     required GeographicLocation location,
   }) async {
     _ensureInitialized();
-    return await _choghadiyaService!
-        .getCurrentChoghadiya(dateTime: dateTime, location: location);
+    return await _choghadiyaService!.getCurrentChoghadiya(
+      dateTime: dateTime,
+      location: location,
+    );
   }
 
   /// Gets the current Gowri Panchangam.
@@ -1303,8 +1331,10 @@ class Jyotish {
     required GeographicLocation location,
   }) async {
     _ensureInitialized();
-    return await _gowriPanchangamService!
-        .getCurrentGowriPanchangam(dateTime: dateTime, location: location);
+    return await _gowriPanchangamService!.getCurrentGowriPanchangam(
+      dateTime: dateTime,
+      location: location,
+    );
   }
 
   // ============================================================
@@ -1329,8 +1359,10 @@ class Jyotish {
   /// Gets the Atmakaraka (planet with highest degree).
   Planet getAtmakaraka(VedicChart chart, {bool useEightKarakaScheme = true}) {
     _ensureInitialized();
-    return _jaiminiService!
-        .getAtmakaraka(chart, useEightKarakaScheme: useEightKarakaScheme);
+    return _jaiminiService!.getAtmakaraka(
+      chart,
+      useEightKarakaScheme: useEightKarakaScheme,
+    );
   }
 
   /// Gets Karakamsa (Atmakaraka in Navamsa).
@@ -1619,10 +1651,7 @@ class Jyotish {
   /// Gets favorable transit signs based on Ashtakavarga.
   ///
   /// Returns signs with more than 28 bindus in Sarvashtakavarga.
-  List<int> getFavorableTransitSigns(
-    Ashtakavarga ashtakavarga,
-    Planet planet,
-  ) {
+  List<int> getFavorableTransitSigns(Ashtakavarga ashtakavarga, Planet planet) {
     _ensureInitialized();
     return _ashtakavargaService!.getFavorableTransitSigns(ashtakavarga, planet);
   }
@@ -1822,8 +1851,9 @@ class Jyotish {
       );
 
       // Convert to KP divisions (ayanamsa-adjusted)
-      final transitDivisions =
-          _kpService!.calculateTransitKPDivisions(transitRawPositions);
+      final transitDivisions = _kpService!.calculateTransitKPDivisions(
+        transitRawPositions,
+      );
 
       return _kpService!.compareTransitToNatal(
         natalKP: resolvedNatalKP,
@@ -2102,8 +2132,9 @@ class Jyotish {
     required VedicChart natalChart,
   }) {
     _ensureInitialized();
-    final matrix =
-        _planetaryRelationshipService!.getAllRelationships(natalChart);
+    final matrix = _planetaryRelationshipService!.getAllRelationships(
+      natalChart,
+    );
     final results = <PlanetaryRelationship>[];
     for (final row in matrix.values) {
       results.addAll(row.values);
@@ -2138,7 +2169,8 @@ class Jyotish {
   void _ensureInitialized() {
     if (!_isInitialized) {
       throw JyotishException(
-          'Jyotish library not initialized. Call initialize() first.');
+        'Jyotish library not initialized. Call initialize() first.',
+      );
     }
   }
 
@@ -2235,7 +2267,10 @@ class Jyotish {
     required GeographicLocation location,
   }) async {
     return getMasa(
-        dateTime: dateTime, location: location, type: MasaType.amanta);
+      dateTime: dateTime,
+      location: location,
+      type: MasaType.amanta,
+    );
   }
 
   /// Calculates lunar month using Purnimanta system.
@@ -2247,7 +2282,10 @@ class Jyotish {
     required GeographicLocation location,
   }) async {
     return getMasa(
-        dateTime: dateTime, location: location, type: MasaType.purnimanta);
+      dateTime: dateTime,
+      location: location,
+      type: MasaType.purnimanta,
+    );
   }
 
   /// Gets Sudarshan Chakra strength.
@@ -2285,10 +2323,7 @@ class Jyotish {
     final planetInfo = chart.planets[planet];
     if (planetInfo == null) return 0.0;
 
-    return _shadbalaService!.calculateVimshopakaBala(
-      planet,
-      chart,
-    );
+    return _shadbalaService!.calculateVimshopakaBala(planet, chart);
   }
 
   /// Calculates Ishtaphala (auspicious potential) for a planet.
@@ -2372,10 +2407,12 @@ class Jyotish {
 
   /// Calculates 20-fold strength for all planets asynchronously.
   Future<Map<Planet, VimshopakBala>> getAllPlanetsVimshopakBalaAsync(
-      VedicChart chart) async {
+    VedicChart chart,
+  ) async {
     _ensureInitialized();
-    return await _strengthAnalysisService!
-        .getAllPlanetsVimshopakBalaAsync(chart);
+    return await _strengthAnalysisService!.getAllPlanetsVimshopakBalaAsync(
+      chart,
+    );
   }
 
   // ============================================================
@@ -2405,8 +2442,8 @@ class Jyotish {
     final int nakNumber = moonNakshatra is int
         ? moonNakshatra
         : (moonNakshatra != null
-            ? _getNakshatraNumber(moonNakshatra.toString())
-            : 1);
+              ? _getNakshatraNumber(moonNakshatra.toString())
+              : 1);
 
     final Map<Planet, int> resolvedOtherTransits = {};
     otherTransits.forEach((key, value) {
@@ -2450,7 +2487,7 @@ class Jyotish {
       'Shatabhisha',
       'Purva Bhadrapada',
       'Uttara Bhadrapada',
-      'Revati'
+      'Revati',
     ];
     final idx = names.indexWhere((n) => n.toLowerCase() == name.toLowerCase());
     return idx == -1 ? 1 : idx + 1;
@@ -2502,19 +2539,16 @@ class Jyotish {
     int house2,
   ) {
     _ensureInitialized();
-    final p1 =
-        planet1 is Planet ? planet1 : Planet.fromName(planet1.toString());
-    final p2 =
-        planet2 is Planet ? planet2 : Planet.fromName(planet2.toString());
+    final p1 = planet1 is Planet
+        ? planet1
+        : Planet.fromName(planet1.toString());
+    final p2 = planet2 is Planet
+        ? planet2
+        : Planet.fromName(planet2.toString());
 
     if (p1 == null || p2 == null) return false;
 
-    return _gocharaVedhaService!.hasMutualVedha(
-      p1,
-      house1,
-      p2,
-      house2,
-    );
+    return _gocharaVedhaService!.hasMutualVedha(p1, house1, p2, house2);
   }
 
   /// Finds the best transit periods without Vedha.
@@ -2914,7 +2948,8 @@ class Jyotish {
 
   /// Calculates enhanced Bhava Bala with Vimsopaka integration.
   Future<Map<int, EnhancedBhavaBalaResult>> getEnhancedBhavaBala(
-      VedicChart chart) async {
+    VedicChart chart,
+  ) async {
     _ensureInitialized();
     return await _houseStrengthService!.calculateEnhancedBhavaBala(chart);
   }
@@ -2927,14 +2962,16 @@ class Jyotish {
 
   /// Calculates Vimsopaka Bala asynchronously using an isolate.
   Future<Map<Planet, VimsopakaBalaResult>> getVimsopakaBalaAsync(
-      VedicChart chart) async {
+    VedicChart chart,
+  ) async {
     _ensureInitialized();
     return await _houseStrengthService!.calculateVimsopakaBalaAsync(chart);
   }
 
   /// Extracts the house strength summary from Bhava Bala results.
   HouseStrengthSummary getHouseStrengthSummary(
-      Map<int, EnhancedBhavaBalaResult> results) {
+    Map<int, EnhancedBhavaBalaResult> results,
+  ) {
     _ensureInitialized();
     return _houseStrengthService!.getHouseStrengthSummary(results);
   }
@@ -3001,13 +3038,21 @@ class Jyotish {
     return _progenyService!.detectChildYogas(chart);
   }
 
+  /// Detects general natal, Raja, and Nabhasa yogas in the chart.
+  List<NatalYoga> detectNatalYogas(VedicChart chart) {
+    _ensureInitialized();
+    return _yogaService!.detectNatalYogas(chart);
+  }
+
   // ============================================================
   // MARRIAGE COMPATIBILITY (KUNDLI MILAN)
   // ============================================================
 
   /// Calculates compatibility between two charts.
   CompatibilityResult calculateCompatibility(
-      VedicChart boyChart, VedicChart girlChart) {
+    VedicChart boyChart,
+    VedicChart girlChart,
+  ) {
     _ensureInitialized();
     return _compatibilityService!.calculateCompatibility(boyChart, girlChart);
   }
@@ -3038,9 +3083,65 @@ class Jyotish {
 
   /// Checks for Bhakoot Dosha between two charts.
   BhakootDoshaResult checkBhakootDosha(
-      VedicChart boyChart, VedicChart girlChart) {
+    VedicChart boyChart,
+    VedicChart girlChart,
+  ) {
     _ensureInitialized();
     return _compatibilityService!.checkBhakootDosha(boyChart, girlChart);
+  }
+
+  /// Analyzes a chart and produces a full report of natal doshas.
+  FullDoshaReport checkNatalDoshas(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.calculateFullDoshaReport(chart);
+  }
+
+  /// Checks for Kala Sarpa Dosha in a chart.
+  KalaSarpaDoshaResult checkKalaSarpaDosha(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.checkKalaSarpaDosha(chart);
+  }
+
+  /// Checks for Manglik Dosha using BV Raman's 17 exceptions.
+  ManglikDoshaResult checkManglikDoshaWithRamanExceptions(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.checkManglikDoshaWithRamanExceptions(chart);
+  }
+
+  /// Checks for Pitru Dosha in a chart.
+  PitruDoshaResult checkPitruDosha(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.checkPitruDosha(chart);
+  }
+
+  /// Checks for Guru Chandala Dosha in a chart.
+  GuruChandalaDoshaResult checkGuruChandalaDosha(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.checkGuruChandalaDosha(chart);
+  }
+
+  /// Checks for Ganda Moola Dosha in a chart.
+  GandaMoolaDoshaResult checkGandaMoolaDosha(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.checkGandaMoolaDosha(chart);
+  }
+
+  /// Checks for Kalathra Dosha in a chart.
+  KalathraDoshaResult checkKalathraDosha(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.checkKalathraDosha(chart);
+  }
+
+  /// Checks for Ghata Dosha (Mars/Saturn conjunction) in a chart.
+  ConjunctionDoshaResult checkGhataDosha(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.checkGhataDosha(chart);
+  }
+
+  /// Checks for Shrapit Dosha (Saturn/Rahu conjunction) in a chart.
+  ConjunctionDoshaResult checkShrapitDosha(VedicChart chart) {
+    _ensureInitialized();
+    return _doshaService!.checkShrapitDosha(chart);
   }
 
   // ============================================================
@@ -3108,9 +3209,7 @@ class Jyotish {
   /// print(sunSaturn.compound);  // great enemy / neutral
   /// ```
   Map<Planet, Map<Planet, PlanetaryRelationship>>
-      getPlanetaryRelationshipsMatrix(
-    VedicChart chart,
-  ) {
+  getPlanetaryRelationshipsMatrix(VedicChart chart) {
     _ensureInitialized();
     return _planetaryRelationshipService!.getAllRelationships(chart);
   }
@@ -3135,8 +3234,11 @@ class Jyotish {
     VedicChart chart,
   ) {
     _ensureInitialized();
-    return _planetaryRelationshipService!
-        .getRelationship(planet, otherPlanet, chart);
+    return _planetaryRelationshipService!.getRelationship(
+      planet,
+      otherPlanet,
+      chart,
+    );
   }
 
   // ============================================================
@@ -3179,7 +3281,9 @@ class Jyotish {
 
   /// Extracts a detailed PlanetStrengthReport for a specific planet.
   Future<PlanetStrengthReport> getPlanetStrengthReport(
-      Planet planet, VedicChart chart) async {
+    Planet planet,
+    VedicChart chart,
+  ) async {
     _ensureInitialized();
     return await _strengthReportService!.getPlanetReport(planet, chart);
   }
@@ -3190,7 +3294,8 @@ class Jyotish {
 
   /// Analyzes a time range to find favorable windows for specific events.
   Future<List<EventTimingWindow>> findEventTimingWindows(
-      EventTimingRequest request) async {
+    EventTimingRequest request,
+  ) async {
     _ensureInitialized();
     return await _eventTimingService!.findEventTimingWindows(request);
   }
@@ -3200,12 +3305,12 @@ class Jyotish {
   // ============================================================
 
   /// Performs a career analysis based on the Dashamsha (D-10) chart.
-  D10CareerAnalysis getD10CareerAnalysis({
-    required VedicChart natalChart,
-  }) {
+  D10CareerAnalysis getD10CareerAnalysis({required VedicChart natalChart}) {
     _ensureInitialized();
     final d10 = getDivisionalChart(
-        rashiChart: natalChart, type: DivisionalChartType.d10);
+      rashiChart: natalChart,
+      type: DivisionalChartType.d10,
+    );
     return _careerAnalysisService!.analyzeCareer(d10);
   }
 
@@ -3222,11 +3327,15 @@ class Jyotish {
   }
 
   /// Calculates complete KP data for a birth chart.
-  Future<KPCalculations> getKPCalculations(VedicChart natalChart,
-      {bool useNewAyanamsa = true}) async {
+  Future<KPCalculations> getKPCalculations(
+    VedicChart natalChart, {
+    bool useNewAyanamsa = true,
+  }) async {
     _ensureInitialized();
-    return await _kpService!
-        .calculateKPData(natalChart, useNewAyanamsa: useNewAyanamsa);
+    return await _kpService!.calculateKPData(
+      natalChart,
+      useNewAyanamsa: useNewAyanamsa,
+    );
   }
 
   // ============================================================

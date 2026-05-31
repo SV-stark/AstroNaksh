@@ -106,15 +106,17 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted && !Platform.environment.containsKey('FLUTTER_TEST')) {
-        unawaited(displayInfoBar(
-          context,
-          builder: (context, close) => InfoBar(
-            title: const Text('Error'),
-            content: Text(e.toString()),
-            severity: InfoBarSeverity.error,
-            onClose: close,
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (context, close) => InfoBar(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
           ),
-        ));
+        );
       }
     }
   }

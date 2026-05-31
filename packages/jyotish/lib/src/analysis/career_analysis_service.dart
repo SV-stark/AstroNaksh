@@ -18,7 +18,8 @@ class CareerAnalysisService {
     // Evaluate 10th lord
     primaryDomains.addAll(_getPlanetDomains(tenthLord));
     careerThemes.add(
-        'Career path is heavily influenced by ${tenthLord.displayName} (10th Lord).');
+      'Career path is heavily influenced by ${tenthLord.displayName} (10th Lord).',
+    );
 
     // Evaluate D-10 Strong Planets
     int strengthScore = 0;
@@ -42,7 +43,8 @@ class CareerAnalysisService {
 
     if (strongPlanets.isNotEmpty) {
       careerThemes.add(
-          'Strong placements in D-10 provide support: ${strongPlanets.map((p) => p.displayName).join(", ")}.');
+        'Strong placements in D-10 provide support: ${strongPlanets.map((p) => p.displayName).join(", ")}.',
+      );
     }
 
     // Determine category
@@ -84,59 +86,59 @@ class CareerAnalysisService {
     return switch (planet) {
       Planet.sun => ['Government', 'Authority', 'Management', 'Politics'],
       Planet.moon => [
-          'Public Relations',
-          'Caregiving',
-          'Food/Hospitality',
-          'Liquid matters'
-        ],
+        'Public Relations',
+        'Caregiving',
+        'Food/Hospitality',
+        'Liquid matters',
+      ],
       Planet.mars => [
-          'Engineering',
-          'Military/Police',
-          'Surgeon',
-          'Real Estate'
-        ],
+        'Engineering',
+        'Military/Police',
+        'Surgeon',
+        'Real Estate',
+      ],
       Planet.mercury => [
-          'Business',
-          'Writing/Media',
-          'IT/Programming',
-          'Accounting'
-        ],
+        'Business',
+        'Writing/Media',
+        'IT/Programming',
+        'Accounting',
+      ],
       Planet.jupiter => [
-          'Education/Teaching',
-          'Law',
-          'Finance/Banking',
-          'Advisory'
-        ],
+        'Education/Teaching',
+        'Law',
+        'Finance/Banking',
+        'Advisory',
+      ],
       Planet.venus => ['Arts/Entertainment', 'Fashion', 'Luxury', 'Design'],
       Planet.saturn => [
-          'Service Sector',
-          'Labor',
-          'Research',
-          'Heavy Industry',
-          'Agriculture'
-        ],
+        'Service Sector',
+        'Labor',
+        'Research',
+        'Heavy Industry',
+        'Agriculture',
+      ],
       Planet.meanNode => [
-          'Technology',
-          'Foreign Affairs',
-          'Unconventional paths'
-        ], // Rahu
+        'Technology',
+        'Foreign Affairs',
+        'Unconventional paths',
+      ], // Rahu
       Planet.trueNode => [
-          'Technology',
-          'Foreign Affairs',
-          'Unconventional paths'
-        ],
+        'Technology',
+        'Foreign Affairs',
+        'Unconventional paths',
+      ],
       Planet.meanApogee => [
-          'Research',
-          'Spirituality',
-          'Occult',
-          'Backend systems'
-        ], // Ketu
+        'Research',
+        'Spirituality',
+        'Occult',
+        'Backend systems',
+      ], // Ketu
       Planet.osculatingApogee => [
-          'Research',
-          'Spirituality',
-          'Occult',
-          'Backend systems'
-        ],
+        'Research',
+        'Spirituality',
+        'Occult',
+        'Backend systems',
+      ],
       _ => [],
     };
   }

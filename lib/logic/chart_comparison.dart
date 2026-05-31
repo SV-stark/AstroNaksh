@@ -802,13 +802,13 @@ class ChartComparison {
     final g1 = deva.contains(nak1 % 27)
         ? 'Deva'
         : manushya.contains(nak1 % 27)
-            ? 'Manushya'
-            : 'Rakshasa';
+        ? 'Manushya'
+        : 'Rakshasa';
     final g2 = deva.contains(nak2 % 27)
         ? 'Deva'
         : manushya.contains(nak2 % 27)
-            ? 'Manushya'
-            : 'Rakshasa';
+        ? 'Manushya'
+        : 'Rakshasa';
 
     if (g1 == g2) return '$g1 - $g1: Excellent';
     if ((g1 == 'Deva' && g2 == 'Manushya') ||

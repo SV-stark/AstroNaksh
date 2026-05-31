@@ -868,13 +868,15 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                                 leading: const Icon(FluentIcons.flow),
                                 onPressed: () => _navigateTo('nadi'),
                               ),
-                               MenuFlyoutItem(
+                              MenuFlyoutItem(
                                 text: const Text('Gochara Vedha'),
                                 leading: const Icon(FluentIcons.sync_occurence),
                                 onPressed: () => _navigateTo('gochara_vedha'),
                               ),
                               MenuFlyoutItem(
-                                text: const Text('Planetary War (Graha Yuddha)'),
+                                text: const Text(
+                                  'Planetary War (Graha Yuddha)',
+                                ),
                                 leading: const Icon(FluentIcons.warning),
                                 onPressed: () => _navigateTo('graha_yuddha'),
                               ),

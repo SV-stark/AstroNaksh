@@ -187,8 +187,9 @@ class Varshapal {
       'varshaLord': varshaLord.name,
       'varshaNumber': varshaNumber,
       'samvatsaraName': samvatsaraName,
-      'panchavargiyaBala':
-          panchavargiyaBala.map((k, v) => MapEntry(k.name, v.toJson())),
+      'panchavargiyaBala': panchavargiyaBala.map(
+        (k, v) => MapEntry(k.name, v.toJson()),
+      ),
       'muddaDasha': muddaDasha.map((v) => v.toJson()).toList(),
     };
   }
@@ -233,15 +234,15 @@ class PanchavargiyaBalaResult {
 
   /// Converts this result to a JSON map
   Map<String, dynamic> toJson() => {
-        'planet': planet.displayName,
-        'kshetraBala': kshetraBala,
-        'haddaBala': haddaBala,
-        'drekkanaBala': drekkanaBala,
-        'navamsaBala': navamsaBala,
-        'ucchaBala': ucchaBala,
-        'totalBala': totalBala,
-        'vishwaBala': vishwaBala,
-      };
+    'planet': planet.displayName,
+    'kshetraBala': kshetraBala,
+    'haddaBala': haddaBala,
+    'drekkanaBala': drekkanaBala,
+    'navamsaBala': navamsaBala,
+    'ucchaBala': ucchaBala,
+    'totalBala': totalBala,
+    'vishwaBala': vishwaBala,
+  };
 
   @override
   String toString() {

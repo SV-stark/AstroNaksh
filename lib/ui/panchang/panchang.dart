@@ -5,5 +5,6 @@ export 'panchang_helpers.dart';
 export 'panchang_hora_tab.dart';
 export 'panchang_inauspicious_tab.dart';
 export 'panchang_muhurta_tab.dart';
+export 'panchang_special_yogas_tab.dart';
 export 'panchang_sun_moon_tab.dart';
 export 'panchang_transits_tab.dart';

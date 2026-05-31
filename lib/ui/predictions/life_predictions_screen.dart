@@ -570,7 +570,11 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
     }
   }
 
-  Widget _buildFormattedText(BuildContext context, String text, TextStyle? baseStyle) {
+  Widget _buildFormattedText(
+    BuildContext context,
+    String text,
+    TextStyle? baseStyle,
+  ) {
     final spans = <TextSpan>[];
     final parts = text.split('**');
     for (var i = 0; i < parts.length; i++) {
@@ -578,9 +582,7 @@ class _LifePredictionsScreenState extends State<LifePredictionsScreen> {
       spans.add(
         TextSpan(
           text: parts[i],
-          style: isBold
-              ? const TextStyle(fontWeight: FontWeight.bold)
-              : null,
+          style: isBold ? const TextStyle(fontWeight: FontWeight.bold) : null,
         ),
       );
     }

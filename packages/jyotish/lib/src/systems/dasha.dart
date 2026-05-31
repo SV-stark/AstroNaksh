@@ -211,16 +211,16 @@ class DashaPeriod {
 
   /// Converts to JSON map (without circular references)
   Map<String, dynamic> toJson() => {
-        'lord': lord?.displayName,
-        'rashi': rashi?.name,
-        'lordDisplayName': lordDisplayName,
-        'startDate': startDate.toIso8601String(),
-        'endDate': endDate.toIso8601String(),
-        'durationDays': durationDays,
-        'level': level,
-        'levelName': levelName,
-        'subPeriods': subPeriods.map((p) => p.toJson()).toList(),
-      };
+    'lord': lord?.displayName,
+    'rashi': rashi?.name,
+    'lordDisplayName': lordDisplayName,
+    'startDate': startDate.toIso8601String(),
+    'endDate': endDate.toIso8601String(),
+    'durationDays': durationDays,
+    'level': level,
+    'levelName': levelName,
+    'subPeriods': subPeriods.map((p) => p.toJson()).toList(),
+  };
 }
 
 /// Complete dasha calculation result.
@@ -331,15 +331,15 @@ class DashaResult {
 
   /// Converts to JSON map
   Map<String, dynamic> toJson() => {
-        'type': type.displayName,
-        'birthDateTime': birthDateTime.toIso8601String(),
-        'moonLongitude': moonLongitude,
-        'birthNakshatra': birthNakshatra,
-        'birthPada': birthPada,
-        'balanceOfFirstDasha': balanceOfFirstDasha,
-        'precisionWarning': precisionWarning,
-        'mahadashas': allMahadashas.map((d) => d.toJson()).toList(),
-      };
+    'type': type.displayName,
+    'birthDateTime': birthDateTime.toIso8601String(),
+    'moonLongitude': moonLongitude,
+    'birthNakshatra': birthNakshatra,
+    'birthPada': birthPada,
+    'balanceOfFirstDasha': balanceOfFirstDasha,
+    'precisionWarning': precisionWarning,
+    'mahadashas': allMahadashas.map((d) => d.toJson()).toList(),
+  };
 }
 
 /// Yogini dasha specific information.

@@ -8,7 +8,6 @@ import 'shadbala.dart';
 class BhavaBala {
   static StrengthAnalysisService? _strengthService;
 
-
   /// Calculate strength of all 12 houses using library's native implementation
   static Future<Map<int, BhavaStrength>> calculateBhavaBala(
     CompleteChartData chart,

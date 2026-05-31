@@ -470,47 +470,68 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: FluentTheme.of(context).resources.dividerStrokeColorDefault,
+                            color: FluentTheme.of(
+                              context,
+                            ).resources.dividerStrokeColorDefault,
                             width: 1.5,
                           ),
                         ),
                       ),
                       children: [
                         const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 4,
+                          ),
                           child: Text(
                             'Contributor',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                        ..._signNames.map((sign) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                              child: Text(
-                                sign.substring(0, 3),
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
+                        ..._signNames.map(
+                          (sign) => Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 4,
+                            ),
+                            child: Text(
+                              sign.substring(0, 3),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
-                            )),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     for (var rowIndex = 0; rowIndex < 8; rowIndex++)
                       TableRow(
                         decoration: BoxDecoration(
                           color: rowIndex % 2 == 0
-                              ? FluentTheme.of(context).resources.controlAltFillColorTertiary
+                              ? FluentTheme.of(
+                                  context,
+                                ).resources.controlAltFillColorTertiary
                               : null,
                           border: Border(
                             bottom: BorderSide(
-                              color: FluentTheme.of(context).resources.dividerStrokeColorDefault,
+                              color: FluentTheme.of(
+                                context,
+                              ).resources.dividerStrokeColorDefault,
                             ),
                           ),
                         ),
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 4,
+                            ),
                             child: Text(
                               contributors[rowIndex],
-                              style: const TextStyle(fontWeight: FontWeight.w500),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                           for (var colIndex = 0; colIndex < 12; colIndex++)
@@ -532,23 +553,31 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                       ),
                       children: [
                         const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 4,
+                          ),
                           child: Text(
                             'Total Bindus',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                        ...columnTotals.map((total) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-                              child: Text(
-                                total.toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                                textAlign: TextAlign.center,
+                        ...columnTotals.map(
+                          (total) => Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                              horizontal: 4,
+                            ),
+                            child: Text(
+                              total.toString(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
                               ),
-                            )),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -566,9 +595,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
     return Container(
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(vertical: 8),
-      color: isBenefic
-          ? Colors.teal.withValues(alpha: 0.08)
-          : null,
+      color: isBenefic ? Colors.teal.withValues(alpha: 0.08) : null,
       child: Text(
         value.toString(),
         style: TextStyle(

@@ -81,8 +81,8 @@ class PlanetaryRelationshipService {
     }
 
     // 1. Natural friendship
-    final natural = RelationshipCalculator.naturalRelationships[planet]
-            ?[otherPlanet] ??
+    final natural =
+        RelationshipCalculator.naturalRelationships[planet]?[otherPlanet] ??
         RelationshipType.neutral;
 
     // 2. Temporal friendship based on house positions
@@ -99,8 +99,10 @@ class PlanetaryRelationshipService {
     }
 
     // 3. Compound (Panchadha Maitri)
-    final compound =
-        RelationshipCalculator.calculateCompound(natural, temporary);
+    final compound = RelationshipCalculator.calculateCompound(
+      natural,
+      temporary,
+    );
 
     return PlanetaryRelationship(
       planet: planet,

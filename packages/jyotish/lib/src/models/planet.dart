@@ -46,7 +46,10 @@ enum Planet {
 
   /// Osculating Lunar Apogee
   osculatingApogee(
-      SwissEphConstants.oscuApog, 'Osculating Apogee', 'Osculating Apogee'),
+    SwissEphConstants.oscuApog,
+    'Osculating Apogee',
+    'Osculating Apogee',
+  ),
 
   /// Earth (for heliocentric calculations)
   earth(SwissEphConstants.earthPlanet, 'Earth', 'Bhūmi'),
@@ -82,58 +85,47 @@ enum Planet {
 
   /// Returns a list of major planets (Sun through Pluto).
   static List<Planet> get majorPlanets => [
-        sun,
-        moon,
-        mercury,
-        venus,
-        mars,
-        jupiter,
-        saturn,
-        uranus,
-        neptune,
-        pluto,
-      ];
+    sun,
+    moon,
+    mercury,
+    venus,
+    mars,
+    jupiter,
+    saturn,
+    uranus,
+    neptune,
+    pluto,
+  ];
 
   /// Returns a list of traditional planets (Sun through Saturn).
   static List<Planet> get traditionalPlanets => [
-        sun,
-        moon,
-        mercury,
-        venus,
-        mars,
-        jupiter,
-        saturn,
-      ];
+    sun,
+    moon,
+    mercury,
+    venus,
+    mars,
+    jupiter,
+    saturn,
+  ];
 
   /// Returns a list of outer planets (Uranus, Neptune, Pluto).
-  static List<Planet> get outerPlanets => [
-        uranus,
-        neptune,
-        pluto,
-      ];
+  static List<Planet> get outerPlanets => [uranus, neptune, pluto];
 
   /// Returns a list of lunar nodes.
-  static List<Planet> get lunarNodes => [
-        meanNode,
-        trueNode,
-        ketu,
-      ];
+  static List<Planet> get lunarNodes => [meanNode, trueNode, ketu];
 
   /// Returns a list of lunar apogees.
-  static List<Planet> get lunarApogees => [
-        meanApogee,
-        osculatingApogee,
-      ];
+  static List<Planet> get lunarApogees => [meanApogee, osculatingApogee];
 
   /// Returns a list of asteroids/minor planets.
   static List<Planet> get asteroids => [
-        chiron,
-        pholus,
-        ceres,
-        pallas,
-        juno,
-        vesta,
-      ];
+    chiron,
+    pholus,
+    ceres,
+    pallas,
+    juno,
+    vesta,
+  ];
 
   /// Returns all planets and celestial bodies.
   static List<Planet> get all => Planet.values;

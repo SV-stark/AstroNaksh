@@ -73,14 +73,14 @@ class TransitInfo {
 
   /// Converts to JSON map
   Map<String, dynamic> toJson() => {
-        'planet': planet.displayName,
-        'transitLongitude': transitPosition.longitude,
-        'transitSign': transitSign,
-        'transitHouse': transitHouse,
-        'isRetrograde': isRetrograde,
-        'natalLongitude': natalPosition?.longitude,
-        'aspectsToNatal': aspectsToNatal.map((a) => a.toJson()).toList(),
-      };
+    'planet': planet.displayName,
+    'transitLongitude': transitPosition.longitude,
+    'transitSign': transitSign,
+    'transitHouse': transitHouse,
+    'isRetrograde': isRetrograde,
+    'natalLongitude': natalPosition?.longitude,
+    'aspectsToNatal': aspectsToNatal.map((a) => a.toJson()).toList(),
+  };
 }
 
 /// A significant transit event.
@@ -158,17 +158,17 @@ class TransitEvent {
 
   /// Converts to JSON map
   Map<String, dynamic> toJson() => {
-        'transitPlanet': transitPlanet.displayName,
-        'natalPlanet': natalPlanet?.displayName,
-        'natalPointName': natalPointName,
-        'aspectType': aspectType.english,
-        'exactDate': exactDate.toIso8601String(),
-        'startDate': startDate.toIso8601String(),
-        'endDate': endDate.toIso8601String(),
-        'isRetrograde': isRetrograde,
-        'description': description,
-        'significance': significance,
-      };
+    'transitPlanet': transitPlanet.displayName,
+    'natalPlanet': natalPlanet?.displayName,
+    'natalPointName': natalPointName,
+    'aspectType': aspectType.english,
+    'exactDate': exactDate.toIso8601String(),
+    'startDate': startDate.toIso8601String(),
+    'endDate': endDate.toIso8601String(),
+    'isRetrograde': isRetrograde,
+    'description': description,
+    'significance': significance,
+  };
 }
 
 /// Configuration for transit calculations

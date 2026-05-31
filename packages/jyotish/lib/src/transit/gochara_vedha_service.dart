@@ -105,7 +105,8 @@ class GocharaVedhaService {
 
     // 4. Determine result effectiveness
     final resultEffectiveness = isObstructed
-        ? 1.0 - vedhaStrength // Reduced by Vedha
+        ? 1.0 -
+              vedhaStrength // Reduced by Vedha
         : (isFavorable ? 1.0 : 0.0);
 
     return VedhaResult(
@@ -166,12 +167,7 @@ class GocharaVedhaService {
   /// [house2] - Second planet's house from Moon
   ///
   /// Returns true if there's mutual obstruction
-  bool hasMutualVedha(
-    Planet planet1,
-    int house1,
-    Planet planet2,
-    int house2,
-  ) {
+  bool hasMutualVedha(Planet planet1, int house1, Planet planet2, int house2) {
     // Check if both are in favorable positions
     final p1Favorable = _isFavorablePosition(planet1, house1);
     final p2Favorable = _isFavorablePosition(planet2, house2);
@@ -210,11 +206,13 @@ class GocharaVedhaService {
           .toList();
 
       if (unobstructedPlanets.isNotEmpty) {
-        favorablePeriods.add(FavorablePeriod(
-          date: snapshot.date,
-          planets: unobstructedPlanets,
-          description: 'Favorable transit without Vedha',
-        ));
+        favorablePeriods.add(
+          FavorablePeriod(
+            date: snapshot.date,
+            planets: unobstructedPlanets,
+            description: 'Favorable transit without Vedha',
+          ),
+        );
       }
     }
 
@@ -233,9 +231,11 @@ class GocharaVedhaService {
 
     // General remedies
     remedies.add(
-        'Perform mantra japa for ${vedhaResult._transitPlanet.displayName}');
+      'Perform mantra japa for ${vedhaResult._transitPlanet.displayName}',
+    );
     remedies.add(
-        'Donate items related to ${vedhaResult._transitPlanet.displayName}');
+      'Donate items related to ${vedhaResult._transitPlanet.displayName}',
+    );
 
     // Specific remedies based on obstructing planets
     for (final obstructingPlanet in vedhaResult.obstructingPlanets) {

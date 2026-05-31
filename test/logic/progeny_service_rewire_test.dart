@@ -9,7 +9,11 @@ void main() {
       // Build a test chart with some basic planet positions
       final chart = TestChartBuilder()
           .withAscendantSign(1) // Aries rising
-          .withPlanetInSign(Planet.jupiter, 1, 15.0) // Jupiter in Aries (1st house)
+          .withPlanetInSign(
+            Planet.jupiter,
+            1,
+            15.0,
+          ) // Jupiter in Aries (1st house)
           .withPlanetInSign(Planet.venus, 5, 10.0) // Venus in Leo (5th house)
           .build();
 
@@ -27,12 +31,16 @@ void main() {
       expect(analysis.recommendations, isNotEmpty);
 
       expect(analysis.factors, hasLength(3));
-      
-      final fifthHouse = analysis.factors.firstWhere((f) => f.name == '5th House');
+
+      final fifthHouse = analysis.factors.firstWhere(
+        (f) => f.name == '5th House',
+      );
       expect(fifthHouse.score, isA<int>());
       expect(fifthHouse.description, contains('5th House'));
 
-      final jupiter = analysis.factors.firstWhere((f) => f.name == 'Jupiter (Karaka)');
+      final jupiter = analysis.factors.firstWhere(
+        (f) => f.name == 'Jupiter (Karaka)',
+      );
       expect(jupiter.score, isA<int>());
       expect(jupiter.description, contains('Jupiter'));
 

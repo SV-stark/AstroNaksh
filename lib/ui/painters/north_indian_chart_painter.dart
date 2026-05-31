@@ -208,7 +208,7 @@ class NorthIndianChartPainter extends CustomPainter {
       if (showSigns) {
         final signNumber = signIndex + 1;
         final fontSize = width / 26; // Responsive font size
-        
+
         final textSpan = TextSpan(
           text: '$signNumber',
           style: TextStyle(

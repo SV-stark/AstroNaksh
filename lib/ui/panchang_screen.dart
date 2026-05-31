@@ -30,6 +30,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
   MoonPhaseDetails? _moonPhase;
   DateTime? _tithiJunction;
   EclipseData? _eclipseData;
+  List<SpecialYoga> _specialYogas = [];
   bool _isLoading = false;
   PanchakStatus? _panchak;
 
@@ -157,6 +158,11 @@ class _PanchangScreenState extends State<PanchangScreen> {
         ),
       );
 
+      final specialYogas = await _panchangService.getSpecialYogas(
+        _selectedDate,
+        location,
+      );
+
       setState(() {
         _result = result;
         _gowri = gowri;
@@ -168,6 +174,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
         _moonPhase = moonPhase;
         _tithiJunction = tithiEndTime;
         _eclipseData = eclipseData;
+        _specialYogas = specialYogas;
         _isLoading = false;
       });
 
@@ -653,6 +660,14 @@ class _PanchangScreenState extends State<PanchangScreen> {
                                       onTap: () =>
                                           setState(() => _selectedTabIndex = 7),
                                     ),
+                                    const SizedBox(width: 8),
+                                    _buildTabButton(
+                                      icon: FluentIcons.sparkle,
+                                      label: 'Special Yogas',
+                                      isSelected: _selectedTabIndex == 8,
+                                      onTap: () =>
+                                          setState(() => _selectedTabIndex = 8),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -732,6 +747,15 @@ class _PanchangScreenState extends State<PanchangScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       sliver: SliverToBoxAdapter(
                         child: PanchangTransitsTab(panchak: _panchak),
+                      ),
+                    )
+                  else if (_selectedTabIndex == 8)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverToBoxAdapter(
+                        child: PanchangSpecialYogasTab(
+                          specialYogas: _specialYogas,
+                        ),
                       ),
                     ),
 

@@ -73,16 +73,20 @@ class MatchingService {
           cancellationReason = libraryReport.boyManglikCancellations.join('. ');
         } else {
           description = 'Bride is Manglik (Cancelled). Compatible.';
-          cancellationReason = libraryReport.girlManglikCancellations.join('. ');
+          cancellationReason = libraryReport.girlManglikCancellations.join(
+            '. ',
+          );
         }
       } else {
         isMatch = false;
         final mPerson = boyIsManglik ? 'Groom' : 'Bride';
         description = '$mPerson is Manglik, while the other is not.';
         if (boyIsManglik && boyCancelled) {
-          cancellationReason = 'Groom has partial cancellations: ${libraryReport.boyManglikCancellations.join('. ')}';
+          cancellationReason =
+              'Groom has partial cancellations: ${libraryReport.boyManglikCancellations.join('. ')}';
         } else if (girlIsManglik && girlCancelled) {
-          cancellationReason = 'Bride has partial cancellations: ${libraryReport.girlManglikCancellations.join('. ')}';
+          cancellationReason =
+              'Bride has partial cancellations: ${libraryReport.girlManglikCancellations.join('. ')}';
         }
       }
     }

@@ -44,8 +44,9 @@ class VedicChartService {
       );
 
       // Get list of planets to calculate
-      final planetsToCalculate =
-          includeOuterPlanets ? Planet.majorPlanets : Planet.traditionalPlanets;
+      final planetsToCalculate = includeOuterPlanets
+          ? Planet.majorPlanets
+          : Planet.traditionalPlanets;
 
       // Calculate all planetary positions
       final planetPositions = <Planet, PlanetPosition>{};
@@ -87,10 +88,17 @@ class VedicChartService {
 
         final house = houses.getHouseForLongitude(position.longitude);
         final dignity = _calculateDignity(
-            planet, position.longitude, planetHouseMap, house);
+          planet,
+          position.longitude,
+          planetHouseMap,
+          house,
+        );
         final isCombust = PlanetPosition.calculateCombustion(
-            planet, position.longitude, sunPosition.longitude,
-            longitudeSpeed: position.longitudeSpeed);
+          planet,
+          position.longitude,
+          sunPosition.longitude,
+          longitudeSpeed: position.longitudeSpeed,
+        );
 
         vedicPlanets[planet] = VedicPlanetInfo(
           position: position,
@@ -104,8 +112,12 @@ class VedicChartService {
 
       // Create Vedic info for Rahu
       final rahuHouse = houses.getHouseForLongitude(rahuPosition.longitude);
-      final rahuDignity = _calculateDignity(flags.nodeType.planet,
-          rahuPosition.longitude, planetHouseMap, rahuHouse);
+      final rahuDignity = _calculateDignity(
+        flags.nodeType.planet,
+        rahuPosition.longitude,
+        planetHouseMap,
+        rahuHouse,
+      );
       final rahuInfo = VedicPlanetInfo(
         position: rahuPosition,
         house: rahuHouse,
@@ -181,8 +193,9 @@ class VedicChartService {
     } else {
       // For other systems (Placidus, Equal, etc.), subtracting ayanamsa from
       // the tropical cusps correctly yields the exact sidereal cusps.
-      cusps =
-          tropicalCusps.map((cusp) => (cusp - ayanamsa + 360) % 360).toList();
+      cusps = tropicalCusps
+          .map((cusp) => (cusp - ayanamsa + 360) % 360)
+          .toList();
     }
 
     return HouseSystem(
@@ -261,7 +274,11 @@ class VedicChartService {
     final signLord = _getSignLord(signIndex);
     if (signLord != null) {
       return _calculateFriendshipDignity(
-          planet, signLord, planetHouseMap, planetHouse);
+        planet,
+        signLord,
+        planetHouseMap,
+        planetHouse,
+      );
     }
 
     return PlanetaryDignity.neutralSign;
@@ -275,8 +292,8 @@ class VedicChartService {
     int planetHouse,
   ) {
     // 1. Naisargika (natural / permanent) friendship
-    final natural = RelationshipCalculator.naturalRelationships[planet]
-            ?[signLord] ??
+    final natural =
+        RelationshipCalculator.naturalRelationships[planet]?[signLord] ??
         RelationshipType.neutral;
 
     // 2. Tatkalika (temporal / chart-based) friendship
@@ -286,8 +303,10 @@ class VedicChartService {
         : RelationshipType.neutral;
 
     // 3. Panchadha Maitri (compound)
-    final compound =
-        RelationshipCalculator.calculateCompound(natural, temporary);
+    final compound = RelationshipCalculator.calculateCompound(
+      natural,
+      temporary,
+    );
 
     return switch (compound) {
       RelationshipType.greatFriend => PlanetaryDignity.greatFriend,

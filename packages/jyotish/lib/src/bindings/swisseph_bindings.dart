@@ -14,174 +14,213 @@ class SwissEphBindings {
   static final Logger _log = Logger('jyotish.SwissEphBindings');
 
   // Function signatures
-  late final _sweSetEphePath = _lib.lookupFunction<
-      ffi.Void Function(ffi.Pointer<ffi.Char>),
-      void Function(ffi.Pointer<ffi.Char>)>('swe_set_ephe_path');
+  late final _sweSetEphePath = _lib
+      .lookupFunction<
+        ffi.Void Function(ffi.Pointer<ffi.Char>),
+        void Function(ffi.Pointer<ffi.Char>)
+      >('swe_set_ephe_path');
 
-  late final _sweCalcUt = _lib.lookupFunction<
-      ffi.Int32 Function(
-        ffi.Double,
-        ffi.Int32,
-        ffi.Int32,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Char>,
-      ),
-      int Function(
-        double,
-        int,
-        int,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Char>,
-      )>('swe_calc_ut');
+  late final _sweCalcUt = _lib
+      .lookupFunction<
+        ffi.Int32 Function(
+          ffi.Double,
+          ffi.Int32,
+          ffi.Int32,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Char>,
+        ),
+        int Function(
+          double,
+          int,
+          int,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >('swe_calc_ut');
 
-  late final _sweSetSidMode = _lib.lookupFunction<
-      ffi.Void Function(ffi.Int32, ffi.Double, ffi.Double),
-      void Function(int, double, double)>('swe_set_sid_mode');
+  late final _sweSetSidMode = _lib
+      .lookupFunction<
+        ffi.Void Function(ffi.Int32, ffi.Double, ffi.Double),
+        void Function(int, double, double)
+      >('swe_set_sid_mode');
 
-  late final _sweSetTopo = _lib.lookupFunction<
-      ffi.Void Function(ffi.Double, ffi.Double, ffi.Double),
-      void Function(double, double, double)>('swe_set_topo');
+  late final _sweSetTopo = _lib
+      .lookupFunction<
+        ffi.Void Function(ffi.Double, ffi.Double, ffi.Double),
+        void Function(double, double, double)
+      >('swe_set_topo');
 
-  late final _sweClose =
-      _lib.lookupFunction<ffi.Void Function(), void Function()>('swe_close');
+  late final _sweClose = _lib
+      .lookupFunction<ffi.Void Function(), void Function()>('swe_close');
 
-  late final _sweJulday = _lib.lookupFunction<
-      ffi.Double Function(
-        ffi.Int32,
-        ffi.Int32,
-        ffi.Int32,
-        ffi.Double,
-        ffi.Int32,
-      ),
-      double Function(
-        int,
-        int,
-        int,
-        double,
-        int,
-      )>('swe_julday');
+  late final _sweJulday = _lib
+      .lookupFunction<
+        ffi.Double Function(
+          ffi.Int32,
+          ffi.Int32,
+          ffi.Int32,
+          ffi.Double,
+          ffi.Int32,
+        ),
+        double Function(int, int, int, double, int)
+      >('swe_julday');
 
-  late final _sweVersion = _lib.lookupFunction<
-      ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>),
-      ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>)>('swe_version');
+  late final _sweVersion = _lib
+      .lookupFunction<
+        ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>),
+        ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>)
+      >('swe_version');
 
-  late final _sweGetAyanamsaUt = _lib.lookupFunction<
-      ffi.Double Function(ffi.Double),
-      double Function(double)>('swe_get_ayanamsa_ut');
+  late final _sweGetAyanamsaUt = _lib
+      .lookupFunction<ffi.Double Function(ffi.Double), double Function(double)>(
+        'swe_get_ayanamsa_ut',
+      );
 
-  late final _sweHouses = _lib.lookupFunction<
-      ffi.Int32 Function(
-        ffi.Double,
-        ffi.Double,
-        ffi.Double,
-        ffi.Int32,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-      ),
-      int Function(
-        double,
-        double,
-        double,
-        int,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-      )>('swe_houses');
+  late final _sweHouses = _lib
+      .lookupFunction<
+        ffi.Int32 Function(
+          ffi.Double,
+          ffi.Double,
+          ffi.Double,
+          ffi.Int32,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+        ),
+        int Function(
+          double,
+          double,
+          double,
+          int,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+        )
+      >('swe_houses');
 
-  late final _sweRiseTrans = _lib.lookupFunction<
-      ffi.Int32 Function(
-        ffi.Double,
-        ffi.Int32,
-        ffi.Pointer<ffi.Char>,
-        ffi.Int32,
-        ffi.Int32,
-        ffi.Pointer<ffi.Double>,
-        ffi.Double,
-        ffi.Double,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Char>,
-      ),
-      int Function(
-        double,
-        int,
-        ffi.Pointer<ffi.Char>,
-        int,
-        int,
-        ffi.Pointer<ffi.Double>,
-        double,
-        double,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Char>,
-      )>('swe_rise_trans');
+  late final _sweRiseTrans = _lib
+      .lookupFunction<
+        ffi.Int32 Function(
+          ffi.Double,
+          ffi.Int32,
+          ffi.Pointer<ffi.Char>,
+          ffi.Int32,
+          ffi.Int32,
+          ffi.Pointer<ffi.Double>,
+          ffi.Double,
+          ffi.Double,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Char>,
+        ),
+        int Function(
+          double,
+          int,
+          ffi.Pointer<ffi.Char>,
+          int,
+          int,
+          ffi.Pointer<ffi.Double>,
+          double,
+          double,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >('swe_rise_trans');
 
-  late final _sweLunEclipseHow = _lib.lookupFunction<
-      ffi.Int32 Function(
-        ffi.Double,
-        ffi.Int32,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Char>,
-      ),
-      int Function(
-        double,
-        int,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Char>,
-      )>('swe_lun_eclipse_how');
+  late final _sweLunEclipseHow = _lib
+      .lookupFunction<
+        ffi.Int32 Function(
+          ffi.Double,
+          ffi.Int32,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Char>,
+        ),
+        int Function(
+          double,
+          int,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >('swe_lun_eclipse_how');
 
-  late final _sweLunEclipseWhen = _lib.lookupFunction<
-      ffi.Int32 Function(
-        ffi.Double,
-        ffi.Int32,
-        ffi.Int32,
-        ffi.Pointer<ffi.Double>,
-        ffi.Int32,
-        ffi.Pointer<ffi.Char>,
-      ),
-      int Function(
-        double,
-        int,
-        int,
-        ffi.Pointer<ffi.Double>,
-        int,
-        ffi.Pointer<ffi.Char>,
-      )>('swe_lun_eclipse_when');
+  late final _sweLunEclipseWhen = _lib
+      .lookupFunction<
+        ffi.Int32 Function(
+          ffi.Double,
+          ffi.Int32,
+          ffi.Int32,
+          ffi.Pointer<ffi.Double>,
+          ffi.Int32,
+          ffi.Pointer<ffi.Char>,
+        ),
+        int Function(
+          double,
+          int,
+          int,
+          ffi.Pointer<ffi.Double>,
+          int,
+          ffi.Pointer<ffi.Char>,
+        )
+      >('swe_lun_eclipse_when');
 
-  late final _sweSolEclipseHow = _lib.lookupFunction<
-      ffi.Int32 Function(
-        ffi.Double,
-        ffi.Int32,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Char>,
-      ),
-      int Function(
-        double,
-        int,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Char>,
-      )>('swe_sol_eclipse_how');
+  late final _sweSolEclipseWhenGlob = _lib
+      .lookupFunction<
+        ffi.Int32 Function(
+          ffi.Double,
+          ffi.Int32,
+          ffi.Int32,
+          ffi.Pointer<ffi.Double>,
+          ffi.Int32,
+          ffi.Pointer<ffi.Char>,
+        ),
+        int Function(
+          double,
+          int,
+          int,
+          ffi.Pointer<ffi.Double>,
+          int,
+          ffi.Pointer<ffi.Char>,
+        )
+      >('swe_sol_eclipse_when_glob');
 
-  late final _sweSolEclipseWhenLoc = _lib.lookupFunction<
-      ffi.Int32 Function(
-        ffi.Double,
-        ffi.Int32,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-        ffi.Int32,
-        ffi.Pointer<ffi.Char>,
-      ),
-      int Function(
-        double,
-        int,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-        int,
-        ffi.Pointer<ffi.Char>,
-      )>('swe_sol_eclipse_when_loc');
+  late final _sweSolEclipseHow = _lib
+      .lookupFunction<
+        ffi.Int32 Function(
+          ffi.Double,
+          ffi.Int32,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Char>,
+        ),
+        int Function(
+          double,
+          int,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >('swe_sol_eclipse_how');
+
+  late final _sweSolEclipseWhenLoc = _lib
+      .lookupFunction<
+        ffi.Int32 Function(
+          ffi.Double,
+          ffi.Int32,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+          ffi.Int32,
+          ffi.Pointer<ffi.Char>,
+        ),
+        int Function(
+          double,
+          int,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+          ffi.Pointer<ffi.Double>,
+          int,
+          ffi.Pointer<ffi.Char>,
+        )
+      >('swe_sol_eclipse_when_loc');
 
   /// Loads the appropriate Swiss Ephemeris library for the platform.
   ffi.DynamicLibrary _loadLibrary() {
@@ -375,10 +414,7 @@ class SwissEphBindings {
       // [4] = Equatorial ascendant, [5] = Co-ascendant (Koch), etc.
       final ascmc = List.generate(10, (i) => ascmcPtr[i]);
 
-      return {
-        'cusps': cusps,
-        'ascmc': ascmc,
-      };
+      return {'cusps': cusps, 'ascmc': ascmc};
     } finally {
       malloc.free(cuspsPtr);
       malloc.free(ascmcPtr);
@@ -450,7 +486,8 @@ class SwissEphBindings {
         julianDay,
         flags,
         ffi.Pointer.fromAddress(
-            0), // geopos not used for lunar eclipse (global)
+          0,
+        ), // geopos not used for lunar eclipse (global)
         attrPtr,
         errorBuffer,
       );
@@ -480,6 +517,39 @@ class SwissEphBindings {
     final tretPtr = malloc<ffi.Double>(20);
     try {
       final returnCode = _sweLunEclipseWhen(
+        julianDay,
+        flags,
+        eclipseTypeFlags,
+        tretPtr,
+        backward ? 1 : 0,
+        errorBuffer,
+      );
+
+      if (returnCode < 0) {
+        return null;
+      }
+
+      final result = <double>[];
+      for (var i = 0; i < 20; i++) {
+        result.add(tretPtr[i]);
+      }
+      return result;
+    } finally {
+      malloc.free(tretPtr);
+    }
+  }
+
+  /// Finds the next or previous solar eclipse globally.
+  List<double>? findSolarEclipseWhenGlob({
+    required double julianDay,
+    required int flags,
+    required int eclipseTypeFlags,
+    required bool backward,
+    required ffi.Pointer<ffi.Char> errorBuffer,
+  }) {
+    final tretPtr = malloc<ffi.Double>(20);
+    try {
+      final returnCode = _sweSolEclipseWhenGlob(
         julianDay,
         flags,
         eclipseTypeFlags,

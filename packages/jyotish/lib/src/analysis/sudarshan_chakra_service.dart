@@ -25,10 +25,12 @@ class SudarshanChakraService {
     final moonInfo = chart.getPlanet(Planet.moon);
     final sunInfo = chart.getPlanet(Planet.sun);
 
-    final chandraSign =
-        moonInfo != null ? (moonInfo.longitude / 30).floor() % 12 : lagnaSign;
-    final suryaSign =
-        sunInfo != null ? (sunInfo.longitude / 30).floor() % 12 : lagnaSign;
+    final chandraSign = moonInfo != null
+        ? (moonInfo.longitude / 30).floor() % 12
+        : lagnaSign;
+    final suryaSign = sunInfo != null
+        ? (sunInfo.longitude / 30).floor() % 12
+        : lagnaSign;
 
     // Calculate house strengths
     final houseStrengths = <int, SudarshanHouseStrength>{};
@@ -118,8 +120,9 @@ class SudarshanChakraService {
 
     // Get the planet's sign
     final planetInfo = chart.getPlanet(planet);
-    final planetSign =
-        planetInfo != null ? (planetInfo.longitude / 30).floor() % 12 : 0;
+    final planetSign = planetInfo != null
+        ? (planetInfo.longitude / 30).floor() % 12
+        : 0;
 
     // From Moon/Sun perspective, calculate which house this planet is in
     final chandraPlacement = ((planetSign - chandraSign + 12) % 12) + 1;

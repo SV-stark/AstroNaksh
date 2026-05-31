@@ -54,14 +54,14 @@ enum Rashi {
   /// - Sagittarius, Pisces  Jupiter
   /// - Capricorn, Aquarius  Saturn
   Planet get lord => switch (this) {
-        Rashi.aries || Rashi.scorpio => Planet.mars,
-        Rashi.taurus || Rashi.libra => Planet.venus,
-        Rashi.gemini || Rashi.virgo => Planet.mercury,
-        Rashi.cancer => Planet.moon,
-        Rashi.leo => Planet.sun,
-        Rashi.sagittarius || Rashi.pisces => Planet.jupiter,
-        Rashi.capricorn || Rashi.aquarius => Planet.saturn,
-      };
+    Rashi.aries || Rashi.scorpio => Planet.mars,
+    Rashi.taurus || Rashi.libra => Planet.venus,
+    Rashi.gemini || Rashi.virgo => Planet.mercury,
+    Rashi.cancer => Planet.moon,
+    Rashi.leo => Planet.sun,
+    Rashi.sagittarius || Rashi.pisces => Planet.jupiter,
+    Rashi.capricorn || Rashi.aquarius => Planet.saturn,
+  };
 
   @override
   String toString() => name;

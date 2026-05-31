@@ -209,10 +209,7 @@ class SouthIndianChartPainter extends CustomPainter {
           textDirection: TextDirection.ltr,
         );
         textPainter.layout();
-        textPainter.paint(
-          canvas,
-          Offset(rect.left + 4, rect.top + 4),
-        );
+        textPainter.paint(canvas, Offset(rect.left + 4, rect.top + 4));
       }
 
       // 3. Draw Planets

@@ -29,20 +29,23 @@ void main() {
   });
 
   group('Advanced Jyotish Feature Suite (v2.11.0) Tests', () {
-    test('VargaConfiguration settings serialization and defaults in ChartCustomization', () {
-      final config = ChartCustomization();
-      expect(config.horaMethod, HoraMethod.parashara);
-      expect(config.drekkanaMethod, DrekkanaMethod.parashara);
-      expect(config.navamshaMethod, NavamshaMethod.parashara);
-      expect(config.dashamshaMethod, DashamshaMethod.parashara);
+    test(
+      'VargaConfiguration settings serialization and defaults in ChartCustomization',
+      () {
+        final config = ChartCustomization();
+        expect(config.horaMethod, HoraMethod.parashara);
+        expect(config.drekkanaMethod, DrekkanaMethod.parashara);
+        expect(config.navamshaMethod, NavamshaMethod.parashara);
+        expect(config.dashamshaMethod, DashamshaMethod.parashara);
 
-      final json = config.toJson();
-      final parsed = ChartCustomization.fromJson(json);
-      expect(parsed.horaMethod, HoraMethod.parashara);
-      expect(parsed.drekkanaMethod, DrekkanaMethod.parashara);
-      expect(parsed.navamshaMethod, NavamshaMethod.parashara);
-      expect(parsed.dashamshaMethod, DashamshaMethod.parashara);
-    });
+        final json = config.toJson();
+        final parsed = ChartCustomization.fromJson(json);
+        expect(parsed.horaMethod, HoraMethod.parashara);
+        expect(parsed.drekkanaMethod, DrekkanaMethod.parashara);
+        expect(parsed.navamshaMethod, NavamshaMethod.parashara);
+        expect(parsed.dashamshaMethod, DashamshaMethod.parashara);
+      },
+    );
 
     test('Special Lagnas computation', () {
       final chart = TestChartBuilder()
@@ -51,7 +54,10 @@ void main() {
           .build();
 
       final sunrise = DateTime.utc(2000, 1, 1, 6, 30);
-      final specialLagnas = EphemerisManager.jyotish.calculateSpecialLagnas(chart.baseChart, sunrise);
+      final specialLagnas = EphemerisManager.jyotish.calculateSpecialLagnas(
+        chart.baseChart,
+        sunrise,
+      );
 
       expect(specialLagnas.horaLagna, isNotNull);
       expect(specialLagnas.ghatiLagna, isNotNull);

@@ -25,19 +25,24 @@ class DivisionalChartService {
 
     // Cache key includes natal chart time, location, ayanamsa mode and a checksum of planet positions
     // to avoid collisions in tests or when manually manipulating charts.
-    final planetsHash = rashiChart.planets.values
-        .fold(0, (hash, p) => hash ^ p.longitude.hashCode);
+    final planetsHash = rashiChart.planets.values.fold(
+      0,
+      (hash, p) => hash ^ p.longitude.hashCode,
+    );
     final configKey = config != null
         ? '_${config.horaMethod.name}_${config.drekkanaMethod.name}_${config.navamshaMethod.name}_${config.dashamshaMethod.name}'
         : '';
-    final key = '${rashiChart.dateTime.millisecondsSinceEpoch}'
+    final key =
+        '${rashiChart.dateTime.millisecondsSinceEpoch}'
         '_${rashiChart.latitude}_${rashiChart.longitudeCoord}'
         '_${rashiChart.calculationFlags?.siderealMode.name ?? 'default'}'
         '_${rashiChart.ascendant.hashCode}'
         '_${planetsHash}_${type.name}$configKey';
 
     return _cache.putIfAbsent(
-        key, () => _computeDivisionalChart(rashiChart, type, config: config));
+      key,
+      () => _computeDivisionalChart(rashiChart, type, config: config),
+    );
   }
 
   VedicChart _computeDivisionalChart(
@@ -180,8 +185,11 @@ class DivisionalChartService {
       vPositionInSign = details.posInSub;
       vSubSpan = details.span;
     } else {
-      newLongitude = _calculateVargaLongitude(originalInfo.longitude, type,
-          config: config);
+      newLongitude = _calculateVargaLongitude(
+        originalInfo.longitude,
+        type,
+        config: config,
+      );
       vPositionInSign = newLongitude % 30;
     }
 
@@ -255,7 +263,11 @@ class DivisionalChartService {
     final signLord = _getSignLord(signIndex);
     if (signLord != null) {
       return _calculateFriendshipDignity(
-          planet, signLord, planetHouseMap, planetHouse);
+        planet,
+        signLord,
+        planetHouseMap,
+        planetHouse,
+      );
     }
 
     return PlanetaryDignity.neutralSign;
@@ -268,8 +280,8 @@ class DivisionalChartService {
     Map<Planet, int> planetHouseMap,
     int planetHouse,
   ) {
-    final natural = RelationshipCalculator.naturalRelationships[planet]
-            ?[signLord] ??
+    final natural =
+        RelationshipCalculator.naturalRelationships[planet]?[signLord] ??
         RelationshipType.neutral;
 
     final signLordHouse = planetHouseMap[signLord];
@@ -277,8 +289,10 @@ class DivisionalChartService {
         ? RelationshipCalculator.calculateTemporary(planetHouse, signLordHouse)
         : RelationshipType.neutral;
 
-    final compound =
-        RelationshipCalculator.calculateCompound(natural, temporary);
+    final compound = RelationshipCalculator.calculateCompound(
+      natural,
+      temporary,
+    );
 
     return switch (compound) {
       RelationshipType.greatFriend => PlanetaryDignity.greatFriend,
@@ -382,15 +396,22 @@ class DivisionalChartService {
   }
 
   /// Calculates the absolute longitude (0-360) of a point in a divisional chart.
-  double _calculateVargaLongitude(double longitude, DivisionalChartType type,
-      {VargaConfiguration? config}) {
+  double _calculateVargaLongitude(
+    double longitude,
+    DivisionalChartType type, {
+    VargaConfiguration? config,
+  }) {
     // 1. Get current sign and position in sign
     final signIndex = (longitude / 30).floor(); // 0-11
     final degreeInSign = longitude % 30;
 
     // 2. Determine the "Varga Sign Index" (0-11)
-    final vargaSignIndex =
-        _getVargaSign(signIndex, degreeInSign, type, config: config);
+    final vargaSignIndex = _getVargaSign(
+      signIndex,
+      degreeInSign,
+      type,
+      config: config,
+    );
 
     // 3. Determine degrees in the new sign
     // Typically: (degreeInSign * N) % 30
@@ -401,8 +422,11 @@ class DivisionalChartService {
   }
 
   int _getVargaSign(
-      int signIndex, double degreeInSign, DivisionalChartType type,
-      {VargaConfiguration? config}) {
+    int signIndex,
+    double degreeInSign,
+    DivisionalChartType type, {
+    VargaConfiguration? config,
+  }) {
     final activeConfig = config ?? const VargaConfiguration();
     final sign = signIndex + 1; // 1-12
     final isOdd = sign % 2 != 0;
@@ -561,8 +585,8 @@ class DivisionalChartService {
             final startSign = isMoveable
                 ? signIndex
                 : isFixed
-                    ? (signIndex + 8) % 12
-                    : (signIndex + 4) % 12;
+                ? (signIndex + 8) % 12
+                : (signIndex + 4) % 12;
             return (startSign + part) % 12;
         }
 
@@ -730,7 +754,10 @@ class DivisionalChartService {
   }
 
   ({double longitude, double posInSub, double span}) _calculateD249Details(
-      int signIndex, double degreeInSign, bool isOdd) {
+    int signIndex,
+    double degreeInSign,
+    bool isOdd,
+  ) {
     final dashaData = [
       (planet: Planet.ketu, years: 7, degrees: 1.75),
       (planet: Planet.venus, years: 20, degrees: 5.0),

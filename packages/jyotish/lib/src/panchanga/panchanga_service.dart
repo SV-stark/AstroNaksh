@@ -169,11 +169,7 @@ class PanchangaService {
     final nameIndex = yogaNumber - 1;
     final name = YogaInfo.yogaNames[nameIndex];
 
-    return YogaInfo(
-      number: yogaNumber,
-      name: name,
-      elapsed: elapsed,
-    );
+    return YogaInfo(number: yogaNumber, name: name, elapsed: elapsed);
   }
 
   /// Calculates the Karana.
@@ -345,7 +341,8 @@ class PanchangaService {
     final julianCentury = (jd - 2451545.0) / 36525.0;
 
     // Geometric Mean Longitude Sun (deg)
-    final geomMeanLongSun = (280.46646 +
+    final geomMeanLongSun =
+        (280.46646 +
             julianCentury * (36000.76983 + julianCentury * 0.0003032)) %
         360;
 
@@ -354,11 +351,13 @@ class PanchangaService {
         357.52911 + julianCentury * (35999.05029 - 0.0001537 * julianCentury);
 
     // Eccentricity of Earth's Orbit
-    final eccentEarthOrbit = 0.016708634 -
+    final eccentEarthOrbit =
+        0.016708634 -
         julianCentury * (0.000042037 + 0.0000001267 * julianCentury);
 
     // Sun Equation of Center
-    final sunEqOfCtr = math.sin(_degToRad(geomMeanAnomSun)) *
+    final sunEqOfCtr =
+        math.sin(_degToRad(geomMeanAnomSun)) *
             (1.914602 - julianCentury * (0.004817 + 0.000014 * julianCentury)) +
         math.sin(_degToRad(2 * geomMeanAnomSun)) *
             (0.019993 - 0.000101 * julianCentury) +
@@ -368,12 +367,14 @@ class PanchangaService {
     final sunTrueLong = geomMeanLongSun + sunEqOfCtr;
 
     // Sun Apparent Longitude (deg)
-    final sunAppLong = sunTrueLong -
+    final sunAppLong =
+        sunTrueLong -
         0.00569 -
         0.00478 * math.sin(_degToRad(125.04 - 1934.136 * julianCentury));
 
     // Mean Obliquity of Ecliptic (deg)
-    final meanObliqEcliptic = 23 +
+    final meanObliqEcliptic =
+        23 +
         (26 +
                 ((21.448 -
                         julianCentury *
@@ -384,34 +385,42 @@ class PanchangaService {
             60;
 
     // Obliquity Correction (deg)
-    final obliqCorr = meanObliqEcliptic +
+    final obliqCorr =
+        meanObliqEcliptic +
         0.00256 * math.cos(_degToRad(125.04 - 1934.136 * julianCentury));
 
     // Sun Declination (deg)
-    final sunDeclin = _radToDeg(math.asin(
-        math.sin(_degToRad(obliqCorr)) * math.sin(_degToRad(sunAppLong))));
+    final sunDeclin = _radToDeg(
+      math.asin(
+        math.sin(_degToRad(obliqCorr)) * math.sin(_degToRad(sunAppLong)),
+      ),
+    );
 
     // Equation of Time (minutes)
     final varY =
         math.tan(_degToRad(obliqCorr / 2)) * math.tan(_degToRad(obliqCorr / 2));
-    final eqOfTime = 4 *
-        _radToDeg(varY * math.sin(2 * _degToRad(geomMeanLongSun)) -
-            2 * eccentEarthOrbit * math.sin(_degToRad(geomMeanAnomSun)) +
-            4 *
-                eccentEarthOrbit *
-                varY *
-                math.sin(_degToRad(geomMeanAnomSun)) *
-                math.cos(2 * _degToRad(geomMeanLongSun)) -
-            0.5 * varY * varY * math.sin(4 * _degToRad(geomMeanLongSun)) -
-            1.25 *
-                eccentEarthOrbit *
-                eccentEarthOrbit *
-                math.sin(2 * _degToRad(geomMeanAnomSun)));
+    final eqOfTime =
+        4 *
+        _radToDeg(
+          varY * math.sin(2 * _degToRad(geomMeanLongSun)) -
+              2 * eccentEarthOrbit * math.sin(_degToRad(geomMeanAnomSun)) +
+              4 *
+                  eccentEarthOrbit *
+                  varY *
+                  math.sin(_degToRad(geomMeanAnomSun)) *
+                  math.cos(2 * _degToRad(geomMeanLongSun)) -
+              0.5 * varY * varY * math.sin(4 * _degToRad(geomMeanLongSun)) -
+              1.25 *
+                  eccentEarthOrbit *
+                  eccentEarthOrbit *
+                  math.sin(2 * _degToRad(geomMeanAnomSun)),
+        );
 
     // Hour Angle Calculation (deg)
     // Zenith for sunrise/sunset is 90.833 degrees (90 + 50' refraction/sun size)
     const zenith = 90.833;
-    final haArg = (math.cos(_degToRad(zenith)) /
+    final haArg =
+        (math.cos(_degToRad(zenith)) /
             (math.cos(_degToRad(latitude)) * math.cos(_degToRad(sunDeclin)))) -
         (math.tan(_degToRad(latitude)) * math.tan(_degToRad(sunDeclin)));
 
@@ -472,9 +481,14 @@ class PanchangaService {
     final minute = (mins % 60).floor();
     final second = ((mins - (hour * 60 + minute)) * 60).round();
 
-    return DateTime.utc(date.year, date.month, date.day, hour, minute, second)
-        .add(Duration(days: dayOffset))
-        .toLocal();
+    return DateTime.utc(
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      minute,
+      second,
+    ).add(Duration(days: dayOffset)).toLocal();
   }
 
   /// Gets the Tithi for a specific date.
@@ -866,8 +880,9 @@ class PanchangaService {
 
     // High-precision binary search
     const maxIterations = 100;
-    const accuracyThreshold =
-        Duration(milliseconds: 100); // 0.1 second precision
+    const accuracyThreshold = Duration(
+      milliseconds: 100,
+    ); // 0.1 second precision
 
     for (var i = 0; i < maxIterations; i++) {
       final window = searchEnd.difference(searchStart);
@@ -876,9 +891,9 @@ class PanchangaService {
         break;
       }
 
-      final mid = searchStart.add(Duration(
-        milliseconds: window.inMilliseconds ~/ 2,
-      ));
+      final mid = searchStart.add(
+        Duration(milliseconds: window.inMilliseconds ~/ 2),
+      );
 
       final sunPos = await _ephemerisService.calculatePlanetPosition(
         planet: Planet.sun,
@@ -1049,10 +1064,7 @@ class BrahmaMuhurta {
 
 /// Represents a generic time period for Panchanga calculations.
 class PanchangaTimePeriod {
-  const PanchangaTimePeriod({
-    required this.start,
-    required this.end,
-  });
+  const PanchangaTimePeriod({required this.start, required this.end});
 
   final DateTime start;
   final DateTime end;

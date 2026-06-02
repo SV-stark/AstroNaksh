@@ -2,13 +2,13 @@
 import 'dart:async';
 
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, FontWeight;
-import 'package:flutter/material.dart'
-    show Colors, FontWeight, LinearProgressIndicator;
+import 'package:flutter/material.dart' show Colors, FontWeight;
 import 'package:jyotish/jyotish.dart';
 
 import '../../core/ephemeris_manager.dart';
+import '../styles.dart';
 
-/// A premium Vedic Clock card for the home screen.
+/// A premium Vedic Clock card.
 /// Shows the VedicDigitalClock + VedicAnalogClock and a Vedic↔Gregorian time converter.
 class VedicClockCard extends StatefulWidget {
   const VedicClockCard({
@@ -77,8 +77,6 @@ class _VedicClockCardState extends State<VedicClockCard> {
   void _convertToGregorian() {
     final vt = _currentVedicTime;
     if (vt == null) return;
-    // Vedic time = elapsed since sunrise.
-    // 1 Ghati = 24 minutes, 1 Vighati = 24 seconds, 1 Lipta = 0.4 seconds
     final secondsElapsed =
         _convGhati * 24 * 60 + _convVighati * 24 + (_convLipta * 24 ~/ 60);
     final converted = vt.currentSunrise.add(Duration(seconds: secondsElapsed));
@@ -87,175 +85,340 @@ class _VedicClockCardState extends State<VedicClockCard> {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = FluentTheme.of(context).accentColor;
-
     return Card(
       padding: EdgeInsets.zero,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF1A0F2E),
+                Color(0xFF120A22),
+                Color(0xFF0D0820),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(
+              color: AppStyles.primaryColor.withValues(alpha: 0.18),
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-              child: Row(
+          child: Stack(
+            children: [
+              // Subtle cosmic accent — glowing radial wash in top-right
+              Positioned(
+                top: -40,
+                right: -40,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          AppStyles.primaryColor.withValues(alpha: 0.18),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(FluentIcons.clock, color: accentColor, size: 20),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Vedic Clock',
-                    style: FluentTheme.of(context).typography.subtitle
-                        ?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    _formatDate(DateTime.now()),
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
+                  _buildHeader(context),
+                  _buildTabBar(context),
+                  if (_tab == 0) _buildClockView(context),
+                  if (_tab == 1) _buildConverterView(context),
+                  const SizedBox(height: 18),
                 ],
               ),
-            ),
-            // Tab row
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-              child: Row(
-                children: [
-                  _tabButton('Clock View', 0, accentColor),
-                  const SizedBox(width: 8),
-                  _tabButton('Time Converter', 1, accentColor),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Tab content
-            if (_tab == 0) _buildClockView(context, accentColor),
-            if (_tab == 1) _buildConverterView(context, accentColor),
-            const SizedBox(height: 16),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _tabButton(String label, int index, AccentColor accentColor) {
+  Widget _buildHeader(BuildContext context) {
+    final vt = _currentVedicTime;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppStyles.primaryColor.withValues(alpha: 0.32),
+                  AppStyles.primaryColor.withValues(alpha: 0.12),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              FluentIcons.clock,
+              color: AppStyles.primaryColor,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'VEDIC MOMENT',
+                style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: 10,
+                  letterSpacing: 1.6,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _formatDate(DateTime.now()),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          if (vt != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppStyles.primaryColor.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppStyles.primaryColor.withValues(alpha: 0.35),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppStyles.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'LIVE',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+      child: Row(
+        children: [
+          _tabButton('Clock View', 0),
+          const SizedBox(width: 24),
+          _tabButton('Time Converter', 1),
+        ],
+      ),
+    );
+  }
+
+  Widget _tabButton(String label, int index) {
     final isSelected = _tab == index;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _tab = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        padding: const EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
-          color: isSelected
-              ? accentColor.withValues(alpha: 0.9)
-              : Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(20),
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected
+                  ? AppStyles.primaryColor
+                  : Colors.transparent,
+              width: 2,
+            ),
+          ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white60,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white54,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             fontSize: 13,
+            letterSpacing: 0.3,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildClockView(BuildContext context, AccentColor accentColor) {
+  Widget _buildClockView(BuildContext context) {
     if (_isLoading) {
       return const Padding(
-        padding: EdgeInsets.all(32),
+        padding: EdgeInsets.symmetric(vertical: 64),
         child: Center(child: ProgressRing()),
       );
     }
     final vt = _currentVedicTime;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
-          // Digital + Analog clocks
+          // Hero: Analog clock with golden glow + digital display
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Analog clock
-              SizedBox(
-                width: 120,
-                height: 120,
-                child: VedicAnalogClock(
-                  location: _location,
-                  getSunriseSunset: EphemerisManager.jyotish.getSunriseSunset,
+              Container(
+                width: 132,
+                height: 132,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppStyles.primaryColor.withValues(alpha: 0.18),
+                      blurRadius: 28,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppStyles.primaryColor.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: VedicAnalogClock(
+                    location: _location,
+                    getSunriseSunset: EphemerisManager.jyotish.getSunriseSunset,
+                  ),
                 ),
               ),
               const SizedBox(width: 20),
-              // Digital display
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    VedicDigitalClock(
-                      location: _location,
-                      getSunriseSunset:
-                          EphemerisManager.jyotish.getSunriseSunset,
-                      showLocalTime: true,
-                      showSunriseSunset: true,
-                    ),
-                  ],
+                child: VedicDigitalClock(
+                  location: _location,
+                  getSunriseSunset: EphemerisManager.jyotish.getSunriseSunset,
+                  showLocalTime: true,
+                  showSunriseSunset: true,
                 ),
               ),
             ],
           ),
-          // Progress bar + info
           if (vt != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             // Day progress
             Row(
               children: [
                 const Text(
-                  'Day Progress',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                  'DAY PROGRESS',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 10,
+                    letterSpacing: 1.4,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const Spacer(),
-                Text(
-                  '${vt.totalGhatis.toStringAsFixed(1)} / 60 Ghatis',
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: vt.totalGhatis.toStringAsFixed(1),
+                        style: const TextStyle(
+                          color: AppStyles.primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: ' / 60 Ghatis',
+                        style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: (vt.totalGhatis / 60).clamp(0.0, 1.0),
-                minHeight: 6,
-                backgroundColor: Colors.white.withValues(alpha: 0.15),
-                valueColor: AlwaysStoppedAnimation(accentColor),
+              borderRadius: BorderRadius.circular(6),
+              child: Stack(
+                children: [
+                  Container(
+                    height: 8,
+                    color: Colors.white.withValues(alpha: 0.06),
+                  ),
+                  FractionallySizedBox(
+                    widthFactor: (vt.totalGhatis / 60).clamp(0.0, 1.0),
+                    child: Container(
+                      height: 8,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppStyles.primaryColor,
+                            AppStyles.primaryColor.withValues(alpha: 0.6),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 18),
             // Stats row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _statCell('Ghati', '${vt.ghati}'),
-                _divider(),
-                _statCell('Vighati', '${vt.vighati}'),
-                _divider(),
-                _statCell('Lipta', '${vt.lipta}'),
-                _divider(),
-                _statCell('Next Sunrise', _fmtTime(vt.nextSunrise)),
-              ],
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.06),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(child: _statCell('GHATI', '${vt.ghati}')),
+                  _divider(),
+                  Expanded(child: _statCell('VIGHATI', '${vt.vighati}')),
+                  _divider(),
+                  Expanded(child: _statCell('LIPTA', '${vt.lipta}')),
+                  _divider(),
+                  Expanded(
+                    child: _statCell('NEXT SUNRISE', _fmtTime(vt.nextSunrise)),
+                  ),
+                ],
+              ),
             ),
           ],
         ],
@@ -263,50 +426,90 @@ class _VedicClockCardState extends State<VedicClockCard> {
     );
   }
 
-  Widget _buildConverterView(BuildContext context, AccentColor accentColor) {
+  Widget _buildConverterView(BuildContext context) {
     final vt = _currentVedicTime;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Now in Vedic
+          // Now in Vedic — hero monospace display
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.07),
-              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.06),
+                  Colors.white.withValues(alpha: 0.02),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppStyles.primaryColor.withValues(alpha: 0.2),
+              ),
             ),
             child: Row(
               children: [
-                Icon(FluentIcons.sync_occurence, color: accentColor, size: 18),
-                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppStyles.primaryColor.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    FluentIcons.sync_occurence,
+                    color: AppStyles.primaryColor,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Now in Vedic Time',
-                        style: TextStyle(color: Colors.white70, fontSize: 11),
+                        'NOW IN VEDIC TIME',
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 10,
+                          letterSpacing: 1.4,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         vt != null ? vt.format() : '--:--:--',
-                        style: TextStyle(
-                          color: accentColor,
-                          fontSize: 22,
+                        style: const TextStyle(
+                          color: AppStyles.primaryColor,
+                          fontSize: 26,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'monospace',
+                          height: 1.0,
+                          letterSpacing: 1.2,
                         ),
                       ),
-                      if (vt != null)
-                        Text(
-                          'Sunrise: ${_fmtTime(vt.currentSunrise)}',
-                          style: const TextStyle(
-                            color: Colors.white54,
-                            fontSize: 11,
-                          ),
+                      if (vt != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(
+                              FluentIcons.sunny,
+                              size: 11,
+                              color: Colors.white54,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Sunrise ${_fmtTime(vt.currentSunrise)}',
+                              style: const TextStyle(
+                                color: Colors.white54,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -314,70 +517,124 @@ class _VedicClockCardState extends State<VedicClockCard> {
             ),
           ),
           const SizedBox(height: 16),
-          // Converter: Vedic -> Gregorian
+          // Converter card
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.07),
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Vedic → Gregorian Converter',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const Row(
+                  children: [
+                    Icon(
+                      FluentIcons.calculator_delta,
+                      size: 14,
+                      color: AppStyles.primaryColor,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Vedic → Gregorian Converter',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     _numSelector('Ghati', _convGhati, 0, 59, (v) {
                       setState(() => _convGhati = v);
                     }),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     _numSelector('Vighati', _convVighati, 0, 59, (v) {
                       setState(() => _convVighati = v);
                     }),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     _numSelector('Lipta', _convLipta, 0, 59, (v) {
                       setState(() => _convLipta = v);
                     }),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Button(
-                  onPressed: _convertToGregorian,
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(FluentIcons.calculator_delta, size: 14),
-                      SizedBox(width: 6),
-                      Text('Convert'),
-                    ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.resolveWith((
+                        states,
+                      ) {
+                        if (states.contains(WidgetState.hovered)) {
+                          return AppStyles.primaryColor.withValues(alpha: 0.85);
+                        }
+                        return AppStyles.primaryColor;
+                      }),
+                      padding: WidgetStateProperty.all(
+                        const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                    onPressed: _convertToGregorian,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          FluentIcons.calculator_delta,
+                          size: 14,
+                          color: Colors.black87,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Convert',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 if (_convertedTime != null) ...[
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Icon(
-                        FluentIcons.chevron_right,
-                        size: 14,
-                        color: Colors.white70,
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppStyles.primaryColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppStyles.primaryColor.withValues(alpha: 0.3),
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _fmtDateTime(_convertedTime!),
-                        style: TextStyle(
-                          color: accentColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          FluentIcons.event,
+                          size: 14,
+                          color: AppStyles.primaryColor,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _fmtDateTime(_convertedTime!),
+                            style: const TextStyle(
+                              color: AppStyles.primaryColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ],
@@ -396,43 +653,61 @@ class _VedicClockCardState extends State<VedicClockCard> {
     ValueChanged<int> onChanged,
   ) {
     return Expanded(
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 11),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  FluentIcons.chevron_left,
-                  size: 12,
-                  color: Colors.white70,
-                ),
-                onPressed: value > min ? () => onChanged(value - 1) : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 9,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w600,
               ),
-              Text(
-                value.toString().padLeft(2, '0'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    FluentIcons.chevron_left,
+                    size: 11,
+                    color: value > min ? Colors.white70 : Colors.white24,
+                  ),
+                  onPressed: value > min ? () => onChanged(value - 1) : null,
                 ),
-              ),
-              IconButton(
-                icon: const Icon(
-                  FluentIcons.chevron_right,
-                  size: 12,
-                  color: Colors.white70,
+                SizedBox(
+                  width: 28,
+                  child: Text(
+                    value.toString().padLeft(2, '0'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
                 ),
-                onPressed: value < max ? () => onChanged(value + 1) : null,
-              ),
-            ],
-          ),
-        ],
+                IconButton(
+                  icon: Icon(
+                    FluentIcons.chevron_right,
+                    size: 11,
+                    color: value < max ? Colors.white70 : Colors.white24,
+                  ),
+                  onPressed: value < max ? () => onChanged(value + 1) : null,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -442,15 +717,21 @@ class _VedicClockCardState extends State<VedicClockCard> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.white54, fontSize: 10),
+          style: const TextStyle(
+            color: Colors.white54,
+            fontSize: 9,
+            letterSpacing: 1.2,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           value,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
           ),
         ),
       ],
@@ -460,25 +741,15 @@ class _VedicClockCardState extends State<VedicClockCard> {
   Widget _divider() {
     return Container(
       width: 1,
-      height: 28,
-      color: Colors.white.withValues(alpha: 0.15),
+      height: 30,
+      color: Colors.white.withValues(alpha: 0.08),
     );
   }
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }

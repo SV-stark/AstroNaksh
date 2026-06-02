@@ -11,7 +11,6 @@ import '../ui/utils/responsive_helper.dart';
 import 'horary/horary_input_screen.dart';
 import 'styles.dart';
 import 'widgets/panchang_daily_widget.dart';
-import 'widgets/vedic_clock_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -165,17 +164,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               sliver: const SliverToBoxAdapter(child: PanchangDailyWidget()),
             ),
 
-            // Vedic Clock Card
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                ResponsiveHelper.useMobileLayout(context) ? 16 : 24,
-                8,
-                ResponsiveHelper.useMobileLayout(context) ? 16 : 24,
-                8,
-              ),
-              sliver: const SliverToBoxAdapter(child: VedicClockCard()),
-            ),
-
             // Dashboard Quick Actions
             SliverPadding(
               padding: ResponsiveHelper.getResponsivePadding(context),
@@ -319,6 +307,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: Colors.blue,
                           onTap: () {
                             context.push('/muhurta');
+                          },
+                        ),
+                        _buildQuickAction(
+                          icon: FluentIcons.clock,
+                          title: 'Vedic Clock',
+                          subtitle: 'Ghati & Vighati',
+                          color: Colors.indigo,
+                          onTap: () {
+                            context.push('/vedic-clock');
                           },
                         ),
                       ],

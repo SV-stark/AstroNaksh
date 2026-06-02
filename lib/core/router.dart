@@ -9,6 +9,7 @@ import '../ui/loading_screen.dart';
 import '../ui/panchang_screen.dart';
 import '../ui/settings_screen.dart';
 import '../ui/tools/muhurta_finder_screen.dart';
+import '../ui/vedic_clock_screen.dart';
 
 final router = GoRouter(
   initialLocation: '/loading',
@@ -39,6 +40,10 @@ final router = GoRouter(
     GoRoute(
       path: '/muhurta',
       builder: (context, state) => const MuhurtaFinderScreen(),
+    ),
+    GoRoute(
+      path: '/vedic-clock',
+      builder: (context, state) => const VedicClockScreen(),
     ),
   ],
 );

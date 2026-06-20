@@ -90,28 +90,28 @@ class CalculationFlags {
   /// System : **[AstrologicalSystem.traditional]**.
   /// Uses Lahiri ayanamsa and True Node (preferred by contemporary researchers).
   factory CalculationFlags.modernPrecision() => const CalculationFlags(
-    system: AstrologicalSystem.traditional,
-    nodeType: NodeType.trueNode,
-  );
+        system: AstrologicalSystem.traditional,
+        nodeType: NodeType.trueNode,
+      );
 
   /// Creates flags for sidereal calculations with a custom ayanamsa.
   /// Defaults to the [AstrologicalSystem.traditional] paradigm.
   factory CalculationFlags.sidereal(SiderealMode mode) => CalculationFlags(
-    system: AstrologicalSystem.traditional,
-    siderealMode: mode,
-  );
+        system: AstrologicalSystem.traditional,
+        siderealMode: mode,
+      );
 
   /// Creates flags for sidereal calculations with Lahiri ayanamsa.
   factory CalculationFlags.siderealLahiri() => const CalculationFlags(
-    system: AstrologicalSystem.traditional,
-    siderealMode: SiderealMode.lahiri,
-  );
+        system: AstrologicalSystem.traditional,
+        siderealMode: SiderealMode.lahiri,
+      );
 
   /// Creates flags for topocentric calculations (traditional system).
   factory CalculationFlags.topocentric() => const CalculationFlags(
-    system: AstrologicalSystem.traditional,
-    useTopocentric: true,
-  );
+        system: AstrologicalSystem.traditional,
+        useTopocentric: true,
+      );
 
   /// Creates flags for the **KP (Krishnamurti Paddhati)** system.
   ///
@@ -136,17 +136,17 @@ class CalculationFlags {
   /// final kpData = await jyotish.calculateKPData(chart);
   /// ```
   factory CalculationFlags.kp() => const CalculationFlags(
-    system: AstrologicalSystem.kp,
-    siderealMode: SiderealMode.krishnamurtiVP291,
-  );
+        system: AstrologicalSystem.kp,
+        siderealMode: SiderealMode.krishnamurtiVP291,
+      );
 
   /// Creates flags with specified node type (traditional system).
   ///
   /// [nodeType] - Type of lunar node (meanNode or trueNode).
   factory CalculationFlags.withNodeType(NodeType nodeType) => CalculationFlags(
-    system: AstrologicalSystem.traditional,
-    nodeType: nodeType,
-  );
+        system: AstrologicalSystem.traditional,
+        nodeType: nodeType,
+      );
 
   /// The high-level astrological system/paradigm.
   ///

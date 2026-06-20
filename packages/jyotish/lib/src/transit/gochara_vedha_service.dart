@@ -105,8 +105,7 @@ class GocharaVedhaService {
 
     // 4. Determine result effectiveness
     final resultEffectiveness = isObstructed
-        ? 1.0 -
-              vedhaStrength // Reduced by Vedha
+        ? 1.0 - vedhaStrength // Reduced by Vedha
         : (isFavorable ? 1.0 : 0.0);
 
     return VedhaResult(

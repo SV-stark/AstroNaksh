@@ -594,8 +594,8 @@ class SpecialTransitService {
         final phaseName = phase == 0
             ? 'Rising'
             : phase == 1
-            ? 'Peak'
-            : 'Setting';
+                ? 'Peak'
+                : 'Setting';
 
         periods.add({
           'phase': phaseName,
@@ -604,8 +604,8 @@ class SpecialTransitService {
           'houseFromMoon': phase == 0
               ? 12
               : phase == 1
-              ? 1
-              : 2,
+                  ? 1
+                  : 2,
         });
       }
     }

@@ -75,8 +75,7 @@ class VedicTime {
     required Future<(DateTime? sunrise, DateTime? sunset)> Function({
       required DateTime date,
       required GeographicLocation location,
-    })
-    getSunriseSunset,
+    }) getSunriseSunset,
   }) async {
     final utcTime = time.toUtc();
 

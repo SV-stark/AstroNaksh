@@ -282,8 +282,7 @@ class ProgenyService {
       ChildYoga(
         name: 'Santanada Yoga',
         description: 'When Jupiter aspects the 5th house or its lord',
-        isPresent:
-            jupiterInfo != null &&
+        isPresent: jupiterInfo != null &&
             (_doesPlanetAspectHouse(jupiterInfo, 5) ||
                 _doesPlanetAspectHouse(
                   jupiterInfo,
@@ -339,15 +338,12 @@ class ProgenyService {
     final planetsInFifth = chart.getPlanetsInHouse(5);
     var score = 10;
 
-    final jupiterScore = planetsInFifth.any((p) => p.planet == Planet.jupiter)
-        ? 20
-        : 0;
-    final venusScore = planetsInFifth.any((p) => p.planet == Planet.venus)
-        ? 15
-        : 0;
-    final moonScore = planetsInFifth.any((p) => p.planet == Planet.moon)
-        ? 15
-        : 0;
+    final jupiterScore =
+        planetsInFifth.any((p) => p.planet == Planet.jupiter) ? 20 : 0;
+    final venusScore =
+        planetsInFifth.any((p) => p.planet == Planet.venus) ? 15 : 0;
+    final moonScore =
+        planetsInFifth.any((p) => p.planet == Planet.moon) ? 15 : 0;
 
     score += jupiterScore + venusScore + moonScore;
 

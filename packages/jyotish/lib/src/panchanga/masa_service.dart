@@ -207,8 +207,7 @@ class MasaService {
     var normalizedLongitude = longitude % 360;
     if (normalizedLongitude < 0) normalizedLongitude += 360;
 
-    final isAbhijit =
-        normalizedLongitude >= NakshatraInfo.abhijitStart &&
+    final isAbhijit = normalizedLongitude >= NakshatraInfo.abhijitStart &&
         normalizedLongitude < NakshatraInfo.abhijitEnd;
 
     int nakshatraNumber;
@@ -232,7 +231,7 @@ class MasaService {
 
     final abhijitPortion = isAbhijit
         ? (normalizedLongitude - NakshatraInfo.abhijitStart) /
-              (NakshatraInfo.abhijitEnd - NakshatraInfo.abhijitStart)
+            (NakshatraInfo.abhijitEnd - NakshatraInfo.abhijitStart)
         : 0.0;
 
     return NakshatraInfo(

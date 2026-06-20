@@ -730,8 +730,7 @@ class CompatibilityService {
       if (manglikFromAsc) housesAffected.add(marsFromAsc);
 
       // Determine severity
-      final doshaCount =
-          (manglikFromAsc ? 1 : 0) +
+      final doshaCount = (manglikFromAsc ? 1 : 0) +
           (manglikFromMoon ? 1 : 0) +
           (manglikFromVenus ? 1 : 0);
       severity = doshaCount >= 2 ? 'High' : 'Moderate';
@@ -750,12 +749,10 @@ class CompatibilityService {
       // Rule 2: Mars conjunct (same sign as) Jupiter or Moon
       final jupiter = chart.getPlanet(Planet.jupiter);
       final moon = chart.getPlanet(Planet.moon);
-      final jupiterSign = jupiter != null
-          ? Rashi.fromLongitude(jupiter.longitude)
-          : null;
-      final moonSignCurrent = moon != null
-          ? Rashi.fromLongitude(moon.longitude)
-          : null;
+      final jupiterSign =
+          jupiter != null ? Rashi.fromLongitude(jupiter.longitude) : null;
+      final moonSignCurrent =
+          moon != null ? Rashi.fromLongitude(moon.longitude) : null;
       if (jupiterSign == marsSign || moonSignCurrent == marsSign) {
         isCancelled = true;
         remedies.add(
@@ -771,9 +768,8 @@ class CompatibilityService {
 
       // Rule 4: Mars aspected (same sign) by Jupiter or Venus
       final venus = chart.getPlanet(Planet.venus);
-      final venusSignForAspect = venus != null
-          ? Rashi.fromLongitude(venus.longitude)
-          : null;
+      final venusSignForAspect =
+          venus != null ? Rashi.fromLongitude(venus.longitude) : null;
       // Whole-sign aspect: check if Jupiter or Venus is in a sign that
       // aspects Mars's sign (7th from each aspecting planet)
       bool marsAspectedByBenefic = false;
@@ -870,8 +866,7 @@ class CompatibilityService {
     final pair = {fwdDist, revDist};
 
     // Bhakoot Dosha: 2/12, 5/9, or 6/8 inter-sign relationships
-    bool hasDosha =
-        fwdDist != 1 &&
+    bool hasDosha = fwdDist != 1 &&
         (pair.containsAll({2, 12}) ||
             pair.containsAll({5, 9}) ||
             pair.containsAll({6, 8}));

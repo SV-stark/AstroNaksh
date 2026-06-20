@@ -250,14 +250,15 @@ class VarshapalService {
     String houseSystem = 'W',
     CalculationFlags? flags,
     DateTime? checkDate,
-  }) => calculateVarshapal(
-    birthDateTime: birthDateTime,
-    varshaDateTime: varshaDateTime,
-    location: location,
-    houseSystem: houseSystem,
-    flags: flags,
-    checkDate: checkDate,
-  );
+  }) =>
+      calculateVarshapal(
+        birthDateTime: birthDateTime,
+        varshaDateTime: varshaDateTime,
+        location: location,
+        houseSystem: houseSystem,
+        flags: flags,
+        checkDate: checkDate,
+      );
 
   /// Calculates Varshapal for the current year (from birthday to next birthday).
   Future<Varshapal> calculateCurrentVarshapal({
@@ -303,13 +304,14 @@ class VarshapalService {
     String houseSystem = 'W',
     CalculationFlags? flags,
     DateTime? checkDate,
-  }) => calculateCurrentVarshapal(
-    birthDateTime: birthDateTime,
-    location: location,
-    houseSystem: houseSystem,
-    flags: flags,
-    checkDate: checkDate,
-  );
+  }) =>
+      calculateCurrentVarshapal(
+        birthDateTime: birthDateTime,
+        location: location,
+        houseSystem: houseSystem,
+        flags: flags,
+        checkDate: checkDate,
+      );
 
   /// Calculates the exact millisecond the transiting Sun returns to its natal longitude.
   Future<DateTime> calculateSolarReturn({
@@ -572,9 +574,8 @@ class VarshapalService {
           h == 11;
     }).toList();
 
-    final List<Planet> activeCandidates = eligibleCandidates.isNotEmpty
-        ? eligibleCandidates
-        : candidates;
+    final List<Planet> activeCandidates =
+        eligibleCandidates.isNotEmpty ? eligibleCandidates : candidates;
 
     Planet bestPlanet = activeCandidates.first;
     double maxBala = -1.0;

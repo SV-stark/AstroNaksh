@@ -87,7 +87,7 @@ class MuhurtaService {
     required DateTime sunrise,
     required List<(int tithiNumber, DateTime start, DateTime end)> tithiPeriods,
     required List<(int nakshatraNumber, DateTime start, DateTime end)>
-    nakshatraPeriods,
+        nakshatraPeriods,
   }) {
     final yogas = <SpecialYoga>[];
     final weekday = date.weekday % 7;
@@ -156,8 +156,7 @@ class MuhurtaService {
       for (final tithi in tithiPeriods) {
         // Bhadra Tithis: 2, 7, 12 of either Paksha
         final tNum = tithi.$1;
-        final isBhadraTithi =
-            (tNum == 2 ||
+        final isBhadraTithi = (tNum == 2 ||
             tNum == 7 ||
             tNum == 12 ||
             tNum == 17 ||

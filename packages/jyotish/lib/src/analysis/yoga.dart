@@ -37,15 +37,15 @@ class NatalYoga {
 
   /// Converts this NatalYoga to a JSON map.
   Map<String, dynamic> toJson() => {
-    'key': key,
-    'name': name,
-    'category': category,
-    'description': description,
-    'benefits': benefits,
-    'isPresent': isPresent,
-    'explanation': explanation,
-    'divisionalChart': divisionalChart,
-  };
+        'key': key,
+        'name': name,
+        'category': category,
+        'description': description,
+        'benefits': benefits,
+        'isPresent': isPresent,
+        'explanation': explanation,
+        'divisionalChart': divisionalChart,
+      };
 
   @override
   String toString() => '$name: ${isPresent ? "Present" : "Absent"}';

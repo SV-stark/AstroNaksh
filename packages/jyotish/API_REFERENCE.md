@@ -266,10 +266,14 @@ await jyotish.initialize({String? ephemerisPath});
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `calculatePanchanga({dateTime, location})` | `Future<Panchanga>` | Complete Panchanga (5 limbs) |
+| `calculatePanchanga({dateTime, location, atmosphericPressure?, atmosphericTemperature?})` | `Future<Panchanga>` | Complete Panchanga (5 limbs) |
 | `getTithi({dateTime, location})` | `Future<TithiInfo>` | Lunar day |
 | `getTithiJunction({targetTithiNumber, startDate, location})` | `Future<DateTime>` | Exact time a Tithi begins/ends |
 | `getTithiEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Tithi end time |
+| `getNakshatraJunction({targetNakshatraNumber, startDate, location})` | `Future<DateTime>` | Exact time a Nakshatra begins/ends |
+| `getNakshatraEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Nakshatra end time |
+| `getYogaJunction({targetYogaNumber, startDate, location})` | `Future<DateTime>` | Exact time a Yoga begins/ends |
+| `getYogaEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Yoga end time |
 | `getYoga({dateTime, location})` | `Future<YogaInfo>` | Sun-Moon combination |
 | `getKarana({dateTime, location})` | `Future<KaranaInfo>` | Half-Tithi |
 | `getVara({dateTime, location})` | `Future<VaraInfo>` | Weekday/planetary lord |
@@ -306,6 +310,7 @@ await jyotish.initialize({String? ephemerisPath});
 | `calculateKPData(natalChart, {useNewAyanamsa?})` | `Future<KPCalculations>` | Complete KP data (ayanamsa-adjusted Sub-Lords, cusp-based significators) |
 | `getSubLord(longitude)` | `Planet` | Sub-Lord for longitude |
 | `getSubSubLord(longitude)` | `Planet` | Sub-Sub-Lord |
+| `getSubSubSubLord(longitude)` | `Planet` | Sub-Sub-Sub-Lord |
 | `getHouseGroupSignificators(significators)` | `KPHouseGroupSignificators` | House group significators |
 | `calculateTransitKPDivisions(transitPositions)` | `Map<Planet, KPDivision>` | Transit KP divisions |
 | `compareKPTransitToNatal({natalChart, natalKP?, transitDateTime?, location, useNewAyanamsa?})` | `Future<List<KPTransitComparison>>` | Transit vs natal Sub-Lord comparison, sorted by match strength |
@@ -337,7 +342,7 @@ await jyotish.initialize({String? ephemerisPath});
 | `getNakshatraForPlanet({planet, dateTime, location})` | `Future<NakshatraInfo>` | Nakshatra for any planet |
 | `isInAbhijitNakshatra(longitude)` | `bool` | Check if longitude is in Abhijit |
 | `getAbhijitBoundaries()` | `(double, double)` | Abhijit start/end longitude |
-| `getTithiEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Tithi end time |
+| `getNakshatraEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Nakshatra end time |
 | `getVara({dateTime, location})` | `Future<VaraInfo>` | Weekday/planetary lord |
 
 #### Masa Methods
@@ -1010,17 +1015,21 @@ final service = PanchangaService(ephemerisService);
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `calculatePanchanga({dateTime, location})` | `Future<Panchanga>` | Complete Panchanga |
+| `calculatePanchanga({dateTime, location, atmosphericPressure?, atmosphericTemperature?})` | `Future<Panchanga>` | Complete Panchanga |
 | `getTithi({dateTime, location})` | `Future<TithiInfo>` | Tithi (lunar day) |
 | `getYoga({dateTime, location})` | `Future<YogaInfo>` | Yoga (Sun+Moon combination) |
 | `getKarana({dateTime, location})` | `Future<KaranaInfo>` | Karana (half-Tithi) |
 | `getVara({dateTime, location})` | `Future<VaraInfo>` | Vara (weekday lord) |
 | `getNakshatra({dateTime, location})` | `Future<NakshatraInfo>` | Moon's nakshatra |
 | `getTithiEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Tithi end |
-| `calculateAbhijitMuhurta({date, location})` | `Future<AbhijitMuhurta>` | 8th Muhurta (1/15th of daytime) |
-| `calculateBrahmaMuhurta({date, location})` | `Future<BrahmaMuhurta>` | 14th Muhurta of night (uses previous sunset ΓåÆ today sunrise) |
-| `calculateNighttimeInauspicious({date, location})` | `Future<NighttimeInauspiciousPeriods>` | Night Rahu/Gulika/Yamagandam |
+| `getNakshatraEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Nakshatra end |
+| `getYogaEndTime({dateTime, location, accuracyThreshold?})` | `Future<DateTime>` | Precise Yoga end |
 | `getTithiJunction({targetTithiNumber, startDate, location})` | `Future<DateTime>` | Microsecond-precision Tithi change |
+| `getNakshatraJunction({targetNakshatraNumber, startDate, location})` | `Future<DateTime>` | Microsecond-precision Nakshatra change |
+| `getYogaJunction({targetYogaNumber, startDate, location})` | `Future<DateTime>` | Microsecond-precision Yoga change |
+| `calculateAbhijitMuhurta({date, location})` | `Future<AbhijitMuhurta>` | 8th Muhurta (1/15th of daytime) |
+| `calculateBrahmaMuhurta({date, location})` | `Future<BrahmaMuhurta>` | 14th Muhurta of night (uses previous sunset → today sunrise) |
+| `calculateNighttimeInauspicious({date, location})` | `Future<NighttimeInauspiciousPeriods>` | Night Rahu/Gulika/Yamagandam |
 | `getMoonPhaseDetails({dateTime, location})` | `Future<MoonPhaseDetails>` | Comprehensive lunar data |
 
 > **API Change (v2.1.0)**: `TithiInfo.tithiNames` has been replaced.
@@ -1212,6 +1221,7 @@ final service = KPService(ephemerisService);
 | `calculateKPData(natalChart, {useNewAyanamsa?})` | `Future<KPCalculations>` | Complete KP data with cusp-based ABCD significators. **Requires KP flags (v2.5.0).** |
 | `getSubLord(longitude)` | `Planet` | Sub-Lord for longitude |
 | `getSubSubLord(longitude)` | `Planet` | Sub-Sub-Lord |
+| `getSubSubSubLord(longitude)` | `Planet` | Sub-Sub-Sub-Lord |
 | `getHouseGroupSignificators(significators)` | `KPHouseGroupSignificators` | House group significators |
 | `calculateTransitKPDivisions(transitPositions)` | `Map<Planet, KPDivision>` | Transit KP divisions |
 | `compareTransitToNatal({natalKP, transitDivisions})` | `List<KPTransitComparison>` | Sync transit Sub-Lords against natal; sorted by match strength |
@@ -3711,6 +3721,39 @@ final service = RitualService();
 | `agnivasa` | `String` | Fire's residence — Earth (auspicious), Sky, or Underworld |
 | `shivavasa` | `String` | Shiva's abode for the day (7-cycle, e.g. 'Mount Kailash') |
 | `kumbhaChakra` | `KumbhaChakraLevel` | Kumbha Chakra level (`excellent`, `good`, `neutral`, `bad`) |
+
+---
+
+### MuhurtaScoringService
+
+Auspicious Muhurtas Comprehensive Scoring Engine that calculates time suitability scores (0-100%) and scans time ranges.
+
+```dart
+final service = MuhurtaScoringService(panchangaService, panchangStrengthService);
+// Or use via Jyotish facade (preferred):
+// jyotish.calculateMuhurtaScore(...)
+// jyotish.scanMuhurtaSuitability(...)
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateMuhurtaScore({dateTime, location, birthNakshatraIndex?, birthRashiIndex?})` | `Future<MuhurtaScoreResult>` | Calculates overall suitability score (0-100) combining Tithi, Nakshatra, Weekday (Vara), Yoga, Karana, and optional native Tarabalam/Chandrabalam factors. |
+| `scanMuhurtaSuitability({startDateTime, endDateTime, location, step, birthNakshatraIndex?, birthRashiIndex?})` | `Future<List<MuhurtaScoreResult>>` | Scans a time window for the best times, returning results sorted descending by score. |
+
+**MuhurtaScoreResult properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `dateTime` | `DateTime` | Date and time evaluated |
+| `panchanga` | `Panchanga` | Raw Panchanga data for the time |
+| `tithiScore` | `double` | Score contributed by Tithi (max 20) |
+| `nakshatraScore` | `double` | Score contributed by Nakshatra (max 20) |
+| `varaScore` | `double` | Score contributed by Vara/Weekday (max 15) |
+| `yogaScore` | `double` | Score contributed by Yoga (max 10) |
+| `karanaScore` | `double` | Score contributed by Karana (max 10) |
+| `tarabalamScore` | `double?` | Score contributed by native Tarabalam (max 15, null if not provided) |
+| `chandrabalamScore` | `double?` | Score contributed by native Chandrabalam (max 10, null if not provided) |
+| `finalScore` | `double` | Final combined percentage score (0.0 - 100.0) |
 
 ---
 

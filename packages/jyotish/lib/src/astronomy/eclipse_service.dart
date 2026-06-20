@@ -238,15 +238,13 @@ class EclipseService {
     GeographicLocation? location,
     EclipseType type = EclipseType.any,
   }) async {
-    final showSolar =
-        type == EclipseType.any ||
+    final showSolar = type == EclipseType.any ||
         type == EclipseType.solar ||
         type == EclipseType.solarTotal ||
         type == EclipseType.solarPartial ||
         type == EclipseType.solarAnnular;
 
-    final showLunar =
-        type == EclipseType.any ||
+    final showLunar = type == EclipseType.any ||
         type == EclipseType.lunar ||
         type == EclipseType.lunarTotal ||
         type == EclipseType.lunarPartial ||
@@ -314,8 +312,7 @@ class EclipseService {
     final year = utc.year;
     final month = utc.month;
     final day = utc.day;
-    final hour =
-        utc.hour +
+    final hour = utc.hour +
         (utc.minute / 60.0) +
         (utc.second / 3600.0) +
         (utc.millisecond / 3600000.0);

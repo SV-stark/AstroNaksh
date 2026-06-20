@@ -84,8 +84,8 @@ class SadeSatiStatus {
     final intensity = phase == SadeSatiPhase.peak
         ? 'Peak intensity'
         : phase == SadeSatiPhase.rising
-        ? 'Beginning'
-        : 'Ending';
+            ? 'Beginning'
+            : 'Ending';
 
     return 'Sade Sati - $phaseName phase ($intensity)';
   }

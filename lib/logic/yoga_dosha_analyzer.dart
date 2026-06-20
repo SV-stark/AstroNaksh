@@ -108,8 +108,8 @@ class YogaDoshaAnalyzer {
   static BhangaResult _kalaSarpaToBhanga(KalaSarpaDoshaResult d) {
     return BhangaResult(
       name: d.hasDosha && d.type.isNotEmpty
-          ? '${d.type} Kala Sarpa Dosha'
-          : 'Kala Sarpa Dosha',
+          ? '${d.type} Kaal Sarp Dosha'
+          : 'Kaal Sarp Dosha',
       description: d.description.isNotEmpty
           ? d.description
           : 'All planets are hemmed between Rahu and Ketu.',
@@ -129,15 +129,18 @@ class YogaDoshaAnalyzer {
       if (affectedHousesNote.isNotEmpty) affectedHousesNote,
     ].join(' ');
 
+    final isActive = d.isManglik || d.severity == 'Cancelled';
+    final status = d.isManglik
+        ? (d.severity.isNotEmpty ? d.severity : 'Active')
+        : (d.severity == 'Cancelled' ? 'Cancelled' : 'Inactive');
+
     return BhangaResult(
       name: 'Manglik Dosha',
       description: description,
-      isActive: d.isManglik,
+      isActive: isActive,
       cancellationReasons: d.remedies,
       strength: d.isManglik ? 80.0 : 0.0,
-      status: d.isManglik
-          ? (d.severity.isNotEmpty ? d.severity : 'Active')
-          : 'Inactive',
+      status: status,
     );
   }
 

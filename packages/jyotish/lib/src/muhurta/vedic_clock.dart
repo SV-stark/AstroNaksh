@@ -31,8 +31,7 @@ class VedicDigitalClock extends StatefulWidget {
   final Future<(DateTime? sunrise, DateTime? sunset)> Function({
     required DateTime date,
     required GeographicLocation location,
-  })
-  getSunriseSunset;
+  }) getSunriseSunset;
 
   /// Optional custom controller. If not provided, an internal one will be created.
   final VedicClockController? controller;
@@ -156,8 +155,7 @@ class _VedicDigitalClockState extends State<VedicDigitalClock> {
           return const Center(child: Text('No Vedic time data available'));
         }
 
-        final dStyle =
-            widget.digitStyle ??
+        final dStyle = widget.digitStyle ??
             const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -165,14 +163,12 @@ class _VedicDigitalClockState extends State<VedicDigitalClock> {
               letterSpacing: 2,
             );
 
-        final lStyle =
-            widget.labelStyle ??
+        final lStyle = widget.labelStyle ??
             const TextStyle(fontSize: 14, color: Colors.grey);
 
         return Container(
           padding: widget.padding,
-          decoration:
-              widget.decoration ??
+          decoration: widget.decoration ??
               BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
@@ -250,8 +246,7 @@ class VedicAnalogClock extends StatefulWidget {
   final Future<(DateTime? sunrise, DateTime? sunset)> Function({
     required DateTime date,
     required GeographicLocation location,
-  })
-  getSunriseSunset;
+  }) getSunriseSunset;
 
   /// Width and height of the clock widget.
   final double size;
@@ -392,8 +387,7 @@ class _VedicAnalogClockState extends State<VedicAnalogClock> {
             dialColor: widget.dialColor,
             ghatiHandColor: widget.ghatiHandColor,
             vighatiHandColor: widget.vighatiHandColor,
-            numberStyle:
-                widget.numberStyle ??
+            numberStyle: widget.numberStyle ??
                 const TextStyle(
                   color: Colors.white70,
                   fontSize: 13,

@@ -85,28 +85,28 @@ enum Planet {
 
   /// Returns a list of major planets (Sun through Pluto).
   static List<Planet> get majorPlanets => [
-    sun,
-    moon,
-    mercury,
-    venus,
-    mars,
-    jupiter,
-    saturn,
-    uranus,
-    neptune,
-    pluto,
-  ];
+        sun,
+        moon,
+        mercury,
+        venus,
+        mars,
+        jupiter,
+        saturn,
+        uranus,
+        neptune,
+        pluto,
+      ];
 
   /// Returns a list of traditional planets (Sun through Saturn).
   static List<Planet> get traditionalPlanets => [
-    sun,
-    moon,
-    mercury,
-    venus,
-    mars,
-    jupiter,
-    saturn,
-  ];
+        sun,
+        moon,
+        mercury,
+        venus,
+        mars,
+        jupiter,
+        saturn,
+      ];
 
   /// Returns a list of outer planets (Uranus, Neptune, Pluto).
   static List<Planet> get outerPlanets => [uranus, neptune, pluto];
@@ -119,13 +119,13 @@ enum Planet {
 
   /// Returns a list of asteroids/minor planets.
   static List<Planet> get asteroids => [
-    chiron,
-    pholus,
-    ceres,
-    pallas,
-    juno,
-    vesta,
-  ];
+        chiron,
+        pholus,
+        ceres,
+        pallas,
+        juno,
+        vesta,
+      ];
 
   /// Returns all planets and celestial bodies.
   static List<Planet> get all => Planet.values;

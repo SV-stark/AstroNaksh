@@ -104,8 +104,8 @@ void main() {
       final ketuPos = KetuPosition(rahuPosition: rahuInfo.position);
 
       final houses = HouseSystem(
-        system: 'Placidus',
-        cusps: List.filled(12, 0.0), // Dummy cusps
+        system: 'Equal',
+        cusps: List.generate(12, (i) => (90.0 + i * 30.0) % 360.0),
         ascendant: 90,
         midheaven: 180,
       );

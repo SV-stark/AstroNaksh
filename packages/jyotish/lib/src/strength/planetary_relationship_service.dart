@@ -81,8 +81,8 @@ class PlanetaryRelationshipService {
     }
 
     // 1. Natural friendship
-    final natural =
-        RelationshipCalculator.naturalRelationships[planet]?[otherPlanet] ??
+    final natural = RelationshipCalculator.naturalRelationships[planet]
+            ?[otherPlanet] ??
         RelationshipType.neutral;
 
     // 2. Temporal friendship based on house positions

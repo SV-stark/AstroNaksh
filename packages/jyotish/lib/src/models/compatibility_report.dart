@@ -46,24 +46,24 @@ class CompatibilityReport {
   final List<String> analysis;
 
   Map<String, dynamic> toJson() => {
-    'totalScore': totalScore,
-    'gunaScores': {
-      'varna': gunaScores.varna,
-      'vashya': gunaScores.vashya,
-      'tara': gunaScores.tara,
-      'yoni': gunaScores.yoni,
-      'grahaMaitri': gunaScores.grahaMaitri,
-      'gana': gunaScores.gana,
-      'bhakoot': gunaScores.bhakoot,
-      'nadi': gunaScores.nadi,
-    },
-    'compatibilityPercentage': compatibilityPercentage,
-    'hasNadiDosha': hasNadiDosha,
-    'hasBhakootDosha': hasBhakootDosha,
-    'boyManglik': boyManglik,
-    'girlManglik': girlManglik,
-    'boyManglikCancellations': boyManglikCancellations,
-    'girlManglikCancellations': girlManglikCancellations,
-    'analysis': analysis,
-  };
+        'totalScore': totalScore,
+        'gunaScores': {
+          'varna': gunaScores.varna,
+          'vashya': gunaScores.vashya,
+          'tara': gunaScores.tara,
+          'yoni': gunaScores.yoni,
+          'grahaMaitri': gunaScores.grahaMaitri,
+          'gana': gunaScores.gana,
+          'bhakoot': gunaScores.bhakoot,
+          'nadi': gunaScores.nadi,
+        },
+        'compatibilityPercentage': compatibilityPercentage,
+        'hasNadiDosha': hasNadiDosha,
+        'hasBhakootDosha': hasBhakootDosha,
+        'boyManglik': boyManglik,
+        'girlManglik': girlManglik,
+        'boyManglikCancellations': boyManglikCancellations,
+        'girlManglikCancellations': girlManglikCancellations,
+        'analysis': analysis,
+      };
 }

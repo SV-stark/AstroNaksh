@@ -141,8 +141,7 @@ class ArgalaService {
     // Calculate strength (reduced if obstructed)
     double strength = 1.0;
     if (planetsInObstruct.isNotEmpty) {
-      strength =
-          planetsInSource.length /
+      strength = planetsInSource.length /
           (planetsInSource.length + planetsInObstruct.length);
     }
 

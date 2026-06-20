@@ -15,9 +15,9 @@ class EventTimingService {
     required DashaService dashaService,
     required GocharaVedhaService gocharaVedhaService,
     required EphemerisService ephemerisService,
-  }) : _dashaService = dashaService,
-       _gocharaVedhaService = gocharaVedhaService,
-       _ephemerisService = ephemerisService;
+  })  : _dashaService = dashaService,
+        _gocharaVedhaService = gocharaVedhaService,
+        _ephemerisService = ephemerisService;
 
   final DashaService _dashaService;
   final GocharaVedhaService _gocharaVedhaService;
@@ -67,8 +67,7 @@ class EventTimingService {
           planet: planet,
           dateTime: current,
           location: request.location,
-          flags:
-              request.natalChart.calculationFlags ??
+          flags: request.natalChart.calculationFlags ??
               CalculationFlags.defaultFlags(),
         );
         transitPositions[planet] = pos;

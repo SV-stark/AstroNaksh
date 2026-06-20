@@ -44,9 +44,8 @@ class VedicChartService {
       );
 
       // Get list of planets to calculate
-      final planetsToCalculate = includeOuterPlanets
-          ? Planet.majorPlanets
-          : Planet.traditionalPlanets;
+      final planetsToCalculate =
+          includeOuterPlanets ? Planet.majorPlanets : Planet.traditionalPlanets;
 
       // Calculate all planetary positions
       final planetPositions = <Planet, PlanetPosition>{};
@@ -131,6 +130,7 @@ class VedicChartService {
             '${location.latitude.toStringAsFixed(4)}N, ${location.longitude.toStringAsFixed(4)}E',
         latitude: location.latitude,
         longitudeCoord: location.longitude,
+        altitude: location.altitude,
         houses: houses,
         planets: vedicPlanets,
         rahu: rahuInfo,
@@ -193,9 +193,8 @@ class VedicChartService {
     } else {
       // For other systems (Placidus, Equal, etc.), subtracting ayanamsa from
       // the tropical cusps correctly yields the exact sidereal cusps.
-      cusps = tropicalCusps
-          .map((cusp) => (cusp - ayanamsa + 360) % 360)
-          .toList();
+      cusps =
+          tropicalCusps.map((cusp) => (cusp - ayanamsa + 360) % 360).toList();
     }
 
     return HouseSystem(
@@ -292,8 +291,8 @@ class VedicChartService {
     int planetHouse,
   ) {
     // 1. Naisargika (natural / permanent) friendship
-    final natural =
-        RelationshipCalculator.naturalRelationships[planet]?[signLord] ??
+    final natural = RelationshipCalculator.naturalRelationships[planet]
+            ?[signLord] ??
         RelationshipType.neutral;
 
     // 2. Tatkalika (temporal / chart-based) friendship

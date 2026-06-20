@@ -94,13 +94,12 @@ class AspectService {
     return aspects
         .filter((a) => a.strength >= config.minimumStrength)
         .distinctBy((a) {
-          // Sort planets to handle bidirectional duplicates
-          final p1 = a.aspectingPlanet.index;
-          final p2 = a.aspectedPlanet.index;
-          final sortedPlanets = p1 < p2 ? '$p1-$p2' : '$p2-$p1';
-          return '$sortedPlanets-${a.type}';
-        })
-        .toList();
+      // Sort planets to handle bidirectional duplicates
+      final p1 = a.aspectingPlanet.index;
+      final p2 = a.aspectedPlanet.index;
+      final sortedPlanets = p1 < p2 ? '$p1-$p2' : '$p2-$p1';
+      return '$sortedPlanets-${a.type}';
+    }).toList();
   }
 
   /// Gets aspects for a specific planet.

@@ -186,9 +186,8 @@ class ChoghadiyaService {
 
       final nightDuration = nextSunrise.difference(effectiveSunset);
       final segmentLength = nightDuration.inMicroseconds / 8;
-      final timeSinceSunset = dateTime
-          .difference(effectiveSunset)
-          .inMicroseconds;
+      final timeSinceSunset =
+          dateTime.difference(effectiveSunset).inMicroseconds;
       final segmentIndex = (timeSinceSunset / segmentLength).floor();
 
       // Handle overflow if precision issues (e.g. at exactly next Sunrise)
@@ -216,9 +215,8 @@ class ChoghadiyaService {
       // Daytime
       final dayDuration = effectiveSunset.difference(effectiveSunrise);
       final segmentLength = dayDuration.inMicroseconds / 8;
-      final timeSinceSunrise = dateTime
-          .difference(effectiveSunrise)
-          .inMicroseconds;
+      final timeSinceSunrise =
+          dateTime.difference(effectiveSunrise).inMicroseconds;
       final segmentIndex = (timeSinceSunrise / segmentLength).floor();
 
       final adjustedIndex = segmentIndex >= 8 ? 7 : segmentIndex;

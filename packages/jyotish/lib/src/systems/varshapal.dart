@@ -234,15 +234,15 @@ class PanchavargiyaBalaResult {
 
   /// Converts this result to a JSON map
   Map<String, dynamic> toJson() => {
-    'planet': planet.displayName,
-    'kshetraBala': kshetraBala,
-    'haddaBala': haddaBala,
-    'drekkanaBala': drekkanaBala,
-    'navamsaBala': navamsaBala,
-    'ucchaBala': ucchaBala,
-    'totalBala': totalBala,
-    'vishwaBala': vishwaBala,
-  };
+        'planet': planet.displayName,
+        'kshetraBala': kshetraBala,
+        'haddaBala': haddaBala,
+        'drekkanaBala': drekkanaBala,
+        'navamsaBala': navamsaBala,
+        'ucchaBala': ucchaBala,
+        'totalBala': totalBala,
+        'vishwaBala': vishwaBala,
+      };
 
   @override
   String toString() {

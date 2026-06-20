@@ -13,10 +13,10 @@ class StrengthReportService {
     required HouseStrengthService houseStrengthService,
     required GrahaAvasthaService grahaAvasthaService,
     required StrengthAnalysisService strengthAnalysisService,
-  }) : _shadbalaService = shadbalaService,
-       _houseStrengthService = houseStrengthService,
-       _grahaAvasthaService = grahaAvasthaService,
-       _strengthAnalysisService = strengthAnalysisService;
+  })  : _shadbalaService = shadbalaService,
+        _houseStrengthService = houseStrengthService,
+        _grahaAvasthaService = grahaAvasthaService,
+        _strengthAnalysisService = strengthAnalysisService;
 
   final ShadbalaService _shadbalaService;
   final HouseStrengthService _houseStrengthService;

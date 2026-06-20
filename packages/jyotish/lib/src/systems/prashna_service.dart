@@ -9,7 +9,7 @@ import 'package:jyotish/src/analysis/vedic_chart_service.dart';
 /// Service for Prashna (Horary) astrology calculations.
 class PrashnaService {
   PrashnaService(this._ephemerisService)
-    : _chartService = VedicChartService(_ephemerisService);
+      : _chartService = VedicChartService(_ephemerisService);
   final EphemerisService _ephemerisService;
   final VedicChartService _chartService;
 
@@ -55,7 +55,7 @@ class PrashnaService {
     final location = GeographicLocation(
       latitude: chart.latitude,
       longitude: chart.longitudeCoord,
-      altitude: 0,
+      altitude: chart.altitude,
     );
 
     final sunriseSunset = await _ephemerisService.getSunriseSunset(

@@ -16,8 +16,8 @@ class SpecialLagnas {
   final double sreeLagna;
 
   Map<String, dynamic> toJson() => {
-    'horaLagna': horaLagna,
-    'ghatiLagna': ghatiLagna,
-    'sreeLagna': sreeLagna,
-  };
+        'horaLagna': horaLagna,
+        'ghatiLagna': ghatiLagna,
+        'sreeLagna': sreeLagna,
+      };
 }

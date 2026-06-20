@@ -100,12 +100,10 @@ class DoshaService {
     }
 
     final ascendantSign = _getAscendantSign(chart);
-    final moonSign = Rashi.fromLongitude(
-      chart.getPlanet(Planet.moon)?.longitude ?? 0,
-    );
-    final venusSign = Rashi.fromLongitude(
-      chart.getPlanet(Planet.venus)?.longitude ?? 0,
-    );
+    final moonSign =
+        Rashi.fromLongitude(chart.getPlanet(Planet.moon)?.longitude ?? 0);
+    final venusSign =
+        Rashi.fromLongitude(chart.getPlanet(Planet.venus)?.longitude ?? 0);
     final marsSign = Rashi.fromLongitude(mars.longitude);
 
     final marsFromAsc = _getHouseDistance(ascendantSign, marsSign);
@@ -138,37 +136,28 @@ class DoshaService {
       exceptions[0] = (marsSign == Rashi.leo || marsSign == Rashi.aquarius);
 
       // 2. Mars in 2nd house and in Gemini or Virgo
-      exceptions[1] =
-          (marsFromAsc == 2 &&
+      exceptions[1] = (marsFromAsc == 2 &&
           (marsSign == Rashi.gemini || marsSign == Rashi.virgo));
 
       // 3. Mars in 4th house and in Aries or Scorpio
-      exceptions[2] =
-          (marsFromAsc == 4 &&
+      exceptions[2] = (marsFromAsc == 4 &&
           (marsSign == Rashi.aries || marsSign == Rashi.scorpio));
 
       // 4. Mars in 7th house and in Cancer or Capricorn
-      exceptions[3] =
-          (marsFromAsc == 7 &&
+      exceptions[3] = (marsFromAsc == 7 &&
           (marsSign == Rashi.cancer || marsSign == Rashi.capricorn));
 
       // 5. Mars in 8th house and in Sagittarius or Pisces
-      exceptions[4] =
-          (marsFromAsc == 8 &&
+      exceptions[4] = (marsFromAsc == 8 &&
           (marsSign == Rashi.sagittarius || marsSign == Rashi.pisces));
 
       // 6. Mars in 12th house and in Taurus or Libra
-      exceptions[5] =
-          (marsFromAsc == 12 &&
+      exceptions[5] = (marsFromAsc == 12 &&
           (marsSign == Rashi.taurus || marsSign == Rashi.libra));
 
       // 7. Mars conjoined or aspected by Jupiter or Saturn
-      exceptions[6] =
-          _isPlanetAspectedByOrConjoinedWith(
-            chart,
-            Planet.mars,
-            Planet.jupiter,
-          ) ||
+      exceptions[6] = _isPlanetAspectedByOrConjoinedWith(
+              chart, Planet.mars, Planet.jupiter) ||
           _isPlanetAspectedByOrConjoinedWith(chart, Planet.mars, Planet.saturn);
 
       // 8. Retrograde Mars
@@ -186,8 +175,7 @@ class DoshaService {
       exceptions[10] = false;
 
       // 12. Mars in own house, exalted, or friendly sign
-      exceptions[11] =
-          (marsSign == Rashi.aries ||
+      exceptions[11] = (marsSign == Rashi.aries ||
           marsSign == Rashi.scorpio ||
           marsSign == Rashi.capricorn ||
           mars.dignity == PlanetaryDignity.ownSign ||
@@ -205,9 +193,8 @@ class DoshaService {
           (ascendantSign == Rashi.cancer || ascendantSign == Rashi.leo);
 
       // 16. Mars conjoined with Jupiter or Moon (same sign/house)
-      final jupSign = Rashi.fromLongitude(
-        chart.getPlanet(Planet.jupiter)?.longitude ?? 0,
-      );
+      final jupSign =
+          Rashi.fromLongitude(chart.getPlanet(Planet.jupiter)?.longitude ?? 0);
       exceptions[15] = (marsSign == jupSign || marsSign == moonSign);
 
       // 17. Jupiter or Venus in Lagna
@@ -223,11 +210,9 @@ class DoshaService {
         isManglik = false;
         severity = 'Cancelled';
         remedies.add(
-          'Manglik Dosha cancelled by Raman Exception rules (Exceptions met: ${activeExceptions.join(", ")})',
-        );
+            'Manglik Dosha cancelled by Raman Exception rules (Exceptions met: ${activeExceptions.join(", ")})');
       } else {
-        final count =
-            (manglikFromAsc ? 1 : 0) +
+        final count = (manglikFromAsc ? 1 : 0) +
             (manglikFromMoon ? 1 : 0) +
             (manglikFromVenus ? 1 : 0);
         severity = count >= 2 ? 'High' : 'Moderate';
@@ -259,9 +244,8 @@ class DoshaService {
 
     // Rule 1: Sun, Moon, or Rahu in 9th house
     if (sunHouse == 9 || moonHouse == 9 || rahuHouse == 9) {
-      factorsMatched.add(
-        'Rule 1: Sun, Moon, or Rahu in 9th house (Ancestral Lineage)',
-      );
+      factorsMatched
+          .add('Rule 1: Sun, Moon, or Rahu in 9th house (Ancestral Lineage)');
     }
 
     // Rule 2: Ketu in 4th house
@@ -275,15 +259,14 @@ class DoshaService {
     for (final p in targetPlanets) {
       final isAfflicted =
           _isPlanetAspectedByOrConjoinedWith(chart, p, Planet.mars) ||
-          _isPlanetAspectedByOrConjoinedWith(chart, p, Planet.saturn);
+              _isPlanetAspectedByOrConjoinedWith(chart, p, Planet.saturn);
       if (isAfflicted) {
         afflictedPlanets.add(p.displayName);
       }
     }
     if (afflictedPlanets.isNotEmpty) {
       factorsMatched.add(
-        'Rule 3: Sun/Moon/Nodes afflicted by Mars/Saturn (${afflictedPlanets.join(", ")})',
-      );
+          'Rule 3: Sun/Moon/Nodes afflicted by Mars/Saturn (${afflictedPlanets.join(", ")})');
     }
 
     // Rule 4: Venus, Mercury, and Rahu (any two or more) conjoined in houses 2, 5, 9, or 12
@@ -294,8 +277,7 @@ class DoshaService {
       if (rahuHouse == h) count++;
       if (count > 1) {
         factorsMatched.add(
-          'Rule 4: Multiple planets (Mercury/Venus/Rahu) conjoined in house $h',
-        );
+            'Rule 4: Multiple planets (Mercury/Venus/Rahu) conjoined in house $h');
         break;
       }
     }
@@ -420,8 +402,7 @@ class DoshaService {
     // To match PyJHora's literal algorithm, we require ALL malefics to be placed in these houses.
     // However, to make it astrology-practitioner friendly, we define it as present if any are, but flag a strict matching warning.
     // We will use the literal 'all' check to flag the strict dosha, but list the causing planets.
-    final hasDosha =
-        ascMalefics.length == malefics.length ||
+    final hasDosha = ascMalefics.length == malefics.length ||
         moonMalefics.length == malefics.length;
 
     String description;
@@ -429,10 +410,9 @@ class DoshaService {
       description =
           'All 5 natural malefics (${malefics.map((p) => p.displayName).join(", ")}) are placed in Kalathra houses (1, 2, 4, 7, 8, or 12) from Lagna or Moon, indicating Kalathra Dosha.';
     } else if (ascMalefics.isNotEmpty || moonMalefics.isNotEmpty) {
-      final causing = {
-        ...ascMalefics,
-        ...moonMalefics,
-      }.map((p) => p.displayName).join(", ");
+      final causing = {...ascMalefics, ...moonMalefics}
+          .map((p) => p.displayName)
+          .join(", ");
       description =
           'Malefic planets ($causing) occupy Kalathra houses (1, 2, 4, 7, 8, 12) from Lagna/Moon. Partial Kalathra afflictions exist.';
     } else {
@@ -441,8 +421,7 @@ class DoshaService {
     }
 
     return KalathraDoshaResult(
-      hasDosha:
-          hasDosha ||
+      hasDosha: hasDosha ||
           ascMalefics.isNotEmpty, // Present if there are afflictions
       causingMalefics: {...ascMalefics, ...moonMalefics}.toList(),
       description: description,
@@ -525,10 +504,7 @@ class DoshaService {
   /// - Conjunction: same sign index.
   /// - Aspect: 7th sign for all, 4/8 for Mars, 5/9 for Jupiter, 3/10 for Saturn.
   bool _isPlanetAspectedByOrConjoinedWith(
-    VedicChart chart,
-    Planet target,
-    Planet aspectingPlanet,
-  ) {
+      VedicChart chart, Planet target, Planet aspectingPlanet) {
     final targetSign = chart.getPlanetSignIndex(target);
     final aspectingSign = chart.getPlanetSignIndex(aspectingPlanet);
     if (targetSign == null || aspectingSign == null) return false;

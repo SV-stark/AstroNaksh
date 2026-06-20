@@ -155,15 +155,15 @@ class AspectInfo {
 
   /// Converts the aspect information to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
-    'aspectingPlanet': aspectingPlanet.displayName,
-    'aspectedPlanet': aspectedPlanet.displayName,
-    'type': type.english,
-    'exactOrb': exactOrb,
-    'isApplying': isApplying,
-    'strength': strength,
-    'aspectingLongitude': aspectingLongitude,
-    'aspectedLongitude': aspectedLongitude,
-  };
+        'aspectingPlanet': aspectingPlanet.displayName,
+        'aspectedPlanet': aspectedPlanet.displayName,
+        'type': type.english,
+        'exactOrb': exactOrb,
+        'isApplying': isApplying,
+        'strength': strength,
+        'aspectingLongitude': aspectingLongitude,
+        'aspectedLongitude': aspectedLongitude,
+      };
 
   @override
   bool operator ==(Object other) {

@@ -1,7 +1,12 @@
+import 'package:astronaksh/core/ephemeris_manager.dart';
 import 'package:astronaksh/logic/varshaphal_system.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUpAll(() async {
+    await EphemerisManager.ensureEphemerisData();
+  });
+
   group('VarshaphalSystem Logic Tests', () {
     test('calculateMuntha returns correct sign', () {
       // Example: Natal Ascendant Aries (0), Birth 1990, Target 2020.

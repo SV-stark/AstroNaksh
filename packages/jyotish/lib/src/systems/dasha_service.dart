@@ -371,9 +371,8 @@ class DashaService {
       for (var i = 0; i < 8; i++) {
         final idx = (startingYoginiIndex + i) % 8;
         final yogini = Yogini.values[idx];
-        final double durationDays = (cycle == 0 && i == 0)
-            ? balanceDays
-            : yogini.years * 365.25;
+        final double durationDays =
+            (cycle == 0 && i == 0) ? balanceDays : yogini.years * 365.25;
         final durationMs = (durationDays * 86400000).round();
         final duration = Duration(milliseconds: durationMs);
         final endDate = currentDate + duration;
@@ -413,7 +412,7 @@ class DashaService {
       allMahadashas: mahadashas,
       precisionWarning: birthTimeUncertainty != null && birthTimeUncertainty > 0
           ? 'Birth time uncertain by $birthTimeUncertainty minutes. '
-                'Dasha timing may vary by up to ${(birthTimeUncertainty / 60 * 0.2).toStringAsFixed(1)} days.'
+              'Dasha timing may vary by up to ${(birthTimeUncertainty / 60 * 0.2).toStringAsFixed(1)} days.'
           : null,
     );
   }
@@ -612,9 +611,8 @@ class DashaService {
     final seventhSign = Rashi.fromIndex((lagnaSign.number + 6) % 12);
     final lagnaStrength = _calculateSignSourceStrength(lagnaSign, chart);
     final seventhStrength = _calculateSignSourceStrength(seventhSign, chart);
-    final startingSign = lagnaStrength >= seventhStrength
-        ? lagnaSign
-        : seventhSign;
+    final startingSign =
+        lagnaStrength >= seventhStrength ? lagnaSign : seventhSign;
 
     final sequence = <Rashi>[];
     final isOdd = startingSign.number % 2 != 0;
@@ -794,8 +792,7 @@ class DashaService {
 
     final firstDashaYears =
         ashtottariYears[ashtottariSequence[startingLordIndex]] ?? 6.0;
-    final balanceDays =
-        firstDashaYears *
+    final balanceDays = firstDashaYears *
         365.25 *
         (1.0 - (moonLongitude % nakshatraWidth / nakshatraWidth));
 
@@ -915,9 +912,8 @@ class DashaService {
     final portionRemaining = 1.0 - (posInPada / padaWidth);
     final firstDashaYears = _getKalachakraYears(sequence.first);
     final balanceDays = firstDashaYears * 365.25 * portionRemaining;
-    final totalCycleYears = sequence
-        .map(_getKalachakraYears)
-        .reduce((a, b) => a + b);
+    final totalCycleYears =
+        sequence.map(_getKalachakraYears).reduce((a, b) => a + b);
 
     for (var idx = 0; idx < sequence.length; idx++) {
       final sign = sequence[idx];
@@ -1108,8 +1104,7 @@ class DashaService {
 
   double _calculateSignSourceStrength(Rashi sign, VedicChart chart) {
     var strength = 0.0;
-    strength +=
-        chart.planets.values
+    strength += chart.planets.values
             .where((p) => Rashi.fromLongitude(p.longitude) == sign)
             .length *
         10.0;

@@ -95,6 +95,7 @@ import 'package:jyotish/src/muhurta/ritual_service.dart';
 import 'package:jyotish/src/muhurta/chandrabalam.dart';
 import 'package:jyotish/src/muhurta/tarabalam.dart';
 import 'package:jyotish/src/muhurta/ritual_elements.dart';
+import 'package:jyotish/src/muhurta/muhurta_scoring_service.dart';
 
 /// The main entry point for the Jyotish library.
 ///
@@ -141,6 +142,7 @@ class Jyotish {
   KPService? _kpService;
   SpecialTransitService? _specialTransitService;
   MuhurtaService? _muhurtaService;
+  MuhurtaScoringService? _muhurtaScoringService;
   ShadbalaService? _shadbalaService;
   MasaService? _masaService;
   SudarshanChakraService? _sudarshanChakraService;
@@ -284,6 +286,8 @@ class Jyotish {
       _sarvatobhadraService = SarvatobhadraService();
       _tajakaService = TajakaService();
       _panchangStrengthService = PanchangStrengthService();
+      _muhurtaScoringService =
+          MuhurtaScoringService(_panchangaService!, _panchangStrengthService!);
       _udayaLagnaService = UdayaLagnaService(_ephemerisService!);
       _ritualService = RitualService();
       _grahaYuddhaService = const GrahaYuddhaService();
@@ -458,13 +462,14 @@ class Jyotish {
     String houseSystem = 'W',
     bool includeOuterPlanets = false,
     CalculationFlags? flags,
-  }) async => calculateVedicChart(
-    dateTime: dateTime,
-    location: location,
-    houseSystem: houseSystem,
-    includeOuterPlanets: includeOuterPlanets,
-    flags: flags,
-  );
+  }) async =>
+      calculateVedicChart(
+        dateTime: dateTime,
+        location: location,
+        houseSystem: houseSystem,
+        includeOuterPlanets: includeOuterPlanets,
+        flags: flags,
+      );
 
   // ============================================================
   // DIVISIONAL CHART CALCULATIONS
@@ -1142,6 +1147,8 @@ class Jyotish {
   Future<Panchanga> calculatePanchanga({
     required DateTime dateTime,
     required GeographicLocation location,
+    double atmosphericPressure = 0.0,
+    double atmosphericTemperature = 0.0,
   }) async {
     _ensureInitialized();
 
@@ -1149,6 +1156,8 @@ class Jyotish {
       return await _panchangaService!.calculatePanchanga(
         dateTime: dateTime,
         location: location,
+        atmosphericPressure: atmosphericPressure,
+        atmosphericTemperature: atmosphericTemperature,
       );
     } catch (e) {
       throw JyotishException(
@@ -1274,6 +1283,30 @@ class Jyotish {
   }) async {
     _ensureInitialized();
     return await _panchangaService!.getTithiEndTime(
+      dateTime: dateTime,
+      location: location,
+    );
+  }
+
+  /// Finds the exact end time of the current Nakshatra.
+  Future<DateTime> getNakshatraEndTime({
+    required DateTime dateTime,
+    required GeographicLocation location,
+  }) async {
+    _ensureInitialized();
+    return await _panchangaService!.getNakshatraEndTime(
+      dateTime: dateTime,
+      location: location,
+    );
+  }
+
+  /// Finds the exact end time of the current Yoga.
+  Future<DateTime> getYogaEndTime({
+    required DateTime dateTime,
+    required GeographicLocation location,
+  }) async {
+    _ensureInitialized();
+    return await _panchangaService!.getYogaEndTime(
       dateTime: dateTime,
       location: location,
     );
@@ -1769,6 +1802,12 @@ class Jyotish {
     return _kpService!.getSubSubLord(longitude);
   }
 
+  /// Gets the Sub-Sub-Sub-Lord for a specific longitude.
+  Planet? getSubSubSubLord(double longitude) {
+    _ensureInitialized();
+    return _kpService!.getSubSubSubLord(longitude);
+  }
+
   /// Gets house group significators for a chart.
   ///
   /// Groups planets by their house significators for life areas:
@@ -2004,6 +2043,58 @@ class Jyotish {
     } catch (e) {
       throw JyotishException(
         'Failed to calculate Muhurta: ${e.toString()}',
+        originalError: e,
+      );
+    }
+  }
+
+  /// Calculates a comprehensive suitability score (0-100) for a given date/time and location.
+  ///
+  /// If birth details are provided, includes personal factors like Tarabalam and Chandrabalam.
+  Future<MuhurtaScoreResult> calculateMuhurtaScore({
+    required DateTime dateTime,
+    required GeographicLocation location,
+    int? birthNakshatraIndex,
+    int? birthRashiIndex,
+  }) async {
+    _ensureInitialized();
+    try {
+      return await _muhurtaScoringService!.calculateMuhurtaScore(
+        dateTime: dateTime,
+        location: location,
+        birthNakshatraIndex: birthNakshatraIndex,
+        birthRashiIndex: birthRashiIndex,
+      );
+    } catch (e) {
+      throw JyotishException(
+        'Failed to calculate Muhurta suitability score: ${e.toString()}',
+        originalError: e,
+      );
+    }
+  }
+
+  /// Scans a given time window using the specified steps to find and rank the most auspicious Muhurtas.
+  Future<List<MuhurtaScoreResult>> scanMuhurtaSuitability({
+    required DateTime startDateTime,
+    required DateTime endDateTime,
+    required GeographicLocation location,
+    required Duration step,
+    int? birthNakshatraIndex,
+    int? birthRashiIndex,
+  }) async {
+    _ensureInitialized();
+    try {
+      return await _muhurtaScoringService!.scanMuhurtaSuitability(
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
+        location: location,
+        step: step,
+        birthNakshatraIndex: birthNakshatraIndex,
+        birthRashiIndex: birthRashiIndex,
+      );
+    } catch (e) {
+      throw JyotishException(
+        'Failed to scan Muhurta suitability: ${e.toString()}',
         originalError: e,
       );
     }
@@ -2442,8 +2533,8 @@ class Jyotish {
     final int nakNumber = moonNakshatra is int
         ? moonNakshatra
         : (moonNakshatra != null
-              ? _getNakshatraNumber(moonNakshatra.toString())
-              : 1);
+            ? _getNakshatraNumber(moonNakshatra.toString())
+            : 1);
 
     final Map<Planet, int> resolvedOtherTransits = {};
     otherTransits.forEach((key, value) {
@@ -2539,12 +2630,10 @@ class Jyotish {
     int house2,
   ) {
     _ensureInitialized();
-    final p1 = planet1 is Planet
-        ? planet1
-        : Planet.fromName(planet1.toString());
-    final p2 = planet2 is Planet
-        ? planet2
-        : Planet.fromName(planet2.toString());
+    final p1 =
+        planet1 is Planet ? planet1 : Planet.fromName(planet1.toString());
+    final p2 =
+        planet2 is Planet ? planet2 : Planet.fromName(planet2.toString());
 
     if (p1 == null || p2 == null) return false;
 
@@ -2874,6 +2963,34 @@ class Jyotish {
     _ensureInitialized();
     return _panchangaService!.getTithiJunction(
       targetTithiNumber: targetTithiNumber,
+      startDate: startDate,
+      location: location,
+    );
+  }
+
+  /// Gets the exact junction (change point) of a specific Nakshatra.
+  Future<DateTime> getNakshatraJunction({
+    required int targetNakshatraNumber,
+    required DateTime startDate,
+    required GeographicLocation location,
+  }) async {
+    _ensureInitialized();
+    return _panchangaService!.getNakshatraJunction(
+      targetNakshatraNumber: targetNakshatraNumber,
+      startDate: startDate,
+      location: location,
+    );
+  }
+
+  /// Gets the exact junction (change point) of a specific Yoga.
+  Future<DateTime> getYogaJunction({
+    required int targetYogaNumber,
+    required DateTime startDate,
+    required GeographicLocation location,
+  }) async {
+    _ensureInitialized();
+    return _panchangaService!.getYogaJunction(
+      targetYogaNumber: targetYogaNumber,
       startDate: startDate,
       location: location,
     );
@@ -3209,7 +3326,7 @@ class Jyotish {
   /// print(sunSaturn.compound);  // great enemy / neutral
   /// ```
   Map<Planet, Map<Planet, PlanetaryRelationship>>
-  getPlanetaryRelationshipsMatrix(VedicChart chart) {
+      getPlanetaryRelationshipsMatrix(VedicChart chart) {
     _ensureInitialized();
     return _planetaryRelationshipService!.getAllRelationships(chart);
   }
@@ -3628,4 +3745,5 @@ class JyotishSystems {
   PrashnaService get prashna => _jyotish._prashnaService!;
   VarshapalService get varshapal => _jyotish._varshapalService!;
   TajakaService get tajaka => _jyotish._tajakaService!;
+  MuhurtaScoringService get muhurtaScoring => _jyotish._muhurtaScoringService!;
 }

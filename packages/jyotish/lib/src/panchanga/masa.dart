@@ -108,46 +108,76 @@ class MasaInfo {
 /// Hindu seasons (Ritu) - Six-fold division of the year.
 enum Ritu {
   /// Vasanta (Spring) - Chaitra, Vaishakha
-  vasanta('Vasanta', 'Spring', 'Flowering season, new beginnings', [
-    'Growth',
-    'Renewal',
-    'Beauty',
-  ], 'Earth'),
+  vasanta(
+      'Vasanta',
+      'Spring',
+      'Flowering season, new beginnings',
+      [
+        'Growth',
+        'Renewal',
+        'Beauty',
+      ],
+      'Earth'),
 
   /// Grishma (Summer) - Jyeshtha, Ashadha
-  grishma('Grishma', 'Summer', 'Hot season, peak energy', [
-    'Heat',
-    'Intensity',
-    'Power',
-  ], 'Fire'),
+  grishma(
+      'Grishma',
+      'Summer',
+      'Hot season, peak energy',
+      [
+        'Heat',
+        'Intensity',
+        'Power',
+      ],
+      'Fire'),
 
   /// Varsha (Monsoon) - Shravana, Bhadrapada
-  varsha('Varsha', 'Monsoon', 'Rainy season, nourishment', [
-    'Nourishment',
-    'Cooling',
-    'Flow',
-  ], 'Water'),
+  varsha(
+      'Varsha',
+      'Monsoon',
+      'Rainy season, nourishment',
+      [
+        'Nourishment',
+        'Cooling',
+        'Flow',
+      ],
+      'Water'),
 
   /// Sharad (Autumn) - Ashwin, Kartika
-  sharad('Sharad', 'Autumn', 'Harvest season, maturity', [
-    'Harvest',
-    'Gratitude',
-    'Balance',
-  ], 'Air'),
+  sharad(
+      'Sharad',
+      'Autumn',
+      'Harvest season, maturity',
+      [
+        'Harvest',
+        'Gratitude',
+        'Balance',
+      ],
+      'Air'),
 
   /// Hemanta (Pre-winter) - Margashirsha, Pausha
-  hemanta('Hemanta', 'Pre-winter', 'Cooling down, preparation', [
-    'Preparation',
-    'Conservation',
-    'Rest',
-  ], 'Space'),
+  hemanta(
+      'Hemanta',
+      'Pre-winter',
+      'Cooling down, preparation',
+      [
+        'Preparation',
+        'Conservation',
+        'Rest',
+      ],
+      'Space'),
 
   /// Shishira (Winter) - Magha, Phalguna
-  shishira('Shishira', 'Winter', 'Cold season, introspection', [
-    'Introspection',
-    'Wisdom',
-    'Endings',
-  ], 'Earth');
+  shishira(
+      'Shishira',
+      'Winter',
+      'Cold season, introspection',
+      [
+        'Introspection',
+        'Wisdom',
+        'Endings',
+      ],
+      'Earth');
 
   const Ritu(
     this.sanskrit,

@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.16.0] - 2026-06-20
+
+### Added
+- **Auspicious Muhurtas Comprehensive Scoring Engine**:
+  - Implemented `MuhurtaScoringService` to evaluate time suitability on a 0-100% scale using weighted scores for Tithis, Nakshatras, Weekdays (Varas), Yogas, and Karanas, along with optional native Tarabalam/Chandrabalam factors.
+  - Added `scanMuhurtaSuitability` to scan and identify the most auspicious Muhurtas over a specified window.
+- **Specialized Jaimini & Nakshatra Dasha Systems**:
+  - Exposed and fully tested Jaimini Chara Dasha, Narayana Dasha, and Kalachakra Dasha engines via `Jyotish` core and facade APIs, supporting sub-period sequences and balance calculations.
+- **Double-Precision Junction Guardrails**:
+  - Added coordinate snapping (`_adjustJunctionBoundary` and `_snapKPLongitude`) with a `1e-11` precision margin in `DivisionalChartService` and `KPService` to protect division and sign boundaries from floating-point representation errors.
+  - Applied epsilon subtraction guardrails to Vimshottari dasha sub-lord division boundaries to eliminate edge-case errors.
+- **Polar Region Sunrise/Sunset Fallbacks**:
+  - Implemented a robust polar region fallback in `PanchangaService`. When Swiss Ephemeris returns `null` for sunrise/sunset (during polar day/night), it calculates apparent solar noon (meridian transit) and splits the day/night into equal 12-hour segments to prevent downstream service crashes.
+- **Rahu/Ketu Node Type Consistency**:
+  - Updated Ketu calculation logic in `EphemerisService` to check `CalculationFlags.nodeType` and resolve dynamically from either `Planet.trueNode` or `Planet.meanNode` matching Rahu, preventing node alignment mismatch.
+- **Altitude Propagation**:
+  - Propagated observer elevation/altitude to `VedicChart` and all local astronomical sub-services (Shadbala, Prashna, Muhurtas, etc.) to replace sea-level defaults and improve precision.
+
+## [2.15.0] - 2026-06-19
+
+### Added
+- **High-Precision End-Times & Junctions for Nakshatras and Yogas**:
+  - Implemented `getNakshatraEndTime`, `getYogaEndTime`, `getNakshatraJunction`, and `getYogaJunction` in [PanchangaService](file:///E:/jyotish-flutter-library-fork/lib/src/panchanga/panchanga_service.dart) using high-precision binary search.
+  - Refactored `getTithiEndTime` and `getTithiJunction` wrap-around boundary logic using signed angular differences to prevent search direction bugs near 360°/0° crossings.
+- **KP Sub-Sub-Sub-Lord (SSSL) Support**:
+  - Added the `subSubSubLord` field to the `KPDivision` class and implemented `_calculateSubSubBoundaries` and `_calculateSubSubSubLord` in [KPService](file:///E:/jyotish-flutter-library-fork/lib/src/systems/kp_service.dart) to support micro-level astrological event timing.
+- **Dynamic Obliquity of the Ecliptic in Shadbala**:
+  - Implemented dynamic obliquity calculations using Swiss Ephemeris (`SE_ECL_NUT` / planet ID `-1`) in `EphemerisService.getObliquity`.
+  - Integrated dynamic obliquity into Shadbala's `_calculateAyanaBala` to replace the static `23.45°` hardcoded constant.
+- **Time-Varying & Ayanamsa-Specific Precession Corrections**:
+  - Refactored planetary velocity corrections in `calculatePlanetPosition` to calculate the precession rate dynamically by taking the difference between tomorrow's and today's ayanamsa. This automatically accounts for both time-varying precession drift and ayanamsa-specific reference frames.
+- **Exposed Atmospheric Refraction Parameters**:
+  - Exposed `atmosphericPressure` and `atmosphericTemperature` parameters in `calculatePanchanga` to allow precise Sunrise/Sunset calculations under variable local atmospheric conditions.
+
 ## [2.14.0] - 2026-05-31
 
 ### Added

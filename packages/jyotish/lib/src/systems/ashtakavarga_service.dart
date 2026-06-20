@@ -262,50 +262,47 @@ class AshtakavargaService {
   /// sign with 0 bindus. This differs from some interpretations but strictly
   /// follows the standard BPHS method of subtraction.
   Ashtakavarga applyTrikonaShodhana(Ashtakavarga ashtakavarga) {
-    final reducedBhinnashtakavarga = ashtakavarga.bhinnashtakavarga.keys
-        .associateWith((planet) {
-          final bav = ashtakavarga.bhinnashtakavarga[planet]!;
-          final reducedBindus = List<int>.from(bav.bindus);
+    final reducedBhinnashtakavarga =
+        ashtakavarga.bhinnashtakavarga.keys.associateWith((planet) {
+      final bav = ashtakavarga.bhinnashtakavarga[planet]!;
+      final reducedBindus = List<int>.from(bav.bindus);
 
-          // Apply reduction to each trikona
-          // Traditional Trikona Shodhana:
-          // - Find minimum bindu among the three signs in each trine
-          // - Subtract minimum from the other two signs
-          for (final trikona in _trikonas) {
-            final bindu1 = bav.bindus[trikona[0]];
-            final bindu2 = bav.bindus[trikona[1]];
-            final bindu3 = bav.bindus[trikona[2]];
+      // Apply reduction to each trikona
+      // Traditional Trikona Shodhana:
+      // - Find minimum bindu among the three signs in each trine
+      // - Subtract minimum from the other two signs
+      for (final trikona in _trikonas) {
+        final bindu1 = bav.bindus[trikona[0]];
+        final bindu2 = bav.bindus[trikona[1]];
+        final bindu3 = bav.bindus[trikona[2]];
 
-            // Get non-zero bindus
-            // Find minimum among non-zero
-            final minBindu = [bindu1, bindu2, bindu3].where((b) => b > 0).min();
+        // Get non-zero bindus
+        // Find minimum among non-zero
+        final minBindu = [bindu1, bindu2, bindu3].where((b) => b > 0).min();
 
-            if (minBindu == null) continue;
+        if (minBindu == null) continue;
 
-            // Subtract minimum from each sign (traditional method)
-            if (bindu1 > 0) {
-              reducedBindus[trikona[0]] = (bindu1 - minBindu)
-                  .clamp(0, bindu1)
-                  .toInt();
-            }
-            if (bindu2 > 0) {
-              reducedBindus[trikona[1]] = (bindu2 - minBindu)
-                  .clamp(0, bindu2)
-                  .toInt();
-            }
-            if (bindu3 > 0) {
-              reducedBindus[trikona[2]] = (bindu3 - minBindu)
-                  .clamp(0, bindu3)
-                  .toInt();
-            }
-          }
+        // Subtract minimum from each sign (traditional method)
+        if (bindu1 > 0) {
+          reducedBindus[trikona[0]] =
+              (bindu1 - minBindu).clamp(0, bindu1).toInt();
+        }
+        if (bindu2 > 0) {
+          reducedBindus[trikona[1]] =
+              (bindu2 - minBindu).clamp(0, bindu2).toInt();
+        }
+        if (bindu3 > 0) {
+          reducedBindus[trikona[2]] =
+              (bindu3 - minBindu).clamp(0, bindu3).toInt();
+        }
+      }
 
-          return Bhinnashtakavarga(
-            planet: planet,
-            bindus: reducedBindus,
-            contributions: bav.contributions,
-          );
-        });
+      return Bhinnashtakavarga(
+        planet: planet,
+        bindus: reducedBindus,
+        contributions: bav.contributions,
+      );
+    });
 
     // Recalculate Sarvashtakavarga
     final sarvashtakavarga = _calculateSarvashtakavarga(
@@ -334,39 +331,39 @@ class AshtakavargaService {
   /// Note: This is a simplified version. Traditional method also considers
   /// whether planets are actually in the signs or lords are in own signs.
   Ashtakavarga applyEkadhipatiShodhana(Ashtakavarga ashtakavarga) {
-    final reducedBhinnashtakavarga = ashtakavarga.bhinnashtakavarga.keys
-        .associateWith((planet) {
-          final bav = ashtakavarga.bhinnashtakavarga[planet]!;
-          final reducedBindus = List<int>.from(bav.bindus);
+    final reducedBhinnashtakavarga =
+        ashtakavarga.bhinnashtakavarga.keys.associateWith((planet) {
+      final bav = ashtakavarga.bhinnashtakavarga[planet]!;
+      final reducedBindus = List<int>.from(bav.bindus);
 
-          // Apply reduction to each planet's dual signs
-          for (final signPair in _dualSigns) {
-            final sign1 = signPair[0];
-            final sign2 = signPair[1];
-            final bindu1 = bav.bindus[sign1];
-            final bindu2 = bav.bindus[sign2];
+      // Apply reduction to each planet's dual signs
+      for (final signPair in _dualSigns) {
+        final sign1 = signPair[0];
+        final sign2 = signPair[1];
+        final bindu1 = bav.bindus[sign1];
+        final bindu2 = bav.bindus[sign2];
 
-            if (bindu1 > 0 && bindu2 > 0) {
-              final isOddFoot = _oddFootSigns.contains(sign1);
-              final diff = (bindu1 - bindu2).abs();
+        if (bindu1 > 0 && bindu2 > 0) {
+          final isOddFoot = _oddFootSigns.contains(sign1);
+          final diff = (bindu1 - bindu2).abs();
 
-              if (isOddFoot) {
-                reducedBindus[sign1] = bindu1 > bindu2 ? diff : 0;
-                reducedBindus[sign2] = bindu2 > bindu1 ? diff : 0;
-              } else {
-                final minBindu = bindu1 < bindu2 ? bindu1 : bindu2;
-                reducedBindus[sign1] = minBindu;
-                reducedBindus[sign2] = minBindu;
-              }
-            }
+          if (isOddFoot) {
+            reducedBindus[sign1] = bindu1 > bindu2 ? diff : 0;
+            reducedBindus[sign2] = bindu2 > bindu1 ? diff : 0;
+          } else {
+            final minBindu = bindu1 < bindu2 ? bindu1 : bindu2;
+            reducedBindus[sign1] = minBindu;
+            reducedBindus[sign2] = minBindu;
           }
+        }
+      }
 
-          return Bhinnashtakavarga(
-            planet: planet,
-            bindus: reducedBindus,
-            contributions: bav.contributions,
-          );
-        });
+      return Bhinnashtakavarga(
+        planet: planet,
+        bindus: reducedBindus,
+        contributions: bav.contributions,
+      );
+    });
 
     // Recalculate Sarvashtakavarga
     final sarvashtakavarga = _calculateSarvashtakavarga(

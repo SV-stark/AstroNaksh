@@ -156,13 +156,10 @@ class YogaService {
 
     final kendraHouses = [1, 4, 7, 10];
     final trineHouses = [1, 5, 9];
-    final occupiedHouses = Planet.traditionalPlanets
-        .map((p) => pMap[p]!)
-        .toSet();
-    final distinctSigns = Planet.traditionalPlanets
-        .map((p) => signMap[p]!)
-        .toSet()
-        .length;
+    final occupiedHouses =
+        Planet.traditionalPlanets.map((p) => pMap[p]!).toSet();
+    final distinctSigns =
+        Planet.traditionalPlanets.map((p) => signMap[p]!).toSet().length;
 
     final movableSigns = [0, 3, 6, 9];
     final fixedSigns = [1, 4, 7, 10];
@@ -320,8 +317,7 @@ class YogaService {
 
     // Evaluation for kemadruma_yoga
     {
-      final isPresent =
-          sunaphaPlanets.isEmpty &&
+      final isPresent = sunaphaPlanets.isEmpty &&
           anaphaPlanets.isEmpty &&
           traditionalPlanetsInHouse(
             moonHouse,
@@ -398,8 +394,7 @@ class YogaService {
 
     // Evaluation for ruchaka_yoga
     {
-      final isPresent =
-          kendraHouses.contains(pMap[Planet.mars]) &&
+      final isPresent = kendraHouses.contains(pMap[Planet.mars]) &&
           (_isOwnSign(chart, Planet.mars) || _isExalted(chart, Planet.mars));
       final explanation = isPresent
           ? 'Mars own/exalted in Kendra house ${pMap[Planet.mars]}'
@@ -420,8 +415,7 @@ class YogaService {
 
     // Evaluation for bhadra_yoga
     {
-      final isPresent =
-          kendraHouses.contains(pMap[Planet.mercury]) &&
+      final isPresent = kendraHouses.contains(pMap[Planet.mercury]) &&
           (_isOwnSign(chart, Planet.mercury) ||
               _isExalted(chart, Planet.mercury));
       final explanation = isPresent
@@ -444,8 +438,7 @@ class YogaService {
 
     // Evaluation for sasa_yoga
     {
-      final isPresent =
-          kendraHouses.contains(pMap[Planet.saturn]) &&
+      final isPresent = kendraHouses.contains(pMap[Planet.saturn]) &&
           (_isOwnSign(chart, Planet.saturn) ||
               _isExalted(chart, Planet.saturn));
       final explanation = isPresent
@@ -468,8 +461,7 @@ class YogaService {
 
     // Evaluation for maalavya_yoga
     {
-      final isPresent =
-          kendraHouses.contains(pMap[Planet.venus]) &&
+      final isPresent = kendraHouses.contains(pMap[Planet.venus]) &&
           (_isOwnSign(chart, Planet.venus) || _isExalted(chart, Planet.venus));
       final explanation = isPresent
           ? 'Venus own/exalted in Kendra house ${pMap[Planet.venus]}'
@@ -490,8 +482,7 @@ class YogaService {
 
     // Evaluation for hamsa_yoga
     {
-      final isPresent =
-          kendraHouses.contains(pMap[Planet.jupiter]) &&
+      final isPresent = kendraHouses.contains(pMap[Planet.jupiter]) &&
           (_isOwnSign(chart, Planet.jupiter) ||
               _isExalted(chart, Planet.jupiter));
       final explanation = isPresent
@@ -539,9 +530,8 @@ class YogaService {
       final isPresent = Planet.traditionalPlanets.every(
         (p) => fixedSigns.contains(signMap[p]!),
       );
-      final explanation = isPresent
-          ? 'All planets in Fixed signs'
-          : 'Not all in Fixed signs';
+      final explanation =
+          isPresent ? 'All planets in Fixed signs' : 'Not all in Fixed signs';
       result.add(
         NatalYoga(
           key: "musala_yoga",
@@ -561,9 +551,8 @@ class YogaService {
       final isPresent = Planet.traditionalPlanets.every(
         (p) => dualSigns.contains(signMap[p]!),
       );
-      final explanation = isPresent
-          ? 'All planets in Dual signs'
-          : 'Not all in Dual signs';
+      final explanation =
+          isPresent ? 'All planets in Dual signs' : 'Not all in Dual signs';
       result.add(
         NatalYoga(
           key: "nala_yoga",
@@ -601,8 +590,7 @@ class YogaService {
 
     // Evaluation for maalaa_yoga
     {
-      final isPresent =
-          benefics.every((p) => kendraHouses.contains(pMap[p])) &&
+      final isPresent = benefics.every((p) => kendraHouses.contains(pMap[p])) &&
           malefics.where((p) => kendraHouses.contains(pMap[p])).isEmpty;
       final explanation = isPresent
           ? 'Quadrants occupied only by natural benefics'
@@ -623,8 +611,7 @@ class YogaService {
 
     // Evaluation for sarpa_yoga
     {
-      final isPresent =
-          malefics.every((p) => kendraHouses.contains(pMap[p])) &&
+      final isPresent = malefics.every((p) => kendraHouses.contains(pMap[p])) &&
           benefics.where((p) => kendraHouses.contains(pMap[p])).isEmpty;
       final explanation = isPresent
           ? 'Quadrants occupied only by natural malefics'
@@ -646,8 +633,7 @@ class YogaService {
 
     // Evaluation for gadaa_yoga
     {
-      final isPresent =
-          occupiedHouses.every((h) => h == 1 || h == 4) ||
+      final isPresent = occupiedHouses.every((h) => h == 1 || h == 4) ||
           occupiedHouses.every((h) => h == 4 || h == 7) ||
           occupiedHouses.every((h) => h == 7 || h == 10) ||
           occupiedHouses.every((h) => h == 10 || h == 1);
@@ -674,7 +660,7 @@ class YogaService {
       final diffMoonJup = (moonHouse - pMap[Planet.jupiter]! + 12) % 12;
       final isPresent =
           (diffMoonJup == 5 || diffMoonJup == 7 || diffMoonJup == 11) &&
-          !kendraHouses.contains(pMap[Planet.jupiter]!);
+              !kendraHouses.contains(pMap[Planet.jupiter]!);
       final explanation = isPresent
           ? 'Moon is in 6th, 8th, or 12th from Jupiter'
           : 'Moon not in Sakata position from Jupiter';
@@ -736,8 +722,7 @@ class YogaService {
 
     // Evaluation for hala_yoga
     {
-      final isPresent =
-          occupiedHouses.every((h) => [2, 6, 10].contains(h)) ||
+      final isPresent = occupiedHouses.every((h) => [2, 6, 10].contains(h)) ||
           occupiedHouses.every((h) => [3, 7, 11].contains(h)) ||
           occupiedHouses.every((h) => [4, 8, 12].contains(h));
       final explanation = isPresent
@@ -760,8 +745,7 @@ class YogaService {
 
     // Evaluation for vajra_yoga
     {
-      final isPresent =
-          benefics.every((p) => pMap[p] == 1 || pMap[p] == 7) &&
+      final isPresent = benefics.every((p) => pMap[p] == 1 || pMap[p] == 7) &&
           malefics.every((p) => pMap[p] == 4 || pMap[p] == 10);
       final explanation = isPresent
           ? 'Benefics in 1/7 and Malefics in 4/10'
@@ -783,8 +767,7 @@ class YogaService {
 
     // Evaluation for yava_yoga
     {
-      final isPresent =
-          malefics.every((p) => pMap[p] == 1 || pMap[p] == 7) &&
+      final isPresent = malefics.every((p) => pMap[p] == 1 || pMap[p] == 7) &&
           benefics.every((p) => pMap[p] == 4 || pMap[p] == 10);
       final explanation = isPresent
           ? 'Malefics in 1/7 and Benefics in 4/10'
@@ -828,7 +811,7 @@ class YogaService {
     {
       final isPresent =
           occupiedHouses.every((h) => [2, 5, 8, 11].contains(h)) ||
-          occupiedHouses.every((h) => [3, 6, 9, 12].contains(h));
+              occupiedHouses.every((h) => [3, 6, 9, 12].contains(h));
       final explanation = isPresent
           ? 'All planets occupy Panapara or Apoklima houses'
           : 'Planets in Kendra houses';
@@ -1300,8 +1283,7 @@ class YogaService {
       final moon10 = Planet.traditionalPlanets
           .where((p) => pMap[p] == ((moonHouse - 1 + 9) % 12) + 1)
           .toList();
-      final isPresent =
-          (lagna10.isNotEmpty && lagna10.every(_isBenefic)) ||
+      final isPresent = (lagna10.isNotEmpty && lagna10.every(_isBenefic)) ||
           (moon10.isNotEmpty && moon10.every(_isBenefic));
       final explanation = isPresent
           ? 'Only benefics in 10th from Lagna/Moon'
@@ -5678,8 +5660,7 @@ class YogaService {
       final lordOf6 = _getHouseLord(chart, 6);
       final lordOf8 = _getHouseLord(chart, 8);
       final lordOf12 = _getHouseLord(chart, 12);
-      final isPresent =
-          [6, 8, 12].contains(pMap[lordOf6]) ||
+      final isPresent = [6, 8, 12].contains(pMap[lordOf6]) ||
           [6, 8, 12].contains(pMap[lordOf8]) ||
           [6, 8, 12].contains(pMap[lordOf12]);
       final explanation = isPresent
@@ -5703,9 +5684,8 @@ class YogaService {
     // Evaluation for neecha_bhanga_raja_yoga
     {
       bool checkNeechaBhanga() {
-        final debilitated = chart.debilitatedPlanets
-            .map((info) => info.planet)
-            .toList();
+        final debilitated =
+            chart.debilitatedPlanets.map((info) => info.planet).toList();
         if (debilitated.isEmpty) return false;
         for (final p in debilitated) {
           final signLord = Rashi.fromIndex(signMap[p]!).lord;

@@ -4,6 +4,8 @@ import urllib.request
 import zipfile
 import sqlite3
 import io
+import subprocess
+import json
 
 CITIES_ZIP_URL = "https://download.geonames.org/export/dump/cities1000.zip"
 COUNTRIES_URL = "https://download.geonames.org/export/dump/countryInfo.txt"
@@ -117,6 +119,58 @@ def main():
         INSERT INTO cities (name, state, country, latitude, longitude, timezone)
         VALUES (?, ?, ?, ?, ?, ?)
         """, city_batch)
+
+    # 5.5. Merge old cities from cities2.json (b3d2b6d)
+    print("Merging old Indian cities database from git history...")
+    try:
+        proc = subprocess.run(
+            ["git", "show", "b3d2b6d:assets/data/cities2.json"],
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding="utf-8"
+        )
+        old_cities = json.loads(proc.stdout)
+        print(f"Loaded {len(old_cities)} old Indian cities from git.")
+        
+        # Build a set of existing Indian cities in the db to avoid duplicates
+        cursor.execute("SELECT LOWER(name), LOWER(state) FROM cities WHERE country = 'India'")
+        existing_indian_cities = set((row[0], row[1]) for row in cursor.fetchall())
+        
+        old_city_batch = []
+        added_count = 0
+        
+        for old_city in old_cities:
+            name = old_city.get('n', '').strip()
+            state = old_city.get('s', '').strip()
+            country = old_city.get('c', '').strip()
+            lat = float(old_city.get('la', 0.0))
+            lon = float(old_city.get('lo', 0.0))
+            timezone = "Asia/Kolkata"
+            
+            # Check for duplicate
+            key = (name.lower(), state.lower())
+            if key not in existing_indian_cities:
+                old_city_batch.append((name, state, country, lat, lon, timezone))
+                existing_indian_cities.add(key)
+                added_count += 1
+                
+                if len(old_city_batch) >= 5000:
+                    cursor.executemany("""
+                    INSERT INTO cities (name, state, country, latitude, longitude, timezone)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """, old_city_batch)
+                    old_city_batch = []
+                    
+        if old_city_batch:
+            cursor.executemany("""
+            INSERT INTO cities (name, state, country, latitude, longitude, timezone)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """, old_city_batch)
+            
+        print(f"Merged {added_count} new Indian cities/towns from legacy database.")
+    except Exception as e:
+        print(f"Warning: Failed to merge old cities from git history: {e}")
 
     conn.commit()
     

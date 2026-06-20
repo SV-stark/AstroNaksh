@@ -1089,10 +1089,59 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
     );
   }
 
+  HSLColor _getStrengthHSL(int value, bool isBhinna) {
+    if (isBhinna) {
+      if (value < 3) {
+        // Critical: Soft Crimson Red
+        return const HSLColor.fromAHSL(1.0, 355.0, 0.75, 0.50);
+      } else if (value <= 4) {
+        // Average: Muted Golden Orange
+        return const HSLColor.fromAHSL(1.0, 38.0, 0.85, 0.55);
+      } else if (value <= 6) {
+        // Good: Soft Turquoise Teal
+        return const HSLColor.fromAHSL(1.0, 168.0, 0.65, 0.45);
+      } else {
+        // Exceptional: Vibrant Emerald/Jade
+        return const HSLColor.fromAHSL(1.0, 135.0, 0.75, 0.40);
+      }
+    } else {
+      if (value < 20) {
+        // Critical: Soft Crimson Red
+        return const HSLColor.fromAHSL(1.0, 355.0, 0.75, 0.50);
+      } else if (value <= 25) {
+        // Average: Muted Golden Orange
+        return const HSLColor.fromAHSL(1.0, 38.0, 0.85, 0.55);
+      } else if (value <= 28) {
+        // Good: Soft Turquoise Teal
+        return const HSLColor.fromAHSL(1.0, 168.0, 0.65, 0.45);
+      } else {
+        // Exceptional: Vibrant Emerald/Jade
+        return const HSLColor.fromAHSL(1.0, 135.0, 0.75, 0.40);
+      }
+    }
+  }
+
+  Widget _legendDot(Color color) {
+    return Container(
+      width: 6,
+      height: 6,
+      margin: const EdgeInsets.symmetric(horizontal: 1.5),
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+
   Widget _buildHeatMap(Map<int, int> points, {bool isBhinna = false}) {
-    // Determine max for normalization
-    final maxValue = isBhinna ? 8.0 : 40.0;
-    final color = isBhinna ? Colors.purple : Colors.blue;
+    final gridMap = <String, int>{
+      '0,0': 11, '0,1': 0, '0,2': 1, '0,3': 2,
+      '1,3': 3,
+      '2,3': 4,
+      '3,3': 5, '3,2': 6, '3,1': 7, '3,0': 8,
+      '2,0': 9,
+      '1,0': 10,
+    };
 
     return Card(
       child: Padding(
@@ -1100,52 +1149,295 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Distribution Visualization',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              isBhinna ? 'Bhinnashtakavarga Chart Map' : 'Sarvashtakavarga Chart Map',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: List.generate(12, (index) {
-                final pt = points[index] ?? 0;
-                final intensity = (pt / maxValue).clamp(0.0, 1.0);
-                return Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: intensity),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: color.withValues(alpha: 0.3)),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _signNames[index].substring(0, 3),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: intensity > 0.5 ? Colors.white : Colors.black,
-                        ),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: FluentTheme.of(context).resources.textFillColorPrimary.withValues(alpha: 0.15),
+                        width: 1.5,
                       ),
-                      Text(
-                        pt.toString(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: intensity > 0.5 ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      children: List.generate(4, (row) {
+                        return Expanded(
+                          child: Row(
+                            children: List.generate(4, (col) {
+                              final key = '$row,$col';
+                              if (gridMap.containsKey(key)) {
+                                final signIndex = gridMap[key]!;
+                                final val = points[signIndex] ?? 0;
+                                final hslColor = _getStrengthHSL(val, isBhinna);
+                                final color = hslColor.toColor();
+
+                                return Expanded(
+                                  child: Container(
+                                    margin: const EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          color,
+                                          color.withValues(alpha: 0.85),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: color.withValues(alpha: 0.2),
+                                          blurRadius: 3,
+                                          offset: const Offset(0, 1.5),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          _signNames[signIndex],
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            shadows: [
+                                              Shadow(
+                                                offset: Offset(0, 1),
+                                                blurRadius: 2,
+                                                color: Color(0x73000000),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            val.toString(),
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // Center 2x2 cells
+                                if (row == 1 && col == 1) {
+                                  return Expanded(
+                                    child: Container(
+                                      margin: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: FluentTheme.of(context).cardColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            isBhinna ? 'BAV' : 'SAV',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: FluentTheme.of(context).activeColor,
+                                            ),
+                                          ),
+                                          const Text(
+                                            'Heatmap',
+                                            style: TextStyle(fontSize: 9, color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                                if (row == 1 && col == 2) {
+                                  return Expanded(
+                                    child: Container(
+                                      margin: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: FluentTheme.of(context).cardColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Legend',
+                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              _legendDot(const Color(0xfff87171)), // Red
+                                              _legendDot(const Color(0xfffbbf24)), // Amber
+                                              _legendDot(const Color(0xff2dd4bf)), // Teal
+                                              _legendDot(const Color(0xff10b981)), // Emerald
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                                if (row == 2 && col == 1) {
+                                  return Expanded(
+                                    child: Container(
+                                      margin: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: FluentTheme.of(context).cardColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Target',
+                                            style: TextStyle(fontSize: 9, color: Colors.grey),
+                                          ),
+                                          Text(
+                                            isBhinna ? '4.0' : '28.0',
+                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                                if (row == 2 && col == 2) {
+                                  int minVal = 999;
+                                  int maxVal = -999;
+                                  points.forEach((k, v) {
+                                    if (v < minVal) minVal = v;
+                                    if (v > maxVal) maxVal = v;
+                                  });
+                                  return Expanded(
+                                    child: Container(
+                                      margin: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: FluentTheme.of(context).cardColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Range',
+                                            style: TextStyle(fontSize: 9, color: Colors.grey),
+                                          ),
+                                          Text(
+                                            '$minVal - $maxVal',
+                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return Expanded(child: Container());
+                              }
+                            }),
+                          ),
+                        );
+                      }),
+                    ),
                   ),
-                );
-              }),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Explanatory card
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: FluentTheme.of(context).resources.solidBackgroundFillColorBase,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Color Classification:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildLegendRow(
+                    const Color(0xfff87171),
+                    isBhinna
+                        ? 'Critical Strength (Points < 3) - Represents low planetary support.'
+                        : 'Critical Strength (Points < 20) - Represents low overall support for the sign.',
+                  ),
+                  const SizedBox(height: 6),
+                  _buildLegendRow(
+                    const Color(0xfffbbf24),
+                    isBhinna
+                        ? 'Average Strength (Points 3-4) - Represents standard support.'
+                        : 'Average Strength (Points 20-25) - Represents standard support.',
+                  ),
+                  const SizedBox(height: 6),
+                  _buildLegendRow(
+                    const Color(0xff2dd4bf),
+                    isBhinna
+                        ? 'Good Strength (Points 5-6) - Highly favorable houses.'
+                        : 'Good Strength (Points 26-28) - Favorable houses with robust backing.',
+                  ),
+                  const SizedBox(height: 6),
+                  _buildLegendRow(
+                    const Color(0xff10b981),
+                    isBhinna
+                        ? 'Exceptional Strength (Points > 6) - Outstanding planetary power.'
+                        : 'Exceptional Strength (Points > 28) - Extremely powerful houses.',
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLegendRow(Color color, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          margin: const EdgeInsets.only(top: 2, right: 8),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            description,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -50,6 +50,7 @@ class KPData {
     required this.subLords,
     required this.significators,
     required this.rulingPlanets,
+    this.cuspSubLords = const [],
   });
 
   factory KPData.fromJson(Map<String, dynamic> json) {
@@ -59,16 +60,19 @@ class KPData {
           .toList(),
       significators: (json['significators'] as List).cast<String>(),
       rulingPlanets: (json['rulingPlanets'] as List).cast<String>(),
+      cuspSubLords: (json['cuspSubLords'] as List? ?? []).cast<String>(),
     );
   }
   final List<KPSubLord> subLords;
   final List<String> significators;
   final List<String> rulingPlanets;
+  final List<String> cuspSubLords;
 
   Map<String, dynamic> toJson() => {
     'subLords': subLords.map((e) => e.toJson()).toList(),
     'significators': significators,
     'rulingPlanets': rulingPlanets,
+    'cuspSubLords': cuspSubLords,
   };
 
   @override
@@ -76,7 +80,8 @@ class KPData {
     if (identical(this, other)) return true;
     return other is KPData &&
         other.subLords.length == subLords.length &&
-        other.significators.length == significators.length;
+        other.significators.length == significators.length &&
+        other.cuspSubLords.length == cuspSubLords.length;
   }
 
   @override
@@ -84,5 +89,6 @@ class KPData {
     Object.hashAll(subLords),
     Object.hashAll(significators),
     Object.hashAll(rulingPlanets),
+    Object.hashAll(cuspSubLords),
   );
 }

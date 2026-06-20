@@ -178,10 +178,21 @@ class KPChartService {
       rulingPlanets.add('${lagnaKP.starLord.displayName} (Lagna Star Lord)');
     }
 
+    final cuspSubLords = <String>[];
+    for (int i = 1; i <= 12; i++) {
+      final houseDiv = nativeKPData.houseDivisions[i];
+      if (houseDiv != null) {
+        cuspSubLords.add(houseDiv.subLord.displayName);
+      } else {
+        cuspSubLords.add('--');
+      }
+    }
+
     return KPData(
       subLords: subLords,
       significators: significators,
       rulingPlanets: rulingPlanets,
+      cuspSubLords: cuspSubLords,
     );
   }
 

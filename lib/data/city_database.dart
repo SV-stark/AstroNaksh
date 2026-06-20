@@ -7,12 +7,31 @@ import 'package:lat_lng_to_timezone/lat_lng_to_timezone.dart' as tzlookup;
 
 /// City Database with GPS Integration
 /// Comprehensive database of world cities with coordinates
+List<City> _parseCities(String jsonString) {
+  final List<dynamic> jsonList = json.decode(jsonString);
+  return jsonList.map((json) {
+    final lat = (json['la'] as num).toDouble();
+    final lon = (json['lo'] as num).toDouble();
+    return City(
+      name: json['n'] as String,
+      state: json['s'] as String,
+      country: json['c'] as String,
+      latitude: lat,
+      longitude: lon,
+      timezone: tzlookup.latLngToTimezoneString(lat, lon),
+    );
+  }).toList();
+}
+
 class CityDatabase {
   /// Major cities database
   /// internal list of cities
   static List<City> _cities = [];
 
   static bool _initialized = false;
+
+  // Simple query cache for geocoding search results
+  static final Map<String, List<City>> _searchCache = {};
 
   /// Initialize the database
   static Future<void> initialize() async {
@@ -22,22 +41,11 @@ class CityDatabase {
       final jsonString = await rootBundle.loadString(
         'assets/data/cities2.json',
       );
-      final List<dynamic> jsonList = json.decode(jsonString);
+      
+      // Parse JSON in a background isolate to keep UI smooth during load
+      _cities = await compute(_parseCities, jsonString);
 
-      _cities = jsonList.map((json) {
-        final lat = (json['la'] as num).toDouble();
-        final lon = (json['lo'] as num).toDouble();
-        return City(
-          name: json['n'] as String,
-          state: json['s'] as String,
-          country: json['c'] as String,
-          latitude: lat,
-          longitude: lon,
-          timezone: tzlookup.latLngToTimezoneString(lat, lon),
-        );
-      }).toList();
-
-      // Sort by name for faster binary search if needed, currently just sort for clean display
+      // Sort by name for clean display
       _cities.sort((a, b) => a.name.compareTo(b.name));
 
       _initialized = true;
@@ -70,14 +78,45 @@ class CityDatabase {
   /// Get all cities
   static List<City> getAllCities() => _cities;
 
-  /// Find cities by name (prefix search)
+  /// Find cities by name, state, or country (prefix and compound search)
   static List<City> searchCities(String query) {
     if (query.isEmpty) return [];
-    final lowerQuery = query.toLowerCase();
-    return _cities
-        .where((city) => city.name.toLowerCase().startsWith(lowerQuery))
-        .take(20)
-        .toList();
+    final trimmedQuery = query.trim().toLowerCase();
+
+    // Check search query cache
+    if (_searchCache.containsKey(trimmedQuery)) {
+      return _searchCache[trimmedQuery]!;
+    }
+
+    List<City> results;
+    if (trimmedQuery.contains(',')) {
+      final parts = trimmedQuery.split(',').map((p) => p.trim()).toList();
+      final cityName = parts[0];
+      final secondary = parts.length > 1 ? parts[1] : '';
+
+      results = _cities.where((city) {
+        final nameMatch = city.name.toLowerCase().startsWith(cityName);
+        if (!nameMatch) return false;
+
+        final stateMatch = city.state.toLowerCase().startsWith(secondary);
+        final countryMatch = city.country.toLowerCase().startsWith(secondary);
+        return stateMatch || countryMatch;
+      }).take(20).toList();
+    } else {
+      results = _cities.where((city) {
+        return city.name.toLowerCase().startsWith(trimmedQuery) ||
+            city.state.toLowerCase().startsWith(trimmedQuery) ||
+            city.country.toLowerCase().startsWith(trimmedQuery);
+      }).take(20).toList();
+    }
+
+    // Keep cache size bounded to 50 entries
+    if (_searchCache.length > 50) {
+      _searchCache.remove(_searchCache.keys.first);
+    }
+    _searchCache[trimmedQuery] = results;
+
+    return results;
   }
 
   /// Find nearest city to coordinates

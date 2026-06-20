@@ -227,15 +227,16 @@ class _PanchangScreenState extends State<PanchangScreen> {
     _calculatePanchang();
   }
 
-  void _onCitySearch(String text) {
+  Future<void> _onCitySearch(String text) async {
     if (text.length < 2) {
       if (_cityItems.isNotEmpty) setState(() => _cityItems = []);
       return;
     }
 
-    final results = CityDatabase.searchCities(text).take(10);
+    final results = await CityDatabase.searchCities(text);
+    final limited = results.take(10);
     setState(() {
-      _cityItems = results.map((city) {
+      _cityItems = limited.map((city) {
         return AutoSuggestBoxItem<City>(
           value: city,
           label: '${city.name}, ${city.country}',

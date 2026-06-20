@@ -103,10 +103,15 @@ class PdfWidgets {
     required pw.Widget Function(pw.Context) build,
     pw.MemoryImage? backgroundImage,
     pw.MemoryImage? logo,
+    pw.EdgeInsets? margin,
+    String? brandOrgName,
+    String? brandOrgTagline,
+    String? brandContactInfo,
   }) {
+    final edgeMargin = margin ?? const pw.EdgeInsets.all(32);
     return pw.Page(
       pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.all(32),
+      margin: edgeMargin,
       build: (context) {
         return pw.FullPage(
           ignoreMargins: true,
@@ -120,7 +125,7 @@ class PdfWidgets {
                   ),
                 ),
               pw.Padding(
-                padding: const pw.EdgeInsets.all(32),
+                padding: edgeMargin,
                 child: pw.Column(
                   children: [
                     // Header
@@ -131,7 +136,7 @@ class PdfWidgets {
                           pw.Image(logo, height: 30)
                         else
                           pw.Text(
-                            'ASTRONAKSH',
+                            brandOrgName ?? 'ASTRONAKSH',
                             style: pw.TextStyle(
                               color: ReportStyles.primaryColor,
                               fontWeight: pw.FontWeight.bold,
@@ -140,7 +145,7 @@ class PdfWidgets {
                             ),
                           ),
                         pw.Text(
-                          'PREMIUM ASTROLOGY REPORT',
+                          (brandOrgTagline ?? 'PREMIUM ASTROLOGY REPORT').toUpperCase(),
                           style: const pw.TextStyle(
                             color: ReportStyles.grey,
                             fontSize: 8,
@@ -160,7 +165,7 @@ class PdfWidgets {
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
                         pw.Text(
-                          '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
+                          brandContactInfo ?? '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
                           style: const pw.TextStyle(
                             fontSize: 8,
                             color: PdfColors.grey,

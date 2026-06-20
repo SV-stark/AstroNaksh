@@ -10,8 +10,10 @@ class NorthIndianChartPainter extends CustomPainter {
     this.selectedHouse,
     this.showSigns = true,
     this.showHouseNumbers = true,
+    this.transitPlanetsBySign,
   });
   final Map<int, List<String>> planetsBySign;
+  final Map<int, List<String>>? transitPlanetsBySign;
   final int ascendantSign;
   final ChartColors colors;
   final int? hoveredHouse;
@@ -234,6 +236,7 @@ class NorthIndianChartPainter extends CustomPainter {
 
       // Draw Planets
       final planets = planetsBySign[signIndex + 1] ?? [];
+      final transitPlanets = transitPlanetsBySign?[signIndex + 1] ?? [];
       final fontSize = width / 25; // Responsive size
 
       final lines = <String>[];
@@ -248,6 +251,8 @@ class NorthIndianChartPainter extends CustomPainter {
       } else if (planets.isNotEmpty) {
         lines.add(planets.join(' '));
       }
+
+      double natalHeight = 0;
 
       if (lines.isNotEmpty) {
         final textSpan = TextSpan(
@@ -273,12 +278,61 @@ class NorthIndianChartPainter extends CustomPainter {
         );
 
         textPainter.layout(maxWidth: width / 4);
-        // Position slightly adjusted if we have planets to not overlap with top glyph
+        natalHeight = textPainter.height;
+
         final offset = Offset(
           center.dx - textPainter.width / 2,
-          center.dy - textPainter.height / 3,
+          center.dy - (transitPlanets.isNotEmpty ? textPainter.height * 0.8 : textPainter.height / 3),
         );
         textPainter.paint(canvas, offset);
+      }
+
+      // Draw Transit Planets
+      if (transitPlanets.isNotEmpty) {
+        final tLines = <String>[];
+        final cleanTransitPlanets = transitPlanets.where((p) => p != 'Asc').toList();
+        if (cleanTransitPlanets.isNotEmpty) {
+          if (cleanTransitPlanets.length > 3) {
+            for (var i = 0; i < cleanTransitPlanets.length; i += 3) {
+              tLines.add(
+                cleanTransitPlanets
+                    .sublist(i, i + 3 > cleanTransitPlanets.length ? cleanTransitPlanets.length : i + 3)
+                    .join(' '),
+              );
+            }
+          } else {
+            tLines.add(cleanTransitPlanets.join(' '));
+          }
+
+          final tTextSpan = TextSpan(
+            children: tLines
+                .map(
+                  (line) => TextSpan(
+                    text: '$line\n',
+                    style: TextStyle(
+                      color: const Color(0xFF10B981), // Emerald green for transits
+                      fontSize: fontSize * 0.9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+                .toList(),
+            style: const TextStyle(height: 1.2),
+          );
+
+          final tTextPainter = TextPainter(
+            text: tTextSpan,
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.ltr,
+          );
+
+          tTextPainter.layout(maxWidth: width / 4);
+          final offset = Offset(
+            center.dx - tTextPainter.width / 2,
+            center.dy + (natalHeight > 0 ? 2 : -tTextPainter.height / 3),
+          );
+          tTextPainter.paint(canvas, offset);
+        }
       }
     }
 

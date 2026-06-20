@@ -4,11 +4,13 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 
 import '../../core/pdf_report_service.dart';
+import '../../core/settings_provider.dart';
 import '../../data/models.dart';
 import '../utils/responsive_helper.dart';
 
@@ -46,15 +48,15 @@ const List<ColorPalette> _predefinedPalettes = [
   ),
 ];
 
-class PDFReportScreen extends StatefulWidget {
+class PDFReportScreen extends ConsumerStatefulWidget {
   const PDFReportScreen({super.key, required this.chartData});
   final CompleteChartData chartData;
 
   @override
-  State<PDFReportScreen> createState() => _PDFReportScreenState();
+  ConsumerState<PDFReportScreen> createState() => _PDFReportScreenState();
 }
 
-class _PDFReportScreenState extends State<PDFReportScreen> {
+class _PDFReportScreenState extends ConsumerState<PDFReportScreen> {
   String _reportType = 'comprehensive';
   bool _isGenerating = false;
   double _generationProgress = 0.0;
@@ -100,6 +102,36 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
       text:
           '#${_accentColor.value.toRadixString(16).substring(2).toUpperCase()}',
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final settings = ref.read(settingsProvider).value?.chartSettings;
+        if (settings != null) {
+          setState(() {
+            _primaryColor = _parseHexColor(settings.brandPrimaryColorHex) ?? const Color(0xFF1A237E);
+            _accentColor = _parseHexColor(settings.brandAccentColorHex) ?? const Color(0xFFB8860B);
+            _primaryColorController.text = settings.brandPrimaryColorHex;
+            _accentColorController.text = settings.brandAccentColorHex;
+
+            _sections['Chart Diagram'] = settings.pdfIncludeD1;
+            _sections['Planetary Positions'] = settings.pdfIncludeD9;
+            _sections['Dasha Periods'] = settings.pdfIncludeDasha;
+            _sections['KP System'] = settings.pdfIncludeKP;
+            _sections['Yogas & Doshas'] = settings.pdfIncludeInterpretations;
+
+            if (settings.brandLogoPath.isNotEmpty) {
+              final file = File(settings.brandLogoPath);
+              if (file.existsSync()) {
+                _logoFile = file;
+                try {
+                  _logoBytes = file.readAsBytesSync();
+                } catch (_) {}
+              }
+            }
+          });
+        }
+      }
+    });
   }
 
   @override
@@ -852,12 +884,18 @@ class _PDFReportScreenState extends State<PDFReportScreen> {
         });
       }
 
+      final settings = ref.read(settingsProvider).value?.chartSettings;
       final file = await PDFReportService.generateReport(
         widget.chartData,
         reportTitle: _titleController.text,
         customPrimaryColor: PdfColor.fromInt(_primaryColor.value),
         customAccentColor: PdfColor.fromInt(_accentColor.value),
         logoBytes: _logoBytes,
+        brandOrgName: settings?.brandOrgName,
+        brandOrgTagline: settings?.brandOrgTagline,
+        brandContactInfo: settings?.brandContactInfo,
+        pdfPageMargins: settings?.pdfPageMargins,
+        includeCover: settings?.pdfIncludeCover ?? true,
         includeD1: _sections['Chart Diagram'] ?? true,
         includeD9: _sections['Planetary Positions'] ?? true,
         includeDasha: _sections['Dasha Periods'] ?? true,

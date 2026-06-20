@@ -1,8 +1,11 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jyotish/jyotish.dart' hide HouseSystem;
 
 import '../core/ayanamsa_calculator.dart';
+import '../core/backup_service.dart';
 import '../core/chart_customization.dart';
 import '../core/settings_provider.dart';
 import '../ui/utils/responsive_helper.dart';
@@ -19,17 +22,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _currentIndex = 0;
   bool _initialized = false;
 
+  late final TextEditingController _brandOrgNameController;
+  late final TextEditingController _brandOrgTaglineController;
+  late final TextEditingController _brandContactInfoController;
+  late final TextEditingController _brandPrimaryColorHexController;
+  late final TextEditingController _brandAccentColorHexController;
+  late final TextEditingController _webdavUrlController;
+  late final TextEditingController _webdavUsernameController;
+  late final TextEditingController _webdavPasswordController;
+
   void _initSettingsIfNeeded() {
     if (!_initialized) {
       final currentSettings = ref.read(settingsProvider).value?.chartSettings;
       if (currentSettings != null) {
         _settings = ChartCustomization.fromJson(currentSettings.toJson());
-        _initialized = true;
       } else {
         _settings = ChartCustomization();
-        _initialized = true;
       }
+
+      _brandOrgNameController = TextEditingController(text: _settings.brandOrgName);
+      _brandOrgTaglineController = TextEditingController(text: _settings.brandOrgTagline);
+      _brandContactInfoController = TextEditingController(text: _settings.brandContactInfo);
+      _brandPrimaryColorHexController = TextEditingController(text: _settings.brandPrimaryColorHex);
+      _brandAccentColorHexController = TextEditingController(text: _settings.brandAccentColorHex);
+      _webdavUrlController = TextEditingController(text: _settings.webdavUrl);
+      _webdavUsernameController = TextEditingController(text: _settings.webdavUsername);
+      _webdavPasswordController = TextEditingController(text: _settings.webdavPassword);
+
+      _initialized = true;
     }
+  }
+
+  @override
+  void dispose() {
+    if (_initialized) {
+      _brandOrgNameController.dispose();
+      _brandOrgTaglineController.dispose();
+      _brandContactInfoController.dispose();
+      _brandPrimaryColorHexController.dispose();
+      _brandAccentColorHexController.dispose();
+      _webdavUrlController.dispose();
+      _webdavUsernameController.dispose();
+      _webdavPasswordController.dispose();
+    }
+    super.dispose();
   }
 
   void _saveSettings() {
@@ -125,6 +161,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: const Icon(FluentIcons.grid_view_small),
               title: const Text('Vargas'),
               body: _buildVargaSettings(),
+            ),
+            PaneItem(
+              icon: const Icon(FluentIcons.database),
+              title: const Text('Backup & Sync'),
+              body: _buildBackupSyncSettings(),
             ),
           ],
           footerItems: [
@@ -490,8 +531,197 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('PDF Report Options')),
       children: [
-        const Text('Content Selection'),
-        const SizedBox(height: 8),
+        const Text(
+          'Brand Identity Builder',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: InfoLabel(
+                      label: 'Organization Name',
+                      child: TextBox(
+                        controller: _brandOrgNameController,
+                        placeholder: 'ASTRONAKSH',
+                        onChanged: (val) {
+                          _settings.brandOrgName = val.trim().isEmpty ? 'ASTRONAKSH' : val;
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: InfoLabel(
+                      label: 'Organization Tagline',
+                      child: TextBox(
+                        controller: _brandOrgTaglineController,
+                        placeholder: 'Vedic Insights',
+                        onChanged: (val) {
+                          _settings.brandOrgTagline = val.trim().isEmpty ? 'Vedic Insights' : val;
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              InfoLabel(
+                label: 'Contact Info / Copyright Line',
+                child: TextBox(
+                  controller: _brandContactInfoController,
+                  placeholder: '© 2026 AstroNaksh - contact@astronaksh.com',
+                  onChanged: (val) {
+                    _settings.brandContactInfo = val;
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: InfoLabel(
+                      label: 'Primary Color (Hex)',
+                      child: TextBox(
+                        controller: _brandPrimaryColorHexController,
+                        placeholder: '#1A237E',
+                        onChanged: (val) {
+                          _settings.brandPrimaryColorHex = val;
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: InfoLabel(
+                      label: 'Accent Color (Hex)',
+                      child: TextBox(
+                        controller: _brandAccentColorHexController,
+                        placeholder: '#B8860B',
+                        onChanged: (val) {
+                          _settings.brandAccentColorHex = val;
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text('Custom Logo Image', style: TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        _settings.brandLogoPath.isNotEmpty
+                            ? _settings.brandLogoPath.split(Platform.pathSeparator).last
+                            : 'No logo selected (using default text brand)',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: _settings.brandLogoPath.isNotEmpty ? Colors.black : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Button(
+                    onPressed: () async {
+                      try {
+                        final result = await FilePicker.platform.pickFiles(
+                          type: FileType.image,
+                          allowMultiple: false,
+                        );
+                        if (result != null && result.files.single.path != null) {
+                          setState(() {
+                            _settings.brandLogoPath = result.files.single.path!;
+                          });
+                        }
+                      } catch (e) {
+                        debugPrint('Error picking logo: $e');
+                      }
+                    },
+                    child: const Text('Choose File'),
+                  ),
+                  if (_settings.brandLogoPath.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Button(
+                      onPressed: () {
+                        setState(() {
+                          _settings.brandLogoPath = '';
+                        });
+                      },
+                      child: Icon(FluentIcons.clear, color: Colors.red),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'Page & Layout Formatting',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Page Margins Size'),
+                  SizedBox(
+                    width: 150,
+                    child: ComboBox<String>(
+                      value: _settings.pdfPageMargins,
+                      items: const [
+                        ComboBoxItem(value: 'small', child: Text('Small (16px)')),
+                        ComboBoxItem(value: 'medium', child: Text('Medium (32px)')),
+                        ComboBoxItem(value: 'large', child: Text('Large (48px)')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _settings.pdfPageMargins = value;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(
+                style: DividerThemeData(
+                  verticalMargin: EdgeInsets.symmetric(vertical: 16.0),
+                ),
+              ),
+              _buildSimpleToggle(
+                'Include Cover Page',
+                _settings.pdfIncludeCover,
+                (v) => setState(() => _settings.pdfIncludeCover = v),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'Content Selection',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
         Card(
           padding: EdgeInsets.zero,
           child: Column(
@@ -499,42 +729,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _buildListTileToggle(
                 'Include D-1 Chart',
                 _settings.pdfIncludeD1,
-                (v) {
-                  setState(() => _settings.pdfIncludeD1 = v);
-                },
+                (v) => setState(() => _settings.pdfIncludeD1 = v),
               ),
               _buildListTileToggle(
                 'Include D-9 Navamsa',
                 _settings.pdfIncludeD9,
-                (v) {
-                  setState(() => _settings.pdfIncludeD9 = v);
-                },
+                (v) => setState(() => _settings.pdfIncludeD9 = v),
               ),
-              _buildListTileToggle('Include Dasha', _settings.pdfIncludeDasha, (
-                v,
-              ) {
-                setState(() => _settings.pdfIncludeDasha = v);
-              }),
+              _buildListTileToggle(
+                'Include Dasha periods',
+                _settings.pdfIncludeDasha,
+                (v) => setState(() => _settings.pdfIncludeDasha = v),
+              ),
               _buildListTileToggle(
                 'Include KP Analysis',
                 _settings.pdfIncludeKP,
-                (v) {
-                  setState(() => _settings.pdfIncludeKP = v);
-                },
+                (v) => setState(() => _settings.pdfIncludeKP = v),
               ),
               _buildListTileToggle(
                 'Include Other Vargas',
                 _settings.pdfIncludeVargas,
-                (v) {
-                  setState(() => _settings.pdfIncludeVargas = v);
-                },
+                (v) => setState(() => _settings.pdfIncludeVargas = v),
               ),
               _buildListTileToggle(
                 'Include Interpretations',
                 _settings.pdfIncludeInterpretations,
-                (v) {
-                  setState(() => _settings.pdfIncludeInterpretations = v);
-                },
+                (v) => setState(() => _settings.pdfIncludeInterpretations = v),
               ),
             ],
           ),
@@ -870,6 +1090,371 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 }
               },
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBackupSyncSettings() {
+    return ScaffoldPage.scrollable(
+      header: const PageHeader(title: Text('Backup & Synchronization')),
+      children: [
+        const Text(
+          'Local Database Backup & Restore',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Safeguard your chart database offline by exporting a local backup file, or restore from a previously exported file.',
+                style: TextStyle(color: Colors.grey, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Button(
+                    onPressed: () async {
+                      try {
+                        final result = await FilePicker.platform.saveFile(
+                          dialogTitle: 'Export Local Backup',
+                          fileName: 'astronaksh_backup.db',
+                          type: FileType.any,
+                        );
+                        if (result != null) {
+                          final backupService = ref.read(backupServiceProvider);
+                          await backupService.backupLocal(result);
+                          if (mounted) {
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Backup Successful'),
+                                content: Text('Database exported to: $result'),
+                                severity: InfoBarSeverity.success,
+                                onClose: close,
+                              ),
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          displayInfoBar(
+                            context,
+                            builder: (context, close) => InfoBar(
+                              title: const Text('Backup Failed'),
+                              content: Text('Error: $e'),
+                              severity: InfoBarSeverity.error,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FluentIcons.export),
+                        SizedBox(width: 8),
+                        Text('Export Local Backup'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Button(
+                    onPressed: () async {
+                      try {
+                        final result = await FilePicker.platform.pickFiles(
+                          dialogTitle: 'Select Backup File to Restore',
+                          type: FileType.any,
+                          allowMultiple: false,
+                        );
+                        if (result != null && result.files.single.path != null) {
+                          final sourcePath = result.files.single.path!;
+                          final backupService = ref.read(backupServiceProvider);
+                          
+                          // Show a warning/confirmation dialog
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => ContentDialog(
+                              title: const Text('Confirm Restore'),
+                              content: const Text(
+                                'Restoring this backup file will overwrite your current charts database. This cannot be undone. Are you sure you want to proceed?',
+                              ),
+                              actions: [
+                                Button(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('Restore'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            await backupService.restoreLocal(sourcePath);
+                            if (mounted) {
+                              displayInfoBar(
+                                context,
+                                builder: (context, close) => InfoBar(
+                                  title: const Text('Database Restored'),
+                                  content: const Text('Charts database has been successfully restored.'),
+                                  severity: InfoBarSeverity.success,
+                                  onClose: close,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          displayInfoBar(
+                            context,
+                            builder: (context, close) => InfoBar(
+                              title: const Text('Restore Failed'),
+                              content: Text('Error: $e'),
+                              severity: InfoBarSeverity.error,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FluentIcons.import),
+                        SizedBox(width: 8),
+                        Text('Restore Local Backup'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'Cloud WebDAV Synchronization',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Configure private cloud WebDAV credentials to sync backups securely across devices. This app is offline-first; sync is only triggered manually.',
+                style: TextStyle(color: Colors.grey, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              InfoLabel(
+                label: 'WebDAV Target Server URL',
+                child: TextBox(
+                  controller: _webdavUrlController,
+                  placeholder: 'https://example.com/remote.php/dav/files/user/AstroNaksh/',
+                  onChanged: (val) {
+                    _settings.webdavUrl = val.trim();
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: InfoLabel(
+                      label: 'WebDAV Username',
+                      child: TextBox(
+                        controller: _webdavUsernameController,
+                        placeholder: 'Username',
+                        onChanged: (val) {
+                          _settings.webdavUsername = val.trim();
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: InfoLabel(
+                      label: 'WebDAV Password',
+                      child: TextBox(
+                        controller: _webdavPasswordController,
+                        placeholder: 'Password / App Password',
+                        obscureText: true,
+                        onChanged: (val) {
+                          _settings.webdavPassword = val.trim();
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Button(
+                    onPressed: () async {
+                      try {
+                        final backupService = ref.read(backupServiceProvider);
+                        final success = await backupService.testWebDAV(
+                          _settings.webdavUrl,
+                          _settings.webdavUsername,
+                          _settings.webdavPassword,
+                        );
+                        if (success && mounted) {
+                          displayInfoBar(
+                            context,
+                            builder: (context, close) => InfoBar(
+                              title: const Text('Connection Successful'),
+                              content: const Text('Successfully connected to WebDAV server!'),
+                              severity: InfoBarSeverity.success,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          displayInfoBar(
+                            context,
+                            builder: (context, close) => InfoBar(
+                              title: const Text('Connection Failed'),
+                              content: Text('Error: $e'),
+                              severity: InfoBarSeverity.error,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FluentIcons.cloud_link),
+                        SizedBox(width: 8),
+                        Text('Test Connection'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Button(
+                    onPressed: () async {
+                      try {
+                        final backupService = ref.read(backupServiceProvider);
+                        await backupService.uploadToWebDAV(
+                          _settings.webdavUrl,
+                          _settings.webdavUsername,
+                          _settings.webdavPassword,
+                        );
+                        if (mounted) {
+                          displayInfoBar(
+                            context,
+                            builder: (context, close) => InfoBar(
+                              title: const Text('Upload Complete'),
+                              content: const Text('Database backup uploaded to WebDAV server!'),
+                              severity: InfoBarSeverity.success,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          displayInfoBar(
+                            context,
+                            builder: (context, close) => InfoBar(
+                              title: const Text('Upload Failed'),
+                              content: Text('Error: $e'),
+                              severity: InfoBarSeverity.error,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FluentIcons.cloud_upload),
+                        SizedBox(width: 8),
+                        Text('Backup to Cloud'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Button(
+                    onPressed: () async {
+                      try {
+                        // Confirm restore
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => ContentDialog(
+                            title: const Text('Confirm Restore from Cloud'),
+                            content: const Text(
+                              'Downloading and restoring from the cloud backup will overwrite your local charts database. This cannot be undone. Are you sure you want to proceed?',
+                            ),
+                            actions: [
+                              Button(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              FilledButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('Download & Restore'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          final backupService = ref.read(backupServiceProvider);
+                          await backupService.downloadAndRestoreFromWebDAV(
+                            _settings.webdavUrl,
+                            _settings.webdavUsername,
+                            _settings.webdavPassword,
+                          );
+                          if (mounted) {
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Sync Complete'),
+                                content: const Text('Successfully restored database from cloud WebDAV backup!'),
+                                severity: InfoBarSeverity.success,
+                                onClose: close,
+                              ),
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          displayInfoBar(
+                            context,
+                            builder: (context, close) => InfoBar(
+                              title: const Text('Restore Failed'),
+                              content: Text('Error: $e'),
+                              severity: InfoBarSeverity.error,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FluentIcons.cloud_download),
+                        SizedBox(width: 8),
+                        Text('Restore from Cloud'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ],

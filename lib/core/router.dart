@@ -8,6 +8,7 @@ import '../ui/input_screen.dart';
 import '../ui/loading_screen.dart';
 import '../ui/panchang_screen.dart';
 import '../ui/settings_screen.dart';
+import '../ui/tools/ayanamsa_sandbox_screen.dart';
 import '../ui/tools/muhurta_finder_screen.dart';
 import '../ui/vedic_clock_screen.dart';
 
@@ -44,6 +45,11 @@ final router = GoRouter(
     GoRoute(
       path: '/vedic-clock',
       builder: (context, state) => const VedicClockScreen(),
+    ),
+    GoRoute(
+      path: '/ayanamsa-sandbox',
+      builder: (context, state) =>
+          AyanamsaSandboxScreen(birthData: state.extra as BirthData?),
     ),
   ],
 );

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' show showDatePicker;
 import 'package:jyotish/jyotish.dart';
@@ -23,6 +24,7 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
 
   Muhurta? _muhurta;
   List<MuhurtaPeriod> _bestPeriods = [];
+  List<MuhurtaScoreResult> _suitabilityTimeline = [];
   bool _isLoading = false;
 
   // Location state
@@ -93,14 +95,23 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
         location: location,
       );
 
-      final bestPeriods = muhurtaService.findBestMuhurta(
-        muhurta: muhurta,
-        activity: _selectedActivity,
+      final start = sunriseSunset.$1!;
+      final end = start.add(const Duration(hours: 24));
+      
+      final suitabilityTimeline = await EphemerisManager.jyotish.scanMuhurtaSuitability(
+        startDateTime: start,
+        endDateTime: end,
+        location: location,
+        step: const Duration(minutes: 30),
       );
+
+      final suitabilityTimelineSorted = List<MuhurtaScoreResult>.from(suitabilityTimeline)
+        ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
 
       setState(() {
         _muhurta = muhurta;
-        _bestPeriods = bestPeriods;
+        _bestPeriods = muhurta.getFavorablePeriods(_selectedActivity);
+        _suitabilityTimeline = suitabilityTimelineSorted;
         _isLoading = false;
       });
     } catch (e) {
@@ -333,6 +344,8 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                 : ListView(
                     padding: const EdgeInsets.all(16.0),
                     children: [
+                      // Suitability Chart Section
+                      _buildSuitabilityChart(),
                       // Best Periods Section
                       if (_bestPeriods.isNotEmpty) _buildBestMuhurtasCard(),
                       if (_bestPeriods.isEmpty)
@@ -544,6 +557,112 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildSuitabilityChart() {
+    if (_suitabilityTimeline.isEmpty) return const SizedBox.shrink();
+
+    final spots = <FlSpot>[];
+    final start = _suitabilityTimeline.first.dateTime;
+
+    for (var i = 0; i < _suitabilityTimeline.length; i++) {
+      final res = _suitabilityTimeline[i];
+      final hoursOffset = res.dateTime.difference(start).inMinutes / 60.0;
+      spots.add(FlSpot(hoursOffset, res.finalScore));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Auspicious Suitability Score (24-Hour Scan)',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'A higher percentage represents better planetary alignment for activities. Tap/hover on the graph for details.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 220,
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipColor: (touchedSpot) => FluentTheme.of(context).scaffoldBackgroundColor,
+                      getTooltipItems: (touchedSpots) {
+                        return touchedSpots.map((spot) {
+                          final res = _suitabilityTimeline[spot.spotIndex];
+                          final formattedTime = AppFormatters.formatTime(res.dateTime);
+                          return LineTooltipItem(
+                            '$formattedTime\nScore: ${res.finalScore.toStringAsFixed(0)}%\n'
+                            'Tithi: ${res.tithiScore.toStringAsFixed(0)}\n'
+                            'Vara: ${res.varaScore.toStringAsFixed(0)}\n'
+                            'Nak: ${res.nakshatraScore.toStringAsFixed(0)}\n'
+                            'Yoga: ${res.yogaScore.toStringAsFixed(0)}\n'
+                            'Karana: ${res.karanaScore.toStringAsFixed(0)}',
+                            TextStyle(color: FluentTheme.of(context).typography.body?.color),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 32,
+                        getTitlesWidget: (val, meta) => Text(
+                          '${val.toInt()}%',
+                          style: const TextStyle(fontSize: 10, color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 22,
+                        getTitlesWidget: (val, meta) {
+                          final dt = start.add(Duration(minutes: (val * 60).toInt()));
+                          final hourStr = dt.hour.toString().padLeft(2, '0');
+                          final minStr = dt.minute.toString().padLeft(2, '0');
+                          if (val % 4 == 0) {
+                            return Text('$hourStr:$minStr', style: const TextStyle(fontSize: 10, color: Colors.grey));
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      color: FluentTheme.of(context).accentColor,
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: FluentTheme.of(context).accentColor.withValues(alpha: 0.15),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

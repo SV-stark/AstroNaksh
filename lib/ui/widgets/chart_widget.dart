@@ -26,9 +26,11 @@ class ChartWidget extends ConsumerStatefulWidget {
     this.completeData,
     this.baseChart,
     this.divisionalChart,
+    this.transitPlanetsBySign,
   });
 
   final Map<int, List<String>> planetsBySign; // Key: 1-12
+  final Map<int, List<String>>? transitPlanetsBySign;
   final int ascendantSign; // 1-12
   final ChartStyle style;
   final double size;
@@ -407,7 +409,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
               },
               child: Stack(
                 children: [
-                  CustomPaint(
+                   CustomPaint(
                     size: Size(widget.size, widget.size),
                     painter: widget.style == ChartStyle.northIndian
                         ? NorthIndianChartPainter(
@@ -418,6 +420,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                             selectedHouse: _selectedHouseIndex,
                             showSigns: chartSettings.showSigns,
                             showHouseNumbers: chartSettings.showHouseNumbers,
+                            transitPlanetsBySign: widget.transitPlanetsBySign,
                           )
                         : SouthIndianChartPainter(
                             planetsBySign: widget.planetsBySign,
@@ -427,6 +430,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                             selectedHouse: _selectedHouseIndex,
                             showSigns: chartSettings.showSigns,
                             showHouseNumbers: chartSettings.showHouseNumbers,
+                            transitPlanetsBySign: widget.transitPlanetsBySign,
                           ),
                   ),
                   if (widget.showAspects &&

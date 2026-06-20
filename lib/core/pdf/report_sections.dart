@@ -17,9 +17,15 @@ class ReportSections {
     pw.MemoryImage? coverImage,
     pw.MemoryImage? backgroundImage,
     pw.MemoryImage? logo,
+    String? brandOrgName,
+    String? brandOrgTagline,
+    String? brandContactInfo,
+    pw.EdgeInsets? margin,
   }) {
+    final edgeMargin = margin ?? const pw.EdgeInsets.all(40);
     return pw.Page(
       pageFormat: PdfPageFormat.a4,
+      margin: edgeMargin,
       build: (context) {
         return pw.FullPage(
           ignoreMargins: true,
@@ -40,7 +46,7 @@ class ReportSections {
                   ),
                   borderRadius: pw.BorderRadius.circular(20),
                 ),
-                padding: const pw.EdgeInsets.all(40),
+                padding: edgeMargin,
                 child: pw.Column(
                   mainAxisAlignment: pw.MainAxisAlignment.center,
                   children: [
@@ -54,40 +60,51 @@ class ReportSections {
                       pw.SizedBox(height: 20),
                     ],
                     pw.Text(
-                      'ASTRONAKSH',
+                      brandOrgName ?? 'ASTRONAKSH',
                       style: pw.TextStyle(
-                        fontSize: 42,
+                        fontSize: 32,
                         fontWeight: pw.FontWeight.bold,
                         color: ReportStyles.primaryColor,
-                        letterSpacing: 8,
+                        letterSpacing: 6,
                       ),
                     ),
+                    if (brandOrgTagline != null && brandOrgTagline.isNotEmpty) ...[
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        brandOrgTagline,
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                          color: ReportStyles.grey,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
                     pw.SizedBox(height: 10),
                     pw.Container(
                       height: 2,
                       width: 100,
                       color: ReportStyles.accentColor,
                     ),
-                    pw.SizedBox(height: 60),
+                    pw.SizedBox(height: 40),
                     if (coverImage != null)
                       pw.Center(
                         child: pw.Container(
-                          height: 250,
-                          width: 250,
+                          height: 200,
+                          width: 200,
                           child: pw.Image(coverImage),
                         ),
                       ),
-                    pw.SizedBox(height: 60),
+                    pw.SizedBox(height: 40),
                     pw.Text(
                       title.toUpperCase(),
                       textAlign: pw.TextAlign.center,
                       style: pw.TextStyle(
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: pw.FontWeight.bold,
                         color: ReportStyles.primaryColor,
                       ),
                     ),
-                    pw.SizedBox(height: 40),
+                    pw.SizedBox(height: 30),
                     pw.Container(
                       padding: const pw.EdgeInsets.all(20),
                       decoration: pw.BoxDecoration(
@@ -114,11 +131,11 @@ class ReportSections {
                     ),
                     pw.Spacer(),
                     pw.Text(
-                      'PRODUCED BY ASTRONAKSH VEDIC ENGINE',
+                      brandContactInfo ?? 'PRODUCED BY ASTRONAKSH VEDIC ENGINE',
                       style: const pw.TextStyle(
-                        fontSize: 10,
+                        fontSize: 8,
                         color: ReportStyles.grey,
-                        letterSpacing: 2,
+                        letterSpacing: 1.5,
                       ),
                     ),
                   ],

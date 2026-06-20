@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 
+import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
 import '../../logic/jaimini_service.dart';
 import '../../ui/utils/responsive_helper.dart';
@@ -15,6 +16,7 @@ class JaiminiScreen extends StatefulWidget {
 
 class _JaiminiScreenState extends State<JaiminiScreen> {
   int _selectedTab = 0;
+  int _selectedDashaType = 0; // 0 for Chara, 1 for Narayana
   late final JaiminiAnalysis _analysis;
 
   @override
@@ -53,7 +55,9 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
               ? _buildOverviewTab()
               : _selectedTab == 1
               ? _buildArudhaTab()
-              : _buildArgalaTab(),
+              : _selectedTab == 2
+              ? _buildArgalaTab()
+              : _buildDashasTab(),
         ),
       ),
     );
@@ -64,6 +68,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
       (FluentIcons.view_list, 'Overview'),
       (FluentIcons.calendar_agenda, 'Arudha Padas'),
       (FluentIcons.flow, 'Argala'),
+      (FluentIcons.timer, 'Jaimini Dashas'),
     ];
     return Scrollbar(
       thumbVisibility: false,
@@ -142,6 +147,8 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
           value: analysis.karakamsa.karakamsaSign.name,
           valueColor: Colors.teal,
         ),
+        const SizedBox(height: 12),
+        _buildCharaKarakasCard(),
         const SizedBox(height: 12),
 
         // Key Arudha Padas card
@@ -234,6 +241,123 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCharaKarakasCard() {
+    final karakas = _analysis.charaKarakas.karakas;
+
+    final karakaLabels = [
+      ('Atmakaraka (AK)', 'Soul / Self / Life Purpose'),
+      ('Amatyakaraka (AmK)', 'Career / Intellect / Status'),
+      ('Bhratrukaraka (BK)', 'Siblings / Mentor / Efforts'),
+      ('Matrukaraka (MK)', 'Mother / Home / Property'),
+      ('Putrakaraka (PK)', 'Children / Education / Creativity'),
+      ('Gnatikaraka (GK)', 'Obstacles / Health / Relatives'),
+      ('Darakaraka (DK)', 'Spouse / Partners / Business'),
+      ('Apoklima/Pitrukaraka', 'Father / Father\'s lineage'),
+    ];
+
+    return Card(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionHeading(FluentIcons.contact_card, 'Chara Karakas (Planetary Ranks)'),
+          const SizedBox(height: 12),
+          Table(
+            columnWidths: const {
+              0: FlexColumnWidth(1.4),
+              1: FlexColumnWidth(1.0),
+              2: FlexColumnWidth(1.0),
+              3: FlexColumnWidth(1.2),
+            },
+            children: [
+              const TableRow(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Text('Rank', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Text('Planet', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Text('Degree', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Text('Dignity', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+              ...List.generate(karakas.length, (index) {
+                final planet = karakas[index];
+                final (title, desc) = index < karakaLabels.length
+                    ? karakaLabels[index]
+                    : ('Apoklima ${index + 1}', 'Special Rank');
+
+                // Get degree and dignity
+                var degreeStr = '';
+                var dignityStr = '';
+                
+                final baseChart = widget.chartData.baseChart;
+                final isRahu = planet == Planet.meanNode || planet == Planet.trueNode;
+                
+                if (isRahu) {
+                  final longitude = baseChart.rahu.longitude;
+                  final deg = longitude % 30;
+                  degreeStr = '${deg.toStringAsFixed(2)}°';
+                  dignityStr = baseChart.rahu.dignity.english;
+                } else {
+                  final info = baseChart.planets[planet];
+                  if (info != null) {
+                    final deg = info.longitude % 30;
+                    degreeStr = '${deg.toStringAsFixed(2)}°';
+                    dignityStr = info.dignity.english;
+                  }
+                }
+
+                return TableRow(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: FluentTheme.of(context).resources.dividerStrokeColorDefault.withAlpha(50),
+                      ),
+                    ),
+                  ),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text(desc, style: TextStyle(fontSize: 10, color: Colors.grey.withAlpha(160))),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(planet.displayName),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(degreeStr),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(dignityStr),
+                    ),
+                  ],
+                );
+              }),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -647,6 +771,143 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
           ).typography.subtitle?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
+    );
+  }
+
+  Widget _buildDashasTab() {
+    final charaDasha = widget.chartData.dashaData.chara;
+    final narayanaDasha = widget.chartData.dashaData.narayana;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RadioGroup<int>(
+          groupValue: _selectedDashaType,
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _selectedDashaType = value);
+            }
+          },
+          child: Row(
+            children: [
+              RadioButton<int>(
+                value: 0,
+                content: const Text('Chara Dasha'),
+              ),
+              const SizedBox(width: 16),
+              RadioButton<int>(
+                value: 1,
+                content: const Text('Narayana Dasha'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: _selectedDashaType == 0
+              ? _buildCharaDashaList(charaDasha)
+              : _buildNarayanaDashaList(narayanaDasha),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCharaDashaList(CharaDasha dasha) {
+    if (dasha.periods.isEmpty) {
+      return const Center(child: Text('No Chara Dasha periods available.'));
+    }
+    final now = DateTime.now();
+    return ListView.builder(
+      itemCount: dasha.periods.length,
+      itemBuilder: (context, index) {
+        final period = dasha.periods[index];
+        final isActive = now.isAfter(period.startDate) && now.isBefore(period.endDate);
+        return _buildPeriodRow(
+          sign: period.signName,
+          lord: period.lord,
+          years: period.periodYears,
+          start: period.startDate,
+          end: period.endDate,
+          isActive: isActive,
+        );
+      },
+    );
+  }
+
+  Widget _buildNarayanaDashaList(NarayanaDasha dasha) {
+    if (dasha.periods.isEmpty) {
+      return const Center(child: Text('No Narayana Dasha periods available.'));
+    }
+    final now = DateTime.now();
+    return ListView.builder(
+      itemCount: dasha.periods.length,
+      itemBuilder: (context, index) {
+        final period = dasha.periods[index];
+        final isActive = now.isAfter(period.startDate) && now.isBefore(period.endDate);
+        return _buildPeriodRow(
+          sign: period.signName,
+          lord: period.lord,
+          years: period.periodYears,
+          start: period.startDate,
+          end: period.endDate,
+          isActive: isActive,
+        );
+      },
+    );
+  }
+
+  Widget _buildPeriodRow({
+    required String sign,
+    required String lord,
+    required double years,
+    required DateTime start,
+    required DateTime end,
+    required bool isActive,
+  }) {
+    final theme = FluentTheme.of(context);
+    final textStyle = TextStyle(
+      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+      color: isActive ? theme.accentColor : null,
+    );
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Card(
+        backgroundColor: isActive ? theme.accentColor.withAlpha(20) : null,
+        borderColor: isActive ? theme.accentColor.withAlpha(80) : null,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(sign, style: textStyle.copyWith(fontSize: 16)),
+                    Text('Lord: $lord', style: TextStyle(fontSize: 12, color: Colors.grey.withAlpha(160))),
+                  ],
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Text('${years.toStringAsFixed(0)} Years', style: textStyle),
+              ),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('${AppFormatters.formatDate(start)} to', style: textStyle.copyWith(fontSize: 13)),
+                    Text(AppFormatters.formatDate(end), style: textStyle.copyWith(fontSize: 13)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -105,8 +105,10 @@ void main() {
       );
       router.go('/panchang');
       await tester.pump();
-      await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
-      await tester.pump(const Duration(seconds: 2));
+      for (int i = 0; i < 50; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.pumpAndSettle();
       expect(find.byType(PanchangScreen), findsOneWidget);
     });
 
@@ -120,8 +122,10 @@ void main() {
       );
       router.go('/comparison');
       await tester.pump();
-      await tester.runAsync(() => Future.delayed(const Duration(seconds: 1)));
-      await tester.pump(const Duration(seconds: 2));
+      for (int i = 0; i < 50; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.pumpAndSettle();
       expect(find.byType(ChartComparisonScreen), findsOneWidget);
     });
 
@@ -135,8 +139,10 @@ void main() {
       );
       router.go('/muhurta');
       await tester.pump();
-      await tester.runAsync(() => Future.delayed(const Duration(seconds: 6)));
-      await tester.pump(const Duration(seconds: 2));
+      for (int i = 0; i < 50; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.pumpAndSettle();
       expect(find.byType(MuhurtaFinderScreen), findsOneWidget);
     });
   });

@@ -40,6 +40,11 @@ class PDFReportService {
     PdfColor? customPrimaryColor,
     PdfColor? customAccentColor,
     Uint8List? logoBytes,
+    String? brandOrgName,
+    String? brandOrgTagline,
+    String? brandContactInfo,
+    String? pdfPageMargins,
+    bool includeCover = true,
   }) async {
     final originalPrimaryColor = ReportStyles.primaryColor;
     final originalAccentColor = ReportStyles.accentColor;
@@ -50,6 +55,11 @@ class PDFReportService {
     if (customAccentColor != null) {
       ReportStyles.accentColor = customAccentColor;
     }
+
+    double marginVal = 32.0;
+    if (pdfPageMargins == 'small') marginVal = 16.0;
+    if (pdfPageMargins == 'large') marginVal = 48.0;
+    final pageMargin = pw.EdgeInsets.all(marginVal);
 
     try {
       final pdf = pw.Document();
@@ -81,15 +91,21 @@ class PDFReportService {
       }
 
       // 1. Cover Page
-      pdf.addPage(
-        ReportSections.buildCoverPage(
-          chartData: chartData,
-          title: title,
-          coverImage: coverImage,
-          backgroundImage: bgImage,
-          logo: logo,
-        ),
-      );
+      if (includeCover) {
+        pdf.addPage(
+          ReportSections.buildCoverPage(
+            chartData: chartData,
+            title: title,
+            coverImage: coverImage,
+            backgroundImage: bgImage,
+            logo: logo,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
+            margin: pageMargin,
+          ),
+        );
+      }
 
       // 2. Summary & Predictions Page
       final summarySection = await ReportSections.buildSummarySection(
@@ -112,6 +128,10 @@ class PDFReportService {
         PdfWidgets.premiumPage(
           backgroundImage: bgImage,
           logo: logo,
+          margin: pageMargin,
+          brandOrgName: brandOrgName,
+          brandOrgTagline: brandOrgTagline,
+          brandContactInfo: brandContactInfo,
           build: (context) => pw.Column(
             children: [
               summarySection,
@@ -130,6 +150,10 @@ class PDFReportService {
           PdfWidgets.premiumPage(
             backgroundImage: bgImage,
             logo: logo,
+            margin: pageMargin,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
             build: (context) => pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
@@ -178,6 +202,10 @@ class PDFReportService {
           PdfWidgets.premiumPage(
             backgroundImage: bgImage,
             logo: logo,
+            margin: pageMargin,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
             build: (context) => pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
@@ -230,6 +258,10 @@ class PDFReportService {
           PdfWidgets.premiumPage(
             backgroundImage: bgImage,
             logo: logo,
+            margin: pageMargin,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
             build: (context) => yogaDoshaSection,
           ),
         );
@@ -261,6 +293,10 @@ class PDFReportService {
           PdfWidgets.premiumPage(
             backgroundImage: bgImage,
             logo: logo,
+            margin: pageMargin,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
             build: (context) => varshaPage1,
           ),
         );
@@ -270,6 +306,10 @@ class PDFReportService {
           PdfWidgets.premiumPage(
             backgroundImage: bgImage,
             logo: logo,
+            margin: pageMargin,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
             build: (context) => varshaPage2,
           ),
         );
@@ -281,6 +321,10 @@ class PDFReportService {
           PdfWidgets.premiumPage(
             backgroundImage: bgImage,
             logo: logo,
+            margin: pageMargin,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
             build: (context) => pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
@@ -396,7 +440,7 @@ class PDFReportService {
         pdf.addPage(
           pw.MultiPage(
             pageFormat: PdfPageFormat.a4,
-            margin: const pw.EdgeInsets.all(32),
+            margin: pageMargin,
             header: (context) {
               return pw.Column(
                 children: [
@@ -407,7 +451,7 @@ class PDFReportService {
                         pw.Image(logo, height: 30)
                       else
                         pw.Text(
-                          'ASTRONAKSH',
+                          brandOrgName ?? 'ASTRONAKSH',
                           style: pw.TextStyle(
                             color: ReportStyles.primaryColor,
                             fontWeight: pw.FontWeight.bold,
@@ -416,7 +460,7 @@ class PDFReportService {
                           ),
                         ),
                       pw.Text(
-                        'PREMIUM ASTROLOGY REPORT',
+                        (brandOrgTagline ?? 'PREMIUM ASTROLOGY REPORT').toUpperCase(),
                         style: const pw.TextStyle(
                           color: ReportStyles.grey,
                           fontSize: 8,
@@ -439,7 +483,7 @@ class PDFReportService {
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
-                        '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
+                        brandContactInfo ?? '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
                         style: const pw.TextStyle(
                           fontSize: 8,
                           color: PdfColors.grey,
@@ -486,6 +530,10 @@ class PDFReportService {
           PdfWidgets.premiumPage(
             backgroundImage: bgImage,
             logo: logo,
+            margin: pageMargin,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
             build: (context) => pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
@@ -526,6 +574,10 @@ class PDFReportService {
           PdfWidgets.premiumPage(
             backgroundImage: bgImage,
             logo: logo,
+            margin: pageMargin,
+            brandOrgName: brandOrgName,
+            brandOrgTagline: brandOrgTagline,
+            brandContactInfo: brandContactInfo,
             build: (context) => transitSection,
           ),
         );

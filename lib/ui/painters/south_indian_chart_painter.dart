@@ -11,8 +11,10 @@ class SouthIndianChartPainter extends CustomPainter {
     this.selectedHouse,
     this.showSigns = true,
     this.showHouseNumbers = true,
+    this.transitPlanetsBySign,
   });
   final Map<int, List<String>> planetsBySign;
+  final Map<int, List<String>>? transitPlanetsBySign;
   final int ascendantSign; // 1-12
   final ChartColors colors;
   final int? hoveredHouse;
@@ -220,34 +222,68 @@ class SouthIndianChartPainter extends CustomPainter {
         displayList.insert(0, 'Asc');
       }
 
-      if (displayList.isEmpty) continue;
+      final transitPlanets = transitPlanetsBySign?[i + 1] ?? [];
+      final cleanTransitPlanets = transitPlanets.where((p) => p != 'Asc').toList();
 
-      final text = displayList.join(' ');
+      if (displayList.isEmpty && cleanTransitPlanets.isEmpty) continue;
+
+      double natalHeight = 0;
       final fontSize = cellWidth / 8;
 
-      final textSpan = TextSpan(
-        text: text,
-        style: TextStyle(
-          color: colors.planetText,
-          fontSize: fontSize.clamp(8.0, 16.0),
-          fontWeight: FontWeight.bold,
-        ),
-      );
+      if (displayList.isNotEmpty) {
+        final text = displayList.join(' ');
+        final textSpan = TextSpan(
+          text: text,
+          style: TextStyle(
+            color: colors.planetText,
+            fontSize: fontSize.clamp(8.0, 16.0),
+            fontWeight: FontWeight.bold,
+          ),
+        );
 
-      final textPainter = TextPainter(
-        text: textSpan,
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      );
+        final textPainter = TextPainter(
+          text: textSpan,
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.ltr,
+        );
 
-      textPainter.layout(maxWidth: cellWidth - 4);
-      textPainter.paint(
-        canvas,
-        Offset(
-          cellOffsets[i].dx - textPainter.width / 2,
-          cellOffsets[i].dy - textPainter.height / 2,
-        ),
-      );
+        textPainter.layout(maxWidth: cellWidth - 4);
+        natalHeight = textPainter.height;
+        textPainter.paint(
+          canvas,
+          Offset(
+            cellOffsets[i].dx - textPainter.width / 2,
+            cellOffsets[i].dy - (cleanTransitPlanets.isNotEmpty ? textPainter.height * 0.95 : textPainter.height / 2),
+          ),
+        );
+      }
+
+      if (cleanTransitPlanets.isNotEmpty) {
+        final tText = cleanTransitPlanets.join(' ');
+        final tTextSpan = TextSpan(
+          text: tText,
+          style: TextStyle(
+            color: const Color(0xFF10B981), // Emerald green for transits
+            fontSize: (fontSize * 0.9).clamp(7.0, 14.0),
+            fontWeight: FontWeight.bold,
+          ),
+        );
+
+        final tTextPainter = TextPainter(
+          text: tTextSpan,
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.ltr,
+        );
+
+        tTextPainter.layout(maxWidth: cellWidth - 4);
+        tTextPainter.paint(
+          canvas,
+          Offset(
+            cellOffsets[i].dx - tTextPainter.width / 2,
+            cellOffsets[i].dy + (natalHeight > 0 ? 2 : -tTextPainter.height / 2),
+          ),
+        );
+      }
     }
   }
 

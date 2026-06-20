@@ -93,6 +93,21 @@ class ChartCustomization {
       orElse: () => DashamshaMethod.parashara,
     );
 
+    // Brand Identity
+    settings.brandOrgName = json['brandOrgName'] ?? 'ASTRONAKSH';
+    settings.brandOrgTagline = json['brandOrgTagline'] ?? 'Vedic Insights';
+    settings.brandLogoPath = json['brandLogoPath'] ?? '';
+    settings.brandContactInfo = json['brandContactInfo'] ?? '';
+    settings.brandPrimaryColorHex = json['brandPrimaryColorHex'] ?? '#1A237E';
+    settings.brandAccentColorHex = json['brandAccentColorHex'] ?? '#B8860B';
+    settings.pdfPageMargins = json['pdfPageMargins'] ?? 'medium';
+    settings.pdfIncludeCover = json['pdfIncludeCover'] ?? true;
+
+    // WebDAV Settings
+    settings.webdavUrl = json['webdavUrl'] ?? '';
+    settings.webdavUsername = json['webdavUsername'] ?? '';
+    settings.webdavPassword = json['webdavPassword'] ?? '';
+
     return settings;
   }
   // Chart Style Settings
@@ -165,6 +180,21 @@ class ChartCustomization {
   NavamshaMethod navamshaMethod = NavamshaMethod.parashara;
   DashamshaMethod dashamshaMethod = DashamshaMethod.parashara;
 
+  // Brand Identity Settings
+  String brandOrgName = 'ASTRONAKSH';
+  String brandOrgTagline = 'Vedic Insights';
+  String brandLogoPath = '';
+  String brandContactInfo = '';
+  String brandPrimaryColorHex = '#1A237E';
+  String brandAccentColorHex = '#B8860B';
+  String pdfPageMargins = 'medium'; // 'small', 'medium', 'large'
+  bool pdfIncludeCover = true;
+
+  // WebDAV Settings
+  String webdavUrl = '';
+  String webdavUsername = '';
+  String webdavPassword = '';
+
   /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {
@@ -208,6 +238,17 @@ class ChartCustomization {
       'drekkanaMethod': drekkanaMethod.toString(),
       'navamshaMethod': navamshaMethod.toString(),
       'dashamshaMethod': dashamshaMethod.toString(),
+      'brandOrgName': brandOrgName,
+      'brandOrgTagline': brandOrgTagline,
+      'brandLogoPath': brandLogoPath,
+      'brandContactInfo': brandContactInfo,
+      'brandPrimaryColorHex': brandPrimaryColorHex,
+      'brandAccentColorHex': brandAccentColorHex,
+      'pdfPageMargins': pdfPageMargins,
+      'pdfIncludeCover': pdfIncludeCover,
+      'webdavUrl': webdavUrl,
+      'webdavUsername': webdavUsername,
+      'webdavPassword': webdavPassword,
     };
   }
 
@@ -254,6 +295,17 @@ class ChartCustomization {
     drekkanaMethod = DrekkanaMethod.parashara;
     navamshaMethod = NavamshaMethod.parashara;
     dashamshaMethod = DashamshaMethod.parashara;
+    brandOrgName = 'ASTRONAKSH';
+    brandOrgTagline = 'Vedic Insights';
+    brandLogoPath = '';
+    brandContactInfo = '';
+    brandPrimaryColorHex = '#1A237E';
+    brandAccentColorHex = '#B8860B';
+    pdfPageMargins = 'medium';
+    pdfIncludeCover = true;
+    webdavUrl = '';
+    webdavUsername = '';
+    webdavPassword = '';
   }
 
   ChartCustomization copyWith({
@@ -298,6 +350,17 @@ class ChartCustomization {
     DrekkanaMethod? drekkanaMethod,
     NavamshaMethod? navamshaMethod,
     DashamshaMethod? dashamshaMethod,
+    String? brandOrgName,
+    String? brandOrgTagline,
+    String? brandLogoPath,
+    String? brandContactInfo,
+    String? brandPrimaryColorHex,
+    String? brandAccentColorHex,
+    String? pdfPageMargins,
+    bool? pdfIncludeCover,
+    String? webdavUrl,
+    String? webdavUsername,
+    String? webdavPassword,
   }) {
     final result = ChartCustomization();
     result.chartStyle = chartStyle ?? this.chartStyle;
@@ -348,6 +411,17 @@ class ChartCustomization {
     result.drekkanaMethod = drekkanaMethod ?? this.drekkanaMethod;
     result.navamshaMethod = navamshaMethod ?? this.navamshaMethod;
     result.dashamshaMethod = dashamshaMethod ?? this.dashamshaMethod;
+    result.brandOrgName = brandOrgName ?? this.brandOrgName;
+    result.brandOrgTagline = brandOrgTagline ?? this.brandOrgTagline;
+    result.brandLogoPath = brandLogoPath ?? this.brandLogoPath;
+    result.brandContactInfo = brandContactInfo ?? this.brandContactInfo;
+    result.brandPrimaryColorHex = brandPrimaryColorHex ?? this.brandPrimaryColorHex;
+    result.brandAccentColorHex = brandAccentColorHex ?? this.brandAccentColorHex;
+    result.pdfPageMargins = pdfPageMargins ?? this.pdfPageMargins;
+    result.pdfIncludeCover = pdfIncludeCover ?? this.pdfIncludeCover;
+    result.webdavUrl = webdavUrl ?? this.webdavUrl;
+    result.webdavUsername = webdavUsername ?? this.webdavUsername;
+    result.webdavPassword = webdavPassword ?? this.webdavPassword;
     return result;
   }
 }

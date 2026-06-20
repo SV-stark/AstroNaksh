@@ -13,6 +13,7 @@ class JaiminiAnalysisService {
     final arudhaLagna = getArudhaLagna(chartData);
     final upapada = getUpapada(chartData);
     final allArgalas = getAllArgalas(chartData);
+    final charaKarakas = EphemerisManager.jyotish.getCharaKarakas(chartData.baseChart);
 
     return JaiminiAnalysis(
       atmakaraka: atmakaraka,
@@ -22,6 +23,7 @@ class JaiminiAnalysisService {
       arudhaLagna: arudhaLagna,
       upapada: upapada,
       argalas: allArgalas,
+      charaKarakas: charaKarakas,
     );
   }
 
@@ -93,6 +95,7 @@ class JaiminiAnalysis {
     required this.arudhaLagna,
     required this.upapada,
     required this.argalas,
+    required this.charaKarakas,
   });
   final Planet atmakaraka;
   final KarakamsaInfo karakamsa;
@@ -101,4 +104,5 @@ class JaiminiAnalysis {
   final ArudhaPadaInfo arudhaLagna;
   final ArudhaPadaInfo upapada;
   final Map<int, List<ArgalaInfo>> argalas;
+  final CharaKarakaResult charaKarakas;
 }

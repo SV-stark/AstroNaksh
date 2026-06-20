@@ -42,6 +42,7 @@ import 'reports/pdf_report_screen.dart';
 import 'strength/ashtakavarga_screen.dart';
 import 'strength/bhava_bala_screen.dart';
 import 'strength/shadbala_screen.dart';
+import 'tools/ayanamsa_sandbox_screen.dart';
 import 'tools/birth_time_rectifier_screen.dart';
 import 'utils/responsive_helper.dart';
 
@@ -626,6 +627,9 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
       case 'comparison':
         screen = ChartComparisonScreen(chart1: chartData);
         break;
+      case 'ayanamsa_sandbox':
+        screen = AyanamsaSandboxScreen(birthData: _birthData);
+        break;
       case 'jaimini':
         screen = JaiminiScreen(chartData: chartData);
         break;
@@ -857,6 +861,11 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                                 onPressed: () => _navigateTo('comparison'),
                               ),
                               MenuFlyoutItem(
+                                text: const Text('Ayanamsa Sandbox'),
+                                leading: const Icon(FluentIcons.globe),
+                                onPressed: () => _navigateTo('ayanamsa_sandbox'),
+                              ),
+                              MenuFlyoutItem(
                                 text: const Text('Progeny'),
                                 leading: const Icon(
                                   FluentIcons.reminder_person,
@@ -957,6 +966,11 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                                       'Comparison',
                                       'comparison',
                                       FluentIcons.compare,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Ayanamsa Sandbox',
+                                      'ayanamsa_sandbox',
+                                      FluentIcons.globe,
                                     ),
                                     _buildMobileAnalysisLink(
                                       'Gochara Vedha',

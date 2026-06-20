@@ -1,17 +1,23 @@
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart' hide Colors;
+import 'package:flutter/material.dart' show Colors;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/chart_customization.dart';
+import '../../core/settings_provider.dart';
 import '../../data/models.dart';
 import '../../logic/transit_analysis.dart';
 import '../../ui/utils/responsive_helper.dart';
+import '../chart/chart_helpers.dart';
+import '../widgets/chart_widget.dart';
 
-class TransitScreen extends StatefulWidget {
+class TransitScreen extends ConsumerStatefulWidget {
   const TransitScreen({super.key, required this.natalChart});
   final CompleteChartData natalChart;
 
   @override
-  State<TransitScreen> createState() => _TransitScreenState();
+  ConsumerState<TransitScreen> createState() => _TransitScreenState();
 }
 
-class _TransitScreenState extends State<TransitScreen> {
+class _TransitScreenState extends ConsumerState<TransitScreen> {
   late DateTime _selectedDate;
   late TransitAnalysis _transitAnalysis;
   TransitChart? _transitChart;
@@ -130,9 +136,38 @@ class _TransitScreenState extends State<TransitScreen> {
 
   Widget _buildCurrentTransitsTab() {
     final transit = _transitChart!;
+    final settingsState = ref.watch(settingsProvider).value;
+    final chartStyle = settingsState?.chartSettings.chartStyle ?? ChartStyle.northIndian;
+    
+    final natalPlanetsMap = ChartHelpers.getPlanetsMap(widget.natalChart.baseChart);
+    final transitPlanetsMap = ChartHelpers.getPlanetsMap(transit.transitPositions);
+    final ascSign = ChartHelpers.getAscendantSignInt(widget.natalChart.baseChart);
+    final chartSize = ResponsiveHelper.getChartSize(context);
+
     return ListView(
       padding: const EdgeInsets.only(bottom: 20),
       children: [
+        // 1. Interactive Dual Chart Display
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: ChartWidget(
+              planetsBySign: natalPlanetsMap,
+              ascendantSign: ascSign,
+              style: chartStyle,
+              size: chartSize,
+              transitPlanetsBySign: transitPlanetsMap,
+              completeData: widget.natalChart,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // 2. Timeline Scrubber & Navigation Controls
+        _buildDateControls(),
+        const SizedBox(height: 16),
+
+        // 3. Gochara Positions Card
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -150,7 +185,7 @@ class _TransitScreenState extends State<TransitScreen> {
                 ),
                 const SizedBox(height: 16),
                 ...transit.gochara.positions.entries.map((entry) {
-                  final planet = entry.key.toString().split('.').last;
+                  final planet = entry.key.displayName;
                   final house = entry.value;
                   final isFavorable = transit.gochara.isFavorable(entry.key);
 
@@ -189,6 +224,108 @@ class _TransitScreenState extends State<TransitScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildDateControls() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Transit Date Timeline',
+                  style: FluentTheme.of(context).typography.bodyStrong,
+                ),
+                DatePicker(
+                  selected: _selectedDate,
+                  onChanged: (date) {
+                    setState(() => _selectedDate = date);
+                    _loadTransits();
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Slider to scrub days within a +/- 1 year range
+            Row(
+              children: [
+                const Text('-1 Year', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Expanded(
+                  child: Slider(
+                    value: _selectedDate.difference(DateTime.now()).inDays.toDouble().clamp(-365.0, 365.0),
+                    min: -365.0,
+                    max: 365.0,
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedDate = DateTime.now().add(Duration(days: val.round()));
+                      });
+                      _loadTransits();
+                    },
+                  ),
+                ),
+                const Text('+1 Year', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Jump buttons
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _jumpButton('-1Y', () => _jumpDate(years: -1)),
+                  _jumpButton('-1M', () => _jumpDate(months: -1)),
+                  _jumpButton('-1W', () => _jumpDate(days: -7)),
+                  _jumpButton('-1D', () => _jumpDate(days: -1)),
+                  const SizedBox(width: 12),
+                  Button(
+                    onPressed: () {
+                      setState(() => _selectedDate = DateTime.now());
+                      _loadTransits();
+                    },
+                    child: const Text('Today'),
+                  ),
+                  const SizedBox(width: 12),
+                  _jumpButton('+1D', () => _jumpDate(days: 1)),
+                  _jumpButton('+1W', () => _jumpDate(days: 7)),
+                  _jumpButton('+1M', () => _jumpDate(months: 1)),
+                  _jumpButton('+1Y', () => _jumpDate(years: 1)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _jumpButton(String label, VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Button(
+        onPressed: onPressed,
+        child: Text(label),
+      ),
+    );
+  }
+
+  void _jumpDate({int days = 0, int months = 0, int years = 0}) {
+    setState(() {
+      var newDate = _selectedDate;
+      if (days != 0) newDate = newDate.add(Duration(days: days));
+      if (months != 0) {
+        newDate = DateTime(newDate.year, newDate.month + months, newDate.day, newDate.hour, newDate.minute);
+      }
+      if (years != 0) {
+        newDate = DateTime(newDate.year + years, newDate.month, newDate.day, newDate.hour, newDate.minute);
+      }
+      _selectedDate = newDate;
+    });
+    _loadTransits();
   }
 
   Widget _buildAspectsTab() {

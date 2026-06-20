@@ -71,7 +71,7 @@ Vedic Astrology, known as **Jyotish**, is one of the oldest astrological systems
 - 📅 **Enhanced Varshaphal**: Advanced Tajik system with Panchavargiya Bala, Varshesh selection, and 7+ Sahams.
 
 ### App Statistics
-- 🏙️ **Cities**: 169,000+ global cities supported (fully offline-first via indexed SQLite search).
+- 🏙️ **Cities**: 208,000+ global and Indian cities supported (fully offline-first via indexed SQLite search).
 - 📁 **Codebase**: ~20,000+ lines of Flutter/Dart.
 - 📊 **Charts**: 16 divisional charts (D1-D60 variations).
 
@@ -173,12 +173,12 @@ flutter build web --release      # For Web
 
 ### Tech Stack
 - **Framework**: Flutter (Cross-platform)
-- **Database**: SQLite (App state and 169k+ global cities database)
+- **Database**: SQLite (App state and 208k+ global and Indian cities database)
 - **Engine**: Swiss Ephemeris (Astronomical accuracy)
 
 ### City Database Pre-population
-The offline cities database is compiled from GeoNames global data. To rebuild or update the database:
-1. Run `python scripts/prepare_city_db.py` to download the latest GeoNames datasets and build `cities.db`.
+The offline cities database is compiled by merging GeoNames global data and the legacy 50k Indian cities list to guarantee 100% backward compatibility. To rebuild or update the database:
+1. Run `python scripts/prepare_city_db.py` to download the latest GeoNames datasets, extract and merge the legacy `cities2.json` from git history (`b3d2b6d`), and build the merged SQLite `cities.db`.
 2. Copy the generated database to the assets directory: `Copy-Item cities.db assets/data/cities.db`.
 3. The app automatically copies this database to the local on-device storage on startup, optimizing lookups with prefix matching and bounding box coordinates searches.
 
@@ -256,7 +256,7 @@ The offline cities database is compiled from GeoNames global data. To rebuild or
 ### Troubleshooting
 - **App won't start**: Ensure Swiss Ephemeris files are in `assets/ephe/`.
 - **Blank charts**: Verify the birth date is within 1800-2100 CE.
-- **Location Issues**: Use the built-in search for 169,000+ global cities (fully offline-first).
+- **Location Issues**: Use the built-in search for 208,000+ global and Indian cities (fully offline-first).
 
 ### FAQ
 **Q: Is this app free forever?**

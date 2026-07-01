@@ -26,6 +26,7 @@ import 'analysis/progeny_screen.dart';
 import 'analysis/retrograde_screen.dart';
 import 'analysis/sudarshan_chakra_screen.dart';
 import 'analysis/yoga_dosha_screen.dart';
+import 'analysis/ayurvedic_recommendations_screen.dart';
 import 'birth_details_screen.dart';
 import 'chart/tabs/d1_tab.dart';
 import 'chart/tabs/dasha_tab.dart';
@@ -446,6 +447,13 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
             title: const Text('Daily Rashiphal'),
             body: _buildBody(
               (data) => RashiphalDashboardScreen(chartData: data),
+            ),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.herb),
+            title: const Text('Ayurveda'),
+            body: _buildBody(
+              (data) => AyurvedicRecommendationsScreen(chartData: data),
             ),
           ),
           PaneItemSeparator(),

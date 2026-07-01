@@ -318,6 +318,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             context.push('/vedic-clock');
                           },
                         ),
+                        _buildQuickAction(
+                          icon: FluentIcons.contrast,
+                          title: 'Eclipse Prediction',
+                          subtitle: 'Solar & lunar eclipses',
+                          color: Colors.red,
+                          onTap: () {
+                            context.push('/eclipses');
+                          },
+                        ),
                       ],
                     ),
                   ],

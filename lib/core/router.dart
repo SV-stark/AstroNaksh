@@ -10,6 +10,7 @@ import '../ui/panchang_screen.dart';
 import '../ui/settings_screen.dart';
 import '../ui/tools/ayanamsa_sandbox_screen.dart';
 import '../ui/tools/muhurta_finder_screen.dart';
+import '../ui/tools/eclipse_calculations_screen.dart';
 import '../ui/vedic_clock_screen.dart';
 
 final router = GoRouter(
@@ -51,5 +52,10 @@ final router = GoRouter(
       builder: (context, state) =>
           AyanamsaSandboxScreen(birthData: state.extra as BirthData?),
     ),
+    GoRoute(
+      path: '/eclipses',
+      builder: (context, state) => const EclipseCalculationsScreen(),
+    ),
   ],
 );
+

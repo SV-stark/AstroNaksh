@@ -219,7 +219,7 @@ The offline cities database is compiled by merging GeoNames global data and the 
 - [x] Ashtakavarga system
 - [x] Shadbala (Planetary strength)
 - [x] Panchang (Daily almanac)
-- [ ] Eclipse calculations
+- [x] Eclipse calculations
 - [x] Retrograde analysis
 
 ### Phase 4: Community & Polish
@@ -234,7 +234,7 @@ The offline cities database is compiled by merging GeoNames global data and the 
 - [ ] AI-assisted pattern recognition
 - [ ] Statistical validation studies
 - [ ] Historical chart database
-- [ ] Integration with Ayurvedic recommendations
+- [x] Integration with Ayurvedic recommendations
 
 ---
 

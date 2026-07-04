@@ -409,7 +409,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
               },
               child: Stack(
                 children: [
-                   CustomPaint(
+                  CustomPaint(
                     size: Size(widget.size, widget.size),
                     painter: widget.style == ChartStyle.northIndian
                         ? NorthIndianChartPainter(

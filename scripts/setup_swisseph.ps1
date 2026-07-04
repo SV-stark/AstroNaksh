@@ -1,4 +1,4 @@
-param(
+﻿param(
     [switch]$Force
 )
 
@@ -12,7 +12,7 @@ $DLL_NAME = "swisseph.dll"
 
 # 2. Check if we need to do anything
 if (-not $Force -and (Test-Path $DLL_NAME) -and (Test-Path $ANDROID_CPP_DIR) -and (Test-Path $ASSETS_EPHE_DIR)) {
-    Write-Host "✅ Swiss Ephemeris assets already present. Use -Force to re-setup." -ForegroundColor Green
+    Write-Host "[OK] Swiss Ephemeris assets already present. Use -Force to re-setup." -ForegroundColor Green
     exit 0
 }
 
@@ -43,18 +43,17 @@ Expand-Archive -LiteralPath $zipPath -DestinationPath $zipExtract -Force
 $dll64 = Get-ChildItem -Path $zipExtract -Recurse -Filter "swedll64.dll" | Select-Object -First 1
 if ($dll64) {
     Copy-Item $dll64.FullName -Destination "swisseph.dll" -Force
-    Write-Host "📦 Extracted 64-bit swisseph.dll from sweph.zip" -ForegroundColor Green
+    Write-Host "[DLL] Extracted 64-bit swisseph.dll from sweph.zip" -ForegroundColor Green
 }
-else {
-    # Try any .dll file as fallback
+if (-not (Test-Path "swisseph.dll")) {
     $anyDll = Get-ChildItem -Path $zipExtract -Recurse -Filter "*.dll" | Select-Object -First 1
     if ($anyDll) {
         Copy-Item $anyDll.FullName -Destination "swisseph.dll" -Force
-        Write-Host "📦 Extracted $($anyDll.Name) → swisseph.dll" -ForegroundColor Yellow
+        Write-Host "[DLL] Extracted $($anyDll.Name) -> swisseph.dll" -ForegroundColor Yellow
     }
-    else {
-        Write-Warning "No DLL found in sweph.zip. swisseph.dll will not be available."
-    }
+}
+if (-not (Test-Path "swisseph.dll")) {
+    Write-Warning "No DLL found in sweph.zip. swisseph.dll will not be available."
 }
 
 # 6. Copy C sources to Android
@@ -75,4 +74,4 @@ foreach ($file in $required_ephe) {
 Write-Host "Cleaning up..." -ForegroundColor Yellow
 Remove-Item $TEMP_DIR -Recurse -Force
 
-Write-Host "✅ Swiss Ephemeris setup complete!" -ForegroundColor Green
+Write-Host "[OK] Swiss Ephemeris setup complete!" -ForegroundColor Green

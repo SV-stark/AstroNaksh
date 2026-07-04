@@ -68,7 +68,8 @@ class ReportSections {
                         letterSpacing: 6,
                       ),
                     ),
-                    if (brandOrgTagline != null && brandOrgTagline.isNotEmpty) ...[
+                    if (brandOrgTagline != null &&
+                        brandOrgTagline.isNotEmpty) ...[
                       pw.SizedBox(height: 4),
                       pw.Text(
                         brandOrgTagline,

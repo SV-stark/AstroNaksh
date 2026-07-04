@@ -415,8 +415,10 @@ class ChartCustomization {
     result.brandOrgTagline = brandOrgTagline ?? this.brandOrgTagline;
     result.brandLogoPath = brandLogoPath ?? this.brandLogoPath;
     result.brandContactInfo = brandContactInfo ?? this.brandContactInfo;
-    result.brandPrimaryColorHex = brandPrimaryColorHex ?? this.brandPrimaryColorHex;
-    result.brandAccentColorHex = brandAccentColorHex ?? this.brandAccentColorHex;
+    result.brandPrimaryColorHex =
+        brandPrimaryColorHex ?? this.brandPrimaryColorHex;
+    result.brandAccentColorHex =
+        brandAccentColorHex ?? this.brandAccentColorHex;
     result.pdfPageMargins = pdfPageMargins ?? this.pdfPageMargins;
     result.pdfIncludeCover = pdfIncludeCover ?? this.pdfIncludeCover;
     result.webdavUrl = webdavUrl ?? this.webdavUrl;

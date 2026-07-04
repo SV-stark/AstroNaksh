@@ -476,9 +476,7 @@ class PanchangService {
 
     // Build nakshatra period record; estimate end as next sunrise (24 h)
     final nakshatraEnd = sr.add(const Duration(hours: 24));
-    final nakshatraPeriods = [
-      (panchanga.nakshatra.number, date, nakshatraEnd),
-    ];
+    final nakshatraPeriods = [(panchanga.nakshatra.number, date, nakshatraEnd)];
 
     // Call MuhurtaService directly — jyotish_core wrapper doesn't expose
     // tithiPeriods/nakshatraPeriods, so we bypass it here.

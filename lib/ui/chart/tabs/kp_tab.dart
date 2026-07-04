@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
-import 'package:flutter/material.dart' show Colors, Table, TableRow, FlexColumnWidth;
+import 'package:flutter/material.dart'
+    show Colors, Table, TableRow, FlexColumnWidth;
 
 import '../../../data/models.dart';
 import '../../utils/responsive_helper.dart';
@@ -50,7 +51,7 @@ class _KPTabState extends State<KPTab> {
     List<int> positiveHouses = [2, 6, 10, 11];
     List<int> negativeHouses = [5, 8, 12];
     String primeDesc = 'Career (10th Cusp)';
-    
+
     if (_selectedQuery == 'Marriage') {
       primeCusp = 7;
       positiveHouses = [2, 7, 11];
@@ -76,11 +77,13 @@ class _KPTabState extends State<KPTab> {
 
     // Evaluate prime sublord significations
     final subLordInfo = widget.data.significatorTable[primeSubLord];
-    final subLordSigs = subLordInfo != null 
+    final subLordSigs = subLordInfo != null
         ? (subLordInfo['significations'] as List<dynamic>? ?? []).cast<int>()
         : <int>[];
-    
-    final matchingPositive = subLordSigs.where((h) => positiveHouses.contains(h)).toList();
+
+    final matchingPositive = subLordSigs
+        .where((h) => positiveHouses.contains(h))
+        .toList();
 
     bool isPrimeFavorable = matchingPositive.isNotEmpty;
 
@@ -102,10 +105,19 @@ class _KPTabState extends State<KPTab> {
                   child: ComboBox<String>(
                     value: _selectedQuery,
                     items: const [
-                      ComboBoxItem(value: 'Career', child: Text('Career & Job')),
+                      ComboBoxItem(
+                        value: 'Career',
+                        child: Text('Career & Job'),
+                      ),
                       ComboBoxItem(value: 'Marriage', child: Text('Marriage')),
-                      ComboBoxItem(value: 'Foreign Travel', child: Text('Foreign Travel')),
-                      ComboBoxItem(value: 'Health Recovery', child: Text('Health Recovery')),
+                      ComboBoxItem(
+                        value: 'Foreign Travel',
+                        child: Text('Foreign Travel'),
+                      ),
+                      ComboBoxItem(
+                        value: 'Health Recovery',
+                        child: Text('Health Recovery'),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -123,13 +135,13 @@ class _KPTabState extends State<KPTab> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isPrimeFavorable 
-                    ? Colors.green.withOpacity(0.06) 
+                color: isPrimeFavorable
+                    ? Colors.green.withOpacity(0.06)
                     : Colors.orange.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: isPrimeFavorable 
-                      ? Colors.green.withOpacity(0.3) 
+                  color: isPrimeFavorable
+                      ? Colors.green.withOpacity(0.3)
                       : Colors.orange.withOpacity(0.3),
                 ),
               ),
@@ -183,30 +195,84 @@ class _KPTabState extends State<KPTab> {
               children: [
                 const TableRow(
                   decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey, width: 0.5),
+                    ),
                   ),
                   children: [
-                    Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Text('Graha', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                    Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Text('Positive Sigs', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                    Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Text('Status', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                    Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Text('Signified Houses', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        'Graha',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        'Positive Sigs',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        'Status',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        'Signified Houses',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 ...widget.data.significatorTable.entries.map((entry) {
                   final planetName = entry.key;
                   final info = entry.value;
-                  final sigs = (info['significations'] as List<dynamic>? ?? []).cast<int>();
-                  
-                  final posSigs = sigs.where((h) => positiveHouses.contains(h)).toList();
-                  final negSigs = sigs.where((h) => negativeHouses.contains(h)).toList();
+                  final sigs = (info['significations'] as List<dynamic>? ?? [])
+                      .cast<int>();
+
+                  final posSigs = sigs
+                      .where((h) => positiveHouses.contains(h))
+                      .toList();
+                  final negSigs = sigs
+                      .where((h) => negativeHouses.contains(h))
+                      .toList();
 
                   Widget statusWidget;
                   if (posSigs.isNotEmpty && negSigs.isEmpty) {
                     statusWidget = const Row(
                       children: [
-                        Icon(FluentIcons.completed, color: Colors.green, size: 14),
+                        Icon(
+                          FluentIcons.completed,
+                          color: Colors.green,
+                          size: 14,
+                        ),
                         SizedBox(width: 4),
-                        Text('Positive', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Positive',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     );
                   } else if (posSigs.isNotEmpty && negSigs.isNotEmpty) {
@@ -214,7 +280,14 @@ class _KPTabState extends State<KPTab> {
                       children: [
                         Icon(FluentIcons.info, color: Colors.amber, size: 14),
                         SizedBox(width: 4),
-                        Text('Mixed', style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Mixed',
+                          style: TextStyle(
+                            color: Colors.amber,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     );
                   } else if (negSigs.isNotEmpty) {
@@ -222,34 +295,69 @@ class _KPTabState extends State<KPTab> {
                       children: [
                         Icon(FluentIcons.cancel, color: Colors.red, size: 14),
                         SizedBox(width: 4),
-                        Text('Obstructed', style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Obstructed',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     );
                   } else {
                     statusWidget = const Row(
                       children: [
-                        Icon(FluentIcons.remove_from_shopping_list, color: Colors.grey, size: 14),
+                        Icon(
+                          FluentIcons.remove_from_shopping_list,
+                          color: Colors.grey,
+                          size: 14,
+                        ),
                         SizedBox(width: 4),
-                        Text('Neutral', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                        Text(
+                          'Neutral',
+                          style: TextStyle(color: Colors.grey, fontSize: 11),
+                        ),
                       ],
                     );
                   }
 
                   return TableRow(
                     decoration: const BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Colors.grey, width: 0.2)),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey, width: 0.2),
+                      ),
                     ),
                     children: [
-                      Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Text(planetName, style: const TextStyle(fontWeight: FontWeight.w600))),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8), 
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
-                          posSigs.isNotEmpty ? posSigs.join(', ') : '-',
-                          style: TextStyle(color: posSigs.isNotEmpty ? Colors.green : Colors.grey, fontWeight: posSigs.isNotEmpty ? FontWeight.bold : null),
+                          planetName,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
-                      Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: statusWidget),
-                      Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Text(sigs.join(', '))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          posSigs.isNotEmpty ? posSigs.join(', ') : '-',
+                          style: TextStyle(
+                            color: posSigs.isNotEmpty
+                                ? Colors.green
+                                : Colors.grey,
+                            fontWeight: posSigs.isNotEmpty
+                                ? FontWeight.bold
+                                : null,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: statusWidget,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(sigs.join(', ')),
+                      ),
                     ],
                   );
                 }),

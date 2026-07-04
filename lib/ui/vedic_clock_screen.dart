@@ -111,12 +111,27 @@ class _VedicClockScreenState extends State<VedicClockScreen> {
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     const days = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday',
-      'Friday', 'Saturday', 'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
     ];
     return '${days[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }
@@ -139,9 +154,8 @@ class _VedicClockScreenState extends State<VedicClockScreen> {
             CommandBarButton(
               icon: const Icon(FluentIcons.location),
               label: const Text('Change Location'),
-              onPressed: () => setState(
-                () => _showLocationEditor = !_showLocationEditor,
-              ),
+              onPressed: () =>
+                  setState(() => _showLocationEditor = !_showLocationEditor),
             ),
           ],
         ),
@@ -252,9 +266,7 @@ class _VedicClockScreenState extends State<VedicClockScreen> {
   Widget _buildLocationPill(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => setState(
-        () => _showLocationEditor = !_showLocationEditor,
-      ),
+      onTap: () => setState(() => _showLocationEditor = !_showLocationEditor),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
@@ -314,9 +326,9 @@ class _VedicClockScreenState extends State<VedicClockScreen> {
               const SizedBox(width: 8),
               Text(
                 'Change Location',
-                style: FluentTheme.of(context).typography.body?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: FluentTheme.of(
+                  context,
+                ).typography.body?.copyWith(fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               IconButton(
@@ -354,9 +366,9 @@ class _VedicClockScreenState extends State<VedicClockScreen> {
               Expanded(
                 child: Text(
                   'Type at least 2 characters, or tap the globe to use your current location.',
-                  style: FluentTheme.of(context).typography.caption?.copyWith(
-                    color: Colors.grey,
-                  ),
+                  style: FluentTheme.of(
+                    context,
+                  ).typography.caption?.copyWith(color: Colors.grey),
                 ),
               ),
             ],

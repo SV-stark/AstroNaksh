@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/jyotish.dart' hide ChartStyle;
 
 import '../../core/ayanamsa_calculator.dart';
 import '../../core/chart_customization.dart';
@@ -18,11 +18,16 @@ class AyanamsaSandboxScreen extends ConsumerStatefulWidget {
   final model.BirthData? birthData;
 
   @override
-  ConsumerState<AyanamsaSandboxScreen> createState() => _AyanamsaSandboxScreenState();
+  ConsumerState<AyanamsaSandboxScreen> createState() =>
+      _AyanamsaSandboxScreenState();
 }
 
 class _TransitChartData {
-  _TransitChartData({required this.chart, required this.planetsMap, required this.ascSign});
+  _TransitChartData({
+    required this.chart,
+    required this.planetsMap,
+    required this.ascSign,
+  });
   final VedicChart chart;
   final Map<int, List<String>> planetsMap;
   final int ascSign;
@@ -135,7 +140,8 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
   @override
   Widget build(BuildContext context) {
     final settingsState = ref.watch(settingsProvider).value;
-    final preferredStyle = settingsState?.chartSettings.chartStyle ?? ChartStyle.northIndian;
+    final preferredStyle =
+        settingsState?.chartSettings.chartStyle ?? ChartStyle.northIndian;
 
     final allSystems = AyanamsaCalculator.systems;
 
@@ -157,94 +163,94 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
         content: _selectedBirthData == null
             ? const Center(child: Text('Please select or input birth data.'))
             : _calculating || _leftChartData == null || _rightChartData == null
-                ? const Center(child: ProgressRing())
-                : Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: ListView(
-                      children: [
-                        // Dual Charts Side-by-Side
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final useVertical = constraints.maxWidth < 750;
-                            final chartSize = useVertical 
-                                ? constraints.maxWidth * 0.9 
-                                : (constraints.maxWidth - 32) / 2;
+            ? const Center(child: ProgressRing())
+            : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ListView(
+                  children: [
+                    // Dual Charts Side-by-Side
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final useVertical = constraints.maxWidth < 750;
+                        final chartSize = useVertical
+                            ? constraints.maxWidth * 0.9
+                            : (constraints.maxWidth - 32) / 2;
 
-                            final leftChartWidget = Column(
-                              children: [
-                                _dropdownSelector(
-                                  label: 'Left System',
-                                  value: _leftMode,
-                                  systems: allSystems,
-                                  onChanged: (mode) {
-                                    if (mode != null) {
-                                      setState(() => _leftMode = mode);
-                                      _calculateCharts();
-                                    }
-                                  },
-                                ),
-                                const SizedBox(height: 8),
-                                ChartWidget(
-                                  planetsBySign: _leftChartData!.planetsMap,
-                                  ascendantSign: _leftChartData!.ascSign,
-                                  style: preferredStyle,
-                                  size: chartSize.clamp(200.0, 400.0),
-                                  baseChart: _leftChartData!.chart,
-                                ),
-                              ],
-                            );
+                        final leftChartWidget = Column(
+                          children: [
+                            _dropdownSelector(
+                              label: 'Left System',
+                              value: _leftMode,
+                              systems: allSystems,
+                              onChanged: (mode) {
+                                if (mode != null) {
+                                  setState(() => _leftMode = mode);
+                                  _calculateCharts();
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            ChartWidget(
+                              planetsBySign: _leftChartData!.planetsMap,
+                              ascendantSign: _leftChartData!.ascSign,
+                              style: preferredStyle,
+                              size: chartSize.clamp(200.0, 400.0),
+                              baseChart: _leftChartData!.chart,
+                            ),
+                          ],
+                        );
 
-                            final rightChartWidget = Column(
-                              children: [
-                                _dropdownSelector(
-                                  label: 'Right System',
-                                  value: _rightMode,
-                                  systems: allSystems,
-                                  onChanged: (mode) {
-                                    if (mode != null) {
-                                      setState(() => _rightMode = mode);
-                                      _calculateCharts();
-                                    }
-                                  },
-                                ),
-                                const SizedBox(height: 8),
-                                ChartWidget(
-                                  planetsBySign: _rightChartData!.planetsMap,
-                                  ascendantSign: _rightChartData!.ascSign,
-                                  style: preferredStyle,
-                                  size: chartSize.clamp(200.0, 400.0),
-                                  baseChart: _rightChartData!.chart,
-                                ),
-                              ],
-                            );
+                        final rightChartWidget = Column(
+                          children: [
+                            _dropdownSelector(
+                              label: 'Right System',
+                              value: _rightMode,
+                              systems: allSystems,
+                              onChanged: (mode) {
+                                if (mode != null) {
+                                  setState(() => _rightMode = mode);
+                                  _calculateCharts();
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            ChartWidget(
+                              planetsBySign: _rightChartData!.planetsMap,
+                              ascendantSign: _rightChartData!.ascSign,
+                              style: preferredStyle,
+                              size: chartSize.clamp(200.0, 400.0),
+                              baseChart: _rightChartData!.chart,
+                            ),
+                          ],
+                        );
 
-                            if (useVertical) {
-                              return Column(
-                                children: [
-                                  leftChartWidget,
-                                  const SizedBox(height: 24),
-                                  rightChartWidget,
-                                ],
-                              );
-                            }
+                        if (useVertical) {
+                          return Column(
+                            children: [
+                              leftChartWidget,
+                              const SizedBox(height: 24),
+                              rightChartWidget,
+                            ],
+                          );
+                        }
 
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Expanded(child: leftChartWidget),
-                                const SizedBox(width: 16),
-                                Expanded(child: rightChartWidget),
-                              ],
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Comparison Table
-                        _buildComparisonTable(),
-                      ],
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Expanded(child: leftChartWidget),
+                            const SizedBox(width: 16),
+                            Expanded(child: rightChartWidget),
+                          ],
+                        );
+                      },
                     ),
-                  ),
+                    const SizedBox(height: 24),
+
+                    // Comparison Table
+                    _buildComparisonTable(),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -276,7 +282,7 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
 
   Widget _buildHeader(List<AyanamsaSystem> systems) {
     final dropDownItems = <MenuFlyoutItemBase>[];
-    
+
     // Add sample charts
     for (final sample in SampleCharts.samples) {
       dropDownItems.add(
@@ -326,7 +332,10 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
               children: [
                 Text(
                   _selectedBirthData?.name ?? 'No Chart Selected',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   _selectedBirthData != null
@@ -370,7 +379,10 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
         children: [
           Row(
             children: [
-              Icon(FluentIcons.table, color: FluentTheme.of(context).accentColor),
+              Icon(
+                FluentIcons.table,
+                color: FluentTheme.of(context).accentColor,
+              ),
               const SizedBox(width: 8),
               const Text(
                 'Planetary Differences & Borderline Highlights',
@@ -392,23 +404,38 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
                 children: [
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Planet', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Planet',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Left Position', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Left Position',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Right Position', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Right Position',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Difference', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Difference',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('House / Sign Shift', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'House / Sign Shift',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
@@ -423,18 +450,28 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
                 if (planet == Planet.ketu) {
                   leftLong = leftChart.ketu.longitude;
                   rightLong = rightChart.ketu.longitude;
-                  leftFormatted = '${leftChart.ketu.formattedPosition} (H${leftChart.houses.getHouseForLongitude(leftLong)})';
-                  rightFormatted = '${rightChart.ketu.formattedPosition} (H${rightChart.houses.getHouseForLongitude(rightLong)})';
+                  leftFormatted =
+                      '${leftChart.ketu.formattedPosition} (H${leftChart.houses.getHouseForLongitude(leftLong)})';
+                  rightFormatted =
+                      '${rightChart.ketu.formattedPosition} (H${rightChart.houses.getHouseForLongitude(rightLong)})';
                   leftHouse = leftChart.houses.getHouseForLongitude(leftLong);
-                  rightHouse = rightChart.houses.getHouseForLongitude(rightLong);
+                  rightHouse = rightChart.houses.getHouseForLongitude(
+                    rightLong,
+                  );
                 } else {
-                  final lInfo = leftChart.getPlanet(planet) ?? (planet == Planet.meanNode ? leftChart.rahu : null);
-                  final rInfo = rightChart.getPlanet(planet) ?? (planet == Planet.meanNode ? rightChart.rahu : null);
+                  final lInfo =
+                      leftChart.getPlanet(planet) ??
+                      (planet == Planet.meanNode ? leftChart.rahu : null);
+                  final rInfo =
+                      rightChart.getPlanet(planet) ??
+                      (planet == Planet.meanNode ? rightChart.rahu : null);
                   if (lInfo != null && rInfo != null) {
                     leftLong = lInfo.longitude;
                     rightLong = rInfo.longitude;
-                    leftFormatted = '${lInfo.formattedPosition} (H${lInfo.house})';
-                    rightFormatted = '${rInfo.formattedPosition} (H${rInfo.house})';
+                    leftFormatted =
+                        '${lInfo.formattedPosition} (H${lInfo.house})';
+                    rightFormatted =
+                        '${rInfo.formattedPosition} (H${rInfo.house})';
                     leftHouse = lInfo.house;
                     rightHouse = rInfo.house;
                   }
@@ -448,20 +485,24 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
 
                 final leftSign = (leftLong / 30).floor() % 12;
                 final rightSign = (rightLong / 30).floor() % 12;
-                
+
                 final isSignShift = leftSign != rightSign;
                 final isHouseShift = leftHouse != rightHouse;
-                
+
                 // Borderline condition (near boundaries: e.g. <0.5 degrees / 30 arcminutes from 0° or 30° of a sign)
-                final leftBorderline = (leftLong % 30 < 0.5) || (leftLong % 30 > 29.5);
-                final rightBorderline = (rightLong % 30 < 0.5) || (rightLong % 30 > 29.5);
+                final leftBorderline =
+                    (leftLong % 30 < 0.5) || (leftLong % 30 > 29.5);
+                final rightBorderline =
+                    (rightLong % 30 < 0.5) || (rightLong % 30 > 29.5);
                 final isBorderline = leftBorderline || rightBorderline;
 
                 Color? rowBg;
                 String shiftDesc = 'No Shift';
                 if (isSignShift || isHouseShift) {
                   rowBg = Colors.orange.withValues(alpha: 0.1);
-                  shiftDesc = '${isSignShift ? "Sign Shift" : ""} ${isHouseShift ? "House Shift" : ""}'.trim();
+                  shiftDesc =
+                      '${isSignShift ? "Sign Shift" : ""} ${isHouseShift ? "House Shift" : ""}'
+                          .trim();
                 } else if (isBorderline) {
                   rowBg = Colors.yellow.withValues(alpha: 0.08);
                   shiftDesc = 'Borderline';
@@ -472,7 +513,9 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
                     color: rowBg,
                     border: Border(
                       bottom: BorderSide(
-                        color: FluentTheme.of(context).resources.dividerStrokeColorDefault.withAlpha(50),
+                        color: FluentTheme.of(
+                          context,
+                        ).resources.dividerStrokeColorDefault.withAlpha(50),
                       ),
                     ),
                   ),
@@ -482,7 +525,10 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
                       child: Text(
                         planet.displayName,
                         style: TextStyle(
-                          fontWeight: (isSignShift || isHouseShift || isBorderline) ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              (isSignShift || isHouseShift || isBorderline)
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ),
@@ -506,9 +552,12 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
                           color: (isSignShift || isHouseShift)
                               ? Colors.red
                               : isBorderline
-                                  ? Colors.orange
-                                  : Colors.green,
-                          fontWeight: (isSignShift || isHouseShift || isBorderline) ? FontWeight.bold : FontWeight.normal,
+                              ? Colors.orange
+                              : Colors.green,
+                          fontWeight:
+                              (isSignShift || isHouseShift || isBorderline)
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ),

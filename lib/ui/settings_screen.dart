@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jyotish/jyotish.dart' hide HouseSystem;
+import 'package:jyotish/jyotish.dart' hide HouseSystem, ChartStyle;
 
 import '../core/ayanamsa_calculator.dart';
 import '../core/backup_service.dart';
@@ -40,14 +40,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _settings = ChartCustomization();
       }
 
-      _brandOrgNameController = TextEditingController(text: _settings.brandOrgName);
-      _brandOrgTaglineController = TextEditingController(text: _settings.brandOrgTagline);
-      _brandContactInfoController = TextEditingController(text: _settings.brandContactInfo);
-      _brandPrimaryColorHexController = TextEditingController(text: _settings.brandPrimaryColorHex);
-      _brandAccentColorHexController = TextEditingController(text: _settings.brandAccentColorHex);
+      _brandOrgNameController = TextEditingController(
+        text: _settings.brandOrgName,
+      );
+      _brandOrgTaglineController = TextEditingController(
+        text: _settings.brandOrgTagline,
+      );
+      _brandContactInfoController = TextEditingController(
+        text: _settings.brandContactInfo,
+      );
+      _brandPrimaryColorHexController = TextEditingController(
+        text: _settings.brandPrimaryColorHex,
+      );
+      _brandAccentColorHexController = TextEditingController(
+        text: _settings.brandAccentColorHex,
+      );
       _webdavUrlController = TextEditingController(text: _settings.webdavUrl);
-      _webdavUsernameController = TextEditingController(text: _settings.webdavUsername);
-      _webdavPasswordController = TextEditingController(text: _settings.webdavPassword);
+      _webdavUsernameController = TextEditingController(
+        text: _settings.webdavUsername,
+      );
+      _webdavPasswordController = TextEditingController(
+        text: _settings.webdavPassword,
+      );
 
       _initialized = true;
     }
@@ -549,7 +563,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         controller: _brandOrgNameController,
                         placeholder: 'ASTRONAKSH',
                         onChanged: (val) {
-                          _settings.brandOrgName = val.trim().isEmpty ? 'ASTRONAKSH' : val;
+                          _settings.brandOrgName = val.trim().isEmpty
+                              ? 'ASTRONAKSH'
+                              : val;
                         },
                       ),
                     ),
@@ -562,7 +578,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         controller: _brandOrgTaglineController,
                         placeholder: 'Vedic Insights',
                         onChanged: (val) {
-                          _settings.brandOrgTagline = val.trim().isEmpty ? 'Vedic Insights' : val;
+                          _settings.brandOrgTagline = val.trim().isEmpty
+                              ? 'Vedic Insights'
+                              : val;
                         },
                       ),
                     ),
@@ -611,25 +629,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              const Text('Custom Logo Image', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                'Custom Logo Image',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                        ),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         _settings.brandLogoPath.isNotEmpty
-                            ? _settings.brandLogoPath.split(Platform.pathSeparator).last
+                            ? _settings.brandLogoPath
+                                  .split(Platform.pathSeparator)
+                                  .last
                             : 'No logo selected (using default text brand)',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: _settings.brandLogoPath.isNotEmpty ? Colors.black : Colors.grey,
+                          color: _settings.brandLogoPath.isNotEmpty
+                              ? Colors.black
+                              : Colors.grey,
                         ),
                       ),
                     ),
@@ -642,7 +672,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           type: FileType.image,
                           allowMultiple: false,
                         );
-                        if (result != null && result.files.single.path != null) {
+                        if (result != null &&
+                            result.files.single.path != null) {
                           setState(() {
                             _settings.brandLogoPath = result.files.single.path!;
                           });
@@ -688,9 +719,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: ComboBox<String>(
                       value: _settings.pdfPageMargins,
                       items: const [
-                        ComboBoxItem(value: 'small', child: Text('Small (16px)')),
-                        ComboBoxItem(value: 'medium', child: Text('Medium (32px)')),
-                        ComboBoxItem(value: 'large', child: Text('Large (48px)')),
+                        ComboBoxItem(
+                          value: 'small',
+                          child: Text('Small (16px)'),
+                        ),
+                        ComboBoxItem(
+                          value: 'medium',
+                          child: Text('Medium (32px)'),
+                        ),
+                        ComboBoxItem(
+                          value: 'large',
+                          child: Text('Large (48px)'),
+                        ),
                       ],
                       onChanged: (value) {
                         if (value != null) {
@@ -1171,10 +1211,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           type: FileType.any,
                           allowMultiple: false,
                         );
-                        if (result != null && result.files.single.path != null) {
+                        if (result != null &&
+                            result.files.single.path != null) {
                           final sourcePath = result.files.single.path!;
                           final backupService = ref.read(backupServiceProvider);
-                          
+
                           // Show a warning/confirmation dialog
                           final confirm = await showDialog<bool>(
                             context: context,
@@ -1185,7 +1226,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ),
                               actions: [
                                 Button(
-                                  onPressed: () => Navigator.pop(context, false),
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
                                   child: const Text('Cancel'),
                                 ),
                                 FilledButton(
@@ -1203,7 +1245,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 context,
                                 builder: (context, close) => InfoBar(
                                   title: const Text('Database Restored'),
-                                  content: const Text('Charts database has been successfully restored.'),
+                                  content: const Text(
+                                    'Charts database has been successfully restored.',
+                                  ),
                                   severity: InfoBarSeverity.success,
                                   onClose: close,
                                 ),
@@ -1258,7 +1302,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 label: 'WebDAV Target Server URL',
                 child: TextBox(
                   controller: _webdavUrlController,
-                  placeholder: 'https://example.com/remote.php/dav/files/user/AstroNaksh/',
+                  placeholder:
+                      'https://example.com/remote.php/dav/files/user/AstroNaksh/',
                   onChanged: (val) {
                     _settings.webdavUrl = val.trim();
                   },
@@ -1312,7 +1357,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             context,
                             builder: (context, close) => InfoBar(
                               title: const Text('Connection Successful'),
-                              content: const Text('Successfully connected to WebDAV server!'),
+                              content: const Text(
+                                'Successfully connected to WebDAV server!',
+                              ),
                               severity: InfoBarSeverity.success,
                               onClose: close,
                             ),
@@ -1356,7 +1403,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             context,
                             builder: (context, close) => InfoBar(
                               title: const Text('Upload Complete'),
-                              content: const Text('Database backup uploaded to WebDAV server!'),
+                              content: const Text(
+                                'Database backup uploaded to WebDAV server!',
+                              ),
                               severity: InfoBarSeverity.success,
                               onClose: close,
                             ),
@@ -1422,7 +1471,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               context,
                               builder: (context, close) => InfoBar(
                                 title: const Text('Sync Complete'),
-                                content: const Text('Successfully restored database from cloud WebDAV backup!'),
+                                content: const Text(
+                                  'Successfully restored database from cloud WebDAV backup!',
+                                ),
                                 severity: InfoBarSeverity.success,
                                 onClose: close,
                               ),

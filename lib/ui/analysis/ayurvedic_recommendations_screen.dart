@@ -8,10 +8,12 @@ class AyurvedicRecommendationsScreen extends StatefulWidget {
   final CompleteChartData chartData;
 
   @override
-  State<AyurvedicRecommendationsScreen> createState() => _AyurvedicRecommendationsScreenState();
+  State<AyurvedicRecommendationsScreen> createState() =>
+      _AyurvedicRecommendationsScreenState();
 }
 
-class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendationsScreen> {
+class _AyurvedicRecommendationsScreenState
+    extends State<AyurvedicRecommendationsScreen> {
   final AyurvedaService _ayurvedaService = AyurvedaService();
   late AyurvedicProfile _profile;
 
@@ -35,7 +37,10 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
             children: [
               Text(
                 label,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
               ),
               const Spacer(),
               Text(
@@ -110,7 +115,7 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
                 child: Row(
                   children: [
                     const Icon(
-                      FluentIcons.herb,
+                      FluentIcons.flower,
                       color: AppStyles.primaryColor,
                       size: 28,
                     ),
@@ -121,7 +126,10 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
                         children: [
                           const Text(
                             'Prakriti Analysis',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -146,7 +154,10 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
                   children: [
                     const Text(
                       'Your Dosha Distribution',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _buildProgressBar(
@@ -171,7 +182,10 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
                       children: [
                         const Text(
                           'Dominant Constitution: ',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         Text(
                           _profile.dominantDosha,
@@ -186,7 +200,11 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
                     const SizedBox(height: 12),
                     Text(
                       _profile.description,
-                      style: const TextStyle(fontSize: 14, height: 1.4, color: Colors.grey),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        height: 1.4,
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -198,12 +216,18 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
             Expander(
               header: Row(
                 children: [
-                  Icon(FluentIcons.eating_share-1, color: const Color(0xFF4CAF50)),
+                  const Icon(FluentIcons.eat_drink, color: Color(0xFF4CAF50)),
                   const SizedBox(width: 12),
-                  const Text('Dietary Guidelines (Favor)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Dietary Guidelines (Favor)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
-              content: _buildBulletList(_profile.dietaryRecommendations, const Color(0xFF4CAF50)),
+              content: _buildBulletList(
+                _profile.dietaryRecommendations,
+                const Color(0xFF4CAF50),
+              ),
             ),
             const SizedBox(height: 12),
 
@@ -212,10 +236,16 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
                 children: [
                   Icon(FluentIcons.blocked2, color: const Color(0xFFF44336)),
                   const SizedBox(width: 12),
-                  const Text('Foods to Avoid / Limit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Foods to Avoid / Limit',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
-              content: _buildBulletList(_profile.avoidedFoods, const Color(0xFFF44336)),
+              content: _buildBulletList(
+                _profile.avoidedFoods,
+                const Color(0xFFF44336),
+              ),
             ),
             const SizedBox(height: 12),
 
@@ -224,22 +254,34 @@ class _AyurvedicRecommendationsScreenState extends State<AyurvedicRecommendation
                 children: [
                   Icon(FluentIcons.calendar, color: const Color(0xFF2196F3)),
                   const SizedBox(width: 12),
-                  const Text('Lifestyle & Daily Routine', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Lifestyle & Daily Routine',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
-              content: _buildBulletList(_profile.lifestyleRecommendations, const Color(0xFF2196F3)),
+              content: _buildBulletList(
+                _profile.lifestyleRecommendations,
+                const Color(0xFF2196F3),
+              ),
             ),
             const SizedBox(height: 12),
 
             Expander(
               header: Row(
                 children: [
-                  Icon(FluentIcons.herb, color: AppStyles.primaryColor),
+                  const Icon(FluentIcons.flower, color: AppStyles.primaryColor),
                   const SizedBox(width: 12),
-                  const Text('Recommended Herbs & Remedies', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Recommended Herbs & Remedies',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
-              content: _buildBulletList(_profile.recommendedHerbs, AppStyles.primaryColor),
+              content: _buildBulletList(
+                _profile.recommendedHerbs,
+                AppStyles.primaryColor,
+              ),
             ),
           ],
         ),

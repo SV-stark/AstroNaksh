@@ -223,7 +223,9 @@ class SouthIndianChartPainter extends CustomPainter {
       }
 
       final transitPlanets = transitPlanetsBySign?[i + 1] ?? [];
-      final cleanTransitPlanets = transitPlanets.where((p) => p != 'Asc').toList();
+      final cleanTransitPlanets = transitPlanets
+          .where((p) => p != 'Asc')
+          .toList();
 
       if (displayList.isEmpty && cleanTransitPlanets.isEmpty) continue;
 
@@ -253,7 +255,10 @@ class SouthIndianChartPainter extends CustomPainter {
           canvas,
           Offset(
             cellOffsets[i].dx - textPainter.width / 2,
-            cellOffsets[i].dy - (cleanTransitPlanets.isNotEmpty ? textPainter.height * 0.95 : textPainter.height / 2),
+            cellOffsets[i].dy -
+                (cleanTransitPlanets.isNotEmpty
+                    ? textPainter.height * 0.95
+                    : textPainter.height / 2),
           ),
         );
       }
@@ -280,7 +285,8 @@ class SouthIndianChartPainter extends CustomPainter {
           canvas,
           Offset(
             cellOffsets[i].dx - tTextPainter.width / 2,
-            cellOffsets[i].dy + (natalHeight > 0 ? 2 : -tTextPainter.height / 2),
+            cellOffsets[i].dy +
+                (natalHeight > 0 ? 2 : -tTextPainter.height / 2),
           ),
         );
       }

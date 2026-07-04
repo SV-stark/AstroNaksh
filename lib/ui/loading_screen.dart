@@ -45,56 +45,58 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
     return ScaffoldPage(
       content: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'AstroNaksh',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 32),
-            if (!isError) ...[
-              const ProgressBar(),
-              const SizedBox(height: 16),
-            ] else ...[
-              Icon(FluentIcons.error, color: Colors.red, size: 48),
-              const SizedBox(height: 16),
-            ],
-            Text(
-              _status,
-              style: TextStyle(color: isError ? Colors.red : null),
-              textAlign: TextAlign.center,
-            ),
-            if (isError) ...[
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Button(
-                    onPressed: _initApp,
-                    child: const Row(
-                      children: [
-                        Icon(FluentIcons.refresh),
-                        SizedBox(width: 8),
-                        Text('Retry'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Button(
-                    onPressed: () => exit(1),
-                    child: const Row(
-                      children: [
-                        Icon(FluentIcons.cancel),
-                        SizedBox(width: 8),
-                        Text('Exit'),
-                      ],
-                    ),
-                  ),
-                ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'AstroNaksh',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
+              const SizedBox(height: 32),
+              if (!isError) ...[
+                const SizedBox(width: 200, child: ProgressBar()),
+                const SizedBox(height: 16),
+              ] else ...[
+                Icon(FluentIcons.error, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+              ],
+              Text(
+                _status,
+                style: TextStyle(color: isError ? Colors.red : null),
+                textAlign: TextAlign.center,
+              ),
+              if (isError) ...[
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Button(
+                      onPressed: _initApp,
+                      child: const Row(
+                        children: [
+                          Icon(FluentIcons.refresh),
+                          SizedBox(width: 8),
+                          Text('Retry'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Button(
+                      onPressed: () => exit(1),
+                      child: const Row(
+                        children: [
+                          Icon(FluentIcons.cancel),
+                          SizedBox(width: 8),
+                          Text('Exit'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

@@ -282,7 +282,10 @@ class NorthIndianChartPainter extends CustomPainter {
 
         final offset = Offset(
           center.dx - textPainter.width / 2,
-          center.dy - (transitPlanets.isNotEmpty ? textPainter.height * 0.8 : textPainter.height / 3),
+          center.dy -
+              (transitPlanets.isNotEmpty
+                  ? textPainter.height * 0.8
+                  : textPainter.height / 3),
         );
         textPainter.paint(canvas, offset);
       }
@@ -290,13 +293,20 @@ class NorthIndianChartPainter extends CustomPainter {
       // Draw Transit Planets
       if (transitPlanets.isNotEmpty) {
         final tLines = <String>[];
-        final cleanTransitPlanets = transitPlanets.where((p) => p != 'Asc').toList();
+        final cleanTransitPlanets = transitPlanets
+            .where((p) => p != 'Asc')
+            .toList();
         if (cleanTransitPlanets.isNotEmpty) {
           if (cleanTransitPlanets.length > 3) {
             for (var i = 0; i < cleanTransitPlanets.length; i += 3) {
               tLines.add(
                 cleanTransitPlanets
-                    .sublist(i, i + 3 > cleanTransitPlanets.length ? cleanTransitPlanets.length : i + 3)
+                    .sublist(
+                      i,
+                      i + 3 > cleanTransitPlanets.length
+                          ? cleanTransitPlanets.length
+                          : i + 3,
+                    )
                     .join(' '),
               );
             }
@@ -310,7 +320,9 @@ class NorthIndianChartPainter extends CustomPainter {
                   (line) => TextSpan(
                     text: '$line\n',
                     style: TextStyle(
-                      color: const Color(0xFF10B981), // Emerald green for transits
+                      color: const Color(
+                        0xFF10B981,
+                      ), // Emerald green for transits
                       fontSize: fontSize * 0.9,
                       fontWeight: FontWeight.bold,
                     ),

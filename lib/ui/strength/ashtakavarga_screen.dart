@@ -1126,19 +1126,22 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
       width: 6,
       height: 6,
       margin: const EdgeInsets.symmetric(horizontal: 1.5),
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 
   Widget _buildHeatMap(Map<int, int> points, {bool isBhinna = false}) {
     final gridMap = <String, int>{
-      '0,0': 11, '0,1': 0, '0,2': 1, '0,3': 2,
+      '0,0': 11,
+      '0,1': 0,
+      '0,2': 1,
+      '0,3': 2,
       '1,3': 3,
       '2,3': 4,
-      '3,3': 5, '3,2': 6, '3,1': 7, '3,0': 8,
+      '3,3': 5,
+      '3,2': 6,
+      '3,1': 7,
+      '3,0': 8,
       '2,0': 9,
       '1,0': 10,
     };
@@ -1150,7 +1153,9 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isBhinna ? 'Bhinnashtakavarga Chart Map' : 'Sarvashtakavarga Chart Map',
+              isBhinna
+                  ? 'Bhinnashtakavarga Chart Map'
+                  : 'Sarvashtakavarga Chart Map',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 16),
@@ -1162,7 +1167,10 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: FluentTheme.of(context).resources.textFillColorPrimary.withValues(alpha: 0.15),
+                        color: FluentTheme.of(context)
+                            .resources
+                            .textFillColorPrimary
+                            .withValues(alpha: 0.15),
                         width: 1.5,
                       ),
                       borderRadius: BorderRadius.circular(8),
@@ -1201,7 +1209,8 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                                       ],
                                     ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           _signNames[signIndex],
@@ -1225,8 +1234,12 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                                             vertical: 2,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withValues(alpha: 0.15),
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: Colors.black.withValues(
+                                              alpha: 0.15,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                           child: Text(
                                             val.toString(),
@@ -1248,23 +1261,31 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                                     child: Container(
                                       margin: const EdgeInsets.all(3),
                                       decoration: BoxDecoration(
-                                        color: FluentTheme.of(context).cardColor,
+                                        color: FluentTheme.of(
+                                          context,
+                                        ).cardColor,
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
                                             isBhinna ? 'BAV' : 'SAV',
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
-                                              color: FluentTheme.of(context).activeColor,
+                                              color: FluentTheme.of(
+                                                context,
+                                              ).activeColor,
                                             ),
                                           ),
                                           const Text(
                                             'Heatmap',
-                                            style: TextStyle(fontSize: 9, color: Colors.grey),
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: Colors.grey,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -1276,24 +1297,39 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                                     child: Container(
                                       margin: const EdgeInsets.all(3),
                                       decoration: BoxDecoration(
-                                        color: FluentTheme.of(context).cardColor,
+                                        color: FluentTheme.of(
+                                          context,
+                                        ).cardColor,
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           const Text(
                                             'Legend',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                           const SizedBox(height: 4),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              _legendDot(const Color(0xfff87171)), // Red
-                                              _legendDot(const Color(0xfffbbf24)), // Amber
-                                              _legendDot(const Color(0xff2dd4bf)), // Teal
-                                              _legendDot(const Color(0xff10b981)), // Emerald
+                                              _legendDot(
+                                                const Color(0xfff87171),
+                                              ), // Red
+                                              _legendDot(
+                                                const Color(0xfffbbf24),
+                                              ), // Amber
+                                              _legendDot(
+                                                const Color(0xff2dd4bf),
+                                              ), // Teal
+                                              _legendDot(
+                                                const Color(0xff10b981),
+                                              ), // Emerald
                                             ],
                                           ),
                                         ],
@@ -1306,19 +1342,28 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                                     child: Container(
                                       margin: const EdgeInsets.all(3),
                                       decoration: BoxDecoration(
-                                        color: FluentTheme.of(context).cardColor,
+                                        color: FluentTheme.of(
+                                          context,
+                                        ).cardColor,
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           const Text(
                                             'Target',
-                                            style: TextStyle(fontSize: 9, color: Colors.grey),
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: Colors.grey,
+                                            ),
                                           ),
                                           Text(
                                             isBhinna ? '4.0' : '28.0',
-                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -1336,19 +1381,28 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                                     child: Container(
                                       margin: const EdgeInsets.all(3),
                                       decoration: BoxDecoration(
-                                        color: FluentTheme.of(context).cardColor,
+                                        color: FluentTheme.of(
+                                          context,
+                                        ).cardColor,
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           const Text(
                                             'Range',
-                                            style: TextStyle(fontSize: 9, color: Colors.grey),
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: Colors.grey,
+                                            ),
                                           ),
                                           Text(
                                             '$minVal - $maxVal',
-                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -1371,7 +1425,9 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: FluentTheme.of(context).resources.solidBackgroundFillColorBase,
+                color: FluentTheme.of(
+                  context,
+                ).resources.solidBackgroundFillColorBase,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Column(
@@ -1432,10 +1488,7 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
           ),
         ),
         Expanded(
-          child: Text(
-            description,
-            style: const TextStyle(fontSize: 12),
-          ),
+          child: Text(description, style: const TextStyle(fontSize: 12)),
         ),
       ],
     );

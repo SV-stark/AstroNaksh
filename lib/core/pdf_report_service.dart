@@ -460,7 +460,8 @@ class PDFReportService {
                           ),
                         ),
                       pw.Text(
-                        (brandOrgTagline ?? 'PREMIUM ASTROLOGY REPORT').toUpperCase(),
+                        (brandOrgTagline ?? 'PREMIUM ASTROLOGY REPORT')
+                            .toUpperCase(),
                         style: const pw.TextStyle(
                           color: ReportStyles.grey,
                           fontSize: 8,
@@ -483,7 +484,8 @@ class PDFReportService {
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
-                        brandContactInfo ?? '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
+                        brandContactInfo ??
+                            '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
                         style: const pw.TextStyle(
                           fontSize: 8,
                           color: PdfColors.grey,

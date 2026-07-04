@@ -263,7 +263,10 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeading(FluentIcons.contact_card, 'Chara Karakas (Planetary Ranks)'),
+          _sectionHeading(
+            FluentIcons.contact_card,
+            'Chara Karakas (Planetary Ranks)',
+          ),
           const SizedBox(height: 12),
           Table(
             columnWidths: const {
@@ -277,19 +280,31 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                 children: [
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Rank', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Rank',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Planet', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Planet',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Degree', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Degree',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('Dignity', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Dignity',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
@@ -302,10 +317,11 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                 // Get degree and dignity
                 var degreeStr = '';
                 var dignityStr = '';
-                
+
                 final baseChart = widget.chartData.baseChart;
-                final isRahu = planet == Planet.meanNode || planet == Planet.trueNode;
-                
+                final isRahu =
+                    planet == Planet.meanNode || planet == Planet.trueNode;
+
                 if (isRahu) {
                   final longitude = baseChart.rahu.longitude;
                   final deg = longitude % 30;
@@ -324,7 +340,9 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: FluentTheme.of(context).resources.dividerStrokeColorDefault.withAlpha(50),
+                        color: FluentTheme.of(
+                          context,
+                        ).resources.dividerStrokeColorDefault.withAlpha(50),
                       ),
                     ),
                   ),
@@ -334,8 +352,17 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                          Text(desc, style: TextStyle(fontSize: 10, color: Colors.grey.withAlpha(160))),
+                          Text(
+                            title,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            desc,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.withAlpha(160),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -777,7 +804,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
   Widget _buildDashasTab() {
     final charaDasha = widget.chartData.dashaData.chara;
     final narayanaDasha = widget.chartData.dashaData.narayana;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -790,15 +817,9 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
           },
           child: Row(
             children: [
-              RadioButton<int>(
-                value: 0,
-                content: const Text('Chara Dasha'),
-              ),
+              RadioButton<int>(value: 0, content: const Text('Chara Dasha')),
               const SizedBox(width: 16),
-              RadioButton<int>(
-                value: 1,
-                content: const Text('Narayana Dasha'),
-              ),
+              RadioButton<int>(value: 1, content: const Text('Narayana Dasha')),
             ],
           ),
         ),
@@ -821,7 +842,8 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
       itemCount: dasha.periods.length,
       itemBuilder: (context, index) {
         final period = dasha.periods[index];
-        final isActive = now.isAfter(period.startDate) && now.isBefore(period.endDate);
+        final isActive =
+            now.isAfter(period.startDate) && now.isBefore(period.endDate);
         return _buildPeriodRow(
           sign: period.signName,
           lord: period.lord,
@@ -843,7 +865,8 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
       itemCount: dasha.periods.length,
       itemBuilder: (context, index) {
         final period = dasha.periods[index];
-        final isActive = now.isAfter(period.startDate) && now.isBefore(period.endDate);
+        final isActive =
+            now.isAfter(period.startDate) && now.isBefore(period.endDate);
         return _buildPeriodRow(
           sign: period.signName,
           lord: period.lord,
@@ -869,7 +892,7 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
       fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
       color: isActive ? theme.accentColor : null,
     );
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Card(
@@ -886,21 +909,36 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(sign, style: textStyle.copyWith(fontSize: 16)),
-                    Text('Lord: $lord', style: TextStyle(fontSize: 12, color: Colors.grey.withAlpha(160))),
+                    Text(
+                      'Lord: $lord',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.withAlpha(160),
+                      ),
+                    ),
                   ],
                 ),
               ),
               Expanded(
                 flex: 1,
-                child: Text('${years.toStringAsFixed(0)} Years', style: textStyle),
+                child: Text(
+                  '${years.toStringAsFixed(0)} Years',
+                  style: textStyle,
+                ),
               ),
               Expanded(
                 flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('${AppFormatters.formatDate(start)} to', style: textStyle.copyWith(fontSize: 13)),
-                    Text(AppFormatters.formatDate(end), style: textStyle.copyWith(fontSize: 13)),
+                    Text(
+                      '${AppFormatters.formatDate(start)} to',
+                      style: textStyle.copyWith(fontSize: 13),
+                    ),
+                    Text(
+                      AppFormatters.formatDate(end),
+                      style: textStyle.copyWith(fontSize: 13),
+                    ),
                   ],
                 ),
               ),

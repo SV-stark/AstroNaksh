@@ -6,7 +6,7 @@ import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/jyotish.dart' hide ChartStyle;
 
 import '../../core/ayanamsa_calculator.dart';
 import '../../core/chart_customization.dart';
@@ -450,7 +450,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
             ),
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.herb),
+            icon: const Icon(FluentIcons.flower),
             title: const Text('Ayurveda'),
             body: _buildBody(
               (data) => AyurvedicRecommendationsScreen(chartData: data),
@@ -871,7 +871,8 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                               MenuFlyoutItem(
                                 text: const Text('Ayanamsa Sandbox'),
                                 leading: const Icon(FluentIcons.globe),
-                                onPressed: () => _navigateTo('ayanamsa_sandbox'),
+                                onPressed: () =>
+                                    _navigateTo('ayanamsa_sandbox'),
                               ),
                               MenuFlyoutItem(
                                 text: const Text('Progeny'),

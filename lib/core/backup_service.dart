@@ -51,16 +51,14 @@ class BackupService {
     if (url.trim().isEmpty) {
       throw Exception('WebDAV URL cannot be empty');
     }
-    final basicAuth = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+    final basicAuth =
+        'Basic ${base64Encode(utf8.encode('$username:$password'))}';
 
     try {
       final uri = Uri.parse(url);
-      final response = await http.get(
-        uri,
-        headers: {
-          'Authorization': basicAuth,
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(uri, headers: {'Authorization': basicAuth})
+          .timeout(const Duration(seconds: 15));
 
       // 200, 207 Multi-Status, or similar indicates WebDAV server accepts authentication.
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -77,47 +75,68 @@ class BackupService {
   }
 
   /// Upload database file to WebDAV
-  Future<void> uploadToWebDAV(String url, String username, String password) async {
+  Future<void> uploadToWebDAV(
+    String url,
+    String username,
+    String password,
+  ) async {
     final dbFile = await getDatabaseFile();
     if (!await dbFile.exists()) {
       throw Exception('Database file not found');
     }
     final bytes = await dbFile.readAsBytes();
 
-    final basicAuth = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-    final targetUrl = url.endsWith('/') ? '${url}astronaksh_backup.db' : '$url/astronaksh_backup.db';
+    final basicAuth =
+        'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+    final targetUrl = url.endsWith('/')
+        ? '${url}astronaksh_backup.db'
+        : '$url/astronaksh_backup.db';
 
-    final response = await http.put(
-      Uri.parse(targetUrl),
-      headers: {
-        'Authorization': basicAuth,
-        'Content-Type': 'application/octet-stream',
-      },
-      body: bytes,
-    ).timeout(const Duration(seconds: 45));
+    final response = await http
+        .put(
+          Uri.parse(targetUrl),
+          headers: {
+            'Authorization': basicAuth,
+            'Content-Type': 'application/octet-stream',
+          },
+          body: bytes,
+        )
+        .timeout(const Duration(seconds: 45));
 
-    if (response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 204) {
-      throw Exception('Upload failed: Server returned HTTP ${response.statusCode}');
+    if (response.statusCode != 200 &&
+        response.statusCode != 201 &&
+        response.statusCode != 204) {
+      throw Exception(
+        'Upload failed: Server returned HTTP ${response.statusCode}',
+      );
     }
   }
 
   /// Download and restore database file from WebDAV
-  Future<void> downloadAndRestoreFromWebDAV(String url, String username, String password) async {
-    final basicAuth = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-    final targetUrl = url.endsWith('/') ? '${url}astronaksh_backup.db' : '$url/astronaksh_backup.db';
+  Future<void> downloadAndRestoreFromWebDAV(
+    String url,
+    String username,
+    String password,
+  ) async {
+    final basicAuth =
+        'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+    final targetUrl = url.endsWith('/')
+        ? '${url}astronaksh_backup.db'
+        : '$url/astronaksh_backup.db';
 
-    final response = await http.get(
-      Uri.parse(targetUrl),
-      headers: {
-        'Authorization': basicAuth,
-      },
-    ).timeout(const Duration(seconds: 45));
+    final response = await http
+        .get(Uri.parse(targetUrl), headers: {'Authorization': basicAuth})
+        .timeout(const Duration(seconds: 45));
 
     if (response.statusCode != 200) {
       if (response.statusCode == 404) {
-        throw Exception('Backup file not found on cloud server (astronaksh_backup.db)');
+        throw Exception(
+          'Backup file not found on cloud server (astronaksh_backup.db)',
+        );
       }
-      throw Exception('Download failed: Server returned HTTP ${response.statusCode}');
+      throw Exception(
+        'Download failed: Server returned HTTP ${response.statusCode}',
+      );
     }
 
     final dbFile = await getDatabaseFile();

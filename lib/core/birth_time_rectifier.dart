@@ -1,21 +1,21 @@
 import 'package:jyotish/jyotish.dart';
- 
+
 import '../data/models.dart';
 import '../logic/divisional_charts.dart';
 import '../logic/kp_chart_service.dart';
- 
+
 /// Birth Time Rectification Utility
 /// Allows simulating chart changes with time adjustments.
 class BirthTimeRectifier {
   final KPChartService _chartService = KPChartService();
- 
+
   /// Calculate rectifier data for a specific time adjustment
   Future<RectificationData> calculateForTime({
     required BirthData originalData,
     required Duration adjustment,
   }) async {
     final newTime = originalData.dateTime.add(adjustment);
- 
+
     // Create new BirthData
     final newData = BirthData(
       dateTime: newTime,
@@ -23,7 +23,7 @@ class BirthTimeRectifier {
       name: originalData.name,
       place: originalData.place,
     );
- 
+
     // We use generateCompleteChart to ensure consistency.
     CompleteChartData? chartData;
     try {
@@ -32,7 +32,7 @@ class BirthTimeRectifier {
       // Fallback to null - UI will handle gracefully
       chartData = null;
     }
- 
+
     if (chartData == null) {
       return RectificationData(
         adjustedTime: newTime,
@@ -50,7 +50,7 @@ class BirthTimeRectifier {
         d60Boundary: '-',
       );
     }
- 
+
     final ascLong = chartData.baseChart.houses.cusps.isNotEmpty
         ? chartData.baseChart.houses.cusps[0]
         : 0.0;
@@ -71,20 +71,20 @@ class BirthTimeRectifier {
       d60Boundary: _getBoundaryInfo(ascLong, 0.5),
     );
   }
- 
+
   String _getBoundaryInfo(double longitude, double divisionSize) {
     if (longitude == 0.0) return '-';
     final posInDiv = longitude % divisionSize;
     final distToNext = divisionSize - posInDiv;
     final distToPrev = posInDiv;
- 
+
     // Format to degrees and minutes
     final nextDeg = distToNext.floor();
     final nextMin = ((distToNext - nextDeg) * 60).round();
- 
+
     final prevDeg = distToPrev.floor();
     final prevMin = ((distToPrev - prevDeg) * 60).round();
- 
+
     return 'Next: $nextDeg°$nextMin\' | Prev: $prevDeg°$prevMin\'';
   }
 
@@ -93,19 +93,19 @@ class BirthTimeRectifier {
     final asc = chart.houses.cusps[0];
     return _formatPosition(asc);
   }
- 
+
   String _getDivisionalAscendant(CompleteChartData data, String div) {
     final chart = data.divisionalCharts[div];
     if (chart == null || chart.ascendantSign == null) return '-';
     return DivisionalCharts.getSignName(chart.ascendantSign!);
   }
- 
+
   String _formatPosition(double longitude) {
     final sign = (longitude / 30).floor();
     final degree = longitude % 30;
     return '${degree.toStringAsFixed(2)}° ${DivisionalCharts.getSignName(sign)}';
   }
- 
+
   String _getPlanetSign(CompleteChartData data, String planet) {
     for (final entry in data.baseChart.planets.entries) {
       if (entry.key.toString().toLowerCase().contains(planet.toLowerCase())) {
@@ -114,7 +114,7 @@ class BirthTimeRectifier {
     }
     return '-';
   }
- 
+
   String _getDivisionalPlanetSign(
     CompleteChartData data,
     String div,
@@ -132,7 +132,7 @@ class BirthTimeRectifier {
     return '-';
   }
 }
- 
+
 class RectificationData {
   RectificationData({
     required this.adjustedTime,

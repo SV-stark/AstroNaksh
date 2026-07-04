@@ -92,11 +92,7 @@ class _VedicClockCardState extends State<VedicClockCard> {
         child: Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [
-                Color(0xFF1A0F2E),
-                Color(0xFF120A22),
-                Color(0xFF0D0820),
-              ],
+              colors: [Color(0xFF1A0F2E), Color(0xFF120A22), Color(0xFF0D0820)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -255,9 +251,7 @@ class _VedicClockCardState extends State<VedicClockCard> {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isSelected
-                  ? AppStyles.primaryColor
-                  : Colors.transparent,
+              color: isSelected ? AppStyles.primaryColor : Colors.transparent,
               width: 2,
             ),
           ),
@@ -359,10 +353,7 @@ class _VedicClockCardState extends State<VedicClockCard> {
                       ),
                       const TextSpan(
                         text: ' / 60 Ghatis',
-                        style: TextStyle(
-                          color: Colors.white60,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.white60, fontSize: 12),
                       ),
                     ],
                   ),
@@ -402,9 +393,7 @@ class _VedicClockCardState extends State<VedicClockCard> {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.04),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.06),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
               ),
               child: Row(
                 children: [
@@ -748,8 +737,18 @@ class _VedicClockCardState extends State<VedicClockCard> {
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }

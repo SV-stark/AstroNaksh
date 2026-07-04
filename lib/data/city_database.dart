@@ -63,21 +63,27 @@ class CityDatabase {
         final prefs = await SharedPreferences.getInstance();
         final currentVer = prefs.getInt('cities_db_version') ?? 0;
         const expectedVer = 1;
-        
+
         // Ensure database size is valid (> 10MB)
-        if (currentVer == expectedVer && await dbFile.length() > 10 * 1024 * 1024) {
+        if (currentVer == expectedVer &&
+            await dbFile.length() > 10 * 1024 * 1024) {
           copyNeeded = false;
         }
       }
 
       if (copyNeeded) {
-        debugPrint('CityDatabase: Copying cities.db asset to local user directory...');
+        debugPrint(
+          'CityDatabase: Copying cities.db asset to local user directory...',
+        );
         final data = await rootBundle.load('assets/data/cities.db');
         await dbFile.parent.create(recursive: true);
-        
-        final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+
+        final bytes = data.buffer.asUint8List(
+          data.offsetInBytes,
+          data.lengthInBytes,
+        );
         await dbFile.writeAsBytes(bytes, flush: true);
-        
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('cities_db_version', 1);
         debugPrint('CityDatabase: Database copy successful.');

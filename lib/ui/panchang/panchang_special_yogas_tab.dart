@@ -144,7 +144,11 @@ class PanchangSpecialYogasTab extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(FluentIcons.clock, size: 13, color: Colors.grey),
+                        const Icon(
+                          FluentIcons.clock,
+                          size: 13,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${_fmt(yoga.startTime)} – ${_fmt(yoga.endTime)}',

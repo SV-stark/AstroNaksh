@@ -97,16 +97,18 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
 
       final start = sunriseSunset.$1!;
       final end = start.add(const Duration(hours: 24));
-      
-      final suitabilityTimeline = await EphemerisManager.jyotish.scanMuhurtaSuitability(
-        startDateTime: start,
-        endDateTime: end,
-        location: location,
-        step: const Duration(minutes: 30),
-      );
 
-      final suitabilityTimelineSorted = List<MuhurtaScoreResult>.from(suitabilityTimeline)
-        ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
+      final suitabilityTimeline = await EphemerisManager.jyotish
+          .scanMuhurtaSuitability(
+            startDateTime: start,
+            endDateTime: end,
+            location: location,
+            step: const Duration(minutes: 30),
+          );
+
+      final suitabilityTimelineSorted = List<MuhurtaScoreResult>.from(
+        suitabilityTimeline,
+      )..sort((a, b) => a.dateTime.compareTo(b.dateTime));
 
       setState(() {
         _muhurta = muhurta;
@@ -596,11 +598,14 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                   gridData: const FlGridData(show: false),
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (touchedSpot) => FluentTheme.of(context).scaffoldBackgroundColor,
+                      getTooltipColor: (touchedSpot) =>
+                          FluentTheme.of(context).scaffoldBackgroundColor,
                       getTooltipItems: (touchedSpots) {
                         return touchedSpots.map((spot) {
                           final res = _suitabilityTimeline[spot.spotIndex];
-                          final formattedTime = AppFormatters.formatTime(res.dateTime);
+                          final formattedTime = AppFormatters.formatTime(
+                            res.dateTime,
+                          );
                           return LineTooltipItem(
                             '$formattedTime\nScore: ${res.finalScore.toStringAsFixed(0)}%\n'
                             'Tithi: ${res.tithiScore.toStringAsFixed(0)}\n'
@@ -608,22 +613,33 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                             'Nak: ${res.nakshatraScore.toStringAsFixed(0)}\n'
                             'Yoga: ${res.yogaScore.toStringAsFixed(0)}\n'
                             'Karana: ${res.karanaScore.toStringAsFixed(0)}',
-                            TextStyle(color: FluentTheme.of(context).typography.body?.color),
+                            TextStyle(
+                              color: FluentTheme.of(
+                                context,
+                              ).typography.body?.color,
+                            ),
                           );
                         }).toList();
                       },
                     ),
                   ),
                   titlesData: FlTitlesData(
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 32,
                         getTitlesWidget: (val, meta) => Text(
                           '${val.toInt()}%',
-                          style: const TextStyle(fontSize: 10, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ),
@@ -632,11 +648,19 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                         showTitles: true,
                         reservedSize: 22,
                         getTitlesWidget: (val, meta) {
-                          final dt = start.add(Duration(minutes: (val * 60).toInt()));
+                          final dt = start.add(
+                            Duration(minutes: (val * 60).toInt()),
+                          );
                           final hourStr = dt.hour.toString().padLeft(2, '0');
                           final minStr = dt.minute.toString().padLeft(2, '0');
                           if (val % 4 == 0) {
-                            return Text('$hourStr:$minStr', style: const TextStyle(fontSize: 10, color: Colors.grey));
+                            return Text(
+                              '$hourStr:$minStr',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey,
+                              ),
+                            );
                           }
                           return const SizedBox.shrink();
                         },
@@ -654,7 +678,9 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
                       dotData: const FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: FluentTheme.of(context).accentColor.withValues(alpha: 0.15),
+                        color: FluentTheme.of(
+                          context,
+                        ).accentColor.withValues(alpha: 0.15),
                       ),
                     ),
                   ],

@@ -133,18 +133,33 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Original Birth Time', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            const Text(
+                              'Original Birth Time',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               '${AppFormatters.formatDate(originalData.dateTime)} ${AppFormatters.formatTimeWithSeconds(originalData.dateTime)}',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Text('Rectified Birth Time', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            const Text(
+                              'Rectified Birth Time',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               '${AppFormatters.formatDate(adjustedTime)} ${AppFormatters.formatTimeWithSeconds(adjustedTime)}',
@@ -160,7 +175,10 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                     ),
                     const SizedBox(height: 20),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: _adjustment.isNegative
                             ? Colors.red.withOpacity(0.08)
@@ -175,7 +193,9 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                       child: Text(
                         'Total Shift: ${_adjustment.inMinutes}m ${_adjustment.inSeconds % 60}s (${_adjustment.inSeconds} seconds)',
                         style: TextStyle(
-                          color: _adjustment.isNegative ? Colors.red : Colors.green,
+                          color: _adjustment.isNegative
+                              ? Colors.red
+                              : Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -184,14 +204,20 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                     // Scrubber Slider
                     Row(
                       children: [
-                        const Text('-30m', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        const Text(
+                          '-30m',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Slider(
                               min: -1800,
                               max: 1800,
-                              value: _adjustment.inSeconds.toDouble().clamp(-1800.0, 1800.0),
+                              value: _adjustment.inSeconds.toDouble().clamp(
+                                -1800.0,
+                                1800.0,
+                              ),
                               onChanged: (val) {
                                 setState(() {
                                   _adjustment = Duration(seconds: val.toInt());
@@ -203,7 +229,10 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                             ),
                           ),
                         ),
-                        const Text('+30m', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        const Text(
+                          '+30m',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -213,17 +242,54 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _buildControlButton('-5m', const Duration(minutes: -5), isNegative: true),
-                        _buildControlButton('-1m', const Duration(minutes: -1), isNegative: true),
-                        _buildControlButton('-10s', const Duration(seconds: -10), isNegative: true),
-                        _buildControlButton('-1s', const Duration(seconds: -1), isNegative: true),
+                        _buildControlButton(
+                          '-5m',
+                          const Duration(minutes: -5),
+                          isNegative: true,
+                        ),
+                        _buildControlButton(
+                          '-1m',
+                          const Duration(minutes: -1),
+                          isNegative: true,
+                        ),
+                        _buildControlButton(
+                          '-10s',
+                          const Duration(seconds: -10),
+                          isNegative: true,
+                        ),
+                        _buildControlButton(
+                          '-1s',
+                          const Duration(seconds: -1),
+                          isNegative: true,
+                        ),
                         const SizedBox(width: 16),
-                        _buildControlButton('Reset', Duration.zero, isNegative: false, isReset: true),
+                        _buildControlButton(
+                          'Reset',
+                          Duration.zero,
+                          isNegative: false,
+                          isReset: true,
+                        ),
                         const SizedBox(width: 16),
-                        _buildControlButton('+1s', const Duration(seconds: 1), isNegative: false),
-                        _buildControlButton('+10s', const Duration(seconds: 10), isNegative: false),
-                        _buildControlButton('+1m', const Duration(minutes: 1), isNegative: false),
-                        _buildControlButton('+5m', const Duration(minutes: 5), isNegative: false),
+                        _buildControlButton(
+                          '+1s',
+                          const Duration(seconds: 1),
+                          isNegative: false,
+                        ),
+                        _buildControlButton(
+                          '+10s',
+                          const Duration(seconds: 10),
+                          isNegative: false,
+                        ),
+                        _buildControlButton(
+                          '+1m',
+                          const Duration(minutes: 1),
+                          isNegative: false,
+                        ),
+                        _buildControlButton(
+                          '+5m',
+                          const Duration(minutes: 5),
+                          isNegative: false,
+                        ),
                       ],
                     ),
                   ],
@@ -240,7 +306,9 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                 ),
               )
             else if (_currentData == null)
-              const Center(child: Text('No data loaded. Use the slider to begin.'))
+              const Center(
+                child: Text('No data loaded. Use the slider to begin.'),
+              )
             else ...[
               // Grid for Side-by-side Charts / Boundaries and Dashas
               LayoutBuilder(
@@ -284,7 +352,10 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
                         ],
                       ),
                     ),
-                    if (useHorizontal) const SizedBox(width: 16) else const SizedBox(height: 24),
+                    if (useHorizontal)
+                      const SizedBox(width: 16)
+                    else
+                      const SizedBox(height: 24),
                     Expanded(
                       flex: useHorizontal ? 2 : 0,
                       child: Column(
@@ -360,10 +431,7 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
         },
         child: Text(
           label,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -405,16 +473,28 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(varga, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(
+                    varga,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(boundary, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text(
+                    boundary,
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Text('Lagna Sign / Degree', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                const Text(
+                  'Lagna Sign / Degree',
+                  style: TextStyle(fontSize: 10, color: Colors.grey),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   ascendant,
@@ -439,7 +519,10 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Key Planetary Signs', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Key Planetary Signs',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
             _buildKeyRow('Moon Sign', _currentData!.moonSign),
             const Divider(
@@ -459,7 +542,10 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
       ],
     );
   }
@@ -484,35 +570,61 @@ class _BirthTimeRectifierScreenState extends State<BirthTimeRectifierScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Current Vimshottari Dasha', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Current Vimshottari Dasha',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
-            _buildDashaRow('Mahadasha', dashas['mahadasha'] as String, dashas['mahaStart'] as DateTime, dashas['mahaEnd'] as DateTime),
+            _buildDashaRow(
+              'Mahadasha',
+              dashas['mahadasha'] as String,
+              dashas['mahaStart'] as DateTime,
+              dashas['mahaEnd'] as DateTime,
+            ),
             const Divider(
               style: DividerThemeData(
                 verticalMargin: EdgeInsets.symmetric(vertical: 8.0),
               ),
             ),
-            _buildDashaRow('Antardasha', dashas['antardasha'] as String, dashas['antarStart'] as DateTime, dashas['antarEnd'] as DateTime),
+            _buildDashaRow(
+              'Antardasha',
+              dashas['antardasha'] as String,
+              dashas['antarStart'] as DateTime,
+              dashas['antarEnd'] as DateTime,
+            ),
             const Divider(
               style: DividerThemeData(
                 verticalMargin: EdgeInsets.symmetric(vertical: 8.0),
               ),
             ),
-            _buildDashaRow('Pratyantardasha', dashas['pratyantardasha'] as String, dashas['pratyanStart'] as DateTime, dashas['pratyanEnd'] as DateTime),
+            _buildDashaRow(
+              'Pratyantardasha',
+              dashas['pratyantardasha'] as String,
+              dashas['pratyanStart'] as DateTime,
+              dashas['pratyanEnd'] as DateTime,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDashaRow(String label, String lord, DateTime start, DateTime end) {
+  Widget _buildDashaRow(
+    String label,
+    String lord,
+    DateTime start,
+    DateTime end,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
+            ),
             Text(
               lord,
               style: TextStyle(

@@ -13,7 +13,9 @@ class JaiminiAnalysisService {
     final arudhaLagna = getArudhaLagna(chartData);
     final upapada = getUpapada(chartData);
     final allArgalas = getAllArgalas(chartData);
-    final charaKarakas = EphemerisManager.jyotish.getCharaKarakas(chartData.baseChart);
+    final charaKarakas = EphemerisManager.jyotish.getCharaKarakas(
+      chartData.baseChart,
+    );
 
     return JaiminiAnalysis(
       atmakaraka: atmakaraka,

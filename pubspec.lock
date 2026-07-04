@@ -619,7 +619,7 @@ packages:
       path: "packages/jyotish"
       relative: true
     source: path
-    version: "2.16.0"
+    version: "2.15.0"
   lat_lng_to_timezone:
     dependency: "direct main"
     description:

@@ -137,11 +137,18 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
   Widget _buildCurrentTransitsTab() {
     final transit = _transitChart!;
     final settingsState = ref.watch(settingsProvider).value;
-    final chartStyle = settingsState?.chartSettings.chartStyle ?? ChartStyle.northIndian;
-    
-    final natalPlanetsMap = ChartHelpers.getPlanetsMap(widget.natalChart.baseChart);
-    final transitPlanetsMap = ChartHelpers.getPlanetsMap(transit.transitPositions);
-    final ascSign = ChartHelpers.getAscendantSignInt(widget.natalChart.baseChart);
+    final chartStyle =
+        settingsState?.chartSettings.chartStyle ?? ChartStyle.northIndian;
+
+    final natalPlanetsMap = ChartHelpers.getPlanetsMap(
+      widget.natalChart.baseChart,
+    );
+    final transitPlanetsMap = ChartHelpers.getPlanetsMap(
+      transit.transitPositions,
+    );
+    final ascSign = ChartHelpers.getAscendantSignInt(
+      widget.natalChart.baseChart,
+    );
     final chartSize = ResponsiveHelper.getChartSize(context);
 
     return ListView(
@@ -253,21 +260,33 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
             // Slider to scrub days within a +/- 1 year range
             Row(
               children: [
-                const Text('-1 Year', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text(
+                  '-1 Year',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
                 Expanded(
                   child: Slider(
-                    value: _selectedDate.difference(DateTime.now()).inDays.toDouble().clamp(-365.0, 365.0),
+                    value: _selectedDate
+                        .difference(DateTime.now())
+                        .inDays
+                        .toDouble()
+                        .clamp(-365.0, 365.0),
                     min: -365.0,
                     max: 365.0,
                     onChanged: (val) {
                       setState(() {
-                        _selectedDate = DateTime.now().add(Duration(days: val.round()));
+                        _selectedDate = DateTime.now().add(
+                          Duration(days: val.round()),
+                        );
                       });
                       _loadTransits();
                     },
                   ),
                 ),
-                const Text('+1 Year', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text(
+                  '+1 Year',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -306,10 +325,7 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
   Widget _jumpButton(String label, VoidCallback onPressed) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Button(
-        onPressed: onPressed,
-        child: Text(label),
-      ),
+      child: Button(onPressed: onPressed, child: Text(label)),
     );
   }
 
@@ -318,10 +334,22 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
       var newDate = _selectedDate;
       if (days != 0) newDate = newDate.add(Duration(days: days));
       if (months != 0) {
-        newDate = DateTime(newDate.year, newDate.month + months, newDate.day, newDate.hour, newDate.minute);
+        newDate = DateTime(
+          newDate.year,
+          newDate.month + months,
+          newDate.day,
+          newDate.hour,
+          newDate.minute,
+        );
       }
       if (years != 0) {
-        newDate = DateTime(newDate.year + years, newDate.month, newDate.day, newDate.hour, newDate.minute);
+        newDate = DateTime(
+          newDate.year + years,
+          newDate.month,
+          newDate.day,
+          newDate.hour,
+          newDate.minute,
+        );
       }
       _selectedDate = newDate;
     });

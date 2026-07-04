@@ -108,8 +108,12 @@ class _PDFReportScreenState extends ConsumerState<PDFReportScreen> {
         final settings = ref.read(settingsProvider).value?.chartSettings;
         if (settings != null) {
           setState(() {
-            _primaryColor = _parseHexColor(settings.brandPrimaryColorHex) ?? const Color(0xFF1A237E);
-            _accentColor = _parseHexColor(settings.brandAccentColorHex) ?? const Color(0xFFB8860B);
+            _primaryColor =
+                _parseHexColor(settings.brandPrimaryColorHex) ??
+                const Color(0xFF1A237E);
+            _accentColor =
+                _parseHexColor(settings.brandAccentColorHex) ??
+                const Color(0xFFB8860B);
             _primaryColorController.text = settings.brandPrimaryColorHex;
             _accentColorController.text = settings.brandAccentColorHex;
 

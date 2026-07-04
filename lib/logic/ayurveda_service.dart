@@ -185,7 +185,8 @@ class AyurvedaService {
 
     if (diffVP < 5 && diffPK < 5 && diffKV < 5) {
       dominant = 'Tridoshic (Sama)';
-      description = 'All three doshas—Vata, Pitta, and Kapha—are in near-equal proportion. This is a rare and highly balanced constitution, indicating robust health, resilience, and adaptability. Maintaining this balance requires a moderate, seasonal lifestyle.';
+      description =
+          'All three doshas—Vata, Pitta, and Kapha—are in near-equal proportion. This is a rare and highly balanced constitution, indicating robust health, resilience, and adaptability. Maintaining this balance requires a moderate, seasonal lifestyle.';
       dietary = [
         'Eat a fresh, diverse diet containing all six tastes (sweet, sour, salty, bitter, pungent, astringent) in moderation.',
         'Adjust your diet according to seasonal changes (cooling foods in summer, warming in winter).',
@@ -198,7 +199,11 @@ class AyurvedaService {
         'Engage in regular meditation or breathing exercises (Pranayama) to maintain mental clarity.',
         'Perform light body oiling (Abhyanga) seasonally.',
       ];
-      herbs = ['Triphala (for digestive balance)', 'Amalaki (for overall rejuvenation)', 'Tulsi (for immunity)'];
+      herbs = [
+        'Triphala (for digestive balance)',
+        'Amalaki (for overall rejuvenation)',
+        'Tulsi (for immunity)',
+      ];
       avoided = [
         'Avoid extreme eating habits, such as overeating or fasting excessively.',
         'Limit highly processed, chemically preserved, or stale foods.',
@@ -219,7 +224,8 @@ class AyurvedaService {
         dominant = '$first-$second';
         if (dominant == 'Vata-Pitta' || dominant == 'Pitta-Vata') {
           dominant = 'Vata-Pitta';
-          description = 'A combination of the Air/Ether (Vata) and Fire (Pitta) elements. You possess the creativity, quick intellect, and enthusiasm of Vata combined with the focus, drive, and digestion of Pitta. You may fluctuate between feeling chilled/light and hot/irritable, requiring grounding and cooling practices.';
+          description =
+              'A combination of the Air/Ether (Vata) and Fire (Pitta) elements. You possess the creativity, quick intellect, and enthusiasm of Vata combined with the focus, drive, and digestion of Pitta. You may fluctuate between feeling chilled/light and hot/irritable, requiring grounding and cooling practices.';
           dietary = [
             'Favor warm, moist, grounding foods that are cooling in thermal nature (e.g., sweet fruits, cooked rice, oats, mung dhal).',
             'Incorporate sweet, bitter, and astringent tastes.',
@@ -232,7 +238,11 @@ class AyurvedaService {
             'Massage the body with coconut oil in summer (cooling) and sesame oil in winter (grounding).',
             'Set aside time for daily meditation and deep relaxation to soothe the nervous system.',
           ];
-          herbs = ['Shatavari (cooling and nourishing)', 'Ashwagandha (grounding and strengthening)', 'Fennel seed tea'];
+          herbs = [
+            'Shatavari (cooling and nourishing)',
+            'Ashwagandha (grounding and strengthening)',
+            'Fennel seed tea',
+          ];
           avoided = [
             'Avoid highly spicy, dry, fried, and carbonated foods.',
             'Limit caffeine, alcohol, and tobacco, which aggravate both Vata and Pitta.',
@@ -240,7 +250,8 @@ class AyurvedaService {
           ];
         } else if (dominant == 'Pitta-Kapha' || dominant == 'Kapha-Pitta') {
           dominant = 'Pitta-Kapha';
-          description = 'A combination of the Fire (Pitta) and Water/Earth (Kapha) elements. You have the leadership, clarity, and energy of Pitta coupled with the physical strength, stability, and calm demeanor of Kapha. You generally have a strong constitution but can accumulate heat or congestion if out of balance.';
+          description =
+              'A combination of the Fire (Pitta) and Water/Earth (Kapha) elements. You have the leadership, clarity, and energy of Pitta coupled with the physical strength, stability, and calm demeanor of Kapha. You generally have a strong constitution but can accumulate heat or congestion if out of balance.';
           dietary = [
             'Favor light, warm, and moderately spiced foods (e.g., cooked vegetables, quinoa, lentils).',
             'Emphasize bitter, astringent, and mildly pungent tastes.',
@@ -253,7 +264,11 @@ class AyurvedaService {
             'Practice dry massage (Udvartana) or use light oils like sunflower oil for massage.',
             'Keep your living space clean, dry, and well-ventilated.',
           ];
-          herbs = ['Guduchi (clearing and immunity-boosting)', 'Turmeric (anti-inflammatory)', 'Triphala'];
+          herbs = [
+            'Guduchi (clearing and immunity-boosting)',
+            'Turmeric (anti-inflammatory)',
+            'Triphala',
+          ];
           avoided = [
             'Avoid extremely oily, heavy, fried, and salty foods.',
             'Limit heavy dairy products (cheese, ice cream) and refined sugars.',
@@ -261,7 +276,8 @@ class AyurvedaService {
           ];
         } else {
           dominant = 'Kapha-Vata';
-          description = 'A combination of the Water/Earth (Kapha) and Air/Ether (Vata) elements. This is a contrast of qualities (heavy/stable Kapha vs. light/mobile Vata). You are stable and patient, yet possess a quick, creative mind. Your primary challenge is keeping warm, as both Vata and Kapha are cold doshas.';
+          description =
+              'A combination of the Water/Earth (Kapha) and Air/Ether (Vata) elements. This is a contrast of qualities (heavy/stable Kapha vs. light/mobile Vata). You are stable and patient, yet possess a quick, creative mind. Your primary challenge is keeping warm, as both Vata and Kapha are cold doshas.';
           dietary = [
             'Favor warm, cooked, light, and easily digestible meals (e.g., hot soups, warm spiced grains).',
             'Emphasize warm spices like ginger, black pepper, cinnamon, and cumin to stimulate digestion.',
@@ -274,7 +290,11 @@ class AyurvedaService {
             'Perform warm oil massage (Abhyanga) using warm sesame or mustard oil.',
             'Maintain a regular schedule while introducing healthy stimulation and variety.',
           ];
-          herbs = ['Ginger (warming and digestive)', 'Tulsi (respiratory and immune support)', 'Pippali'];
+          herbs = [
+            'Ginger (warming and digestive)',
+            'Tulsi (respiratory and immune support)',
+            'Pippali',
+          ];
           avoided = [
             'Avoid cold, frozen, raw, and dry foods (like salads, crackers, iced drinks).',
             'Limit heavy, sticky, sweet foods and excessive dairy.',
@@ -285,7 +305,8 @@ class AyurvedaService {
         // Single dominant dosha
         dominant = first;
         if (dominant == 'Vata') {
-          description = 'A constitution dominated by the Air and Ether elements. You are likely creative, enthusiastic, energetic, and thin-framed, with a quick mind. When out of balance, you may experience anxiety, dry skin, constipation, fatigue, insomnia, and irregular digestion. You need warmth, moisture, and a solid routine.';
+          description =
+              'A constitution dominated by the Air and Ether elements. You are likely creative, enthusiastic, energetic, and thin-framed, with a quick mind. When out of balance, you may experience anxiety, dry skin, constipation, fatigue, insomnia, and irregular digestion. You need warmth, moisture, and a solid routine.';
           dietary = [
             'Eat warm, cooked, moist, and grounding meals (soups, stews, casseroles, well-cooked grains).',
             'Incorporate healthy fats like ghee, sesame oil, and olive oil.',
@@ -298,14 +319,19 @@ class AyurvedaService {
             'Choose grounding, gentle exercises (restorative yoga, walking, Qi Gong).',
             'Stay warm and protect yourself from cold, dry, windy weather.',
           ];
-          herbs = ['Ashwagandha (strengthens nervous system)', 'Haritaki (aids elimination)', 'Ginger (stokes digestive fire)'];
+          herbs = [
+            'Ashwagandha (strengthens nervous system)',
+            'Haritaki (aids elimination)',
+            'Ginger (stokes digestive fire)',
+          ];
           avoided = [
             'Avoid raw vegetables, cold salads, dry crackers, and ice-cold drinks.',
             'Limit bitter, pungent, and astringent tastes.',
             'Avoid fasting, skipping meals, and over-exercising.',
           ];
         } else if (dominant == 'Pitta') {
-          description = 'A constitution dominated by the Fire and Water elements. You are likely focused, ambitious, intelligent, and medium-framed, with a strong digestion and body temperature. When out of balance, you may experience irritability, anger, inflammation, skin rashes, acid reflux, and loose stools. You need cooling, calming, and moderation.';
+          description =
+              'A constitution dominated by the Fire and Water elements. You are likely focused, ambitious, intelligent, and medium-framed, with a strong digestion and body temperature. When out of balance, you may experience irritability, anger, inflammation, skin rashes, acid reflux, and loose stools. You need cooling, calming, and moderation.';
           dietary = [
             'Eat cooling, refreshing, and moderately substantial foods (fresh sweet fruits, cucumbers, leafy greens, coconut).',
             'Emphasize sweet, bitter, and astringent tastes to pacify Pitta.',
@@ -318,14 +344,19 @@ class AyurvedaService {
             'Keep your mind calm; practice mindfulness, patience, and work-life balance.',
             'Use cooling oils like coconut or sunflower oil for self-massage.',
           ];
-          herbs = ['Amalaki (cools and detoxifies)', 'Shatavari (nourishing and cooling)', 'Neem (clears excess heat)'];
+          herbs = [
+            'Amalaki (cools and detoxifies)',
+            'Shatavari (nourishing and cooling)',
+            'Neem (clears excess heat)',
+          ];
           avoided = [
             'Avoid hot, spicy, pungent, sour, and salty foods (chilis, garlic, onions, vinegar, fermented foods).',
             'Limit fried, greasy, oily, and highly processed foods.',
             'Avoid overworking, skipping meals, and excessive competitiveness.',
           ];
         } else {
-          description = 'A constitution dominated by the Earth and Water elements. You are likely calm, loving, strong-framed, loyal, and steady, with excellent stamina. When out of balance, you may experience sluggishness, weight gain, congestion, lethargy, attachment, and slow digestion. You need warmth, dryness, activity, and stimulation.';
+          description =
+              'A constitution dominated by the Earth and Water elements. You are likely calm, loving, strong-framed, loyal, and steady, with excellent stamina. When out of balance, you may experience sluggishness, weight gain, congestion, lethargy, attachment, and slow digestion. You need warmth, dryness, activity, and stimulation.';
           dietary = [
             'Eat light, warm, dry, and spicy foods (quinoa, millets, beans, steamed vegetables).',
             'Emphasize pungent, bitter, and astringent tastes to balance Kapha.',
@@ -338,7 +369,11 @@ class AyurvedaService {
             'Seek variety, new challenges, and mental stimulation in your life.',
             'Perform dry skin brushing (Garshana) or massage with light warming oils like mustard oil.',
           ];
-          herbs = ['Trikatu (ginger, black pepper, long pepper)', 'Bibhitaki (cleanses Kapha)', 'Tulsi (warms and decongests)'];
+          herbs = [
+            'Trikatu (ginger, black pepper, long pepper)',
+            'Bibhitaki (cleanses Kapha)',
+            'Tulsi (warms and decongests)',
+          ];
           avoided = [
             'Avoid cold, heavy, sweet, sour, salty, and oily foods (refined sugar, dairy products, cold desserts).',
             'Limit deep-fried foods, red meat, and excess salt.',

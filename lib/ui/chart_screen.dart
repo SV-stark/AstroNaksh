@@ -23,6 +23,7 @@ import 'analysis/jaimini_screen.dart';
 import 'analysis/nadi_screen.dart';
 import 'analysis/planetary_maitri_screen.dart';
 import 'analysis/progeny_screen.dart';
+import 'analysis/remedies_screen.dart';
 import 'analysis/retrograde_screen.dart';
 import 'analysis/sudarshan_chakra_screen.dart';
 import 'analysis/yoga_dosha_screen.dart';
@@ -656,7 +657,11 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
       case 'pdf_report':
         screen = PDFReportScreen(chartData: chartData);
         break;
+      case 'remedies':
+        screen = RemediesScreen(chart: chartData.d1Chart);
+        break;
       default:
+
         return;
     }
 
@@ -955,6 +960,11 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                                       'Yoga & Dosha',
                                       'yoga_dosha',
                                       FluentIcons.scale_volume,
+                                    ),
+                                    _buildMobileAnalysisLink(
+                                      'Remedies & Gemstones',
+                                      'remedies',
+                                      FluentIcons.diamond,
                                     ),
                                     _buildMobileAnalysisLink(
                                       'Planetary Maitri',

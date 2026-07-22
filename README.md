@@ -64,6 +64,8 @@ Vedic Astrology, known as **Jyotish**, is one of the oldest astrological systems
 ### Core Functionality
 - ✨ **Accurate Chart Calculation**: Generate precise Vedic birth charts (Kundali) using Swiss Ephemeris data.
 - ⚡ **KP System**: Complete implementation of Krishnamurti Paddhati (249 sub-divisions, ABCD significators).
+- 🔮 **Interactive KP 1–249 Prashna Assistant**: Instant KP Horary query solver for 8 life categories (Job, Marriage, Health, Property, Finance, Education, Travel, Litigation) with verdict & timing guidance.
+- 💎 **Remedies & Gemstone Engine**: Automated Life Stone, 5th/9th Lord stones, Dusthana safety warnings, Beej Mantras, Rudraksha recommendations, and Charity items.
 - 📊 **Dasha Systems**: Vimshottari, Yogini, and Chara dasha calculations.
 - 🏠 **12 Houses & 27 Nakshatras**: Detailed analysis of house and lunar mansion influences.
 - 🎴 **Yoga & Dosha Detection**: Identify 100+ auspicious and challenging combinations.
@@ -74,6 +76,7 @@ Vedic Astrology, known as **Jyotish**, is one of the oldest astrological systems
 - 🏙️ **Cities**: 208,000+ global and Indian cities supported (fully offline-first via indexed SQLite search).
 - 📁 **Codebase**: ~20,000+ lines of Flutter/Dart.
 - 📊 **Charts**: 16 divisional charts (D1-D60 variations).
+
 
 ---
 

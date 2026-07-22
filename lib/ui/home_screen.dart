@@ -319,6 +319,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           },
                         ),
                         _buildQuickAction(
+                          icon: FluentIcons.action_center,
+                          title: 'KP 1-249 Prashna',
+                          subtitle: 'Instant Horary Assistant',
+                          color: Colors.deepPurple,
+                          onTap: () {
+                            context.push('/kp-prashna');
+                          },
+                        ),
+                        _buildQuickAction(
                           icon: FluentIcons.contrast,
                           title: 'Eclipse Prediction',
                           subtitle: 'Solar & lunar eclipses',
@@ -328,6 +337,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           },
                         ),
                       ],
+
                     ),
                   ],
                 ),

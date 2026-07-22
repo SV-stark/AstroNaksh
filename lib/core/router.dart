@@ -68,9 +68,10 @@ final router = GoRouter(
       path: '/kp-prashna',
       builder: (context, state) => KPPrashnaAssistantScreen(
         initialLocation: (state.extra as GeographicLocation?) ??
-            const GeographicLocation(latitude: 28.6139, longitude: 77.2090),
+            GeographicLocation(latitude: 28.6139, longitude: 77.2090),
       ),
     ),
+
   ],
 );
 

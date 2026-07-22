@@ -658,8 +658,9 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
         screen = PDFReportScreen(chartData: chartData);
         break;
       case 'remedies':
-        screen = RemediesScreen(chart: chartData.d1Chart);
+        screen = RemediesScreen(chart: chartData.baseChart);
         break;
+
       default:
 
         return;

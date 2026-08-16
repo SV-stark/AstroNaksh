@@ -14,6 +14,7 @@ import '../ui/settings_screen.dart';
 import '../ui/tools/ayanamsa_sandbox_screen.dart';
 import '../ui/tools/eclipse_calculations_screen.dart';
 import '../ui/tools/muhurta_finder_screen.dart';
+import '../ui/tools/sarvatobhadra_screen.dart';
 import '../ui/vedic_clock_screen.dart';
 
 final router = GoRouter(
@@ -71,7 +72,12 @@ final router = GoRouter(
             GeographicLocation(latitude: 28.6139, longitude: 77.2090),
       ),
     ),
-
+    GoRoute(
+      path: '/sarvatobhadra',
+      builder: (context, state) => SarvatobhadraScreen(
+        chartData: state.extra as CompleteChartData?,
+      ),
+    ),
   ],
 );
 

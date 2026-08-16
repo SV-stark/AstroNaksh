@@ -22,6 +22,7 @@ class PanchangResult {
     this.sunset,
     this.moonrise,
     this.moonset,
+    this.rituals,
   });
   final String date;
   final String tithi;
@@ -38,6 +39,7 @@ class PanchangResult {
   final String? sunset;
   final String? moonrise;
   final String? moonset;
+  final RitualElements? rituals;
 }
 
 class PanchangInauspicious {
@@ -179,6 +181,10 @@ class PanchangService {
     );
 
     final moon = chart.getPlanet(Planet.moon)!;
+    RitualElements? rituals;
+    try {
+      rituals = _jyotish.calculateRitualElements(panchanga: panchanga);
+    } catch (_) {}
 
     return PanchangResult(
       date: AppFormatters.formatDateTime(dateTime),
@@ -199,6 +205,7 @@ class PanchangService {
       sunset: ss != null ? AppFormatters.formatTime(ss.toLocal()) : '--:--',
       moonrise: mr != null ? AppFormatters.formatTime(mr.toLocal()) : '--:--',
       moonset: ms != null ? AppFormatters.formatTime(ms.toLocal()) : '--:--',
+      rituals: rituals,
     );
   }
 

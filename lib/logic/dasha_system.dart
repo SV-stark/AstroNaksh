@@ -6,6 +6,19 @@ import '../data/models.dart';
 /// Complete Dasha System Implementation
 /// Includes Vimshottari, Yogini, and Chara Dasha
 class DashaSystem {
+  /// Stream Vimshottari Dasha periods asynchronously on demand (lazy loading).
+  static Stream<DashaPeriod> streamVimshottariDasha({
+    required double moonLongitude,
+    required DateTime birthDateTime,
+    int maxLevel = 3,
+  }) {
+    return EphemerisManager.jyotish.systems.dasha.streamVimshottariDasha(
+      moonLongitude: moonLongitude,
+      birthDateTime: birthDateTime,
+      maxLevel: maxLevel,
+    );
+  }
+
   static Future<VimshottariDasha> calculateVimshottariDasha(
     VedicChart chart,
   ) async {

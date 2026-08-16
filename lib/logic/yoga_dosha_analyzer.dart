@@ -60,8 +60,9 @@ class YogaDoshaAnalyzer {
   /// Maps a [NatalYoga] (jyotish library) → [BhangaResult] (app model).
   static BhangaResult _natalYogaToBhanga(NatalYoga yoga) {
     final description = [
+      if (yoga.category.isNotEmpty) 'Category: ${yoga.category}',
       if (yoga.description.isNotEmpty) yoga.description,
-      if (yoga.benefits.isNotEmpty) yoga.benefits,
+      if (yoga.benefits.isNotEmpty) 'Benefits: ${yoga.benefits}',
     ].join('\n\n');
 
     return BhangaResult(
@@ -72,9 +73,9 @@ class YogaDoshaAnalyzer {
       cancellationReasons: yoga.explanation.isNotEmpty
           ? [yoga.explanation]
           : const [],
-      strength: 80.0,
+      strength: 85.0,
       status: yoga.isPresent ? 'Active' : 'Inactive',
-      manifestationPeriod: '',
+      manifestationPeriod: yoga.category,
       peakDashaLord: '',
     );
   }

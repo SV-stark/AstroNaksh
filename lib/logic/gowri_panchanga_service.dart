@@ -1,4 +1,6 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/muhurta.dart';
+
 import '../../data/models.dart';
 import '../core/ephemeris_manager.dart';
 

@@ -76,6 +76,17 @@ class PanchangElementsTab extends StatelessWidget {
           color: Colors.red,
           description: 'Day of the week ruled by a planet',
         ),
+        if (result!.rituals != null)
+          buildPanchangCard(
+            title: 'Ritual Readiness',
+            value: 'Homa: ${result!.rituals!.homahuti.description}',
+            subtitle:
+                'Agni: ${result!.rituals!.agnivasa} • Shiva: ${result!.rituals!.shivavasa}',
+            icon: FluentIcons.brightness,
+            color: Colors.magenta,
+            description:
+                'Kumbha Chakra: ${result!.rituals!.kumbhaChakra.description}',
+          ),
       ],
     );
   }

@@ -1,6 +1,7 @@
 import 'package:jyotish/jyotish.dart' hide CompoundRelationship;
 
 import '../core/astro_utils.dart';
+import '../core/ephemeris_manager.dart';
 import '../data/life_prediction_models.dart';
 import '../data/models.dart';
 import 'ashtakavarga.dart';
@@ -201,6 +202,38 @@ class LifePredictionService {
     final moonNakshatraPada = moonPlanetInfo?.position.nakshatraPada ?? 1;
     final moonNakshatraIndex = moonPlanetInfo?.position.nakshatraIndex ?? 0;
 
+    // 14. Event Timing Windows from Native Engine (NEW)
+    final eventTimingWindows = <LifeAspect, List<EventTimingWindow>>{};
+    for (final aspect in LifeAspect.values) {
+      final category = switch (aspect) {
+        LifeAspect.career => EventCategory.career,
+        LifeAspect.wealth => EventCategory.finance,
+        LifeAspect.romance => EventCategory.marriage,
+        LifeAspect.health => EventCategory.health,
+        LifeAspect.education => EventCategory.education,
+        LifeAspect.spirituality => EventCategory.spiritual,
+        _ => EventCategory.travel,
+      };
+      try {
+        final req = EventTimingRequest(
+          natalChart: chartData.baseChart,
+          startDate: DateTime.now(),
+          endDate: DateTime.now().add(const Duration(days: 365 * 2)),
+          location: GeographicLocation(
+            latitude: chartData.birthData.location.latitude,
+            longitude: chartData.birthData.location.longitude,
+            altitude: 0,
+          ),
+          eventType: category,
+        );
+        final windows =
+            await EphemerisManager.jyotish.findEventTimingWindows(req);
+        eventTimingWindows[aspect] = windows;
+      } catch (_) {
+        eventTimingWindows[aspect] = const [];
+      }
+    }
+
     // ── Build prediction context ──────────────────────────────────────
     final ctx = _PredictionContext(
       baseChart: chartData.baseChart,
@@ -227,6 +260,7 @@ class LifePredictionService {
       moonNakshatra: moonNakshatra,
       moonNakshatraPada: moonNakshatraPada,
       moonNakshatraIndex: moonNakshatraIndex,
+      eventTimingWindows: eventTimingWindows,
     );
 
     // ── Generate per-aspect predictions ──────────────────────────────
@@ -1256,6 +1290,29 @@ class LifePredictionService {
           'This indicates a relatively quiet, reflective period for these matters, allowing you to focus energy on other activated spheres of your life.',
         );
       }
+
+      final windows = ctx.eventTimingWindows[aspect] ?? [];
+      final topWindows = windows
+          .where(
+            (w) =>
+                w.quality == TimingQuality.veryFavorable ||
+                w.quality == TimingQuality.favorable,
+          )
+          .take(2);
+      if (topWindows.isNotEmpty) {
+        buffer.write(
+          '\n\n**High-Probability Timing Windows (Native Event Timing Engine):**\n',
+        );
+        for (final w in topWindows) {
+          final startStr = '${w.start.day}/${w.start.month}/${w.start.year}';
+          final endStr = '${w.end.day}/${w.end.month}/${w.end.year}';
+          final reasons =
+              w.reasons.isNotEmpty ? ' (${w.reasons.join("; ")})' : '';
+          buffer.write(
+            '- **$startStr to $endStr**: ${w.quality.name} — ${w.dashaContext}$reasons\n',
+          );
+        }
+      }
       buffer.write('\n\n');
     }
 
@@ -1984,6 +2041,7 @@ class _PredictionContext {
     required this.moonNakshatra,
     required this.moonNakshatraPada,
     required this.moonNakshatraIndex,
+    required this.eventTimingWindows,
   });
 
   final VedicChart baseChart;
@@ -2013,4 +2071,5 @@ class _PredictionContext {
   final String moonNakshatra;
   final int moonNakshatraPada;
   final int moonNakshatraIndex;
+  final Map<LifeAspect, List<EventTimingWindow>> eventTimingWindows;
 }

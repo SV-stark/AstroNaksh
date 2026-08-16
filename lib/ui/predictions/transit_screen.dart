@@ -453,6 +453,26 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
           ],
           transit.rahuKetuTransit.recommendations,
         ),
+
+        // Gochara Vedha (Classical Obstructions)
+        if (transit.vedha != null)
+          _buildSpecialTransitCard(
+            'Gochara Vedha (Transit Obstructions)',
+            FluentIcons.blocked,
+            Colors.red,
+            [
+              transit.vedha!.summary,
+              if (transit.vedha!.affectedTransits.isNotEmpty)
+                'Obstructed Planets: ${transit.vedha!.affectedTransits.map((p) => p.displayName).join(", ")}'
+              else
+                'All favorable transits operate unobstructed (No Vedha)',
+            ],
+            transit.vedha!.affectedTransits.isNotEmpty
+                ? [
+                    'Mitigate obstructed planet effects with relevant stotras and charities.'
+                  ]
+                : ['Current favorable planetary transits yield optimal results.'],
+          ),
       ],
     );
   }

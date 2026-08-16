@@ -54,6 +54,13 @@ class TransitAnalysis {
       natalChart,
       transitPositions,
     );
+    final natalMoonInfo = natalChart.baseChart.planets[j.Planet.moon];
+    final moonNakshatraIndex =
+        (natalMoonInfo?.position.nakshatraIndex ?? 0) + 1;
+    final vedha = analyzeVedha(
+      moonNakshatra: moonNakshatraIndex,
+      gocharaPositions: gochara.positions,
+    );
 
     return TransitChart(
       transitDate: transitDate,
@@ -65,6 +72,7 @@ class TransitAnalysis {
       saturnTransit: saturnTransit,
       jupiterTransit: jupiterTransit,
       rahuKetuTransit: rahuKetuTransit,
+      vedha: vedha,
     );
   }
 
@@ -548,6 +556,7 @@ class TransitChart {
     required this.saturnTransit,
     required this.jupiterTransit,
     required this.rahuKetuTransit,
+    this.vedha,
   });
   final DateTime transitDate;
   final CompleteChartData natalChart;
@@ -558,6 +567,7 @@ class TransitChart {
   final SaturnTransitAnalysis saturnTransit;
   final JupiterTransitAnalysis jupiterTransit;
   final RahuKetuTransitAnalysis rahuKetuTransit;
+  final VedhaAnalysis? vedha;
 
   String getSummary() {
     final buffer = StringBuffer();

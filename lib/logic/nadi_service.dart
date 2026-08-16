@@ -1,8 +1,12 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/jyotish.dart' hide NadiService;
+import 'package:jyotish/nadi.dart' as jn;
+
 import '../../data/models.dart';
 
 class NadiService {
-  /// Get Nadi analysis for a chart
+  final jn.NadiService _jyotishNadi = jn.NadiService();
+
+  /// Get comprehensive Nadi analysis for a chart (including 150 Nadi Amshas)
   NadiAnalysis analyzeNadi(CompleteChartData chartData) {
     final moon = chartData.baseChart.planets[Planet.moon];
     if (moon == null) {
@@ -18,13 +22,30 @@ class NadiService {
     final nadiType = _getNadiType(nakshatraIndex);
     final strength = _calculateNadiStrength(nakshatraIndex, chartData);
 
+    // Calculate full 150-amsha Nadi Chart from jyotish library
+    NadiChart? nadiChart;
+    try {
+      nadiChart = _jyotishNadi.calculateNadiChart(chartData.baseChart);
+    } catch (_) {}
+
     return NadiAnalysis(
       nadiType: nadiType,
       nakshatra: moon.position.nakshatra,
       pada: moon.position.nakshatraPada,
       strength: strength,
       description: _getNadiDescription(nadiType),
+      nadiChart: nadiChart,
     );
+  }
+
+  /// Get specific 150-amsha Nadi details for a zodiac longitude
+  NadiInfo getNadiAmsha(double longitude) {
+    return _jyotishNadi.getNadiFromLongitude(longitude);
+  }
+
+  /// Get Nadi karmic interpretation for a specific Nadi number (1-1800)
+  String getNadiInterpretation(int nadiNumber) {
+    return _jyotishNadi.getNadiInterpretation(nadiNumber);
   }
 
   String _getNadiType(int nakshatraIndex) {
@@ -41,17 +62,12 @@ class NadiService {
   int _calculateNadiStrength(int nakshatraIndex, CompleteChartData chartData) {
     var strength = 50;
 
-    // Check Moon's strength
     final moon = chartData.baseChart.planets[Planet.moon];
     if (moon != null) {
-      // Exalted Moon (in Taurus) = strong
       final signIndex = (moon.position.longitude / 30).floor();
       if (signIndex == 1) strength += 20; // Exalted
       if (signIndex == 7) strength -= 20; // Debilitated
     }
-
-    // Check aspects on Moon
-    // This is simplified - library would do more detailed analysis
 
     return strength.clamp(0, 100);
   }
@@ -77,10 +93,12 @@ class NadiAnalysis {
     required this.pada,
     required this.strength,
     required this.description,
+    this.nadiChart,
   });
   final String nadiType;
   final String? nakshatra;
   final int pada;
   final int strength;
   final String description;
+  final NadiChart? nadiChart;
 }

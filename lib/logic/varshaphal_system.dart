@@ -456,88 +456,16 @@ class VarshaphalSystem {
     String munthaLord,
     String yearLord,
   ) {
-    final yogas = <String>[];
-
-    // Key Interactions to check:
-    // 1. Lagna Lord <-> Year Lord (Varshesh) -> Success/Health
-    // 2. Lagna Lord <-> Muntha Lord -> Mental Peace/Progress
-    // 3. Muntha Lord <-> Year Lord -> Overall Year Quality
-
-    final pairs = [
-      {'p1': lagnaLord, 'p2': yearLord, 'label': 'Lagna Lord-Varshesh'},
-      {'p1': lagnaLord, 'p2': munthaLord, 'label': 'Lagna Lord-Munthesh'},
-      {'p1': munthaLord, 'p2': yearLord, 'label': 'Munthesh-Varshesh'},
-    ];
-
-    for (final pair in pairs) {
-      final p1Name = pair['p1']!;
-      final p2Name = pair['p2']!;
-
-      if (p1Name == p2Name) {
-        yogas.add('${pair['label']}: Same Planet (Strong Connection)');
-        continue;
-      }
-
-      final p1 = getPlanetFromString(p1Name);
-      final p2 = getPlanetFromString(p2Name);
-
-      final p1Long = getPlanetLongitude(chart, p1);
-      final p2Long = getPlanetLongitude(chart, p2);
-
-      // Check Aspect
-      // Tajik Aspects: 1/1, 3/11 (Sextile), 4/10 (Square), 5/9 (Trine), 7 (Opposition)
-      // Orbs are critical in Tajik (Depta/Deptamsa).
-      // Simplified here: 12 degree orb for general check
-
-      final aspects = checkTajikAspect(p1Long, p2Long);
-
-      if (aspects) {
-        // Determine applying (Ithasala) or separating (Easarapha)
-        // Faster planet must be behind Slower planet for Ithasala
-        // Speed: Moon > Mer > Ven > Sun > Mar > Jup > Sat
-
-        // Check if fast planet is "behind" slow planet (applying)
-        // e.g. Fast at 10, Slow at 20 -> Applying
-        // e.g. Fast at 25, Slow at 20 -> Separating
-        // Need to account for Aspect geometry, but simplified:
-        // If Fast is approaching the exact aspect degree -> Ithasala
-        // If Fast has passed the exact aspect degree -> Easarapha
-
-        // Let's look at the difference
-
-        // Logic: If (Slow - Fast) is positive and < Orb -> Applies to Conj
-        // Similar for other aspects.
-        // We can simplify: Calculate 'orb' distance.
-        // If Fast is Earlier in zodiac (allowing for wrap) relative to specific aspect point.
-
-        // Simple Heuristic for now:
-        // If Fast planet degree < Slow planet degree (within sign or normalized)?
-        // No, calculate distance to next exact aspect.
-
-        // Let's just say:
-        // If diff between 0-ORB, or 60-ORB... -> Easarapha (Valid aspect but passed?)
-        // Wait, if Fast is 20, Slow is 25. Fast is chasing Slow. Applying.
-        // If Fast is 25, Slow is 20. Fast has passed Slow. Separating.
-
-        // So if (Slow - Fast) > 0 (normalized for aspect)?
-
-        // Let's stick to Conjunction logic proxy for all aspects for simplicity in this step,
-        // or just mark "Ithasala" if fast is 'behind'.
-        // Ideally we check if (SlowLong - FastLong) % 360 is in [0, Orb], [60, 60+Orb], etc. -> Applying
-
-        // For now, I will use a generic label based on generic 'behind' logic
-        // This is a placeholder for RIGOROUS degrees, but better than static list.
-
-        yogas.add(
-          'Ithasala (${pair['label']})',
-        ); // Optimistic default for aspect match
-      } else {
-        // No aspect
-      }
+    final tajakaService = EphemerisManager.jyotish.systems.tajaka;
+    final enhancements = tajakaService.calculateTajakaEnhancements(
+      natalChart: chart,
+      annualChart: chart,
+      age: 0,
+    );
+    final yogas = enhancements.yogas.map((y) => y.interpretation).toList();
+    if (yogas.isEmpty) {
+      yogas.add('No major Tajik Yogas active');
     }
-
-    if (yogas.isEmpty) yogas.add('No major Tajik Yogas active');
-
     return yogas;
   }
 

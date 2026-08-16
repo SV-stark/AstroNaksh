@@ -4,7 +4,6 @@ import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/astronomy/planet_position.dart';
 import 'package:jyotish/src/models/vedic_chart.dart';
 import 'package:jyotish/src/systems/jaimini_service.dart';
-import 'package:dartx/dartx.dart';
 
 /// Service for calculating Vedic planetary aspects (Graha Drishti).
 ///
@@ -91,14 +90,13 @@ class AspectService {
     }
 
     // Remove duplicate aspects and filter by minimum strength
-    return aspects
-        .filter((a) => a.strength >= config.minimumStrength)
-        .distinctBy((a) {
+    final seen = <String>{};
+    return aspects.where((a) => a.strength >= config.minimumStrength).where((a) {
       // Sort planets to handle bidirectional duplicates
       final p1 = a.aspectingPlanet.index;
       final p2 = a.aspectedPlanet.index;
       final sortedPlanets = p1 < p2 ? '$p1-$p2' : '$p2-$p1';
-      return '$sortedPlanets-${a.type}';
+      return seen.add('$sortedPlanets-${a.type}');
     }).toList();
   }
 

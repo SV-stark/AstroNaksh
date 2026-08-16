@@ -760,7 +760,7 @@ class EphemerisService {
           type == EclipseType.lunarTotal ||
           type == EclipseType.lunarPartial ||
           type == EclipseType.lunarPenumbral) {
-        return _getDetailedLunarEclipse(time, location);
+        return await _getDetailedLunarEclipse(time, location);
       }
 
       // For Solar Eclipses, use the local Swiss Ephemeris built-in functions
@@ -768,7 +768,7 @@ class EphemerisService {
           type == EclipseType.solarTotal ||
           type == EclipseType.solarPartial ||
           type == EclipseType.solarAnnular) {
-        return _getDetailedSolarEclipse(time, location);
+        return await _getDetailedSolarEclipse(time, location);
       }
 
       return null;

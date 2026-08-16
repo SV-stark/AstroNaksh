@@ -47,10 +47,10 @@ class _KPTabState extends State<KPTab> {
 
   Widget _buildKPAnalyzerCard(BuildContext context) {
     // Evaluation data matching selected query
-    int primeCusp = 10;
-    List<int> positiveHouses = [2, 6, 10, 11];
-    List<int> negativeHouses = [5, 8, 12];
-    String primeDesc = 'Career (10th Cusp)';
+    var primeCusp = 10;
+    var positiveHouses = <int>[2, 6, 10, 11];
+    var negativeHouses = <int>[5, 8, 12];
+    var primeDesc = 'Career (10th Cusp)';
 
     if (_selectedQuery == 'Marriage') {
       primeCusp = 7;
@@ -70,7 +70,7 @@ class _KPTabState extends State<KPTab> {
     }
 
     // Get prime cusp sublord
-    String primeSubLord = 'N/A';
+    var primeSubLord = 'N/A';
     if (widget.data.kpData.cuspSubLords.length >= primeCusp) {
       primeSubLord = widget.data.kpData.cuspSubLords[primeCusp - 1];
     }
@@ -85,7 +85,7 @@ class _KPTabState extends State<KPTab> {
         .where((h) => positiveHouses.contains(h))
         .toList();
 
-    bool isPrimeFavorable = matchingPositive.isNotEmpty;
+    final isPrimeFavorable = matchingPositive.isNotEmpty;
 
     return Card(
       child: Padding(
@@ -136,13 +136,13 @@ class _KPTabState extends State<KPTab> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isPrimeFavorable
-                    ? Colors.green.withOpacity(0.06)
-                    : Colors.orange.withOpacity(0.06),
+                    ? Colors.green.withValues(alpha: 0.06)
+                    : Colors.orange.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: isPrimeFavorable
-                      ? Colors.green.withOpacity(0.3)
-                      : Colors.orange.withOpacity(0.3),
+                      ? Colors.green.withValues(alpha: 0.3)
+                      : Colors.orange.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(

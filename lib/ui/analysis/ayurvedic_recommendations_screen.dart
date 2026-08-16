@@ -214,11 +214,11 @@ class _AyurvedicRecommendationsScreenState
 
             // Recommendations Tabs
             Expander(
-              header: Row(
+              header: const Row(
                 children: [
-                  const Icon(FluentIcons.eat_drink, color: Color(0xFF4CAF50)),
-                  const SizedBox(width: 12),
-                  const Text(
+                  Icon(FluentIcons.eat_drink, color: Color(0xFF4CAF50)),
+                  SizedBox(width: 12),
+                  Text(
                     'Dietary Guidelines (Favor)',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -232,11 +232,11 @@ class _AyurvedicRecommendationsScreenState
             const SizedBox(height: 12),
 
             Expander(
-              header: Row(
+              header: const Row(
                 children: [
-                  Icon(FluentIcons.blocked2, color: const Color(0xFFF44336)),
-                  const SizedBox(width: 12),
-                  const Text(
+                  Icon(FluentIcons.blocked2, color: Color(0xFFF44336)),
+                  SizedBox(width: 12),
+                  Text(
                     'Foods to Avoid / Limit',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -250,11 +250,11 @@ class _AyurvedicRecommendationsScreenState
             const SizedBox(height: 12),
 
             Expander(
-              header: Row(
+              header: const Row(
                 children: [
-                  Icon(FluentIcons.calendar, color: const Color(0xFF2196F3)),
-                  const SizedBox(width: 12),
-                  const Text(
+                  Icon(FluentIcons.calendar, color: Color(0xFF2196F3)),
+                  SizedBox(width: 12),
+                  Text(
                     'Lifestyle & Daily Routine',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -268,11 +268,11 @@ class _AyurvedicRecommendationsScreenState
             const SizedBox(height: 12),
 
             Expander(
-              header: Row(
+              header: const Row(
                 children: [
-                  const Icon(FluentIcons.flower, color: AppStyles.primaryColor),
-                  const SizedBox(width: 12),
-                  const Text(
+                  Icon(FluentIcons.flower, color: AppStyles.primaryColor),
+                  SizedBox(width: 12),
+                  Text(
                     'Recommended Herbs & Remedies',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),

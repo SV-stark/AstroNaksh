@@ -6,9 +6,9 @@ import '../../data/models.dart';
 import '../../logic/remedies_service.dart';
 
 class RemediesScreen extends StatefulWidget {
-  final VedicChart chart;
 
   const RemediesScreen({super.key, required this.chart});
+  final VedicChart chart;
 
   @override
   State<RemediesScreen> createState() => _RemediesScreenState();

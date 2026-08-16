@@ -179,7 +179,7 @@ class KPChartService {
     }
 
     final cuspSubLords = <String>[];
-    for (int i = 1; i <= 12; i++) {
+    for (var i = 1; i <= 12; i++) {
       final houseDiv = nativeKPData.houseDivisions[i];
       if (houseDiv != null) {
         cuspSubLords.add(houseDiv.subLord.displayName);

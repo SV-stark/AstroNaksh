@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -1168,26 +1169,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           final backupService = ref.read(backupServiceProvider);
                           await backupService.backupLocal(result);
                           if (mounted) {
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Backup Successful'),
-                                content: Text('Database exported to: $result'),
-                                severity: InfoBarSeverity.success,
-                                onClose: close,
+                            unawaited(
+                              displayInfoBar(
+                                context,
+                                builder: (context, close) => InfoBar(
+                                  title: const Text('Backup Successful'),
+                                  content: Text('Database exported to: $result'),
+                                  severity: InfoBarSeverity.success,
+                                  onClose: close,
+                                ),
                               ),
                             );
                           }
                         }
                       } catch (e) {
                         if (mounted) {
-                          displayInfoBar(
-                            context,
-                            builder: (context, close) => InfoBar(
-                              title: const Text('Backup Failed'),
-                              content: Text('Error: $e'),
-                              severity: InfoBarSeverity.error,
-                              onClose: close,
+                          unawaited(
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Backup Failed'),
+                                content: Text('Error: $e'),
+                                severity: InfoBarSeverity.error,
+                                onClose: close,
+                              ),
                             ),
                           );
                         }
@@ -1216,6 +1221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           final sourcePath = result.files.single.path!;
                           final backupService = ref.read(backupServiceProvider);
 
+                          if (!mounted) return;
                           // Show a warning/confirmation dialog
                           final confirm = await showDialog<bool>(
                             context: context,
@@ -1241,15 +1247,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           if (confirm == true) {
                             await backupService.restoreLocal(sourcePath);
                             if (mounted) {
-                              displayInfoBar(
-                                context,
-                                builder: (context, close) => InfoBar(
-                                  title: const Text('Database Restored'),
-                                  content: const Text(
-                                    'Charts database has been successfully restored.',
+                              unawaited(
+                                displayInfoBar(
+                                  context,
+                                  builder: (context, close) => InfoBar(
+                                    title: const Text('Database Restored'),
+                                    content: const Text(
+                                      'Charts database has been successfully restored.',
+                                    ),
+                                    severity: InfoBarSeverity.success,
+                                    onClose: close,
                                   ),
-                                  severity: InfoBarSeverity.success,
-                                  onClose: close,
                                 ),
                               );
                             }
@@ -1257,13 +1265,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       } catch (e) {
                         if (mounted) {
-                          displayInfoBar(
-                            context,
-                            builder: (context, close) => InfoBar(
-                              title: const Text('Restore Failed'),
-                              content: Text('Error: $e'),
-                              severity: InfoBarSeverity.error,
-                              onClose: close,
+                          unawaited(
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Restore Failed'),
+                                content: Text('Error: $e'),
+                                severity: InfoBarSeverity.error,
+                                onClose: close,
+                              ),
                             ),
                           );
                         }
@@ -1353,27 +1363,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           _settings.webdavPassword,
                         );
                         if (success && mounted) {
-                          displayInfoBar(
-                            context,
-                            builder: (context, close) => InfoBar(
-                              title: const Text('Connection Successful'),
-                              content: const Text(
-                                'Successfully connected to WebDAV server!',
+                          unawaited(
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Connection Successful'),
+                                content: const Text(
+                                  'Successfully connected to WebDAV server!',
+                                ),
+                                severity: InfoBarSeverity.success,
+                                onClose: close,
                               ),
-                              severity: InfoBarSeverity.success,
-                              onClose: close,
                             ),
                           );
                         }
                       } catch (e) {
                         if (mounted) {
-                          displayInfoBar(
-                            context,
-                            builder: (context, close) => InfoBar(
-                              title: const Text('Connection Failed'),
-                              content: Text('Error: $e'),
-                              severity: InfoBarSeverity.error,
-                              onClose: close,
+                          unawaited(
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Connection Failed'),
+                                content: Text('Error: $e'),
+                                severity: InfoBarSeverity.error,
+                                onClose: close,
+                              ),
                             ),
                           );
                         }
@@ -1399,27 +1413,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           _settings.webdavPassword,
                         );
                         if (mounted) {
-                          displayInfoBar(
-                            context,
-                            builder: (context, close) => InfoBar(
-                              title: const Text('Upload Complete'),
-                              content: const Text(
-                                'Database backup uploaded to WebDAV server!',
+                          unawaited(
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Upload Complete'),
+                                content: const Text(
+                                  'Database backup uploaded to WebDAV server!',
+                                ),
+                                severity: InfoBarSeverity.success,
+                                onClose: close,
                               ),
-                              severity: InfoBarSeverity.success,
-                              onClose: close,
                             ),
                           );
                         }
                       } catch (e) {
                         if (mounted) {
-                          displayInfoBar(
-                            context,
-                            builder: (context, close) => InfoBar(
-                              title: const Text('Upload Failed'),
-                              content: Text('Error: $e'),
-                              severity: InfoBarSeverity.error,
-                              onClose: close,
+                          unawaited(
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Upload Failed'),
+                                content: Text('Error: $e'),
+                                severity: InfoBarSeverity.error,
+                                onClose: close,
+                              ),
                             ),
                           );
                         }
@@ -1439,6 +1457,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onPressed: () async {
                       try {
                         // Confirm restore
+                        if (!mounted) return;
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) => ContentDialog(
@@ -1467,28 +1486,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             _settings.webdavPassword,
                           );
                           if (mounted) {
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Sync Complete'),
-                                content: const Text(
-                                  'Successfully restored database from cloud WebDAV backup!',
+                            unawaited(
+                              displayInfoBar(
+                                context,
+                                builder: (context, close) => InfoBar(
+                                  title: const Text('Sync Complete'),
+                                  content: const Text(
+                                    'Successfully restored database from cloud WebDAV backup!',
+                                  ),
+                                  severity: InfoBarSeverity.success,
+                                  onClose: close,
                                 ),
-                                severity: InfoBarSeverity.success,
-                                onClose: close,
                               ),
                             );
                           }
                         }
                       } catch (e) {
                         if (mounted) {
-                          displayInfoBar(
-                            context,
-                            builder: (context, close) => InfoBar(
-                              title: const Text('Restore Failed'),
-                              content: Text('Error: $e'),
-                              severity: InfoBarSeverity.error,
-                              onClose: close,
+                          unawaited(
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Restore Failed'),
+                                content: Text('Error: $e'),
+                                severity: InfoBarSeverity.error,
+                                onClose: close,
+                              ),
                             ),
                           );
                         }

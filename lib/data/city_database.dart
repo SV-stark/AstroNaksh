@@ -58,8 +58,8 @@ class CityDatabase {
       final userDir = await AppEnvironment.getUserDataDirectory();
       final dbFile = File(p.join(userDir.path, 'cities.db'));
 
-      bool copyNeeded = true;
-      if (await dbFile.exists()) {
+      var copyNeeded = true;
+      if (dbFile.existsSync()) {
         final prefs = await SharedPreferences.getInstance();
         final currentVer = prefs.getInt('cities_db_version') ?? 0;
         const expectedVer = 1;
@@ -188,8 +188,8 @@ class CityDatabase {
       return _fallbackCities.first;
     }
 
-    double boxSize = 1.0;
-    List<Map<String, dynamic>> maps = [];
+    var boxSize = 1.0;
+    var maps = <Map<String, dynamic>>[];
 
     try {
       while (maps.isEmpty && boxSize <= 180.0) {

@@ -1371,8 +1371,8 @@ class _AshtakavargaScreenState extends State<AshtakavargaScreen> {
                                   );
                                 }
                                 if (row == 2 && col == 2) {
-                                  int minVal = 999;
-                                  int maxVal = -999;
+                                  var minVal = 999;
+                                  var maxVal = -999;
                                   points.forEach((k, v) {
                                     if (v < minVal) minVal = v;
                                     if (v > maxVal) maxVal = v;

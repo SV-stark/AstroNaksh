@@ -62,7 +62,7 @@ class _EclipseCalculationsScreenState extends State<EclipseCalculationsScreen> {
           .predictEclipsesInYear(year: _selectedYear, location: location);
 
       // Filter by type if not "any"
-      List<EclipseData> filtered = yearEclipses;
+      var filtered = yearEclipses;
       if (_selectedType != EclipseType.any) {
         if (_selectedType == EclipseType.solar) {
           filtered = yearEclipses
@@ -169,40 +169,40 @@ class _EclipseCalculationsScreenState extends State<EclipseCalculationsScreen> {
                                 _calculateEclipses();
                               }
                             },
-                            items: [
-                              const ComboBoxItem(
+                            items: const [
+                              ComboBoxItem(
                                 value: EclipseType.any,
                                 child: Text('Any Eclipse'),
                               ),
-                              const ComboBoxItem(
+                              ComboBoxItem(
                                 value: EclipseType.solar,
                                 child: Text('All Solar'),
                               ),
-                              const ComboBoxItem(
+                              ComboBoxItem(
                                 value: EclipseType.lunar,
                                 child: Text('All Lunar'),
                               ),
-                              const ComboBoxItem(
+                              ComboBoxItem(
                                 value: EclipseType.solarTotal,
                                 child: Text('Solar Total'),
                               ),
-                              const ComboBoxItem(
+                              ComboBoxItem(
                                 value: EclipseType.solarPartial,
                                 child: Text('Solar Partial'),
                               ),
-                              const ComboBoxItem(
+                              ComboBoxItem(
                                 value: EclipseType.solarAnnular,
                                 child: Text('Solar Annular'),
                               ),
-                              const ComboBoxItem(
+                              ComboBoxItem(
                                 value: EclipseType.lunarTotal,
                                 child: Text('Lunar Total'),
                               ),
-                              const ComboBoxItem(
+                              ComboBoxItem(
                                 value: EclipseType.lunarPartial,
                                 child: Text('Lunar Partial'),
                               ),
-                              const ComboBoxItem(
+                              ComboBoxItem(
                                 value: EclipseType.lunarPenumbral,
                                 child: Text('Lunar Penumbral'),
                               ),

@@ -105,7 +105,7 @@ void main() {
       );
       router.go('/panchang');
       await tester.pump();
-      for (int i = 0; i < 50; i++) {
+      for (var i = 0; i < 50; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
       await tester.pumpAndSettle();
@@ -122,7 +122,7 @@ void main() {
       );
       router.go('/comparison');
       await tester.pump();
-      for (int i = 0; i < 50; i++) {
+      for (var i = 0; i < 50; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
       await tester.pumpAndSettle();
@@ -139,7 +139,7 @@ void main() {
       );
       router.go('/muhurta');
       await tester.pump();
-      for (int i = 0; i < 50; i++) {
+      for (var i = 0; i < 50; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
       await tester.pumpAndSettle();

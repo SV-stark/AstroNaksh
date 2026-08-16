@@ -16,12 +16,6 @@ enum PrashnaVerdict {
 }
 
 class KPPrashnaHouseSignificator {
-  final int houseNumber;
-  final String houseName;
-  final String cuspSubLord;
-  final String subLordStarLord;
-  final List<int> subLordSignifiedHouses;
-  final List<int> starLordSignifiedHouses;
 
   const KPPrashnaHouseSignificator({
     required this.houseNumber,
@@ -31,20 +25,15 @@ class KPPrashnaHouseSignificator {
     required this.subLordSignifiedHouses,
     required this.starLordSignifiedHouses,
   });
+  final int houseNumber;
+  final String houseName;
+  final String cuspSubLord;
+  final String subLordStarLord;
+  final List<int> subLordSignifiedHouses;
+  final List<int> starLordSignifiedHouses;
 }
 
 class KPPrashnaResult {
-  final int seedNumber;
-  final PrashnaCategory category;
-  final String queryTitle;
-  final PrashnaVerdict verdict;
-  final double confidencePercentage;
-  final List<int> primaryHouses;
-  final List<int> supportingHouses;
-  final List<int> negatingHouses;
-  final List<KPPrashnaHouseSignificator> significatorBreakdown;
-  final String detailedInterpretation;
-  final String timingGuidance;
 
   const KPPrashnaResult({
     required this.seedNumber,
@@ -59,4 +48,15 @@ class KPPrashnaResult {
     required this.detailedInterpretation,
     required this.timingGuidance,
   });
+  final int seedNumber;
+  final PrashnaCategory category;
+  final String queryTitle;
+  final PrashnaVerdict verdict;
+  final double confidencePercentage;
+  final List<int> primaryHouses;
+  final List<int> supportingHouses;
+  final List<int> negatingHouses;
+  final List<KPPrashnaHouseSignificator> significatorBreakdown;
+  final String detailedInterpretation;
+  final String timingGuidance;
 }

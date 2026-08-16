@@ -538,11 +538,11 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(FluentIcons.favorite_star, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    const Text(
+                    SizedBox(width: 8),
+                    Text(
                       'Daily Guidance',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,

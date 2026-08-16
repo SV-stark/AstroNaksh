@@ -91,7 +91,7 @@ class RemediesService {
     final isMalefic = _isFunctionalMalefic(planet, ascSignIndex);
 
     final safeToWear = !isDusthana && !isMalefic;
-    String caution = '';
+    var caution = '';
     if (isDusthana) {
       caution = '$planet is placed in a Dusthana house (6, 8, or 12). Avoid wearing gemstones without consulting an expert; prefer Mantra chanting.';
     } else if (isMalefic) {
@@ -124,7 +124,7 @@ class RemediesService {
 
     if (data == null) return null;
 
-    String affliction = 'Standard planetary balance remedy.';
+    var affliction = 'Standard planetary balance remedy.';
     if (isDusthana) {
       affliction = 'Placed in 6th, 8th, or 12th House (Dusthana affliction).';
     } else if (isMalefic) {

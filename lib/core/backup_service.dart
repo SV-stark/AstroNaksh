@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -9,8 +8,8 @@ import 'app_environment.dart';
 import 'database.dart';
 
 class BackupService {
-  final Ref ref;
   BackupService(this.ref);
+  final Ref ref;
 
   Future<File> getDatabaseFile() async {
     final path = await AppEnvironment.getDatabasePath();
@@ -20,7 +19,7 @@ class BackupService {
   /// Backup database to a local file path
   Future<void> backupLocal(String targetPath) async {
     final dbFile = await getDatabaseFile();
-    if (!await dbFile.exists()) {
+    if (!dbFile.existsSync()) {
       throw Exception('Database file not found at ${dbFile.path}');
     }
     // Copy file to target destination
@@ -31,7 +30,7 @@ class BackupService {
   Future<void> restoreLocal(String sourcePath) async {
     final dbFile = await getDatabaseFile();
     final sourceFile = File(sourcePath);
-    if (!await sourceFile.exists()) {
+    if (!sourceFile.existsSync()) {
       throw Exception('Source backup file not found.');
     }
 
@@ -81,7 +80,7 @@ class BackupService {
     String password,
   ) async {
     final dbFile = await getDatabaseFile();
-    if (!await dbFile.exists()) {
+    if (!dbFile.existsSync()) {
       throw Exception('Database file not found');
     }
     final bytes = await dbFile.readAsBytes();

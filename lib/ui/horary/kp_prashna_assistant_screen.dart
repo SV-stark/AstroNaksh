@@ -7,12 +7,12 @@ import '../../data/models.dart';
 import '../../logic/kp_prashna_service.dart';
 
 class KPPrashnaAssistantScreen extends StatefulWidget {
-  final GeographicLocation initialLocation;
 
   const KPPrashnaAssistantScreen({
     super.key,
     required this.initialLocation,
   });
+  final GeographicLocation initialLocation;
 
   @override
   State<KPPrashnaAssistantScreen> createState() => _KPPrashnaAssistantScreenState();
@@ -21,7 +21,7 @@ class KPPrashnaAssistantScreen extends StatefulWidget {
 class _KPPrashnaAssistantScreenState extends State<KPPrashnaAssistantScreen> {
   int _seedNumber = 108;
   PrashnaCategory _selectedCategory = PrashnaCategory.career;
-  DateTime _selectedDateTime = DateTime.now();
+  final DateTime _selectedDateTime = DateTime.now();
   late GeographicLocation _location;
 
   bool _isAnalyzing = false;

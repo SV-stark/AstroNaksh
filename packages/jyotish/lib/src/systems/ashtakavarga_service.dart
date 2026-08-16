@@ -447,25 +447,6 @@ class AshtakavargaService {
     return pindaResults;
   }
 
-  /// Gets the lord of a sign (traditional mapping)
-  Planet _getSignLord(int signIndex) {
-    const signLords = [
-      Planet.mars, // Aries
-      Planet.venus, // Taurus
-      Planet.mercury, // Gemini
-      Planet.moon, // Cancer
-      Planet.sun, // Leo
-      Planet.mercury, // Virgo
-      Planet.venus, // Libra
-      Planet.mars, // Scorpio
-      Planet.jupiter, // Sagittarius
-      Planet.saturn, // Capricorn
-      Planet.saturn, // Aquarius
-      Planet.jupiter, // Pisces
-    ];
-    return signLords[signIndex];
-  }
-
   /// Calculates Yoga Pinda (auspicious strength) from Ashtakavarga.
   ///
   /// Yoga Pinda represents the total benefic strength after all reductions.

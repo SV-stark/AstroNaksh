@@ -2,28 +2,18 @@ import 'package:jyotish/jyotish.dart';
 import '../data/models/chart_data.dart';
 
 class DoshaScores {
-  final double vata;
-  final double pitta;
-  final double kapha;
 
   const DoshaScores({
     required this.vata,
     required this.pitta,
     required this.kapha,
   });
+  final double vata;
+  final double pitta;
+  final double kapha;
 }
 
 class AyurvedicProfile {
-  final DoshaScores scores;
-  final double vataPercentage;
-  final double pittaPercentage;
-  final double kaphaPercentage;
-  final String dominantDosha;
-  final String description;
-  final List<String> dietaryRecommendations;
-  final List<String> lifestyleRecommendations;
-  final List<String> recommendedHerbs;
-  final List<String> avoidedFoods;
 
   const AyurvedicProfile({
     required this.scores,
@@ -37,6 +27,16 @@ class AyurvedicProfile {
     required this.recommendedHerbs,
     required this.avoidedFoods,
   });
+  final DoshaScores scores;
+  final double vataPercentage;
+  final double pittaPercentage;
+  final double kaphaPercentage;
+  final String dominantDosha;
+  final String description;
+  final List<String> dietaryRecommendations;
+  final List<String> lifestyleRecommendations;
+  final List<String> recommendedHerbs;
+  final List<String> avoidedFoods;
 }
 
 class AyurvedaService {

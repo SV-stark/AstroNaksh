@@ -56,7 +56,7 @@ class PDFReportService {
       ReportStyles.accentColor = customAccentColor;
     }
 
-    double marginVal = 32.0;
+    var marginVal = 32.0;
     if (pdfPageMargins == 'small') marginVal = 16.0;
     if (pdfPageMargins == 'large') marginVal = 48.0;
     final pageMargin = pw.EdgeInsets.all(marginVal);

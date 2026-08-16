@@ -815,11 +815,11 @@ class _JaiminiScreenState extends State<JaiminiScreen> {
               setState(() => _selectedDashaType = value);
             }
           },
-          child: Row(
+          child: const Row(
             children: [
-              RadioButton<int>(value: 0, content: const Text('Chara Dasha')),
-              const SizedBox(width: 16),
-              RadioButton<int>(value: 1, content: const Text('Narayana Dasha')),
+              RadioButton<int>(value: 0, content: Text('Chara Dasha')),
+              SizedBox(width: 16),
+              RadioButton<int>(value: 1, content: Text('Narayana Dasha')),
             ],
           ),
         ),

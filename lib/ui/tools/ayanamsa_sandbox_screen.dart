@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,7 +38,6 @@ class _TransitChartData {
 class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
   model.BirthData? _selectedBirthData;
   List<Chart> _savedCharts = [];
-  bool _loadingCharts = true;
 
   SiderealMode _leftMode = SiderealMode.lahiri;
   SiderealMode _rightMode = SiderealMode.krishnamurtiVP291;
@@ -49,11 +50,11 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
   void initState() {
     super.initState();
     _selectedBirthData = widget.birthData;
-    _loadSavedCharts();
+    unawaited(_loadSavedCharts());
     if (_selectedBirthData == null && SampleCharts.samples.isNotEmpty) {
       _selectedBirthData = SampleCharts.samples.first;
     }
-    _calculateCharts();
+    unawaited(_calculateCharts());
   }
 
   Future<void> _loadSavedCharts() async {
@@ -63,15 +64,10 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
       if (mounted) {
         setState(() {
           _savedCharts = charts;
-          _loadingCharts = false;
         });
       }
     } catch (_) {
-      if (mounted) {
-        setState(() {
-          _loadingCharts = false;
-        });
-      }
+      // Silently ignore — saved charts are a convenience, not required
     }
   }
 
@@ -117,13 +113,15 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _calculating = false);
-        displayInfoBar(
-          context,
-          builder: (context, close) => InfoBar(
-            title: const Text('Calculation Error'),
-            content: Text(e.toString()),
-            severity: InfoBarSeverity.error,
-            onClose: close,
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (context, close) => InfoBar(
+              title: const Text('Calculation Error'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
           ),
         );
       }
@@ -134,7 +132,7 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
     setState(() {
       _selectedBirthData = birthData;
     });
-    _calculateCharts();
+    unawaited(_calculateCharts());
   }
 
   @override
@@ -270,7 +268,7 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
           value: value,
           items: systems.where((s) => s.mode != null).map((s) {
             return ComboBoxItem<SiderealMode>(
-              value: s.mode!,
+              value: s.mode,
               child: Text(s.description),
             );
           }).toList(),
@@ -442,10 +440,10 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
               ...planets.map((planet) {
                 double leftLong = 0;
                 double rightLong = 0;
-                String leftFormatted = '';
-                String rightFormatted = '';
-                int leftHouse = 1;
-                int rightHouse = 1;
+                var leftFormatted = '';
+                var rightFormatted = '';
+                var leftHouse = 1;
+                var rightHouse = 1;
 
                 if (planet == Planet.ketu) {
                   leftLong = leftChart.ketu.longitude;
@@ -478,7 +476,7 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
                 }
 
                 // Calculate degree difference
-                final diffDegrees = ((leftLong - rightLong).abs() % 360);
+                final diffDegrees = (leftLong - rightLong).abs() % 360;
                 final diffMin = diffDegrees * 60;
                 final diffSec = (diffMin - diffMin.floor()) * 60;
                 final diffStr = '${diffMin.floor()}\' ${diffSec.floor()}"';
@@ -497,7 +495,7 @@ class _AyanamsaSandboxScreenState extends ConsumerState<AyanamsaSandboxScreen> {
                 final isBorderline = leftBorderline || rightBorderline;
 
                 Color? rowBg;
-                String shiftDesc = 'No Shift';
+                var shiftDesc = 'No Shift';
                 if (isSignShift || isHouseShift) {
                   rowBg = Colors.orange.withValues(alpha: 0.1);
                   shiftDesc =

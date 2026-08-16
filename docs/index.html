@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>AstroNaksh — Precision Vedic Astrology & KP System Platform</title>
+  <meta name="description" content="A comprehensive, open-source Vedic Astrology & Krishnamurti Paddhati (KP System) desktop and web application powered by Swiss Ephemeris calculations, 208,000+ offline global cities, and 16 divisional charts.">
+  <meta name="keywords" content="Vedic Astrology, Jyotish, KP System, Krishnamurti Paddhati, Kundali, Horary, Panchang, Swiss Ephemeris, Flutter Astrology, Open Source Astrology">
+  <meta name="author" content="AstroNaksh Contributors">
+  
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AstroNaksh — Precision Vedic Astrology & KP System Platform">
+  <meta property="og:description" content="Open-source, privacy-first astrological workbench with Swiss Ephemeris accuracy, 208k+ offline cities, and complete KP 1–249 horary intelligence.">
+  <meta property="og:image" content="assets/Astronaksh.png">
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="AstroNaksh — Precision Vedic Astrology & KP System">
+  <meta property="twitter:description" content="Sub-arcsecond Swiss Ephemeris calculations, 208k+ offline cities, 100% private.">
+  
+  <link rel="icon" type="image/png" href="assets/Astronaksh.png">
+  
+  <!-- Google Fonts: Cinzel for classical celestial titles, Inter for UI, JetBrains Mono for coordinates -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       Site Header & Navigation
+       ========================================================================= -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="#hero" class="brand-link" aria-label="AstroNaksh Home">
+        <img src="assets/Astronaksh.png" alt="AstroNaksh Crest" class="brand-logo" width="38" height="38">
+        <div class="brand-info">
+          <span class="brand-name">AstroNaksh</span>
+          <span class="brand-tag">Vedic &amp; KP Engine</span>
+        </div>
+      </a>
+
+      <nav aria-label="Primary Navigation">
+        <ul class="nav-menu" id="nav-menu">
+          <li><a href="#overview" class="nav-link">Overview</a></li>
+          <li><a href="#demo" class="nav-link">Interactive Demo</a></li>
+          <li><a href="#pillars" class="nav-link">Architecture</a></li>
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#compare" class="nav-link">Comparison</a></li>
+          <li><a href="#install" class="nav-link">Installation</a></li>
+          <li><a href="https://github.com/SV-stark/AstroNaksh/wiki" target="_blank" rel="noopener noreferrer" class="nav-link">Wiki Docs</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="theme-toggle" class="btn-icon" aria-label="Toggle Color Theme" title="Toggle theme">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+
+        <a href="https://github.com/SV-stark/AstroNaksh" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" aria-label="View Source on GitHub">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+
+        <a href="#install" class="btn btn-primary btn-sm">
+          <span>Get App</span>
+        </a>
+
+        <button id="mobile-toggle" class="btn-icon mobile-toggle" aria-label="Toggle navigation menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <!-- =======================================================================
+         Hero Section
+         ======================================================================= -->
+    <section id="hero" class="hero-section">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-badge-wrap">
+            <div class="hero-badge">
+              <span class="hero-badge-dot"></span>
+              <span>Open Source • 100% On-Device Computation</span>
+            </div>
+          </div>
+
+          <h1 class="hero-title">
+            Precision Vedic Astrology &amp; KP System, Engineered for the Modern Era.
+          </h1>
+
+          <p class="hero-subtitle">
+            An open-source astrological workbench powered by the Swiss Ephemeris astronomical engine, 208,000+ offline global cities, 16 divisional charts, and complete Krishnamurti Paddhati (KP) horary intelligence.
+          </p>
+
+          <div class="hero-ctas">
+            <a href="#install" class="btn btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download for Windows / Linux</span>
+            </a>
+
+            <a href="#demo" class="btn btn-secondary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span>Explore Live Demo</span>
+            </a>
+
+            <a href="https://github.com/SV-stark/AstroNaksh" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+              <span>View on GitHub</span>
+            </a>
+          </div>
+
+          <!-- Specs Strip -->
+          <div class="specs-bar">
+            <div class="spec-item">
+              <span class="spec-value">&plusmn;0.0001&Prime;</span>
+              <span class="spec-label">Swiss Ephemeris Precision</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-value">208,000+</span>
+              <span class="spec-label">Offline Global Cities</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-value">249</span>
+              <span class="spec-label">KP Sub-Divisions</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-value">D1 &rarr; D60</span>
+              <span class="spec-label">16 Divisional Charts</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-value">0%</span>
+              <span class="spec-label">Data Sent to Cloud</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         Interactive Showcase / Workbench Demo
+         ======================================================================= -->
+    <section id="demo" class="demo-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Live Interface Workbench</span>
+          <h2 class="section-title">Interactive Astrological Engine</h2>
+          <p class="section-description">
+            Experience AstroNaksh's calculation core directly in your browser. Inspect birth chart cusps, test KP horary decision algorithms, or view real-time Panchang data.
+          </p>
+        </div>
+
+        <div class="demo-workbench">
+          <div class="demo-header-bar">
+            <div class="demo-tabs" role="tablist">
+              <button class="demo-tab-btn active" data-tab="kundali" role="tab" aria-selected="true">
+                1. Kundali &amp; Planet Inspector
+              </button>
+              <button class="demo-tab-btn" data-tab="kp" role="tab" aria-selected="false">
+                2. KP 1–249 Horary Solver
+              </button>
+              <button class="demo-tab-btn" data-tab="panchang" role="tab" aria-selected="false">
+                3. Daily Panchang &amp; Muhurta
+              </button>
+            </div>
+
+            <div class="demo-controls">
+              <label for="chart-ayanamsa" class="form-label" style="margin:0;font-size:0.75rem;">Ayanamsa:</label>
+              <select id="chart-ayanamsa" class="demo-select" aria-label="Select Ayanamsa">
+                <option value="lahiri">Lahiri (Chitrapaksha)</option>
+                <option value="kp">Krishnamurti (KP Original)</option>
+                <option value="kp_new">KP New (KPSK)</option>
+                <option value="raman">BV Raman</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="demo-body">
+            <!-- Pane 1: Kundali & Inspector -->
+            <div id="pane-kundali" class="demo-pane active" role="tabpanel">
+              <div class="chart-view-grid">
+                <!-- North Indian Diamond SVG Canvas -->
+                <div class="kundali-canvas-box">
+                  <div class="kundali-svg-container">
+                    <svg viewBox="0 0 400 400" class="kundali-svg" xmlns="http://www.w3.org/2000/svg">
+                      <!-- Outer Square Box -->
+                      <rect x="10" y="10" width="380" height="380" fill="none" class="k-line-accent"/>
+                      
+                      <!-- Inner Diamond (Cusps 1, 4, 7, 10) -->
+                      <polygon points="200,10 390,200 200,390 10,200" fill="none" class="k-line-accent"/>
+                      
+                      <!-- Diagonal Corner Crosses -->
+                      <line x1="10" y1="10" x2="390" y2="390" class="k-line"/>
+                      <line x1="390" y1="10" x2="10" y2="390" class="k-line"/>
+
+                      <!-- Clickable House Polygons -->
+                      <!-- House 1 (Top Center Diamond) -->
+                      <polygon id="house-poly-1" points="200,10 295,105 200,200 105,105" class="k-house-polygon selected" onclick="selectHouse(1)"/>
+                      <!-- House 2 (Top Left Triangle) -->
+                      <polygon id="house-poly-2" points="10,10 200,10 105,105" class="k-house-polygon" onclick="selectHouse(2)"/>
+                      <!-- House 3 (Left Top Triangle) -->
+                      <polygon id="house-poly-3" points="10,10 105,105 10,200" class="k-house-polygon" onclick="selectHouse(3)"/>
+                      <!-- House 4 (Left Center Diamond) -->
+                      <polygon id="house-poly-4" points="10,200 105,105 200,200 105,295" class="k-house-polygon" onclick="selectHouse(4)"/>
+                      <!-- House 5 (Left Bottom Triangle) -->
+                      <polygon id="house-poly-5" points="10,200 105,295 10,390" class="k-house-polygon" onclick="selectHouse(5)"/>
+                      <!-- House 6 (Bottom Left Triangle) -->
+                      <polygon id="house-poly-6" points="10,390 105,295 200,390" class="k-house-polygon" onclick="selectHouse(6)"/>
+                      <!-- House 7 (Bottom Center Diamond) -->
+                      <polygon id="house-poly-7" points="200,200 295,295 200,390 105,295" class="k-house-polygon" onclick="selectHouse(7)"/>
+                      <!-- House 8 (Bottom Right Triangle) -->
+                      <polygon id="house-poly-8" points="200,390 295,295 390,390" class="k-house-polygon" onclick="selectHouse(8)"/>
+                      <!-- House 9 (Right Bottom Triangle) -->
+                      <polygon id="house-poly-9" points="295,295 390,200 390,390" class="k-house-polygon" onclick="selectHouse(9)"/>
+                      <!-- House 10 (Right Center Diamond) -->
+                      <polygon id="house-poly-10" points="200,200 295,105 390,200 295,295" class="k-house-polygon" onclick="selectHouse(10)"/>
+                      <!-- House 11 (Right Top Triangle) -->
+                      <polygon id="house-poly-11" points="295,105 390,10 390,200" class="k-house-polygon" onclick="selectHouse(11)"/>
+                      <!-- House 12 (Top Right Triangle) -->
+                      <polygon id="house-poly-12" points="200,10 390,10 295,105" class="k-house-polygon" onclick="selectHouse(12)"/>
+
+                      <!-- House Numbers & Sign Labels -->
+                      <text x="200" y="80" text-anchor="middle" class="k-house-num">H1 (Asc ♈)</text>
+                      <text x="200" y="125" text-anchor="middle" class="k-planet-text k-planet-gold">Asc 14°22'</text>
+
+                      <text x="100" y="55" text-anchor="middle" class="k-house-num">H2 (♉)</text>
+                      <text x="55" y="115" text-anchor="middle" class="k-house-num">H3 (♊)</text>
+
+                      <text x="105" y="190" text-anchor="middle" class="k-house-num">H4 (♋)</text>
+                      <text x="105" y="215" text-anchor="middle" class="k-planet-text k-planet-cyan">Mo 08°45'</text>
+
+                      <text x="55" y="300" text-anchor="middle" class="k-house-num">H5 (♌)</text>
+                      <text x="65" y="325" text-anchor="middle" class="k-planet-text k-planet-gold">Su 28°10'</text>
+
+                      <text x="100" y="360" text-anchor="middle" class="k-house-num">H6 (♍)</text>
+                      <text x="110" y="375" text-anchor="middle" class="k-planet-text k-planet-cyan">Me, Ke</text>
+
+                      <text x="200" y="280" text-anchor="middle" class="k-house-num">H7 (♎)</text>
+                      <text x="300" y="360" text-anchor="middle" class="k-house-num">H8 (♏)</text>
+
+                      <text x="345" y="300" text-anchor="middle" class="k-house-num">H9 (♐)</text>
+                      <text x="340" y="325" text-anchor="middle" class="k-planet-text k-planet-gold">Ju 12°50'</text>
+
+                      <text x="295" y="190" text-anchor="middle" class="k-house-num">H10 (♑)</text>
+                      <text x="295" y="215" text-anchor="middle" class="k-planet-text k-planet-gold">Ma 18°30'</text>
+
+                      <text x="345" y="115" text-anchor="middle" class="k-house-num">H11 (♒)</text>
+                      <text x="340" y="138" text-anchor="middle" class="k-planet-text k-planet-cyan">Sa 21°04'</text>
+
+                      <text x="300" y="55" text-anchor="middle" class="k-house-num">H12 (♓)</text>
+                      <text x="300" y="75" text-anchor="middle" class="k-planet-text k-planet-gold">Ve, Ra</text>
+                    </svg>
+                  </div>
+                  <p style="font-size:0.75rem; color:var(--text-tertiary); margin-top:0.75rem;">
+                    Click any house on the chart to inspect its significations and occupants
+                  </p>
+                </div>
+
+                <!-- Inspector Panel -->
+                <div class="chart-inspector">
+                  <div class="inspector-header">
+                    <div>
+                      <span id="inspector-house-num" class="inspector-title">House 1</span>
+                      <span id="inspector-house-sign" class="badge-sign" style="margin-left:0.5rem;">Aries (Mesha)</span>
+                    </div>
+                    <span class="inspector-tag">Sample Chart</span>
+                  </div>
+
+                  <p id="inspector-house-desc" style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">
+                    Self, Vitality, Physical Constitution, General Fortune, Personality
+                  </p>
+
+                  <div style="overflow-x:auto;">
+                    <table class="inspector-table">
+                      <thead>
+                        <tr>
+                          <th>Planet</th>
+                          <th>Sign &amp; Degree</th>
+                          <th>Nakshatra</th>
+                          <th>Sub-Lord</th>
+                          <th>House</th>
+                        </tr>
+                      </thead>
+                      <tbody id="inspector-table-body">
+                        <!-- Populated by JavaScript -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pane 2: KP Horary (1–249) Assistant -->
+            <div id="pane-kp" class="demo-pane" role="tabpanel">
+              <div class="kp-demo-grid">
+                <div class="kp-query-card">
+                  <h3 style="font-size:1.05rem; font-weight:700;">KP Horary Query</h3>
+                  <div class="form-group">
+                    <label for="kp-number-input" class="form-label">Horary Number (1–249)</label>
+                    <input type="number" id="kp-number-input" class="form-input" min="1" max="249" value="108">
+                  </div>
+                  <div class="form-group">
+                    <label for="kp-category-select" class="form-label">Life Category</label>
+                    <select id="kp-category-select" class="form-select">
+                      <option value="job">Career &amp; Employment (2, 6, 10, 11)</option>
+                      <option value="marriage">Marriage &amp; Partnership (2, 7, 11)</option>
+                      <option value="property">Property &amp; Real Estate (4, 11, 12)</option>
+                      <option value="health">Health &amp; Recovery (1, 5, 11)</option>
+                      <option value="wealth">Financial Prosperity (2, 6, 11)</option>
+                      <option value="travel">Foreign Travel (3, 9, 12)</option>
+                    </select>
+                  </div>
+                  <button id="kp-calculate-btn" class="btn btn-primary" style="margin-top:0.5rem;">
+                    Evaluate Horary Chart
+                  </button>
+                  <p style="font-size:0.75rem; color:var(--text-tertiary);">
+                    Evaluates Cuspal Sub-Lord (CSL), Star-Lord, and 4-tier ABCD significators.
+                  </p>
+                </div>
+
+                <div class="kp-verdict-box">
+                  <div id="kp-verdict-banner" class="verdict-banner verdict-favorable">
+                    <div>
+                      <div id="kp-verdict-title" class="verdict-title">Verdict: Strong Positive</div>
+                      <div id="kp-verdict-houses" class="verdict-houses">Signifying Houses: 2, 6, 10, 11</div>
+                    </div>
+                    <span class="badge-sign" style="background:var(--emerald-500);color:#0b0e14;font-weight:700;">VERIFIED</span>
+                  </div>
+
+                  <p id="kp-verdict-desc" style="font-size:0.88rem; color:var(--text-secondary); line-height:1.55;">
+                    Cuspal Sub-Lord and Star-Lord connect directly to primary significators. Success indicated during ruling dasha periods.
+                  </p>
+
+                  <div>
+                    <h4 style="font-size:0.85rem; font-weight:700; text-transform:uppercase; margin-bottom:0.6rem; color:var(--text-tertiary);">
+                      Significator Hierarchy Matrix (ABCD)
+                    </h4>
+                    <table class="kp-matrix-table">
+                      <thead>
+                        <tr>
+                          <th>Significator Tier</th>
+                          <th>Active Planet</th>
+                          <th>Houses Activated</th>
+                        </tr>
+                      </thead>
+                      <tbody id="kp-matrix-body">
+                        <!-- Populated by JavaScript -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pane 3: Panchang & Muhurta -->
+            <div id="pane-panchang" class="demo-pane" role="tabpanel">
+              <div class="panchang-demo-grid">
+                <div class="panchang-card">
+                  <span class="panchang-k-label">Lunar Day (Tithi)</span>
+                  <span id="panchang-tithi" class="panchang-k-value">Shukla Navami</span>
+                  <span class="panchang-k-sub">Rikta / Action Day</span>
+                </div>
+                <div class="panchang-card">
+                  <span class="panchang-k-label">Lunar Mansion (Nakshatra)</span>
+                  <span id="panchang-nakshatra" class="panchang-k-value">Rohini</span>
+                  <span class="panchang-k-sub">Lord: Moon (Chandra)</span>
+                </div>
+                <div class="panchang-card">
+                  <span class="panchang-k-label">Yoga &amp; Karana</span>
+                  <span id="panchang-yoga" class="panchang-k-value">Siddhi Yoga</span>
+                  <span class="panchang-k-sub">Karana: Kaulava</span>
+                </div>
+                <div class="panchang-card">
+                  <span class="panchang-k-label">Abhijit Muhurta</span>
+                  <span id="panchang-muhurta" class="panchang-k-value">11:42 AM - 12:34 PM</span>
+                  <span class="panchang-k-sub">Auspicious Midday Window</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         Four Core Pillars Section
+         ======================================================================= -->
+    <section id="pillars" class="pillars-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Engineering Foundation</span>
+          <h2 class="section-title">Built for Astrological Integrity</h2>
+          <p class="section-description">
+            AstroNaksh is architected without compromise: sub-arcsecond ephemeris math, transparent open-source code, and 100% on-device data sovereignty.
+          </p>
+        </div>
+
+        <div class="pillars-grid">
+          <!-- Pillar 1 -->
+          <div class="pillar-card">
+            <div class="pillar-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <h3 class="pillar-title">Swiss Ephemeris Precision</h3>
+            <p class="pillar-desc">
+              Integrated high-precision astronomical engine from the University of Bern. Sub-arcsecond planetary accuracy across 6,000+ years with complete topocentric corrections.
+            </p>
+            <ul class="pillar-features">
+              <li>Lahiri, KP, KP New, Raman, Tropical</li>
+              <li>Calculates in &lt; 500 milliseconds</li>
+              <li>True &amp; Mean Node calculations</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="pillar-card">
+            <div class="pillar-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </div>
+            <h3 class="pillar-title">Complete KP System</h3>
+            <p class="pillar-desc">
+              Uncut Krishnamurti Paddhati implementation: all 249 sub-division boundaries, cuspal sub-lords, ruling planets (RP), and automated ABCD significator matrices.
+            </p>
+            <ul class="pillar-features">
+              <li>1–249 Horary (Prashna) assistant</li>
+              <li>Placidus unequal house cusps</li>
+              <li>Sub-sub lords and star-lord chains</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="pillar-card">
+            <div class="pillar-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+            </div>
+            <h3 class="pillar-title">Full Vedic Jyotish Suite</h3>
+            <p class="pillar-desc">
+              From D1 (Rashi) to D60 (Shashtiamsa) divisional charts, Shadbala 6-fold planetary strength, Ashtakavarga, Tajik Varshaphal, and 100+ Yoga/Dosha recognizers.
+            </p>
+            <ul class="pillar-features">
+              <li>16 Parashari divisional charts</li>
+              <li>Ashtakoota 36-Guna &amp; Dosha Samyam</li>
+              <li>Vimshottari, Yogini, &amp; Chara Dashas</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="pillar-card">
+            <div class="pillar-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <h3 class="pillar-title">100% Offline &amp; Private</h3>
+            <p class="pillar-desc">
+              Your confidential client records and birth details never leave your physical hard drive. Includes 208,000+ indexed global cities in an embedded SQLite database.
+            </p>
+            <ul class="pillar-features">
+              <li>Zero telemetry, zero third-party trackers</li>
+              <li>Fast prefix search in &lt; 100ms</li>
+              <li>Fully portable zero-install runtime</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         Deep Features Grid
+         ======================================================================= -->
+    <section id="features" class="features-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Comprehensive Capabilities</span>
+          <h2 class="section-title">Everything a Vedic Astrologer Needs</h2>
+          <p class="section-description">
+            Designed for professional astrologers, researchers, and dedicated students of Jyotish who demand absolute clarity and mathematical precision.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <!-- Feature 1 -->
+          <div class="feature-box">
+            <div class="feature-box-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-box-icon">
+                <polygon points="6 2 18 2 18 6 6 6 6 2"></polygon>
+                <rect x="3" y="6" width="18" height="16" rx="2"></rect>
+                <line x1="10" y1="12" x2="14" y2="12"></line>
+              </svg>
+              <h3 class="feature-box-title">Remedies &amp; Gemstone Engine</h3>
+            </div>
+            <p class="feature-box-text">
+              Automated Life Stone, Lucky Stone (9th lord), and Beneficial Stone (5th lord) recommendations with strict Dusthana (6, 8, 12) safety exclusions, Beej Mantras, and Rudraksha guidance.
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="feature-box">
+            <div class="feature-box-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-box-icon">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <h3 class="feature-box-title">Multi-Tier Dasha Explorer</h3>
+            </div>
+            <p class="feature-box-text">
+              Calculates Vimshottari (down to Pratyantardasha and Sookshma), Yogini (36-year cycle), and Jaimini Chara Dashas with exact balance of dasha at birth.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="feature-box">
+            <div class="feature-box-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-box-icon">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <h3 class="feature-box-title">Matchmaking &amp; Compatibility</h3>
+            </div>
+            <p class="feature-box-text">
+              Complete Ashtakoota 36 Guna Milan with automated Manglik Dosha exception checks, Dosha Samyam balancing, and Navamsa-level harmony verification.
+            </p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="feature-box">
+            <div class="feature-box-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-box-icon">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2"></path>
+                <path d="M12 20v2"></path>
+                <path d="m4.93 4.93 1.41 1.41"></path>
+                <path d="m17.66 17.66 1.41 1.41"></path>
+                <path d="M2 12h2"></path>
+                <path d="M20 12h2"></path>
+                <path d="m6.34 17.66-1.41 1.41"></path>
+                <path d="m19.07 4.93-1.41 1.41"></path>
+              </svg>
+              <h3 class="feature-box-title">Tajik Varshaphal (Annual Horoscopy)</h3>
+            </div>
+            <p class="feature-box-text">
+              Solar return charts based on exact Sun degree alignment. Features Muntha, Varshesh selection via Panchavargiya Bala, and 7+ Sahams (Punya, Vidya, Yash).
+            </p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="feature-box">
+            <div class="feature-box-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-box-icon">
+                <path d="M2 12h20"></path>
+                <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"></path>
+                <path d="M12 2v10"></path>
+              </svg>
+              <h3 class="feature-box-title">Transit Analysis &amp; Vedha</h3>
+            </div>
+            <p class="feature-box-text">
+              Real-time planetary transits overlaid on natal charts. Evaluates Chandra Gochara, Ashtakavarga Kakshya points, and exact Vedha obstruction rules.
+            </p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="feature-box">
+            <div class="feature-box-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feature-box-icon">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <h3 class="feature-box-title">PDF Reports &amp; Chart Export</h3>
+            </div>
+            <p class="feature-box-text">
+              Export client consultations as formatted, high-resolution PDF dossiers containing full Kundali diagrams, Dasha timelines, Shadbala tables, and customized notes.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         Objective Comparison Section
+         ======================================================================= -->
+    <section id="compare" class="compare-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Direct Comparison</span>
+          <h2 class="section-title">Why Astrologers Choose AstroNaksh</h2>
+          <p class="section-description">
+            A transparent breakdown comparing AstroNaksh with commercial cloud apps and legacy desktop astrology tools.
+          </p>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Feature / Dimension</th>
+                <th class="col-astronaksh">AstroNaksh</th>
+                <th>Cloud Astrology Apps</th>
+                <th>Legacy Desktop Software</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Pricing &amp; Licensing</strong></td>
+                <td class="col-astronaksh"><span class="check-yes">&#10003; 100% Free &amp; Open Source (GPL-3.0)</span></td>
+                <td><span class="check-no">Monthly / Yearly Subscriptions</span></td>
+                <td><span class="check-no">Expensive Proprietary Licenses</span></td>
+              </tr>
+              <tr>
+                <td><strong>Client Data Privacy</strong></td>
+                <td class="col-astronaksh"><span class="check-yes">&#10003; 100% Local (Zero Cloud Leaks)</span></td>
+                <td><span class="check-no">&#10007; User Data Stored on Remote Cloud</span></td>
+                <td><span class="check-yes">&#10003; Local Storage</span></td>
+              </tr>
+              <tr>
+                <td><strong>Astronomical Accuracy</strong></td>
+                <td class="col-astronaksh"><span class="check-yes">&#10003; Swiss Ephemeris Sub-Arcsecond</span></td>
+                <td><span class="check-no">Approximate / Truncated Algorithms</span></td>
+                <td><span class="check-yes">&#10003; Swiss Ephemeris / Moshier</span></td>
+              </tr>
+              <tr>
+                <td><strong>KP System 1–249 Horary</strong></td>
+                <td class="col-astronaksh"><span class="check-yes">&#10003; Full ABCD Matrix &amp; CSL Solver</span></td>
+                <td><span class="check-no">&#10007; Missing or Rudimentary</span></td>
+                <td><span class="check-no">Often Sold as a Costly Add-on</span></td>
+              </tr>
+              <tr>
+                <td><strong>Offline Global Atlas</strong></td>
+                <td class="col-astronaksh"><span class="check-yes">&#10003; 208,000+ Cities Built-in SQLite</span></td>
+                <td><span class="check-no">&#10007; Requires Active Internet</span></td>
+                <td><span class="check-no">Limited Atlas (Requires Manual Entry)</span></td>
+              </tr>
+              <tr>
+                <td><strong>Advertisements &amp; Tracking</strong></td>
+                <td class="col-astronaksh"><span class="check-yes">&#10003; Zero Ads, Zero Telemetry</span></td>
+                <td><span class="check-no">&#10007; Full Tracking &amp; Monetization</span></td>
+                <td><span class="check-yes">&#10003; No Ads</span></td>
+              </tr>
+              <tr>
+                <td><strong>Modern UI / Cross-Platform</strong></td>
+                <td class="col-astronaksh"><span class="check-yes">&#10003; Modern Fluent UI (Win, Linux, Web)</span></td>
+                <td><span class="check-no">Mobile Only or Cluttered Web</span></td>
+                <td><span class="check-no">&#10007; Outdated 1990s Windows 98 Look</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         Installation & Quickstart Section
+         ======================================================================= -->
+    <section id="install" class="install-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Deployment &amp; Setup</span>
+          <h2 class="section-title">Install AstroNaksh on Your System</h2>
+          <p class="section-description">
+            Download the standalone portable release or build directly from the verified open-source repository.
+          </p>
+        </div>
+
+        <div class="install-grid">
+          <!-- Command Tabs Box -->
+          <div class="install-card">
+            <div class="install-tabs" role="tablist">
+              <button class="install-tab-btn active" data-install="windows" role="tab">Windows (Portable)</button>
+              <button class="install-tab-btn" data-install="linux" role="tab">Linux / Ubuntu</button>
+              <button class="install-tab-btn" data-install="source" role="tab">From Source (Flutter)</button>
+            </div>
+
+            <!-- Windows Pane -->
+            <div id="install-windows" class="install-pane active" role="tabpanel">
+              <div class="code-snippet-wrap">
+                <button class="btn-copy" onclick="copySnippet(this, 'win-code')">Copy</button>
+                <code id="win-code" class="code-snippet"># 1. Download the latest Windows release bundle
+# 2. Extract the ZIP to any directory
+# 3. Double-click AstroNaksh.exe (No installation required)
+
+# Or build the portable release via PowerShell:
+.\build_portable.ps1</code>
+              </div>
+            </div>
+
+            <!-- Linux Pane -->
+            <div id="install-linux" class="install-pane" role="tabpanel">
+              <div class="code-snippet-wrap">
+                <button class="btn-copy" onclick="copySnippet(this, 'linux-code')">Copy</button>
+                <code id="linux-code" class="code-snippet"># Clone the repository
+git clone https://github.com/SV-stark/AstroNaksh.git
+cd AstroNaksh
+
+# Install system dependencies
+sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+
+# Build & Run on Linux
+flutter pub get
+flutter run -d linux</code>
+              </div>
+            </div>
+
+            <!-- Source Pane -->
+            <div id="install-source" class="install-pane" role="tabpanel">
+              <div class="code-snippet-wrap">
+                <button class="btn-copy" onclick="copySnippet(this, 'source-code')">Copy</button>
+                <code id="source-code" class="code-snippet">git clone https://github.com/SV-stark/AstroNaksh.git
+cd AstroNaksh
+
+flutter pub get
+flutter run -d windows    # For Windows Desktop
+flutter run -d chrome     # For Web Browser</code>
+              </div>
+            </div>
+          </div>
+
+          <!-- Requirements Card -->
+          <div class="requirements-card">
+            <h3 class="requirements-title">System Requirements</h3>
+            <ul class="req-list">
+              <li>
+                <span class="req-label">Operating System</span>
+                <span class="req-val">Windows 10 / 11, Ubuntu 20.04+, Web</span>
+              </li>
+              <li>
+                <span class="req-label">Memory (RAM)</span>
+                <span class="req-val">4 GB Min (8 GB Recommended)</span>
+              </li>
+              <li>
+                <span class="req-label">Disk Storage</span>
+                <span class="req-val">~500 MB (includes 208k+ cities DB)</span>
+              </li>
+              <li>
+                <span class="req-label">Display Resolution</span>
+                <span class="req-val">1280 &times; 720 (1920 &times; 1080 optimal)</span>
+              </li>
+              <li>
+                <span class="req-label">Network Dependency</span>
+                <span class="req-val">0% (Fully Autonomous Offline)</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         Codebase Health & Scorecard Section
+         ======================================================================= -->
+    <section class="health-section">
+      <div class="container">
+        <div class="health-card">
+          <div class="health-info">
+            <span class="section-tag">Code Health &amp; Auditing</span>
+            <h3 class="section-title" style="font-size:1.5rem;">Desloppify Verified Code Health</h3>
+            <p style="font-size:0.9rem; color:var(--text-secondary); line-height:1.6;">
+              AstroNaksh maintains rigorous code health standards, scored through multi-language mechanical and subjective technical debt analysis.
+            </p>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.5rem;">
+              <span class="badge-sign" style="background:var(--emerald-subtle); border-color:var(--emerald-500); color:var(--emerald-500); padding:0.4rem 0.8rem; font-weight:700;">
+                Strict Score: 78.8 / 100
+              </span>
+              <span class="badge-sign" style="padding:0.4rem 0.8rem;">
+                Zero Unresolved Security Debt
+              </span>
+            </div>
+          </div>
+          <div>
+            <img src="assets/scorecard.png" alt="Desloppify Code Health Scorecard" class="health-img" width="480" height="160">
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       Footer & Wiki Directory
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Col 1: Brand & Bio -->
+        <div class="footer-col-brand">
+          <div class="brand-link">
+            <img src="assets/Astronaksh.png" alt="AstroNaksh Logo" class="brand-logo" width="34" height="34">
+            <span class="brand-name" style="font-size:1.1rem;">AstroNaksh</span>
+          </div>
+          <p class="footer-about">
+            Democratizing access to authentic Vedic astrological knowledge by pairing ancient scriptural wisdom with modern sub-arcsecond astronomical precision.
+          </p>
+          <p style="font-size:0.78rem; color:var(--text-tertiary);">
+            Licensed under the <a href="https://github.com/SV-stark/AstroNaksh/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" style="text-decoration:underline; color:var(--text-secondary);">GNU General Public License v3.0</a>.
+          </p>
+        </div>
+
+        <!-- Col 2: Core Wiki Topics -->
+        <div>
+          <h4 class="footer-col-title">Vedic Modules</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Birth-Chart" target="_blank" rel="noopener noreferrer">Birth Chart (Kundali)</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Divisional-Charts" target="_blank" rel="noopener noreferrer">Divisional Charts (D1-D60)</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Dasha-Systems" target="_blank" rel="noopener noreferrer">Dasha Systems</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Shadbala" target="_blank" rel="noopener noreferrer">Shadbala &amp; Bhava Bala</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Ashtakavarga" target="_blank" rel="noopener noreferrer">Ashtakavarga Matrix</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Varshaphal" target="_blank" rel="noopener noreferrer">Tajik Varshaphal</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: KP & Predictions -->
+        <div>
+          <h4 class="footer-col-title">KP &amp; Predictions</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/KP-System" target="_blank" rel="noopener noreferrer">KP System (249 Sub-Lords)</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Daily-Predictions" target="_blank" rel="noopener noreferrer">Daily Rashifal Engine</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Panchang" target="_blank" rel="noopener noreferrer">Panchang &amp; Muhurta</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Transit-Analysis" target="_blank" rel="noopener noreferrer">Transit &amp; Gochara Vedha</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Yoga-Dosha" target="_blank" rel="noopener noreferrer">Yoga &amp; Dosha Library</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Chart-Comparison" target="_blank" rel="noopener noreferrer">Matchmaking (Ashtakoota)</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Resources & Links -->
+        <div>
+          <h4 class="footer-col-title">Community &amp; Source</h4>
+          <ul class="footer-links">
+            <li><a href="https://github.com/SV-stark/AstroNaksh" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/releases" target="_blank" rel="noopener noreferrer">Releases &amp; Binaries</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki" target="_blank" rel="noopener noreferrer">Full Wiki Documentation</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/issues" target="_blank" rel="noopener noreferrer">Issue Tracker</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/Installation" target="_blank" rel="noopener noreferrer">Installation Guide</a></li>
+            <li><a href="https://github.com/SV-stark/AstroNaksh/wiki/City-Database-Integration" target="_blank" rel="noopener noreferrer">Offline City Atlas</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; AstroNaksh Open Source Contributors. Free &amp; Open Source Software.</span>
+        <span>Built with Swiss Ephemeris, SQLite, and Flutter.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

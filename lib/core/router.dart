@@ -10,6 +10,7 @@ import '../ui/horary/kp_prashna_assistant_screen.dart';
 import '../ui/input_screen.dart';
 import '../ui/loading_screen.dart';
 import '../ui/panchang_screen.dart';
+import '../ui/predictions/rashiphal_screen.dart';
 import '../ui/settings_screen.dart';
 import '../ui/tools/ayanamsa_sandbox_screen.dart';
 import '../ui/tools/eclipse_calculations_screen.dart';
@@ -30,6 +31,12 @@ final router = GoRouter(
       path: '/chart',
       builder: (context, state) =>
           ChartScreen(birthData: state.extra as BirthData?),
+    ),
+    GoRoute(
+      path: '/rashiphal',
+      builder: (context, state) => RashiphalScreen(
+        initialSignIndex: state.extra as int?,
+      ),
     ),
     GoRoute(
       path: '/settings',

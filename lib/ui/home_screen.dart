@@ -269,6 +269,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               : 1.5),
                       children: [
                         _buildQuickAction(
+                          icon: FluentIcons.sunny,
+                          title: 'Daily Rashifal',
+                          subtitle: 'Daily sign horoscope',
+                          color: AppStyles.primaryColor,
+                          onTap: () {
+                            context.push('/rashiphal');
+                          },
+                        ),
+                        _buildQuickAction(
                           icon: FluentIcons.heart_fill,
                           title: 'Compare',
                           subtitle: 'Chart compatibility',

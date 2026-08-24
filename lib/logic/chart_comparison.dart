@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
+import '../core/ephemeris_manager.dart';
 import '../data/models.dart';
 
 /// Chart Comparison & Synastry Analysis
@@ -188,85 +189,95 @@ class ChartComparison {
     return overlays;
   }
 
-  /// Analyze full Kuta Matching (Ashtakoota)
+  /// Analyze full Kuta Matching (Ashtakoota) using the unified Jyotish engine
   static NakshatraAnalysis _analyzeNakshatraCompatibility(
     CompleteChartData chart1,
     CompleteChartData chart2,
   ) {
-    // Get Moon positions (Nakshatra 0-26, Rashi 0-11)
-    int? nak1, nak2, rashi1, rashi2;
+    try {
+      final libraryReport =
+          EphemerisManager.jyotish.calculateCompatibilityReport(
+        chart1.baseChart,
+        chart2.baseChart,
+      );
 
-    for (final entry in chart1.baseChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        nak1 = (entry.value.longitude / (360.0 / 27.0)).floor();
-        rashi1 = (entry.value.longitude / 30.0).floor();
-        break;
-      }
-    }
+      final g = libraryReport.gunaScores;
+      final moon1 = chart1.baseChart.planets[Planet.moon];
+      final moon2 = chart2.baseChart.planets[Planet.moon];
+      final moon1Nak = moon1?.position.nakshatra ?? 'Unknown';
+      final moon2Nak = moon2?.position.nakshatra ?? 'Unknown';
 
-    for (final entry in chart2.baseChart.planets.entries) {
-      if (entry.key.toString().toLowerCase().contains('moon')) {
-        nak2 = (entry.value.longitude / (360.0 / 27.0)).floor();
-        rashi2 = (entry.value.longitude / 30.0).floor();
-        break;
-      }
-    }
-
-    if (nak1 == null || nak2 == null || rashi1 == null || rashi2 == null) {
       return NakshatraAnalysis(
-        moon1Nakshatra: 'Unknown',
-        moon2Nakshatra: 'Unknown',
-        varna: 0,
-        vashya: 0,
-        tara: 0,
-        yoni: 0,
-        maitri: 0,
-        gana: 0,
-        bhakoot: 0,
-        nadi: 0,
-        totalScore: 0,
+        moon1Nakshatra: moon1Nak,
+        moon2Nakshatra: moon2Nak,
+        varna: g.varna.toDouble(),
+        vashya: g.vashya.toDouble(),
+        tara: g.tara.toDouble(),
+        yoni: g.yoni.toDouble(),
+        maitri: g.grahaMaitri.toDouble(),
+        gana: g.gana.toDouble(),
+        bhakoot: g.bhakoot.toDouble(),
+        nadi: g.nadi.toDouble(),
+        totalScore: libraryReport.totalScore.toDouble(),
+      );
+    } catch (_) {
+      // Fallback if ephemeris is uninitialized in isolated unit tests
+      int? nak1, nak2, rashi1, rashi2;
+      for (final entry in chart1.baseChart.planets.entries) {
+        if (entry.key == Planet.moon || entry.key.toString().toLowerCase().contains('moon')) {
+          nak1 = (entry.value.longitude / (360.0 / 27.0)).floor();
+          rashi1 = (entry.value.longitude / 30.0).floor();
+          break;
+        }
+      }
+      for (final entry in chart2.baseChart.planets.entries) {
+        if (entry.key == Planet.moon || entry.key.toString().toLowerCase().contains('moon')) {
+          nak2 = (entry.value.longitude / (360.0 / 27.0)).floor();
+          rashi2 = (entry.value.longitude / 30.0).floor();
+          break;
+        }
+      }
+
+      if (nak1 == null || nak2 == null || rashi1 == null || rashi2 == null) {
+        return NakshatraAnalysis(
+          moon1Nakshatra: 'Unknown',
+          moon2Nakshatra: 'Unknown',
+          varna: 0,
+          vashya: 0,
+          tara: 0,
+          yoni: 0,
+          maitri: 0,
+          gana: 0,
+          bhakoot: 0,
+          nadi: 0,
+          totalScore: 0,
+        );
+      }
+
+      final varna = _calculateVarna(rashi1, rashi2);
+      final vashya = _calculateVashya(rashi1, rashi2);
+      final tara = _calculateTara(nak1, nak2);
+      final yoni = _calculateYoniScore(nak1, nak2);
+      final maitri = _calculateMaitri(rashi1, rashi2);
+      final gana = _calculateGanaScore(nak1, nak2);
+      final bhakoot = _calculateBhakoot(rashi1, rashi2);
+      final nadi = _calculateNadiScore(nak1, nak2);
+      final total = varna + vashya + tara + yoni + maitri + gana + bhakoot + nadi;
+
+      return NakshatraAnalysis(
+        moon1Nakshatra: AstrologyConstants.nakshatraNames[nak1 % 27],
+        moon2Nakshatra: AstrologyConstants.nakshatraNames[nak2 % 27],
+        varna: varna,
+        vashya: vashya,
+        tara: tara,
+        yoni: yoni,
+        maitri: maitri,
+        gana: gana,
+        bhakoot: bhakoot,
+        nadi: nadi,
+        totalScore: total,
       );
     }
-
-    // 1. Varna (1 pt)
-    final varna = _calculateVarna(rashi1, rashi2);
-
-    // 2. Vashya (2 pts)
-    final vashya = _calculateVashya(rashi1, rashi2);
-
-    // 3. Tara (3 pts)
-    final tara = _calculateTara(nak1, nak2);
-
-    // 4. Yoni (4 pts)
-    final yoni = _calculateYoniScore(nak1, nak2);
-
-    // 5. Graha Maitri (5 pts)
-    final maitri = _calculateMaitri(rashi1, rashi2);
-
-    // 6. Gana (6 pts)
-    final gana = _calculateGanaScore(nak1, nak2);
-
-    // 7. Bhakoot (7 pts)
-    final bhakoot = _calculateBhakoot(rashi1, rashi2);
-
-    // 8. Nadi (8 pts)
-    final nadi = _calculateNadiScore(nak1, nak2);
-
-    final total = varna + vashya + tara + yoni + maitri + gana + bhakoot + nadi;
-
-    return NakshatraAnalysis(
-      moon1Nakshatra: AstrologyConstants.nakshatraNames[nak1 % 27],
-      moon2Nakshatra: AstrologyConstants.nakshatraNames[nak2 % 27],
-      varna: varna,
-      vashya: vashya,
-      tara: tara,
-      yoni: yoni,
-      maitri: maitri,
-      gana: gana,
-      bhakoot: bhakoot,
-      nadi: nadi,
-      totalScore: total,
-    );
   }
 
   // --- Kuta Calculation Helpers ---
@@ -335,16 +346,16 @@ class ChartComparison {
   }
 
   static double _calculateTara(int n1, int n2) {
-    // Bidirectional check as per tradition
+    // Count from Bride (n2) to Groom (n1) and Groom to Bride
+    // 0-indexed distance dist:
+    // count = dist + 1
+    // Auspicious Taras: Janma(1), Sampat(2), Kshema(4), Sadhana(6), Mitra(8), Parama Mitra(9) -> dist % 9 in {0, 1, 3, 5, 7, 8}
+    // Inauspicious Taras: Vipat(3), Pratyak(5), Naidhana(7) -> dist % 9 in {2, 4, 6}
     final dist1 = (n1 - n2 + 27) % 27;
     final dist2 = (n2 - n1 + 27) % 27;
 
-    final rem1 = dist1 % 9;
-    final rem2 = dist2 % 9;
-
-    // Bad remainders: 3-Vipat, 5-Pratyak, 7-Naidhana
-    final bad1 = [3, 5, 7].contains(rem1);
-    final bad2 = [3, 5, 7].contains(rem2);
+    final bad1 = [2, 4, 6].contains(dist1 % 9);
+    final bad2 = [2, 4, 6].contains(dist2 % 9);
 
     // Both bad = 0, one bad = 1.5, both good = 3
     if (bad1 && bad2) return 0.0;
@@ -353,14 +364,7 @@ class ChartComparison {
   }
 
   static double _calculateYoniScore(int n1, int n2) {
-    // Using string helper previously
-    final res = _calculateYoni(n1, n2);
-    if (res.contains('Excellent')) return 4.0;
-    if (res.contains('Good')) return 3.0; // Friendly
-    if (res.contains('moderate')) return 2.0;
-    if (res.contains('Neutral')) return 2.0;
-    return 1.0; // Enemy
-    // 0 only for bitter enemies
+    return _getYoniMatrixScore(n1 % 27, n2 % 27).toDouble();
   }
 
   static double _calculateMaitri(int r1, int r2) {
@@ -523,47 +527,59 @@ class ChartComparison {
   }
 
   /// Calculate overall compatibility score
+  /// Weighted distribution:
+  /// - Ashtakoota Nakshatra Matching: 50% max
+  /// - Synastry Aspect Balance: 25% max
+  /// - Navamsa Compatibility: 15% max
+  /// - House Overlays: 10% max
   static double _calculateOverallScore(
     List<SynastryAspect> aspects,
     List<HouseOverlay> overlays,
     NakshatraAnalysis nakshatra,
     NavamsaCompatibility navamsa,
   ) {
-    var score = 50.0; // Base score
+    // 1. Ashta Kuta Contribution (50% max)
+    final kutaContribution = (nakshatra.totalScore / 36.0) * 50.0;
 
-    // Add points for positive aspects
-    for (final aspect in aspects) {
-      if (aspect.effect == AspectEffect.veryPositive) {
-        score += 3;
-      } else if (aspect.effect == AspectEffect.positive) {
-        score += 2;
-      } else if (aspect.effect == AspectEffect.challenging) {
-        score -= 1;
-      } else if (aspect.effect == AspectEffect.veryChallenging) {
-        score -= 2;
+    // 2. Synastry Aspect Contribution (25% max)
+    var aspectScore = 12.5; // neutral midpoint
+    if (aspects.isNotEmpty) {
+      var netAspects = 0.0;
+      for (final aspect in aspects) {
+        if (aspect.effect == AspectEffect.veryPositive) {
+          netAspects += 1.5;
+        } else if (aspect.effect == AspectEffect.positive) {
+          netAspects += 1.0;
+        } else if (aspect.effect == AspectEffect.challenging) {
+          netAspects -= 0.8;
+        } else if (aspect.effect == AspectEffect.veryChallenging) {
+          netAspects -= 1.5;
+        }
       }
+      aspectScore = (12.5 + netAspects).clamp(0.0, 25.0);
     }
 
-    // Add points for house overlays
+    // 3. Navamsa Compatibility (15% max)
+    final navamsaContribution =
+        ((navamsa.score / 100.0) * 15.0).clamp(0.0, 15.0);
+
+    // 4. House Overlays (10% max)
+    var overlayPoints = 5.0;
     for (final overlay in overlays) {
       if (overlay.significance.contains('benefic')) {
-        score += 1;
+        overlayPoints += 0.5;
+      } else if (overlay.significance.contains('challeng')) {
+        overlayPoints -= 0.5;
       }
     }
+    final overlayContribution = overlayPoints.clamp(0.0, 10.0);
 
-    // Add nakshatra score (Kuta Matching)
-    // Map 36 points to a 20 point scale for overall compatibility mix?
-    // Or just use points.
-    // Previous logic: score += nakshatra.score * 0.3; (where score was approx 15)
-    // New score is out of 36.
-    // Let's add full Kuta points (max 36) to base score and clamp.
-    score += nakshatra.totalScore;
+    final totalScore = kutaContribution +
+        aspectScore +
+        navamsaContribution +
+        overlayContribution;
 
-    // Add navamsa score
-    score += navamsa.score * 0.2;
-
-    // Normalize to 0-100
-    return score.clamp(0.0, 100.0);
+    return totalScore.clamp(0.0, 100.0);
   }
 
   /// Generate compatibility summary
@@ -777,13 +793,87 @@ class ChartComparison {
     return 0.0; // No aspect
   }
 
-  static String _calculateYoni(int nak1, int nak2) {
-    // Simplified yoni calculation
-    final diff = (nak1 - nak2).abs();
-    if (diff == 0) return 'Same Yoni - Excellent';
-    if (diff == 9 || diff == 18) return 'Friendly Yoni - Good';
-    if (diff == 13 || diff == 14) return 'Neutral Yoni - Moderate';
-    return 'Different Yoni - Challenging';
+  static const List<int> _nakshatraYoniAnimalIndex = [
+    0, // 0: Ashwini (Horse)
+    1, // 1: Bharani (Elephant)
+    2, // 2: Krittika (Goat)
+    3, // 3: Rohini (Serpent)
+    3, // 4: Mrigashira (Serpent)
+    4, // 5: Ardra (Dog)
+    5, // 6: Punarvasu (Cat)
+    2, // 7: Pushya (Goat)
+    5, // 8: Ashlesha (Cat)
+    6, // 9: Magha (Rat)
+    6, // 10: Purva Phalguni (Rat)
+    7, // 11: Uttara Phalguni (Cow)
+    8, // 12: Hasta (Buffalo)
+    9, // 13: Chitra (Tiger)
+    8, // 14: Swati (Buffalo)
+    9, // 15: Vishakha (Tiger)
+    10, // 16: Anuradha (Deer)
+    10, // 17: Jyeshtha (Deer)
+    4, // 18: Mula (Dog)
+    11, // 19: Purva Ashadha (Monkey)
+    12, // 20: Uttara Ashadha (Mongoose)
+    11, // 21: Shravana (Monkey)
+    13, // 22: Dhanishta (Lion)
+    0, // 23: Shatabhisha (Horse)
+    13, // 24: Purva Bhadrapada (Lion)
+    7, // 25: Uttara Bhadrapada (Cow)
+    1, // 26: Revati (Elephant)
+  ];
+
+  static const List<String> _yoniAnimalNames = [
+    'Horse',
+    'Elephant',
+    'Goat',
+    'Serpent',
+    'Dog',
+    'Cat',
+    'Rat',
+    'Cow',
+    'Buffalo',
+    'Tiger',
+    'Deer',
+    'Monkey',
+    'Mongoose',
+    'Lion',
+  ];
+
+  static const List<List<int>> _yoniMatrix = [
+    [4, 3, 2, 3, 2, 2, 2, 2, 0, 2, 2, 3, 2, 2], // Horse
+    [3, 4, 3, 3, 2, 2, 2, 2, 3, 2, 2, 3, 2, 0], // Elephant
+    [2, 3, 4, 2, 2, 2, 2, 3, 3, 2, 2, 0, 3, 2], // Goat
+    [3, 3, 2, 4, 2, 3, 2, 2, 2, 2, 2, 2, 0, 2], // Serpent
+    [2, 2, 2, 2, 4, 3, 3, 2, 2, 2, 0, 2, 2, 2], // Dog
+    [2, 2, 2, 3, 3, 4, 0, 2, 2, 2, 3, 3, 2, 2], // Cat
+    [2, 2, 2, 2, 3, 0, 4, 2, 2, 2, 2, 2, 2, 2], // Rat
+    [2, 2, 3, 2, 2, 2, 2, 4, 3, 0, 3, 2, 2, 2], // Cow
+    [0, 3, 3, 2, 2, 2, 2, 3, 4, 2, 2, 2, 2, 2], // Buffalo
+    [2, 2, 2, 2, 2, 2, 2, 0, 2, 4, 1, 2, 2, 2], // Tiger
+    [2, 2, 2, 2, 0, 3, 2, 3, 2, 1, 4, 2, 2, 2], // Deer
+    [3, 3, 0, 2, 2, 3, 2, 2, 2, 2, 2, 4, 2, 2], // Monkey
+    [2, 2, 3, 0, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2], // Mongoose
+    [2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4], // Lion
+  ];
+
+  static int _getYoniMatrixScore(int nak1, int nak2) {
+    final a1 = _nakshatraYoniAnimalIndex[nak1 % 27];
+    final a2 = _nakshatraYoniAnimalIndex[nak2 % 27];
+    return _yoniMatrix[a1][a2];
+  }
+
+  static String calculateYoniDescription(int nak1, int nak2) {
+    final a1 = _nakshatraYoniAnimalIndex[nak1 % 27];
+    final a2 = _nakshatraYoniAnimalIndex[nak2 % 27];
+    final score = _yoniMatrix[a1][a2];
+    final name1 = _yoniAnimalNames[a1];
+    final name2 = _yoniAnimalNames[a2];
+    if (score == 4) return '$name1 - $name2: Excellent (Same Yoni)';
+    if (score == 3) return '$name1 - $name2: Good (Friendly Yoni)';
+    if (score == 2) return '$name1 - $name2: Neutral Yoni';
+    if (score == 1) return '$name1 - $name2: Challenging (Enemy Yoni)';
+    return '$name1 - $name2: Incompatible (Bitter Enemy)';
   }
 
   static String _calculateGana(int nak1, int nak2) {

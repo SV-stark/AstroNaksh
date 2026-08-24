@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class BhangaResult {
   BhangaResult({
     required this.name,
@@ -60,13 +62,26 @@ class BhangaResult {
     if (identical(this, other)) return true;
     return other is BhangaResult &&
         other.name == name &&
+        other.description == description &&
         other.status == status &&
         other.isActive == isActive &&
-        other.strength == strength;
+        other.strength == strength &&
+        other.manifestationPeriod == manifestationPeriod &&
+        other.peakDashaLord == peakDashaLord &&
+        listEquals(other.cancellationReasons, cancellationReasons);
   }
 
   @override
-  int get hashCode => Object.hash(name, status, isActive, strength);
+  int get hashCode => Object.hash(
+        name,
+        description,
+        status,
+        isActive,
+        strength,
+        manifestationPeriod,
+        peakDashaLord,
+        Object.hashAll(cancellationReasons),
+      );
 }
 
 class YogaDoshaAnalysisResult {
@@ -111,11 +126,17 @@ class YogaDoshaAnalysisResult {
     return other is YogaDoshaAnalysisResult &&
         other.overallScore == overallScore &&
         other.qualityLabel == qualityLabel &&
-        other.yogas.length == yogas.length &&
-        other.doshas.length == doshas.length;
+        other.qualityDescription == qualityDescription &&
+        listEquals(other.yogas, yogas) &&
+        listEquals(other.doshas, doshas);
   }
 
   @override
-  int get hashCode =>
-      Object.hash(overallScore, qualityLabel, yogas.length, doshas.length);
+  int get hashCode => Object.hash(
+    overallScore,
+    qualityLabel,
+    qualityDescription,
+    Object.hashAll(yogas),
+    Object.hashAll(doshas),
+  );
 }

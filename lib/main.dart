@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'core/app_environment.dart';
@@ -12,7 +11,10 @@ import 'core/router.dart';
 import 'core/settings_provider.dart';
 import 'ui/styles.dart';
 
+List<String> _appArgs = const [];
+
 void main(List<String> args) {
+  _appArgs = args;
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: AstroNakshApp()));
 }
@@ -36,12 +38,7 @@ class _AstroNakshAppState extends ConsumerState<AstroNakshApp> {
 
   Future<void> _initApp() async {
     try {
-      await AppEnvironment.initialize([]);
-
-      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        sqfliteFfiInit();
-        databaseFactory = databaseFactoryFfi;
-      }
+      await AppEnvironment.initialize(_appArgs);
 
       tz.initializeTimeZones();
 
@@ -91,11 +88,17 @@ class _AstroNakshAppState extends ConsumerState<AstroNakshApp> {
       loading: () => const FluentApp(
         home: ScaffoldPage(content: Center(child: ProgressRing())),
       ),
-      error: (err, stack) => FluentApp(
-        home: ScaffoldPage(
-          content: Center(child: Text('Error loading settings: $err')),
-        ),
-      ),
+      error: (err, stack) {
+        AppEnvironment.log('Error loading settings: $err\n$stack');
+        return FluentApp.router(
+          title: 'AstroNaksh',
+          themeMode: ThemeMode.system,
+          theme: AppStyles.lightTheme,
+          darkTheme: AppStyles.darkTheme,
+          routerConfig: router,
+          debugShowCheckedModeBanner: false,
+        );
+      },
       data: (settings) => FluentApp.router(
         title: 'AstroNaksh',
         themeMode: settings.themeMode,

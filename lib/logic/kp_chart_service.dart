@@ -127,6 +127,7 @@ class KPChartService {
             subSubLord: planetKP.subSubLord?.displayName ?? '--',
             nakshatraIndex: info.position.nakshatraIndex,
             nakshatraName: info.nakshatra,
+            planetName: planet.displayName,
           ),
         );
       }

@@ -66,7 +66,7 @@ class VarshaphalSystem {
     );
 
     // 4. Calculate Muntha and Tajaka enhancements
-    final age = year - birthData.dateTime.year;
+    final age = calculateExactAge(birthData.dateTime, solarReturnTime);
     final tajakaEnhancement = tajakaService.calculateTajakaEnhancements(
       natalChart: natalChart,
       annualChart: varshaChart,
@@ -277,12 +277,33 @@ class VarshaphalSystem {
     );
   }
 
+  static int calculateExactAge(
+    DateTime birthDateTime,
+    DateTime targetDateTime,
+  ) {
+    var age = targetDateTime.year - birthDateTime.year;
+    if (targetDateTime.month < birthDateTime.month ||
+        (targetDateTime.month == birthDateTime.month &&
+            (targetDateTime.day < birthDateTime.day ||
+                (targetDateTime.day == birthDateTime.day &&
+                    (targetDateTime.hour < birthDateTime.hour ||
+                        (targetDateTime.hour == birthDateTime.hour &&
+                            targetDateTime.minute < birthDateTime.minute)))))) {
+      age--;
+    }
+    return age < 0 ? 0 : age;
+  }
+
   // --- 4. Muntha Calculation ---
 
-  static int calculateMuntha(int natalAscSign, int birthYear, int targetYear) {
-    // Formula: (Natal Asc + (Target Year - Birth Year)) % 12
-    // Signs are 0-indexed (Aries=0)
-    final age = targetYear - birthYear;
+  static int calculateMuntha(
+    int natalAscSign,
+    int birthYear,
+    int targetYear, [
+    int? exactAge,
+  ]) {
+    // Formula: (Natal Asc + completed age) % 12
+    final age = exactAge ?? (targetYear - birthYear);
     return (natalAscSign + age) % 12;
   }
 
@@ -450,17 +471,19 @@ class VarshaphalSystem {
     return sahams;
   }
 
-  static List<String> calculateTajikYogas(
-    VedicChart chart,
-    String lagnaLord,
-    String munthaLord,
-    String yearLord,
-  ) {
+  static List<String> calculateTajikYogas({
+    required VedicChart annualChart,
+    VedicChart? natalChart,
+    int age = 0,
+    String? lagnaLord,
+    String? munthaLord,
+    String? yearLord,
+  }) {
     final tajakaService = EphemerisManager.jyotish.systems.tajaka;
     final enhancements = tajakaService.calculateTajakaEnhancements(
-      natalChart: chart,
-      annualChart: chart,
-      age: 0,
+      natalChart: natalChart ?? annualChart,
+      annualChart: annualChart,
+      age: age,
     );
     final yogas = enhancements.yogas.map((y) => y.interpretation).toList();
     if (yogas.isEmpty) {
@@ -670,8 +693,30 @@ class VarshaphalSystem {
     if (debilSigns[planet] == sign) return 'Debilitated';
     if (ownSigns[planet]?.contains(sign) ?? false) return 'Own Sign';
 
-    // Friend/Enemy logic (simplified)
-    // For now, return Neutral
+    // Friend / Enemy relationship lookup
+    final signLord = getSignLord(sign);
+    final signLordPlanet = getPlanetFromString(signLord);
+    const naturalFriends = {
+      Planet.sun: [Planet.moon, Planet.mars, Planet.jupiter],
+      Planet.moon: [Planet.sun, Planet.mercury],
+      Planet.mars: [Planet.sun, Planet.moon, Planet.jupiter],
+      Planet.mercury: [Planet.sun, Planet.venus],
+      Planet.jupiter: [Planet.sun, Planet.moon, Planet.mars],
+      Planet.venus: [Planet.mercury, Planet.saturn],
+      Planet.saturn: [Planet.mercury, Planet.venus],
+    };
+    const naturalEnemies = {
+      Planet.sun: [Planet.venus, Planet.saturn],
+      Planet.moon: <Planet>[],
+      Planet.mars: [Planet.mercury],
+      Planet.mercury: [Planet.moon],
+      Planet.jupiter: [Planet.mercury, Planet.venus],
+      Planet.venus: [Planet.sun, Planet.moon],
+      Planet.saturn: [Planet.sun, Planet.moon, Planet.mars],
+    };
+
+    if (naturalFriends[planet]?.contains(signLordPlanet) ?? false) return 'Friend Sign';
+    if (naturalEnemies[planet]?.contains(signLordPlanet) ?? false) return 'Enemy Sign';
     return 'Neutral';
   }
 

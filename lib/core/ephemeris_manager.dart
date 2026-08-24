@@ -2,7 +2,6 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:jyotish/jyotish.dart';
@@ -87,29 +86,6 @@ class EphemerisManager {
 
       if (await dllFile.exists()) {
         AppEnvironment.log('EphemerisManager: swisseph.dll found at $dllPath');
-
-        // Check Architecture
-        try {
-          final bytes = await dllFile.readAsBytes();
-          if (bytes.length > 64) {
-            final peOffset =
-                bytes[0x3C] |
-                (bytes[0x3D] << 8) |
-                (bytes[0x3E] << 16) |
-                (bytes[0x3F] << 24);
-            if (peOffset + 6 < bytes.length) {
-              final machine = bytes[peOffset + 4] | (bytes[peOffset + 5] << 8);
-              final is64Bit = machine == 0x8664;
-              AppEnvironment.log(
-                'EphemerisManager: DLL Machine Type: 0x${machine.toRadixString(16)} (Is x64: $is64Bit)',
-              );
-            }
-          }
-        } catch (e) {
-          AppEnvironment.log(
-            'EphemerisManager: Failed to parse DLL header: $e',
-          );
-        }
 
         // Try Explicit Load
         try {
@@ -275,8 +251,8 @@ class EphemerisManager {
       0,
       (sum, file) => sum + (_fileSizes[file] ?? 0),
     );
+    final failedFiles = <String>[];
     var downloadedSize = 0;
-
     for (final file in files) {
       try {
         final url = '$_baseUrl/$file';
@@ -295,12 +271,22 @@ class EphemerisManager {
           if (onProgress != null) {
             onProgress(progress, file);
           }
+        } else {
+          AppEnvironment.log(
+            'EphemerisManager: Failed to download $file - HTTP ${response.statusCode}',
+          );
+          failedFiles.add(file);
         }
       } catch (e) {
-        if (kDebugMode) {
-          print('Error downloading $file: $e');
-        }
+        AppEnvironment.log('EphemerisManager: Error downloading $file: $e');
+        failedFiles.add(file);
       }
+    }
+
+    if (failedFiles.isNotEmpty) {
+      AppEnvironment.log(
+        'EphemerisManager: ${failedFiles.length} file(s) failed during download: ${failedFiles.join(', ')}',
+      );
     }
   }
 

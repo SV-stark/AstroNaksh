@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:astronaksh/core/database.dart';
 import 'package:astronaksh/core/router.dart';
 import 'package:astronaksh/ui/comparison/chart_comparison_screen.dart';
@@ -15,14 +13,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   setUpAll(() async {
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-    }
     SharedPreferences.setMockInitialValues({'has_seen_tutorial': true});
 
     // Mock path_provider for AppEnvironment/Drift settings

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class KPSubLord {
   KPSubLord({
     required this.starLord,
@@ -5,6 +7,7 @@ class KPSubLord {
     required this.subSubLord,
     this.nakshatraIndex = 0,
     this.nakshatraName = '',
+    this.planetName = '',
   });
 
   factory KPSubLord.fromJson(Map<String, dynamic> json) {
@@ -14,6 +17,7 @@ class KPSubLord {
       subSubLord: json['subSubLord'] as String,
       nakshatraIndex: json['nakshatraIndex'] as int? ?? 0,
       nakshatraName: json['nakshatraName'] as String? ?? '',
+      planetName: json['planetName'] as String? ?? '',
     );
   }
   final String starLord;
@@ -21,6 +25,7 @@ class KPSubLord {
   final String subSubLord;
   final int nakshatraIndex;
   final String nakshatraName;
+  final String planetName;
 
   Map<String, dynamic> toJson() => {
     'starLord': starLord,
@@ -28,6 +33,7 @@ class KPSubLord {
     'subSubLord': subSubLord,
     'nakshatraIndex': nakshatraIndex,
     'nakshatraName': nakshatraName,
+    'planetName': planetName,
   };
 
   @override
@@ -37,12 +43,20 @@ class KPSubLord {
         other.starLord == starLord &&
         other.subLord == subLord &&
         other.subSubLord == subSubLord &&
-        other.nakshatraIndex == nakshatraIndex;
+        other.nakshatraIndex == nakshatraIndex &&
+        other.nakshatraName == nakshatraName &&
+        other.planetName == planetName;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(starLord, subLord, subSubLord, nakshatraIndex);
+  int get hashCode => Object.hash(
+    starLord,
+    subLord,
+    subSubLord,
+    nakshatraIndex,
+    nakshatraName,
+    planetName,
+  );
 }
 
 class KPData {
@@ -79,9 +93,10 @@ class KPData {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is KPData &&
-        other.subLords.length == subLords.length &&
-        other.significators.length == significators.length &&
-        other.cuspSubLords.length == cuspSubLords.length;
+        listEquals(other.subLords, subLords) &&
+        listEquals(other.significators, significators) &&
+        listEquals(other.rulingPlanets, rulingPlanets) &&
+        listEquals(other.cuspSubLords, cuspSubLords);
   }
 
   @override

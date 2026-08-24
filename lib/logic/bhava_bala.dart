@@ -8,16 +8,26 @@ import 'shadbala.dart';
 class BhavaBala {
   static StrengthAnalysisService? _strengthService;
 
+  static Future<Map<Planet, ShadbalaResult>> _getOrCalculateShadbala(
+    CompleteChartData chart,
+    Map<Planet, ShadbalaResult>? cachedShadbala,
+  ) async {
+    if (cachedShadbala != null && cachedShadbala.isNotEmpty) {
+      return cachedShadbala;
+    }
+    return ShadbalaCalculator.calculateDetailedShadbala(chart.baseChart);
+  }
+
   /// Calculate strength of all 12 houses using library's native implementation
   static Future<Map<int, BhavaStrength>> calculateBhavaBala(
-    CompleteChartData chart,
-  ) async {
+    CompleteChartData chart, {
+    Map<Planet, ShadbalaResult>? cachedShadbala,
+  }) async {
     _strengthService ??= StrengthAnalysisService();
 
-    // Get Shadbala results (required by library's Bhava Bala calculation)
-    final shadbalaResults = await ShadbalaCalculator.calculateDetailedShadbala(
-      chart.baseChart,
-    );
+    // Get Shadbala results (reusing cached results if provided)
+    final shadbalaResults =
+        await _getOrCalculateShadbala(chart, cachedShadbala);
 
     // Convert ShadbalaResult to double values for library API
     final shadbalaMap = <Planet, double>{};
@@ -51,13 +61,13 @@ class BhavaBala {
   /// Uses library's StrengthAnalysisService
   static Future<double> calculateIshtaphala(
     CompleteChartData chart,
-    Planet planet,
-  ) async {
+    Planet planet, {
+    Map<Planet, ShadbalaResult>? cachedShadbala,
+  }) async {
     _strengthService ??= StrengthAnalysisService();
 
-    final shadbalaResults = await ShadbalaCalculator.calculateDetailedShadbala(
-      chart.baseChart,
-    );
+    final shadbalaResults =
+        await _getOrCalculateShadbala(chart, cachedShadbala);
 
     final shadbalaStrength = shadbalaResults[planet]?.totalBala ?? 60.0;
 
@@ -72,13 +82,13 @@ class BhavaBala {
   /// Uses library's StrengthAnalysisService
   static Future<double> calculateKashtaphala(
     CompleteChartData chart,
-    Planet planet,
-  ) async {
+    Planet planet, {
+    Map<Planet, ShadbalaResult>? cachedShadbala,
+  }) async {
     _strengthService ??= StrengthAnalysisService();
 
-    final shadbalaResults = await ShadbalaCalculator.calculateDetailedShadbala(
-      chart.baseChart,
-    );
+    final shadbalaResults =
+        await _getOrCalculateShadbala(chart, cachedShadbala);
 
     final shadbalaStrength = shadbalaResults[planet]?.totalBala ?? 60.0;
 
@@ -114,13 +124,29 @@ class BhavaBala {
 
   /// Calculate Ishtaphala and Kashtaphala for all planets
   static Future<Map<Planet, ({double ishtaphala, double kashtaphala})>>
-  calculateAllPlanetFruits(CompleteChartData chart) async {
+  calculateAllPlanetFruits(
+    CompleteChartData chart, {
+    Map<Planet, ShadbalaResult>? cachedShadbala,
+  }) async {
+    _strengthService ??= StrengthAnalysisService();
+    final shadbalaResults =
+        await _getOrCalculateShadbala(chart, cachedShadbala);
+
     final results = <Planet, ({double ishtaphala, double kashtaphala})>{};
 
     for (final planet in Planet.traditionalPlanets) {
+      final shadbalaStrength = shadbalaResults[planet]?.totalBala ?? 60.0;
       results[planet] = (
-        ishtaphala: await calculateIshtaphala(chart, planet),
-        kashtaphala: await calculateKashtaphala(chart, planet),
+        ishtaphala: _strengthService!.getIshtaphala(
+          planet: planet,
+          chart: chart.baseChart,
+          shadbalaStrength: shadbalaStrength,
+        ),
+        kashtaphala: _strengthService!.getKashtaphala(
+          planet: planet,
+          chart: chart.baseChart,
+          shadbalaStrength: shadbalaStrength,
+        ),
       );
     }
 

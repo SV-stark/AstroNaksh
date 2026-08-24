@@ -274,20 +274,41 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
     await SavedChartsHelper.saveChart(_birthData!);
 
     final db = ref.read(databaseProvider);
-    await db
-        .into(db.charts)
-        .insert(
-          ChartsCompanion.insert(
-            name: drift.Value(_birthData!.name),
-            birthTime: drift.Value(_birthData!.dateTime.toIso8601String()),
-            latitude: drift.Value(_birthData!.location.latitude),
-            longitude: drift.Value(_birthData!.location.longitude),
-            locationName: drift.Value(_birthData!.place),
-            timezone: drift.Value(
-              _birthData!.timezone.isEmpty ? 'UTC' : _birthData!.timezone,
+    final birthIso = _birthData!.dateTime.toIso8601String();
+    final existing = await (db.select(db.charts)
+          ..where(
+            (tbl) =>
+                tbl.name.equals(_birthData!.name) &
+                tbl.birthTime.equals(birthIso),
+          ))
+        .getSingleOrNull();
+
+    if (existing == null) {
+      await db.into(db.charts).insert(
+            ChartsCompanion.insert(
+              name: drift.Value(_birthData!.name),
+              birthTime: drift.Value(birthIso),
+              latitude: drift.Value(_birthData!.location.latitude),
+              longitude: drift.Value(_birthData!.location.longitude),
+              locationName: drift.Value(_birthData!.place),
+              timezone: drift.Value(
+                _birthData!.timezone.isEmpty ? 'UTC' : _birthData!.timezone,
+              ),
             ),
-          ),
-        );
+          );
+    } else {
+      await (db.update(db.charts)..where((tbl) => tbl.id.equals(existing.id)))
+          .write(
+            ChartsCompanion(
+              latitude: drift.Value(_birthData!.location.latitude),
+              longitude: drift.Value(_birthData!.location.longitude),
+              locationName: drift.Value(_birthData!.place),
+              timezone: drift.Value(
+                _birthData!.timezone.isEmpty ? 'UTC' : _birthData!.timezone,
+              ),
+            ),
+          );
+    }
 
     if (!mounted) return;
     displayInfoBar(

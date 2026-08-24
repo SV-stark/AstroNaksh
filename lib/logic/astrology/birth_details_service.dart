@@ -61,7 +61,7 @@ class BirthDetailsService {
     final lmt = gmt.add(Duration(minutes: (lonHours * 60).round()));
 
     // LMT Correction (Correction from standard timezone)
-    var tzHours = 5.5;
+    var tzHours = 0.0;
     try {
       final loc = tz.getLocation(birthData.timezone);
       final offsetMs = loc
@@ -70,7 +70,12 @@ class BirthDetailsService {
       tzHours = offsetMs.inMilliseconds / 3600000.0;
     } catch (e) {
       final parsed = double.tryParse(birthData.timezone);
-      if (parsed != null) tzHours = parsed;
+      if (parsed != null) {
+        tzHours = parsed;
+      } else {
+        // Approximate standard timezone offset from longitude (15 deg = 1 hr)
+        tzHours = (birthData.location.longitude / 15.0).roundToDouble();
+      }
     }
     final lmtCorrectionMinutes =
         (birthData.location.longitude - (tzHours * 15.0)) * 4.0;
@@ -129,7 +134,7 @@ class BirthDetailsService {
         'Vasya': AvakahadaService.getVashya(moonRashiIndex),
         'Nadi': AvakahadaService.getNadi(moonNakIndex),
         'Dasha Balance':
-            data.dashaData.vimshottari.mahadashas.first.lord, // Simplified
+            data.dashaData.vimshottari.mahadashas.firstOrNull?.lord ?? '--',
         'Lagna (Ascendant)': Rashi.fromIndex(ascendantIndex).name,
         'Lagna Lord': Rashi.fromIndex(ascendantIndex).lord.displayName,
         'Rashi (Moon Sign)': moon.zodiacSign,

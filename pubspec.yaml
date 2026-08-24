@@ -30,19 +30,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  sqflite: ^2.3.0
   path: ^1.8.3
   path_provider: ^2.1.0
   http: ^1.1.0
   pdf: ^3.10.7
   printing: ^5.11.1
   share_plus: ^12.0.2
-  showcaseview: ^5.0.2
   geolocator: ^14.0.2
   jyotish:
     path: packages/jyotish
   fluent_ui: ^4.13.0
-  math_expressions: ^3.1.0
   flutter_acrylic: ^1.1.4
   fl_chart: ^1.2.0
   intl: ^0.20.0
@@ -52,8 +49,9 @@ dependencies:
   flutter_riverpod: ^3.3.1
   riverpod_annotation: ^4.0.2
   
-  # Reactive Database ORM
+  # Reactive Database ORM & SQLite
   drift: ^2.33.0
+  sqlite3: ^3.1.5
   
   # Declarative Routing
   go_router: ^17.2.3
@@ -61,17 +59,11 @@ dependencies:
   # Data Modeling & Utils
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
-  dartx: ^1.2.0
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.4
+  flutter_secure_storage: ^9.2.2
   timezone: ^0.11.0
   lat_lng_to_timezone: ^0.2.0
   file_picker: ^8.0.1
-  sqflite_common_ffi: ^2.4.0+3
-  sqlite3_flutter_libs: ^0.6.0+eol
 
 
 dev_dependencies:
@@ -84,16 +76,10 @@ dev_dependencies:
   freezed: ^3.2.5
   json_serializable: ^6.14.0
   
-  # Generators
+  # Generators & Test Utils
   riverpod_generator: ^4.0.3
   drift_dev: ^2.33.0
-  
-
-dependency_overrides:
-  meta: ^1.18.2
-  matcher: ^0.12.20
-  test_api: ^0.7.12
-  test: ^1.31.1
+  mocktail: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

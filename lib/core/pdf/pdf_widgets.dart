@@ -69,7 +69,7 @@ class PdfWidgets {
                   padding: const pw.EdgeInsets.all(6),
                   child: pw.Text(
                     h,
-                    style: pw.TextStyle(
+                    style: const pw.TextStyle(
                       color: PdfColors.white,
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 9,

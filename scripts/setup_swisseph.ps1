@@ -1,4 +1,4 @@
-﻿param(
+param(
     [switch]$Force
 )
 
@@ -20,22 +20,27 @@ if (-not $Force -and (Test-Path $DLL_NAME) -and (Test-Path $ANDROID_CPP_DIR) -an
 if (-not (Test-Path $ANDROID_CPP_DIR)) { New-Item -ItemType Directory -Path $ANDROID_CPP_DIR -Force | Out-Null }
 if (-not (Test-Path $ASSETS_EPHE_DIR)) { New-Item -ItemType Directory -Path $ASSETS_EPHE_DIR -Force | Out-Null }
 
-# 4. Clone official repo (shallow)
+# 4. Clone official repo (pinned to stable tag v2.10.03)
 if (Test-Path $TEMP_DIR) { Remove-Item $TEMP_DIR -Recurse -Force }
-Write-Host "Cloning official Swiss Ephemeris repository..." -ForegroundColor Yellow
-git clone --depth 1 https://github.com/aloistr/swisseph.git $TEMP_DIR
+Write-Host "Cloning official Swiss Ephemeris repository (v2.10.03)..." -ForegroundColor Yellow
+git clone --depth 1 --branch v2.10.03 https://github.com/aloistr/swisseph.git $TEMP_DIR
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to clone repository."
-    exit $LASTEXITCODE
+    Write-Host "Tag clone failed, falling back to shallow clone..." -ForegroundColor Yellow
+    git clone --depth 1 https://github.com/aloistr/swisseph.git $TEMP_DIR
 }
 
 # 5. Get swisseph.dll from the official Windows zip package
 Write-Host "Downloading official Windows DLL package..." -ForegroundColor Cyan
-$zipUrl = "https://raw.githubusercontent.com/aloistr/swisseph/master/windows/sweph.zip"
+$zipUrl = "https://raw.githubusercontent.com/aloistr/swisseph/v2.10.03/windows/sweph.zip"
 $zipPath = "$TEMP_DIR/sweph.zip"
 $zipExtract = "$TEMP_DIR/sweph_win"
-Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
+try {
+    Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
+} catch {
+    $zipUrl = "https://raw.githubusercontent.com/aloistr/swisseph/master/windows/sweph.zip"
+    Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
+}
 Expand-Archive -LiteralPath $zipPath -DestinationPath $zipExtract -Force
 
 # The zip contains swedll64.dll (64-bit) and swedll32.dll (32-bit)

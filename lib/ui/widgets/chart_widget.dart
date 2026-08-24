@@ -7,6 +7,7 @@ import 'package:jyotish/jyotish.dart' as j;
 import '../../core/chart_customization.dart';
 import '../../core/constants.dart';
 import '../../core/settings_provider.dart';
+import '../../core/settings_state.dart';
 import '../../data/models.dart';
 import '../../logic/planetary_aspect_service.dart';
 import '../painters/aspect_painter.dart';
@@ -254,211 +255,196 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
   @override
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsProvider);
+    final settings = settingsAsync.asData?.value ??
+        SettingsState(chartSettings: ChartCustomization());
 
-    return settingsAsync.maybeWhen(
-      data: (settings) {
-        final chartSettings = settings.chartSettings;
-        final colors = chartSettings.colorScheme.colors;
+    final chartSettings = settings.chartSettings;
+    final colors = chartSettings.colorScheme.colors;
 
-        final activeHouseIndex = _hoveredHouseIndex ?? _selectedHouseIndex;
-        Widget? tooltipCard;
+    final activeHouseIndex = _hoveredHouseIndex ?? _selectedHouseIndex;
+    Widget? tooltipCard;
 
-        if (activeHouseIndex != null) {
-          final signIndex =
-              ((widget.ascendantSign - 1) + activeHouseIndex) % 12;
-          final signName = AppConstants.signs[signIndex];
-          final lordName = _getSignLordName(signIndex);
-          final planetsInHouse = _getPlanetsInHouse(activeHouseIndex);
+    if (activeHouseIndex != null) {
+      final signIndex = ((widget.ascendantSign - 1) + activeHouseIndex) % 12;
+      final signName = AppConstants.signs[signIndex];
+      final lordName = _getSignLordName(signIndex);
+      final planetsInHouse = _getPlanetsInHouse(activeHouseIndex);
 
-          tooltipCard = Positioned(
-            bottom: 8,
-            left: 8,
-            right: 8,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors.background.withAlpha(191),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: colors.houseBorder.withAlpha(76),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'House ${activeHouseIndex + 1} - $signName',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: colors.planetText,
-                                fontSize: 12,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Lord: $lordName',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: colors.planetText.withAlpha(204),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      if (planetsInHouse.isEmpty)
-                        Text(
-                          'No occupying planets',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: colors.planetText.withAlpha(153),
-                          ),
-                        )
-                      else
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: planetsInHouse.map((p) {
-                            final name = p['name'];
-                            final deg = p['degree'];
-                            final nak = p['nakshatra'];
-                            final nakL = p['nakLord'];
-                            final isRetro = p['retrograde'] == true;
-                            final retroStr = isRetro ? ' (R)' : '';
-                            final degStr = deg != null
-                                ? ' ${deg.toStringAsFixed(1)}°'
-                                : '';
-                            final detailsStr = nak != null
-                                ? ' ($nak - $nakL)'
-                                : '';
-                            return Text(
-                              '• $name$retroStr:$degStr$detailsStr',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: colors.planetText,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                    ],
-                  ),
+      tooltipCard = Positioned(
+        bottom: 8,
+        left: 8,
+        right: 8,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: colors.background.withAlpha(191),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: colors.houseBorder.withAlpha(76),
+                  width: 1,
                 ),
               ),
-            ),
-          );
-        }
-
-        return Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            color: colors.background,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(76),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: MouseRegion(
-            onHover: (event) {
-              final house = _getHouseFromOffset(
-                event.localPosition,
-                Size(widget.size, widget.size),
-              );
-              if (house != null && (house - 1) != _hoveredHouseIndex) {
-                setState(() {
-                  _hoveredHouseIndex = house - 1;
-                });
-              }
-            },
-            onExit: (event) {
-              setState(() {
-                _hoveredHouseIndex = null;
-              });
-            },
-            child: GestureDetector(
-              onTapUp: (details) {
-                final house = _getHouseFromOffset(
-                  details.localPosition,
-                  Size(widget.size, widget.size),
-                );
-                if (house != null) {
-                  setState(() {
-                    _selectedHouseIndex = house - 1;
-                  });
-                  widget.onHouseTapped?.call(house);
-                }
-              },
-              child: Stack(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomPaint(
-                    size: Size(widget.size, widget.size),
-                    painter: widget.style == ChartStyle.northIndian
-                        ? NorthIndianChartPainter(
-                            planetsBySign: widget.planetsBySign,
-                            ascendantSign: widget.ascendantSign,
-                            colors: colors,
-                            hoveredHouse: _hoveredHouseIndex,
-                            selectedHouse: _selectedHouseIndex,
-                            showSigns: chartSettings.showSigns,
-                            showHouseNumbers: chartSettings.showHouseNumbers,
-                            transitPlanetsBySign: widget.transitPlanetsBySign,
-                          )
-                        : SouthIndianChartPainter(
-                            planetsBySign: widget.planetsBySign,
-                            ascendantSign: widget.ascendantSign,
-                            colors: colors,
-                            hoveredHouse: _hoveredHouseIndex,
-                            selectedHouse: _selectedHouseIndex,
-                            showSigns: chartSettings.showSigns,
-                            showHouseNumbers: chartSettings.showHouseNumbers,
-                            transitPlanetsBySign: widget.transitPlanetsBySign,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'House ${activeHouseIndex + 1} ($signName)',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: colors.planetText,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Lord: $lordName',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colors.planetText.withAlpha(204),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
                   ),
-                  if (widget.showAspects &&
-                      widget.aspects != null &&
-                      widget.aspects!.isNotEmpty)
-                    CustomPaint(
-                      size: Size(widget.size, widget.size),
-                      painter: AspectPainter(
-                        aspects: widget.aspects!,
-                        planetsBySign: widget.planetsBySign,
-                        ascendantSign: widget.ascendantSign,
-                        colors: colors,
-                        lineOpacity: 0.4,
-                        activeHouse: _hoveredHouseIndex ?? _selectedHouseIndex,
+                  if (planetsInHouse.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 2,
+                        children: planetsInHouse.map((p) {
+                          final name = p['name'];
+                          final deg = p['degree'];
+                          final nak = p['nakshatra'];
+                          final nakL = p['nakLord'];
+                          final isRetro = p['retrograde'] == true;
+                          final retroStr = isRetro ? ' (R)' : '';
+                          final degStr = deg != null
+                              ? ' ${deg.toStringAsFixed(1)}°'
+                              : '';
+                          final detailsStr = nak != null
+                              ? ' ($nak - $nakL)'
+                              : '';
+                          return Text(
+                            '• $name$retroStr:$degStr$detailsStr',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: colors.planetText,
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
-                  ?tooltipCard,
                 ],
               ),
             ),
           ),
-        );
-      },
-      orElse: () => Container(
-        width: widget.size,
-        height: widget.size,
-        color: Colors.grey.withAlpha(26),
-        child: const Center(child: ProgressRing()),
+        ),
+      );
+    }
+
+    return Container(
+      width: widget.size,
+      height: widget.size,
+      decoration: BoxDecoration(
+        color: colors.background,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(76),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: MouseRegion(
+        onHover: (event) {
+          final house = _getHouseFromOffset(
+            event.localPosition,
+            Size(widget.size, widget.size),
+          );
+          if (house != null && (house - 1) != _hoveredHouseIndex) {
+            setState(() {
+              _hoveredHouseIndex = house - 1;
+            });
+          }
+        },
+        onExit: (event) {
+          setState(() {
+            _hoveredHouseIndex = null;
+          });
+        },
+        child: GestureDetector(
+          onTapUp: (details) {
+            final house = _getHouseFromOffset(
+              details.localPosition,
+              Size(widget.size, widget.size),
+            );
+            if (house != null) {
+              setState(() {
+                _selectedHouseIndex = house - 1;
+              });
+              widget.onHouseTapped?.call(house);
+            }
+          },
+          child: Stack(
+            children: [
+              CustomPaint(
+                size: Size(widget.size, widget.size),
+                painter: widget.style == ChartStyle.northIndian
+                    ? NorthIndianChartPainter(
+                        planetsBySign: widget.planetsBySign,
+                        ascendantSign: widget.ascendantSign,
+                        colors: colors,
+                        hoveredHouse: _hoveredHouseIndex,
+                        selectedHouse: _selectedHouseIndex,
+                        showSigns: chartSettings.showSigns,
+                        showHouseNumbers: chartSettings.showHouseNumbers,
+                        transitPlanetsBySign: widget.transitPlanetsBySign,
+                      )
+                    : SouthIndianChartPainter(
+                        planetsBySign: widget.planetsBySign,
+                        ascendantSign: widget.ascendantSign,
+                        colors: colors,
+                        hoveredHouse: _hoveredHouseIndex,
+                        selectedHouse: _selectedHouseIndex,
+                        showSigns: chartSettings.showSigns,
+                        showHouseNumbers: chartSettings.showHouseNumbers,
+                        transitPlanetsBySign: widget.transitPlanetsBySign,
+                      ),
+              ),
+              if (widget.showAspects &&
+                  widget.aspects != null &&
+                  widget.aspects!.isNotEmpty)
+                CustomPaint(
+                  size: Size(widget.size, widget.size),
+                  painter: AspectPainter(
+                    aspects: widget.aspects!,
+                    planetsBySign: widget.planetsBySign,
+                    ascendantSign: widget.ascendantSign,
+                    colors: colors,
+                    lineOpacity: 0.4,
+                    activeHouse: _hoveredHouseIndex ?? _selectedHouseIndex,
+                  ),
+                ),
+              ?tooltipCard,
+            ],
+          ),
+        ),
       ),
     );
   }

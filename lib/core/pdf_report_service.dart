@@ -360,27 +360,30 @@ class PDFReportService {
         );
 
         // Retrieve active Mahadasha and Antardasha
+        final mahadashas = chartData.dashaData.vimshottari.mahadashas;
         final now = DateTime.now();
-        Mahadasha? tempM;
-        for (final m in chartData.dashaData.vimshottari.mahadashas) {
+        Mahadasha? activeM;
+        for (final m in mahadashas) {
           if (now.isAfter(m.startDate) && now.isBefore(m.endDate)) {
-            tempM = m;
+            activeM = m;
             break;
           }
         }
-        final activeM =
-            tempM ?? chartData.dashaData.vimshottari.mahadashas.first;
+        activeM ??= mahadashas.firstOrNull;
 
-        Antardasha? tempA;
-        for (final a in activeM.antardashas) {
-          if (now.isAfter(a.startDate) && now.isBefore(a.endDate)) {
-            tempA = a;
-            break;
+        Antardasha? activeA;
+        if (activeM != null) {
+          for (final a in activeM.antardashas) {
+            if (now.isAfter(a.startDate) && now.isBefore(a.endDate)) {
+              activeA = a;
+              break;
+            }
           }
+          activeA ??= activeM.antardashas.firstOrNull;
         }
-        final activeA = tempA ?? activeM.antardashas.first;
 
         final sookshmaRows = <List<String>>[];
+        if (activeA != null) {
         const vLords = [
           'Ketu',
           'Venus',
@@ -436,94 +439,97 @@ class PDFReportService {
             currentStart = currentEnd;
           }
         }
+        }
 
-        pdf.addPage(
-          pw.MultiPage(
-            pageFormat: PdfPageFormat.a4,
-            margin: pageMargin,
-            header: (context) {
-              return pw.Column(
-                children: [
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (logo != null)
-                        pw.Image(logo, height: 30)
-                      else
+        if (activeM != null && activeA != null && sookshmaRows.isNotEmpty) {
+          pdf.addPage(
+            pw.MultiPage(
+              pageFormat: PdfPageFormat.a4,
+              margin: pageMargin,
+              header: (context) {
+                return pw.Column(
+                  children: [
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (logo != null)
+                          pw.Image(logo, height: 30)
+                        else
+                          pw.Text(
+                            brandOrgName ?? 'ASTRONAKSH',
+                            style: pw.TextStyle(
+                              color: ReportStyles.primaryColor,
+                              fontWeight: pw.FontWeight.bold,
+                              fontSize: 14,
+                              letterSpacing: 2,
+                            ),
+                          ),
                         pw.Text(
-                          brandOrgName ?? 'ASTRONAKSH',
-                          style: pw.TextStyle(
-                            color: ReportStyles.primaryColor,
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 14,
-                            letterSpacing: 2,
+                          (brandOrgTagline ?? 'PREMIUM ASTROLOGY REPORT')
+                              .toUpperCase(),
+                          style: const pw.TextStyle(
+                            color: ReportStyles.grey,
+                            fontSize: 8,
                           ),
                         ),
-                      pw.Text(
-                        (brandOrgTagline ?? 'PREMIUM ASTROLOGY REPORT')
-                            .toUpperCase(),
-                        style: const pw.TextStyle(
-                          color: ReportStyles.grey,
-                          fontSize: 8,
+                      ],
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Divider(color: ReportStyles.accentColor, thickness: 0.5),
+                    pw.SizedBox(height: 20),
+                  ],
+                );
+              },
+              footer: (context) {
+                return pw.Column(
+                  children: [
+                    pw.SizedBox(height: 20),
+                    pw.Divider(color: PdfColors.grey200, thickness: 0.5),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(
+                          brandContactInfo ??
+                              '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
+                          style: const pw.TextStyle(
+                            fontSize: 8,
+                            color: PdfColors.grey,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 10),
-                  pw.Divider(color: ReportStyles.accentColor, thickness: 0.5),
-                  pw.SizedBox(height: 20),
-                ],
-              );
-            },
-            footer: (context) {
-              return pw.Column(
-                children: [
-                  pw.SizedBox(height: 20),
-                  pw.Divider(color: PdfColors.grey200, thickness: 0.5),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        brandContactInfo ??
-                            '© ${DateTime.now().year} AstroNaksh - Vedic Insights',
-                        style: const pw.TextStyle(
-                          fontSize: 8,
-                          color: PdfColors.grey,
+                        pw.Text(
+                          'Page ${context.pageNumber} of ${context.pagesCount}',
+                          style: const pw.TextStyle(
+                            fontSize: 8,
+                            color: PdfColors.grey,
+                          ),
                         ),
-                      ),
-                      pw.Text(
-                        'Page ${context.pageNumber} of ${context.pagesCount}',
-                        style: const pw.TextStyle(
-                          fontSize: 8,
-                          color: PdfColors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            },
-            build: (context) => [
-              PdfWidgets.sectionHeader('Detailed 4-Level Dasha Breakdown', h2),
-              pw.SizedBox(height: 5),
-              pw.Text(
-                'Detailed Vimshottari Sookshmadasha cycles under the active Mahadasha (${activeM.lord}) and active Antardasha (${activeA.lord}: ${_formatDate(activeA.startDate)} to ${_formatDate(activeA.endDate)}).',
-                style: body,
-              ),
-              pw.SizedBox(height: 15),
-              PdfWidgets.premiumTable(
-                headers: [
-                  'Pratyantardasha',
-                  'Sookshmadasha',
-                  'Start Date',
-                  'End Date',
-                ],
-                rows: sookshmaRows,
-                bodyStyle: body,
-              ),
-            ],
-          ),
-        );
+                      ],
+                    ),
+                  ],
+                );
+              },
+              build: (context) => [
+                PdfWidgets.sectionHeader('Detailed 4-Level Dasha Breakdown', h2),
+                pw.SizedBox(height: 5),
+                pw.Text(
+                  'Detailed Vimshottari Sookshmadasha cycles under the active Mahadasha (${activeM!.lord}) and active Antardasha (${activeA!.lord}: ${_formatDate(activeA.startDate)} to ${_formatDate(activeA.endDate)}).',
+                  style: body,
+                ),
+                pw.SizedBox(height: 15),
+                PdfWidgets.premiumTable(
+                  headers: [
+                    'Pratyantardasha',
+                    'Sookshmadasha',
+                    'Start Date',
+                    'End Date',
+                  ],
+                  rows: sookshmaRows,
+                  bodyStyle: body,
+                ),
+              ],
+            ),
+          );
+        }
       }
 
       // 6. KP Section

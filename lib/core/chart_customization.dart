@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jyotish/jyotish.dart';
 
@@ -69,11 +70,16 @@ class ChartCustomization {
     settings.includeOuterPlanets = json['includeOuterPlanets'] ?? false;
 
     settings.dailyTransitNotifications =
-        json['dailyTransitNotifications'] ?? true;
+        json['dailyTransitNotifications'] == true ||
+        json['dailyTransitNotifications'] == 'true';
     if (json['notificationTime'] != null) {
-      final parts = json['notificationTime'].split(':');
-      settings.notificationHour = int.parse(parts[0]);
-      settings.notificationMinute = int.parse(parts[1]);
+      try {
+        final parts = json['notificationTime'].toString().split(':');
+        if (parts.length >= 2) {
+          settings.notificationHour = int.tryParse(parts[0]) ?? 8;
+          settings.notificationMinute = int.tryParse(parts[1]) ?? 0;
+        }
+      } catch (_) {}
     }
 
     settings.horaMethod = HoraMethod.values.firstWhere(
@@ -106,9 +112,33 @@ class ChartCustomization {
     // WebDAV Settings
     settings.webdavUrl = json['webdavUrl'] ?? '';
     settings.webdavUsername = json['webdavUsername'] ?? '';
-    settings.webdavPassword = json['webdavPassword'] ?? '';
+    settings.webdavPassword = _decodePassword(json['webdavPassword']?.toString() ?? '');
 
     return settings;
+  }
+
+  static String _encodePassword(String raw) {
+    if (raw.isEmpty) return '';
+    const xorKey = 0x5A;
+    final bytes = utf8.encode(raw);
+    final xored = bytes.map((b) => b ^ xorKey).toList();
+    return 'enc:${base64Encode(xored)}';
+  }
+
+  static String _decodePassword(String stored) {
+    if (stored.isEmpty) return '';
+    if (!stored.startsWith('enc:')) {
+      return stored; // legacy plaintext compatibility
+    }
+    try {
+      final b64 = stored.substring(4);
+      final bytes = base64Decode(b64);
+      const xorKey = 0x5A;
+      final xored = bytes.map((b) => b ^ xorKey).toList();
+      return utf8.decode(xored);
+    } catch (_) {
+      return stored;
+    }
   }
   // Chart Style Settings
   ChartStyle chartStyle = ChartStyle.northIndian;
@@ -248,7 +278,7 @@ class ChartCustomization {
       'pdfIncludeCover': pdfIncludeCover,
       'webdavUrl': webdavUrl,
       'webdavUsername': webdavUsername,
-      'webdavPassword': webdavPassword,
+      'webdavPassword': _encodePassword(webdavPassword),
     };
   }
 

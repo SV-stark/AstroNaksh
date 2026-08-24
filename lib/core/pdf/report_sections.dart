@@ -509,7 +509,7 @@ class ReportSections {
                 ),
                 child: pw.Text(
                   '${analysis.overallScore.toInt()}',
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     color: PdfColors.white,
                     fontWeight: pw.FontWeight.bold,
                     fontSize: 18,

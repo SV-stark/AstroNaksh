@@ -29,11 +29,7 @@ void main() {
     final service = SudarshanChakraService();
     final chart = TestChartBuilder().build();
 
-    try {
-      final result = service.calculateSudarshanChakra(chart.baseChart);
-      expect(result, isNotNull);
-    } catch (e) {
-      // It might fail if library implementation has issues
-    }
+    final result = service.calculateSudarshanChakra(chart.baseChart);
+    expect(result, isNotNull);
   });
 }

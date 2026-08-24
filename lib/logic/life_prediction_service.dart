@@ -127,11 +127,16 @@ class LifePredictionService {
   ) async {
     // ── Gather all analytical inputs ──────────────────────────────────
 
+    // 1. Calculate detailed Shadbala once upfront for all consumers
+    final detailedShadbala =
+        await ShadbalaCalculator.calculateDetailedShadbala(chartData.baseChart);
+    final shadbala = detailedShadbala.map((k, v) => MapEntry(k, v.totalBala));
+
     // Fetch all independent asynchronous operations concurrently
     final results = await Future.wait([
-      ShadbalaCalculator.calculateShadbala(chartData),
-      BhavaBala.calculateBhavaBala(chartData),
-      BhavaBala.calculateAllPlanetFruits(chartData),
+      BhavaBala.calculateBhavaBala(chartData, cachedShadbala: detailedShadbala),
+      BhavaBala.calculateAllPlanetFruits(chartData,
+          cachedShadbala: detailedShadbala),
       DashaSystem.getCurrentDashaFromChart(chartData.baseChart, DateTime.now()),
       TransitAnalysis()
           .calculateTransitChart(chartData, DateTime.now())
@@ -139,12 +144,11 @@ class LifePredictionService {
           .catchError((_) => null),
     ]);
 
-    final shadbala = results[0] as Map<Planet, double>;
-    final bhavaBala = results[1] as Map<int, BhavaStrength>;
+    final bhavaBala = results[0] as Map<int, BhavaStrength>;
     final planetFruits =
-        results[2] as Map<Planet, ({double ishtaphala, double kashtaphala})>;
-    final dashaDetails = results[3] as Map<String, dynamic>;
-    final currentTransit = results[4] as TransitChart?;
+        results[1] as Map<Planet, ({double ishtaphala, double kashtaphala})>;
+    final dashaDetails = results[2] as Map<String, dynamic>;
+    final currentTransit = results[3] as TransitChart?;
 
     // 3. Ashtakavarga bindus per house sign (0-indexed sign → bindus 0-56)
     final avBindus = AshtakavargaSystem.calculateSarvashtakavarga(
@@ -553,14 +557,20 @@ class LifePredictionService {
     var kpModifier = 0.0;
     if (chartData.kpData.subLords.isNotEmpty) {
       final ascSign = (chartData.baseChart.houses.ascendant / 30).floor() % 12;
-      final planetsList = chartData.baseChart.planets.keys.toList();
       final kpSubLords = <Planet, KPSubLord>{};
-      for (
-        var i = 0;
-        i < planetsList.length && i < chartData.kpData.subLords.length;
-        i++
-      ) {
-        kpSubLords[planetsList[i]] = chartData.kpData.subLords[i];
+      final planetsList = chartData.baseChart.planets.keys.toList();
+      for (var i = 0; i < chartData.kpData.subLords.length; i++) {
+        final sub = chartData.kpData.subLords[i];
+        if (sub.planetName.isNotEmpty) {
+          final matchedPlanet = _parsePlanetName(sub.planetName);
+          if (matchedPlanet != null) {
+            kpSubLords[matchedPlanet] = sub;
+            continue;
+          }
+        }
+        if (i < planetsList.length) {
+          kpSubLords[planetsList[i]] = sub;
+        }
       }
 
       for (final planet in relevantPlanets) {
@@ -1999,12 +2009,12 @@ class LifePredictionService {
         return p;
       }
     }
+    if (cleanName.contains('ketu')) {
+      return Planet.ketu;
+    }
     if (cleanName.contains('rahu') ||
         cleanName.contains('node') ||
         cleanName.contains('mean')) {
-      return Planet.meanNode;
-    }
-    if (cleanName.contains('ketu')) {
       return Planet.meanNode;
     }
     return null;

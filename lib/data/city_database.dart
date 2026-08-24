@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqlite3/sqlite3.dart' as sql;
 import '../core/app_environment.dart';
 
 class CityDatabase {
-  static Database? _db;
+  static sql.Database? _db;
   static bool _initialized = false;
 
   // Cache for search queries
@@ -89,7 +89,7 @@ class CityDatabase {
         debugPrint('CityDatabase: Database copy successful.');
       }
 
-      _db = await openDatabase(dbFile.path, readOnly: true);
+      _db = sql.sqlite3.open(dbFile.path, mode: sql.OpenMode.readOnly);
       _initialized = true;
       debugPrint('CityDatabase: SQLite database successfully opened.');
     } catch (e) {
@@ -122,50 +122,53 @@ class CityDatabase {
       }
     }
 
-    List<Map<String, dynamic>> maps;
+    sql.ResultSet rows;
     try {
       if (trimmedQuery.contains(',')) {
         final parts = trimmedQuery.split(',').map((p) => p.trim()).toList();
         final cityName = parts[0];
         final secondary = parts.length > 1 ? parts[1] : '';
 
-        maps = await _db!.rawQuery(
+        final stmt = _db!.prepare(
           'SELECT name, state, country, latitude, longitude, timezone FROM cities '
           'WHERE name LIKE ? AND (state LIKE ? OR country LIKE ?) '
           'LIMIT 20',
-          ['$cityName%', '$secondary%', '$secondary%'],
         );
+        rows = stmt.select(['$cityName%', '$secondary%', '$secondary%']);
+        stmt.close();
       } else {
-        // Query city name prefix (utilizes database index on name)
-        maps = await _db!.rawQuery(
+        final stmt = _db!.prepare(
           'SELECT name, state, country, latitude, longitude, timezone FROM cities '
           'WHERE name LIKE ? '
           'LIMIT 20',
-          ['$trimmedQuery%'],
         );
+        var selectResult = stmt.select(['$trimmedQuery%']);
+        stmt.close();
 
         // Fallback to searching state or country if no city name matched
-        if (maps.isEmpty) {
-          maps = await _db!.rawQuery(
+        if (selectResult.isEmpty) {
+          final fallbackStmt = _db!.prepare(
             'SELECT name, state, country, latitude, longitude, timezone FROM cities '
             'WHERE state LIKE ? OR country LIKE ? '
             'LIMIT 20',
-            ['$trimmedQuery%', '$trimmedQuery%'],
           );
+          selectResult = fallbackStmt.select(['$trimmedQuery%', '$trimmedQuery%']);
+          fallbackStmt.close();
         }
+        rows = selectResult;
       }
     } catch (e) {
       debugPrint('CityDatabase: Query error: $e');
       return [];
     }
 
-    final results = maps.map((row) {
+    final results = rows.map((row) {
       return City(
         name: row['name'] as String,
         state: row['state'] as String,
         country: row['country'] as String,
-        latitude: row['latitude'] as double,
-        longitude: row['longitude'] as double,
+        latitude: (row['latitude'] as num).toDouble(),
+        longitude: (row['longitude'] as num).toDouble(),
         timezone: row['timezone'] as String,
       );
     }).toList();
@@ -189,40 +192,46 @@ class CityDatabase {
     }
 
     var boxSize = 1.0;
-    var maps = <Map<String, dynamic>>[];
+    sql.ResultSet? nearestRows;
 
     try {
-      while (maps.isEmpty && boxSize <= 180.0) {
-        maps = await _db!.rawQuery(
+      while ((nearestRows == null || nearestRows.isEmpty) && boxSize <= 180.0) {
+        final stmt = _db!.prepare(
           'SELECT name, state, country, latitude, longitude, timezone FROM cities '
           'WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?',
-          [lat - boxSize, lat + boxSize, lon - boxSize, lon + boxSize],
         );
+        nearestRows = stmt.select([
+          lat - boxSize,
+          lat + boxSize,
+          lon - boxSize,
+          lon + boxSize,
+        ]);
+        stmt.close();
         boxSize *= 2.0;
       }
     } catch (e) {
       debugPrint('CityDatabase: Error querying nearest city: $e');
     }
 
-    if (maps.isEmpty) {
+    if (nearestRows == null || nearestRows.isEmpty) {
       return _fallbackCities.first;
     }
 
-    var nearestRow = maps.first;
+    var nearestRow = nearestRows.first;
     var minDistance = _calculateDistance(
       lat,
       lon,
-      nearestRow['latitude'] as double,
-      nearestRow['longitude'] as double,
+      (nearestRow['latitude'] as num).toDouble(),
+      (nearestRow['longitude'] as num).toDouble(),
     );
 
-    for (var i = 1; i < maps.length; i++) {
-      final row = maps[i];
+    for (var i = 1; i < nearestRows.length; i++) {
+      final row = nearestRows[i];
       final dist = _calculateDistance(
         lat,
         lon,
-        row['latitude'] as double,
-        row['longitude'] as double,
+        (row['latitude'] as num).toDouble(),
+        (row['longitude'] as num).toDouble(),
       );
       if (dist < minDistance) {
         minDistance = dist;
@@ -234,8 +243,8 @@ class CityDatabase {
       name: nearestRow['name'] as String,
       state: nearestRow['state'] as String,
       country: nearestRow['country'] as String,
-      latitude: nearestRow['latitude'] as double,
-      longitude: nearestRow['longitude'] as double,
+      latitude: (nearestRow['latitude'] as num).toDouble(),
+      longitude: (nearestRow['longitude'] as num).toDouble(),
       timezone: nearestRow['timezone'] as String,
     );
   }
@@ -306,13 +315,9 @@ class City {
           state == other.state &&
           country == other.country &&
           latitude == other.latitude &&
-          longitude == other.longitude;
+          longitude == other.longitude &&
+          timezone == other.timezone;
 
   @override
-  int get hashCode =>
-      name.hashCode ^
-      state.hashCode ^
-      country.hashCode ^
-      latitude.hashCode ^
-      longitude.hashCode;
+  int get hashCode => Object.hash(name, state, country, latitude, longitude, timezone);
 }

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class DailyRashiphal {
   DailyRashiphal({
     required this.date,
@@ -115,9 +117,9 @@ class RashiphalDashboard {
     return other is RashiphalDashboard &&
         other.today == today &&
         other.tomorrow == tomorrow &&
-        other.weeklyOverview.length == weeklyOverview.length;
+        listEquals(other.weeklyOverview, weeklyOverview);
   }
 
   @override
-  int get hashCode => Object.hash(today, tomorrow, weeklyOverview.length);
+  int get hashCode => Object.hash(today, tomorrow, Object.hashAll(weeklyOverview));
 }

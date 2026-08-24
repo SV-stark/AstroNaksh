@@ -201,12 +201,18 @@ class PanchangService {
           'General good conduct recommended.',
       karana: panchanga.karana.name,
       vara: panchanga.vara.name,
-      sunrise: sr != null ? AppFormatters.formatTime(sr.toLocal()) : '--:--',
-      sunset: ss != null ? AppFormatters.formatTime(ss.toLocal()) : '--:--',
-      moonrise: mr != null ? AppFormatters.formatTime(mr.toLocal()) : '--:--',
-      moonset: ms != null ? AppFormatters.formatTime(ms.toLocal()) : '--:--',
+      sunrise: sr != null ? AppFormatters.formatTime(_toLocationTime(sr, location)) : '--:--',
+      sunset: ss != null ? AppFormatters.formatTime(_toLocationTime(ss, location)) : '--:--',
+      moonrise: mr != null ? AppFormatters.formatTime(_toLocationTime(mr, location)) : '--:--',
+      moonset: ms != null ? AppFormatters.formatTime(_toLocationTime(ms, location)) : '--:--',
       rituals: rituals,
     );
+  }
+
+  static DateTime _toLocationTime(DateTime dt, Location location) {
+    // Offset in minutes calculated from longitude (15 deg = 1 hour)
+    final offsetMinutes = (location.longitude / 15.0 * 60).round();
+    return dt.toUtc().add(Duration(minutes: offsetMinutes));
   }
 
   /// Calculate Abhijit Muhurta (the victorious midday period)
@@ -357,9 +363,11 @@ class PanchangService {
         PanchangInauspicious(
           name: 'Rahukalam',
           startTime: AppFormatters.formatTime(
-            periods.rahukalam!.start.toLocal(),
+            _toLocationTime(periods.rahukalam!.start, location),
           ),
-          endTime: AppFormatters.formatTime(periods.rahukalam!.end.toLocal()),
+          endTime: AppFormatters.formatTime(
+            _toLocationTime(periods.rahukalam!.end, location),
+          ),
         ),
       );
     }
@@ -368,9 +376,11 @@ class PanchangService {
         PanchangInauspicious(
           name: 'Gulikalam',
           startTime: AppFormatters.formatTime(
-            periods.gulikalam!.start.toLocal(),
+            _toLocationTime(periods.gulikalam!.start, location),
           ),
-          endTime: AppFormatters.formatTime(periods.gulikalam!.end.toLocal()),
+          endTime: AppFormatters.formatTime(
+            _toLocationTime(periods.gulikalam!.end, location),
+          ),
         ),
       );
     }
@@ -379,9 +389,11 @@ class PanchangService {
         PanchangInauspicious(
           name: 'Yamagandam',
           startTime: AppFormatters.formatTime(
-            periods.yamagandam!.start.toLocal(),
+            _toLocationTime(periods.yamagandam!.start, location),
           ),
-          endTime: AppFormatters.formatTime(periods.yamagandam!.end.toLocal()),
+          endTime: AppFormatters.formatTime(
+            _toLocationTime(periods.yamagandam!.end, location),
+          ),
         ),
       );
     }
@@ -405,8 +417,8 @@ class PanchangService {
     return rawHoras.map((h) {
       return PanchangHora(
         planet: h.lord.displayName,
-        startTime: AppFormatters.formatTime(h.startTime.toLocal()),
-        endTime: AppFormatters.formatTime(h.endTime.toLocal()),
+        startTime: AppFormatters.formatTime(_toLocationTime(h.startTime, location)),
+        endTime: AppFormatters.formatTime(_toLocationTime(h.endTime, location)),
         isDay: h.isDaytime,
       );
     }).toList();
@@ -437,8 +449,8 @@ class PanchangService {
       return PanchangChoghadiya(
         name: c.name,
         type: c.type.nature, // e.g. 'Auspicious' or 'Inauspicious'
-        startTime: AppFormatters.formatTime(c.startTime.toLocal()),
-        endTime: AppFormatters.formatTime(c.endTime.toLocal()),
+        startTime: AppFormatters.formatTime(_toLocationTime(c.startTime, location)),
+        endTime: AppFormatters.formatTime(_toLocationTime(c.endTime, location)),
         isDay: c.isDaytime,
       );
     }).toList();

@@ -1,4 +1,3 @@
-import 'package:dartx/dartx.dart';
 import 'package:jyotish/jyotish.dart';
 
 import '../core/ephemeris_manager.dart';
@@ -16,9 +15,11 @@ class ShadbalaCalculator {
       chartData.baseChart,
     );
 
-    return nativeResults.entries
-        .filter((e) => !Planet.lunarNodes.contains(e.key))
-        .associate((e) => MapEntry(e.key, e.value.totalBala));
+    return Map.fromEntries(
+      nativeResults.entries
+          .where((e) => !Planet.lunarNodes.contains(e.key))
+          .map((e) => MapEntry(e.key, e.value.totalBala)),
+    );
   }
 
   static Future<Map<Planet, ShadbalaResult>> calculateDetailedShadbala(
@@ -36,28 +37,29 @@ class ShadbalaCalculator {
     final chart = chartData.baseChart;
 
     final detailedShadbala = await jyotish.getShadbala(chart);
-    final shadbala = detailedShadbala.entries
-        .filter((e) => !Planet.lunarNodes.contains(e.key))
-        .associate((e) => MapEntry(e.key, e.value.totalBala));
+    final shadbala = Map<Planet, double>.fromEntries(
+      detailedShadbala.entries
+          .where((e) => !Planet.lunarNodes.contains(e.key))
+          .map((e) => MapEntry(e.key, e.value.totalBala)),
+    );
 
     final vimsopaka = strengthService.getAllPlanetsVimshopakBala(chart);
 
     final sunPos = chart.getPlanet(Planet.sun)?.longitude ?? 0.0;
 
-    final combustion = Planet.traditionalPlanets
-        .filter((p) => p != Planet.sun)
-        .associateWith((planet) {
-          final info = chart.getPlanet(planet);
-          if (info == null) return null;
-          _combustionService ??= ShadbalaService(EphemerisManager.service);
-          return _combustionService!.checkCombustion(
-            planet: planet,
-            planetLongitude: info.longitude,
-            sunLongitude: sunPos,
-          );
-        })
-        .filterValues((v) => v != null)
-        .cast<Planet, CombustionInfo>();
+    final combustion = <Planet, CombustionInfo>{};
+    for (final planet in Planet.traditionalPlanets) {
+      if (planet == Planet.sun) continue;
+      final info = chart.getPlanet(planet);
+      if (info == null) continue;
+      _combustionService ??= ShadbalaService(EphemerisManager.service);
+      final c = _combustionService!.checkCombustion(
+        planet: planet,
+        planetLongitude: info.longitude,
+        sunLongitude: sunPos,
+      );
+      combustion[planet] = c;
+    }
 
     final location = GeographicLocation(
       latitude: chart.latitude,

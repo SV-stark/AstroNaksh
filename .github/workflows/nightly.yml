@@ -9,8 +9,31 @@ permissions:
   contents: write
 
 jobs:
+  quality-check:
+    name: Code Quality & Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+      - run: flutter pub get
+      - name: Setup Swiss Ephemeris
+        shell: pwsh
+        run: pwsh scripts/setup_swisseph.ps1
+      - name: Run Static Analysis
+        run: flutter analyze --no-fatal-infos
+      - name: Run Test Suite
+        run: flutter test
+
   build-android:
     name: Build Android APK
+    needs: [quality-check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +60,7 @@ jobs:
 
   build-windows:
     name: Build Windows App
+    needs: [quality-check]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4

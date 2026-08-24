@@ -1,9 +1,8 @@
-// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
+// ignore_for_file: avoid_slow_async_io
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
 
 /// Manages application environment, paths, and global flags.
 /// Handles portable mode detection and verbose logging.
@@ -133,13 +132,8 @@ class AppEnvironment {
 
   /// Get the path for the database file
   static Future<String> getDatabasePath() async {
-    if (_isPortable && _executableDir != null) {
-      final dir = await getUserDataDirectory();
-      return p.join(dir.path, 'astronaksh.db');
-    } else {
-      final dbPath = await getDatabasesPath();
-      return p.join(dbPath, 'astronaksh.db');
-    }
+    final dir = await getUserDataDirectory();
+    return p.join(dir.path, 'astronaksh.db');
   }
 
   /// Formats a path for Swiss Ephemeris (ensures correct separators and absolute path)

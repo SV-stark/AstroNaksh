@@ -367,10 +367,15 @@ class TransitAnalysis {
       ];
     }
 
+    final sunInfo = transitChart.planets[j.Planet.sun];
+    final calculatedTithi = sunInfo != null
+        ? (((moonInfo.position.longitude - sunInfo.position.longitude + 360) % 360) / 12.0).floor() + 1
+        : 1;
+
     return MoonTransitAnalysis(
       transitSign: transitSign,
       houseFromNatalMoon: houseFromMoon,
-      tithi: 1,
+      tithi: calculatedTithi,
       nakshatra: moonInfo.position.nakshatra,
       isFavorable: isFavorable,
       quality: quality,
@@ -445,15 +450,21 @@ class TransitAnalysis {
 
     final affected = <String>[];
     var overNatalRahu = false;
-    const overNatalKetu = false;
+    var overNatalKetu = false;
 
     natalChart.baseChart.planets.forEach((p, info) {
       final sign = info.position.zodiacSignIndex;
       if (sign == rahuSign || sign == ketuSign) {
         affected.add(p.displayName);
-        if (p == j.Planet.meanNode) overNatalRahu = true;
+        if (p == j.Planet.meanNode || p == j.Planet.trueNode) overNatalRahu = true;
+        if (p == j.Planet.ketu) overNatalKetu = true;
       }
     });
+
+    final natalKetuSign = (natalChart.baseChart.ketu.longitude / 30).floor();
+    if (ketuSign == natalKetuSign) overNatalKetu = true;
+    final natalRahuSign = (natalChart.baseChart.rahu.longitude / 30).floor();
+    if (rahuSign == natalRahuSign) overNatalRahu = true;
 
     return RahuKetuTransitAnalysis(
       rahuSign: rahuSign,

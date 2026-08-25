@@ -1,6 +1,10 @@
 // ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/astronomy.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/muhurta.dart';
+import 'package:jyotish/panchanga.dart';
+import 'package:jyotish/transit.dart';
 
 import '../core/ephemeris_manager.dart';
 import '../core/utils/formatters.dart';
@@ -40,6 +44,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
   // Location state
   City? _selectedCity;
   final TextEditingController _citySearchController = TextEditingController();
+  final ScrollController _tabScrollController = ScrollController();
   List<AutoSuggestBoxItem<City>> _cityItems = [];
   bool _isLoadingLocation = false;
   bool _showLocationEditor = false;
@@ -56,6 +61,13 @@ class _PanchangScreenState extends State<PanchangScreen> {
       timezone: 'Asia/Kolkata',
     );
     _calculatePanchang();
+  }
+
+  @override
+  void dispose() {
+    _citySearchController.dispose();
+    _tabScrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _calculatePanchang() async {
@@ -591,8 +603,10 @@ class _PanchangScreenState extends State<PanchangScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Scrollbar(
+                            controller: _tabScrollController,
                             thumbVisibility: true,
                             child: SingleChildScrollView(
+                              controller: _tabScrollController,
                               scrollDirection: Axis.horizontal,
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 12.0),

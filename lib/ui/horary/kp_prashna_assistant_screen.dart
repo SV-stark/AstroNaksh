@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 
 import '../../data/models.dart';
 import '../../logic/kp_prashna_service.dart';

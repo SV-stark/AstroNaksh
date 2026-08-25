@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:jyotish/jyotish.dart' as j;
+import 'package:jyotish/analysis.dart' as j;
+import 'package:jyotish/core.dart' as j;
 import '../core/ephemeris_manager.dart';
 
 /// Planetary Aspect Service

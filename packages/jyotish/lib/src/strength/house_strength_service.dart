@@ -3,7 +3,6 @@ import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/models/rashi.dart';
 import 'package:jyotish/src/models/vedic_chart.dart';
 import 'package:jyotish/src/models/divisional_chart_type.dart';
-import 'package:jyotish/src/astronomy/ephemeris_service.dart';
 import 'package:jyotish/src/strength/house_strength.dart';
 import 'package:jyotish/src/systems/shadbala_service.dart';
 import 'package:jyotish/src/analysis/divisional_chart_service.dart';
@@ -24,9 +23,9 @@ class HouseStrengthService {
   static Map<Planet, VimsopakaBalaResult> _calculateVimsopakaBalaStatic(
     VedicChart chart,
   ) {
-    // Note: ShadbalaService(null) is fine because calculateVimsopakaBala
+    // Note: HouseStrengthService(null) is fine because calculateVimsopakaBala
     // only uses divisional chart service.
-    final service = HouseStrengthService(ShadbalaService(EphemerisService()));
+    final service = HouseStrengthService(null);
     return service.calculateVimsopakaBala(chart);
   }
 
@@ -54,12 +53,13 @@ class HouseStrengthService {
   Future<Map<int, EnhancedBhavaBalaResult>> calculateEnhancedBhavaBala(
     VedicChart chart,
   ) async {
-    if (_shadbalaService == null) {
+    final service = _shadbalaService;
+    if (service == null) {
       throw StateError(
         'ShadbalaService must be provided to calculate Bhava Bala',
       );
     }
-    final shadbala = await _shadbalaService!.calculateShadbala(chart);
+    final shadbala = await service.calculateShadbala(chart);
     final vimsopakaBala = calculateVimsopakaBala(chart);
     final results = <int, EnhancedBhavaBalaResult>{};
 

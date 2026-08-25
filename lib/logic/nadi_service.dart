@@ -1,5 +1,6 @@
-import 'package:jyotish/jyotish.dart' hide NadiService;
+import 'package:jyotish/core.dart';
 import 'package:jyotish/nadi.dart' as jn;
+import 'package:jyotish/nadi.dart' show NadiChart, NadiInfo;
 
 import '../../data/models.dart';
 

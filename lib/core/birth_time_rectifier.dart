@@ -1,4 +1,4 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 
 import '../data/models.dart';
 import '../logic/divisional_charts.dart';

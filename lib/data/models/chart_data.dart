@@ -1,4 +1,5 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/analysis.dart';
+import 'package:jyotish/core.dart';
 
 import 'dasha.dart';
 import 'divisional_chart.dart';

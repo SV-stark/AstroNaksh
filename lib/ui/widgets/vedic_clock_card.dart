@@ -4,7 +4,8 @@ import 'dart:math' as math;
 
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, FontWeight;
 import 'package:flutter/material.dart' show Colors, FontWeight;
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/muhurta.dart';
 
 import '../../core/ephemeris_manager.dart';
 import '../styles.dart';
@@ -216,6 +217,10 @@ class _VedicClockCardState extends State<VedicClockCard>
           _isLoading = false;
         });
       }
+    } on PolarRegionException {
+      if (mounted) setState(() => _isLoading = false);
+    } on CalculationException {
+      if (mounted) setState(() => _isLoading = false);
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -241,6 +246,10 @@ class _VedicClockCardState extends State<VedicClockCard>
       if (mounted) {
         setState(() => _convertedVedic = vt);
       }
+    } on PolarRegionException {
+      // Polar region has undefined Vedic sunrise-based time
+    } on CalculationException {
+      // Calculation failed
     } catch (_) {}
   }
 

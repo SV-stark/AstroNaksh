@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 
 import '../data/models.dart';
 import '../ui/analysis/remedies_screen.dart';

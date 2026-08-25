@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 import 'ephemeris_manager.dart';
 
 /// Ayanamsa Calculation System

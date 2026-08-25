@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/analysis.dart';
+import 'package:jyotish/astronomy.dart';
+import 'package:jyotish/core.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../core/ayanamsa_calculator.dart';

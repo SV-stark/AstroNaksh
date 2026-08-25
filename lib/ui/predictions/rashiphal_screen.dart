@@ -223,6 +223,12 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
 
     return ScaffoldPage(
       header: PageHeader(
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         title: Row(
           children: [
             const Icon(FluentIcons.sunny, color: AppStyles.primaryColor, size: 24),

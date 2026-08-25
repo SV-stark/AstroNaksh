@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jyotish/jyotish.dart' hide HouseSystem, ChartStyle;
+import 'package:jyotish/core.dart' hide HouseSystem;
 
 import '../core/ayanamsa_calculator.dart';
 import '../core/backup_service.dart';

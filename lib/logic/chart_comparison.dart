@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 import '../core/ephemeris_manager.dart';
 import '../data/models.dart';
 
@@ -195,13 +195,11 @@ class ChartComparison {
     CompleteChartData chart2,
   ) {
     try {
-      final libraryReport =
-          EphemerisManager.jyotish.calculateCompatibilityReport(
+      final gunaScores = EphemerisManager.jyotish.calculateGunaMilan(
         chart1.baseChart,
         chart2.baseChart,
       );
 
-      final g = libraryReport.gunaScores;
       final moon1 = chart1.baseChart.planets[Planet.moon];
       final moon2 = chart2.baseChart.planets[Planet.moon];
       final moon1Nak = moon1?.position.nakshatra ?? 'Unknown';
@@ -210,273 +208,33 @@ class ChartComparison {
       return NakshatraAnalysis(
         moon1Nakshatra: moon1Nak,
         moon2Nakshatra: moon2Nak,
-        varna: g.varna.toDouble(),
-        vashya: g.vashya.toDouble(),
-        tara: g.tara.toDouble(),
-        yoni: g.yoni.toDouble(),
-        maitri: g.grahaMaitri.toDouble(),
-        gana: g.gana.toDouble(),
-        bhakoot: g.bhakoot.toDouble(),
-        nadi: g.nadi.toDouble(),
-        totalScore: libraryReport.totalScore.toDouble(),
+        varna: gunaScores.varna.toDouble(),
+        vashya: gunaScores.vashya.toDouble(),
+        tara: gunaScores.tara,
+        yoni: gunaScores.yoni.toDouble(),
+        maitri: gunaScores.grahaMaitri.toDouble(),
+        gana: gunaScores.gana.toDouble(),
+        bhakoot: gunaScores.bhakoot.toDouble(),
+        nadi: gunaScores.nadi.toDouble(),
+        totalScore: gunaScores.total,
       );
     } catch (_) {
-      // Fallback if ephemeris is uninitialized in isolated unit tests
-      int? nak1, nak2, rashi1, rashi2;
-      for (final entry in chart1.baseChart.planets.entries) {
-        if (entry.key == Planet.moon || entry.key.toString().toLowerCase().contains('moon')) {
-          nak1 = (entry.value.longitude / (360.0 / 27.0)).floor();
-          rashi1 = (entry.value.longitude / 30.0).floor();
-          break;
-        }
-      }
-      for (final entry in chart2.baseChart.planets.entries) {
-        if (entry.key == Planet.moon || entry.key.toString().toLowerCase().contains('moon')) {
-          nak2 = (entry.value.longitude / (360.0 / 27.0)).floor();
-          rashi2 = (entry.value.longitude / 30.0).floor();
-          break;
-        }
-      }
-
-      if (nak1 == null || nak2 == null || rashi1 == null || rashi2 == null) {
-        return NakshatraAnalysis(
-          moon1Nakshatra: 'Unknown',
-          moon2Nakshatra: 'Unknown',
-          varna: 0,
-          vashya: 0,
-          tara: 0,
-          yoni: 0,
-          maitri: 0,
-          gana: 0,
-          bhakoot: 0,
-          nadi: 0,
-          totalScore: 0,
-        );
-      }
-
-      final varna = _calculateVarna(rashi1, rashi2);
-      final vashya = _calculateVashya(rashi1, rashi2);
-      final tara = _calculateTara(nak1, nak2);
-      final yoni = _calculateYoniScore(nak1, nak2);
-      final maitri = _calculateMaitri(rashi1, rashi2);
-      final gana = _calculateGanaScore(nak1, nak2);
-      final bhakoot = _calculateBhakoot(rashi1, rashi2);
-      final nadi = _calculateNadiScore(nak1, nak2);
-      final total = varna + vashya + tara + yoni + maitri + gana + bhakoot + nadi;
-
+      final moon1 = chart1.baseChart.planets[Planet.moon];
+      final moon2 = chart2.baseChart.planets[Planet.moon];
       return NakshatraAnalysis(
-        moon1Nakshatra: AstrologyConstants.nakshatraNames[nak1 % 27],
-        moon2Nakshatra: AstrologyConstants.nakshatraNames[nak2 % 27],
-        varna: varna,
-        vashya: vashya,
-        tara: tara,
-        yoni: yoni,
-        maitri: maitri,
-        gana: gana,
-        bhakoot: bhakoot,
-        nadi: nadi,
-        totalScore: total,
+        moon1Nakshatra: moon1?.position.nakshatra ?? 'Unknown',
+        moon2Nakshatra: moon2?.position.nakshatra ?? 'Unknown',
+        varna: 0,
+        vashya: 0,
+        tara: 0,
+        yoni: 0,
+        maitri: 0,
+        gana: 0,
+        bhakoot: 0,
+        nadi: 0,
+        totalScore: 0,
       );
     }
-  }
-
-  // --- Kuta Calculation Helpers ---
-
-  static double _calculateVarna(int r1, int r2) {
-    // 0=Brahmin (4,8,12), 1=Kshatriya (1,5,9), 2=Vaishya (2,6,10), 3=Shudra (3,7,11)
-    // Actually:
-    // Brahmin: Cancer(3), Scorpio(7), Pisces(11) -> Water
-    // Kshatriya: Aries(0), Leo(4), Sag(8) -> Fire
-    // Vaishya: Taurus(1), Virgo(5), Cap(9) -> Earth
-    // Shudra: Gem(2), Lib(6), Aqu(10) -> Air
-
-    // Check standard mapping:
-    // Cancer, Scorpio, Pisces -> Brahmin
-    // Aries, Leo, Sag -> Kshatriya
-    // Taurus, Virgo, Cap -> Vaishya
-    // Gemini, Libra, Aquarius -> Shudra
-
-    int getVarna(int r) {
-      if ([3, 7, 11].contains(r)) return 0;
-      if ([0, 4, 8].contains(r)) return 1;
-      if ([1, 5, 9].contains(r)) return 2;
-      return 3;
-    }
-
-    final v1 = getVarna(r1);
-    final v2 = getVarna(r2);
-
-    // Bride should be equal or lower caste than Groom? Or just compatibility.
-    // Rule: Groom >= Bride in grade (0 is highest, 3 lowest)
-    // Wait, usually Brahmin=Highest. So if Groom <= Bride (index), full points.
-    // Let's assume chart1=Groom/Male, chart2=Bride/Female for standard calculation
-    // Or just generic: Higher grade (lower index) chart1 is good.
-    if (v1 <= v2) return 1.0;
-    return 0.0;
-  }
-
-  static double _calculateVashya(int r1, int r2) {
-    // Full Vashya table: which signs are controlled by which
-    final vashyaControl = <int, List<int>>{
-      0: [0, 4, 7], // Aries controls: Aries, Leo, Scorpio
-      1: [1, 3, 6], // Taurus: Taurus, Cancer, Libra
-      2: [2, 5], // Gemini: Gemini, Virgo
-      3: [3, 7], // Cancer: Cancer, Scorpio
-      4: [0, 4, 8], // Leo: Aries, Leo, Sagittarius
-      5: [1, 2, 5], // Virgo: Taurus, Gemini, Virgo
-      6: [3, 6, 11], // Libra: Cancer, Libra, Pisces
-      7: [3, 7], // Scorpio: Cancer, Scorpio
-      8: [4, 8, 11], // Sagittarius: Leo, Sagittarius, Pisces
-      9: [1, 5, 9, 10], // Capricorn: Taurus, Virgo, Capricorn, Aquarius
-      10: [9, 10], // Aquarius: Capricorn, Aquarius
-      11: [6, 8, 11], // Pisces: Libra, Sagittarius, Pisces
-    };
-
-    // Same sign = 2 points
-    if (r1 == r2) return 2.0;
-
-    // r1 controls r2 = 2 points
-    if (vashyaControl[r1]?.contains(r2) == true) return 2.0;
-
-    // r2 controls r1 = 1 point (partial)
-    if (vashyaControl[r2]?.contains(r1) == true) return 1.0;
-
-    // No Vashya = 0 points
-    return 0.0;
-  }
-
-  static double _calculateTara(int n1, int n2) {
-    // Count from Bride (n2) to Groom (n1) and Groom to Bride
-    // 0-indexed distance dist:
-    // count = dist + 1
-    // Auspicious Taras: Janma(1), Sampat(2), Kshema(4), Sadhana(6), Mitra(8), Parama Mitra(9) -> dist % 9 in {0, 1, 3, 5, 7, 8}
-    // Inauspicious Taras: Vipat(3), Pratyak(5), Naidhana(7) -> dist % 9 in {2, 4, 6}
-    final dist1 = (n1 - n2 + 27) % 27;
-    final dist2 = (n2 - n1 + 27) % 27;
-
-    final bad1 = [2, 4, 6].contains(dist1 % 9);
-    final bad2 = [2, 4, 6].contains(dist2 % 9);
-
-    // Both bad = 0, one bad = 1.5, both good = 3
-    if (bad1 && bad2) return 0.0;
-    if (bad1 || bad2) return 1.5;
-    return 3.0;
-  }
-
-  static double _calculateYoniScore(int n1, int n2) {
-    return _getYoniMatrixScore(n1 % 27, n2 % 27).toDouble();
-  }
-
-  static double _calculateMaitri(int r1, int r2) {
-    // Graha Maitri based on planetary friendship
-    final l1 = _getHouseLord(1, r1 * 30.0);
-    final l2 = _getHouseLord(1, r2 * 30.0);
-
-    if (l1 == l2) return 5.0; // Same lord = maximum points
-
-    // Full planetary friendship table
-    final friendshipTable = <String, Map<String, String>>{
-      'Sun': {
-        'Moon': 'friend',
-        'Mars': 'friend',
-        'Jupiter': 'friend',
-        'Mercury': 'neutral',
-        'Venus': 'enemy',
-        'Saturn': 'enemy',
-      },
-      'Moon': {
-        'Sun': 'friend',
-        'Mercury': 'friend',
-        'Mars': 'neutral',
-        'Jupiter': 'neutral',
-        'Venus': 'neutral',
-        'Saturn': 'neutral',
-      },
-      'Mars': {
-        'Sun': 'friend',
-        'Moon': 'friend',
-        'Jupiter': 'friend',
-        'Venus': 'neutral',
-        'Saturn': 'neutral',
-        'Mercury': 'enemy',
-      },
-      'Mercury': {
-        'Sun': 'friend',
-        'Venus': 'friend',
-        'Moon': 'enemy',
-        'Mars': 'neutral',
-        'Jupiter': 'neutral',
-        'Saturn': 'neutral',
-      },
-      'Jupiter': {
-        'Sun': 'friend',
-        'Moon': 'friend',
-        'Mars': 'friend',
-        'Saturn': 'neutral',
-        'Mercury': 'enemy',
-        'Venus': 'enemy',
-      },
-      'Venus': {
-        'Mercury': 'friend',
-        'Saturn': 'friend',
-        'Mars': 'neutral',
-        'Jupiter': 'neutral',
-        'Sun': 'enemy',
-        'Moon': 'enemy',
-      },
-      'Saturn': {
-        'Mercury': 'friend',
-        'Venus': 'friend',
-        'Jupiter': 'neutral',
-        'Sun': 'enemy',
-        'Moon': 'enemy',
-        'Mars': 'enemy',
-      },
-    };
-
-    final relationship = friendshipTable[l1]?[l2] ?? 'neutral';
-
-    if (relationship == 'friend') return 5.0;
-    if (relationship == 'neutral') return 3.0;
-    return 0.0; // enemy
-  }
-
-  static double _calculateGanaScore(int n1, int n2) {
-    final res = _calculateGana(n1, n2);
-    if (res.contains('Excellent')) return 6.0;
-    if (res.contains('Good')) return 3.0; // Or 5
-    return 0.0; // Rakshasa-Deva/Manushya mismatch often 0 or 1
-  }
-
-  static double _calculateBhakoot(int r1, int r2) {
-    var dist = (r1 - r2 + 12) % 12; // r2 to r1
-    dist = dist + 1; // 1-based count
-
-    // Bad: 2-12, 6-8, 5-9 (sometimes 9-5 is good, but 2-12 etc bad)
-    // 6-8 (Shadushtaka): Bad
-    // 2-12 (Dwidwadasha): Bad
-    // 5-9 (NavamPancham): Good usually, but depends on Lords.
-    // 1-1 (Same): Good
-    // 3-11: Good
-    // 4-10: Good
-
-    if (dist == 1) return 7.0; // Same sign
-    if (dist == 7) return 7.0; // Opposition
-    if (dist == 3 || dist == 11) return 7.0;
-    if (dist == 4 || dist == 10) return 7.0;
-
-    // 2-12, 5-9, 6-8
-    if (dist == 2 || dist == 12) return 0.0;
-    if (dist == 6 || dist == 8) return 0.0;
-    if (dist == 5 || dist == 9) return 0.0; // Often 0 in strict bhakoot
-
-    return 0.0;
-  }
-
-  static double _calculateNadiScore(int n1, int n2) {
-    final res = _calculateNadi(n1, n2);
-    if (res.contains('Compatible')) return 8.0;
-    return 0.0;
   }
 
   /// Analyze Navamsa compatibility
@@ -857,12 +615,6 @@ class ChartComparison {
     [2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4], // Lion
   ];
 
-  static int _getYoniMatrixScore(int nak1, int nak2) {
-    final a1 = _nakshatraYoniAnimalIndex[nak1 % 27];
-    final a2 = _nakshatraYoniAnimalIndex[nak2 % 27];
-    return _yoniMatrix[a1][a2];
-  }
-
   static String calculateYoniDescription(int nak1, int nak2) {
     final a1 = _nakshatraYoniAnimalIndex[nak1 % 27];
     final a2 = _nakshatraYoniAnimalIndex[nak2 % 27];
@@ -874,62 +626,6 @@ class ChartComparison {
     if (score == 2) return '$name1 - $name2: Neutral Yoni';
     if (score == 1) return '$name1 - $name2: Challenging (Enemy Yoni)';
     return '$name1 - $name2: Incompatible (Bitter Enemy)';
-  }
-
-  static String _calculateGana(int nak1, int nak2) {
-    // Correct Gana groups - 9 nakshatras each
-    // Deva Gana (divine temperament)
-    const deva = [0, 4, 6, 7, 12, 14, 16, 21, 26];
-    // Ashwini, Mrigashira, Punarvasu, Pushya, Hasta, Swati, Anuradha, Shravana, Revati
-
-    // Manushya Gana (human temperament)
-    const manushya = [1, 3, 5, 10, 11, 19, 20, 24, 25];
-    // Bharani, Rohini, Ardra, Purva Phalguni, Uttara Phalguni, Purva Ashadha, Uttara Ashadha, Purva Bhadrapada, Uttara Bhadrapada
-
-    // Rakshasa Gana (demonic/fierce temperament) - remaining 9
-    // Krittika, Ashlesha, Magha, Chitra, Vishakha, Jyeshtha, Moola, Dhanishta, Shatabhisha
-
-    final g1 = deva.contains(nak1 % 27)
-        ? 'Deva'
-        : manushya.contains(nak1 % 27)
-        ? 'Manushya'
-        : 'Rakshasa';
-    final g2 = deva.contains(nak2 % 27)
-        ? 'Deva'
-        : manushya.contains(nak2 % 27)
-        ? 'Manushya'
-        : 'Rakshasa';
-
-    if (g1 == g2) return '$g1 - $g1: Excellent';
-    if ((g1 == 'Deva' && g2 == 'Manushya') ||
-        (g1 == 'Manushya' && g2 == 'Deva')) {
-      return '$g1 - $g2: Good';
-    }
-    return '$g1 - $g2: Challenging';
-  }
-
-  static String _calculateNadi(int nak1, int nak2) {
-    // Correct Nadi groups - 9 nakshatras each in serpentine pattern
-    // Adi (Vata): Ashwini, Ardra, Punarvasu, Uttaraphalguni, Hasta, Jyeshta, Moola, Shatabhisha, Poorva Bhadrapada
-    // Madhya (Pitta): Bharani, Mrigashira, Pushya, Poorva Phalguni, Chitra, Anuradha, Poorvashada, Dhanishta, Uttara Bhadrapada
-    // Antya (Kapha): Krittika, Rohini, Ashlesha, Magha, Swati, Vishakha, Uttarashada, Shravana, Revati
-
-    String getNadi(int nakshatra) {
-      final remainder = (nakshatra % 27) % 6;
-      if (remainder == 0 || remainder == 5) {
-        return 'Adi';
-      } else if (remainder == 1 || remainder == 4) {
-        return 'Madhya';
-      } else {
-        return 'Antya';
-      }
-    }
-
-    final n1 = getNadi(nak1);
-    final n2 = getNadi(nak2);
-
-    if (n1 == n2) return '$n1 - $n2: Not Recommended (Nadi Dosh)';
-    return '$n1 - $n2: Compatible';
   }
 
   static String _checkSignCompatibility(int sign1, int sign2) {

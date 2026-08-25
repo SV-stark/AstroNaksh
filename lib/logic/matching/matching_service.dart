@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 
 import '../../core/ephemeris_manager.dart';
 import '../../core/utils/formatters.dart';

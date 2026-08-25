@@ -1,4 +1,4 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 
 /// Centralized astrology constants and utilities.
 /// Single source of truth for planetary data to eliminate duplication

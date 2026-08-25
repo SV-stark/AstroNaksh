@@ -1,5 +1,7 @@
 import 'dart:io';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/muhurta.dart';
+import 'package:jyotish/panchanga.dart';
 
 import '../core/ephemeris_manager.dart';
 import '../core/utils/formatters.dart';
@@ -160,25 +162,59 @@ class PanchangService {
       location: geoLoc,
     );
 
-    // Calculate Rise/Set times
-    final (sr, ss) = await _jyotish.getSunriseSunset(
-      date: dateTime,
-      location: geoLoc,
-    );
+    // Calculate Rise/Set times with typed exception handling
+    DateTime? sr;
+    DateTime? ss;
+    try {
+      final (calcSr, calcSs) = await _jyotish.getSunriseSunset(
+        date: dateTime,
+        location: geoLoc,
+      );
+      sr = calcSr;
+      ss = calcSs;
+    } on PolarRegionException {
+      sr = null;
+      ss = null;
+    } on CalculationException {
+      sr = null;
+      ss = null;
+    } catch (_) {
+      sr = null;
+      ss = null;
+    }
 
     // Moonrise/set (using default rsmi flags from documentation)
-    final mr = await _jyotish.getRiseSet(
-      planet: Planet.moon,
-      date: dateTime,
-      location: geoLoc,
-      rsmi: 1, // calcRise
-    );
-    final ms = await _jyotish.getRiseSet(
-      planet: Planet.moon,
-      date: dateTime,
-      location: geoLoc,
-      rsmi: 2, // calcSet
-    );
+    DateTime? mr;
+    try {
+      mr = await _jyotish.getRiseSet(
+        planet: Planet.moon,
+        date: dateTime,
+        location: geoLoc,
+        rsmi: 1, // calcRise
+      );
+    } on PolarRegionException {
+      mr = null;
+    } on CalculationException {
+      mr = null;
+    } catch (_) {
+      mr = null;
+    }
+
+    DateTime? ms;
+    try {
+      ms = await _jyotish.getRiseSet(
+        planet: Planet.moon,
+        date: dateTime,
+        location: geoLoc,
+        rsmi: 2, // calcSet
+      );
+    } on PolarRegionException {
+      ms = null;
+    } on CalculationException {
+      ms = null;
+    } catch (_) {
+      ms = null;
+    }
 
     final moon = chart.getPlanet(Planet.moon)!;
     RitualElements? rituals;
@@ -342,10 +378,22 @@ class PanchangService {
       longitude: location.longitude,
     );
 
-    final (sr, ss) = await _jyotish.getSunriseSunset(
-      date: date,
-      location: geoLoc,
-    );
+    DateTime? sr;
+    DateTime? ss;
+    try {
+      final (calcSr, calcSs) = await _jyotish.getSunriseSunset(
+        date: date,
+        location: geoLoc,
+      );
+      sr = calcSr;
+      ss = calcSs;
+    } on PolarRegionException {
+      return [];
+    } on CalculationException {
+      return [];
+    } catch (_) {
+      return [];
+    }
 
     if (sr == null || ss == null) return [];
 
@@ -435,10 +483,22 @@ class PanchangService {
       longitude: location.longitude,
     );
 
-    final (sr, ss) = await _jyotish.getSunriseSunset(
-      date: date,
-      location: geoLoc,
-    );
+    DateTime? sr;
+    DateTime? ss;
+    try {
+      final (calcSr, calcSs) = await _jyotish.getSunriseSunset(
+        date: date,
+        location: geoLoc,
+      );
+      sr = calcSr;
+      ss = calcSs;
+    } on PolarRegionException {
+      return [];
+    } on CalculationException {
+      return [];
+    } catch (_) {
+      return [];
+    }
 
     if (sr == null || ss == null) return [];
 
@@ -471,10 +531,22 @@ class PanchangService {
       longitude: location.longitude,
     );
 
-    final (sr, ss) = await _jyotish.getSunriseSunset(
-      date: date,
-      location: geoLoc,
-    );
+    DateTime? sr;
+    DateTime? ss;
+    try {
+      final (calcSr, calcSs) = await _jyotish.getSunriseSunset(
+        date: date,
+        location: geoLoc,
+      );
+      sr = calcSr;
+      ss = calcSs;
+    } on PolarRegionException {
+      return [];
+    } on CalculationException {
+      return [];
+    } catch (_) {
+      return [];
+    }
 
     if (sr == null || ss == null) return [];
 

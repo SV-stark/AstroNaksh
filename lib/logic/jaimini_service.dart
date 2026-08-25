@@ -1,5 +1,7 @@
 import 'package:astronaksh/core/ephemeris_manager.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/analysis.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/systems.dart';
 import '../../data/models.dart';
 
 class JaiminiAnalysisService {

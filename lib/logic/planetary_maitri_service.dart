@@ -1,4 +1,5 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/strength.dart';
 import '../core/ephemeris_manager.dart';
 
 /// Planetary Maitri (Friendship) Analysis Service

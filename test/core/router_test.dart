@@ -90,10 +90,14 @@ void main() {
 
     testWidgets('panchang screen /panchang', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 1200));
+      final scrollController = ScrollController();
       await tester.pumpWidget(
         ProviderScope(
           overrides: [databaseProvider.overrideWithValue(mockDb)],
-          child: FluentApp.router(routerConfig: router),
+          child: PrimaryScrollController(
+            controller: scrollController,
+            child: FluentApp.router(routerConfig: router),
+          ),
         ),
       );
       router.go('/panchang');
@@ -107,10 +111,14 @@ void main() {
 
     testWidgets('comparison screen /comparison', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 1200));
+      final scrollController = ScrollController();
       await tester.pumpWidget(
         ProviderScope(
           overrides: [databaseProvider.overrideWithValue(mockDb)],
-          child: FluentApp.router(routerConfig: router),
+          child: PrimaryScrollController(
+            controller: scrollController,
+            child: FluentApp.router(routerConfig: router),
+          ),
         ),
       );
       router.go('/comparison');
@@ -124,10 +132,14 @@ void main() {
 
     testWidgets('muhurta finder screen /muhurta', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 1200));
+      final scrollController = ScrollController();
       await tester.pumpWidget(
         ProviderScope(
           overrides: [databaseProvider.overrideWithValue(mockDb)],
-          child: FluentApp.router(routerConfig: router),
+          child: PrimaryScrollController(
+            controller: scrollController,
+            child: FluentApp.router(routerConfig: router),
+          ),
         ),
       );
       router.go('/muhurta');

@@ -2,7 +2,8 @@ import 'dart:ui';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jyotish/jyotish.dart' as j;
+import 'package:jyotish/analysis.dart' as j;
+import 'package:jyotish/core.dart' as j;
 
 import '../../core/chart_customization.dart';
 import '../../core/constants.dart';

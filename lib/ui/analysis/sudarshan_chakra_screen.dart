@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/analysis.dart';
 
 import '../../data/models.dart';
 import '../../ui/utils/responsive_helper.dart';

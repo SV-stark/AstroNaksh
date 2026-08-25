@@ -1,4 +1,5 @@
-import 'package:jyotish/jyotish.dart' as j;
+import 'package:jyotish/core.dart' as j;
+import 'package:jyotish/transit.dart' as j;
 
 import '../../core/utils/formatters.dart';
 import '../../data/models.dart';

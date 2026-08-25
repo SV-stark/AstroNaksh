@@ -1,4 +1,6 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/strength.dart';
+import 'package:jyotish/systems.dart';
 
 import '../core/ephemeris_manager.dart';
 import '../data/models.dart';

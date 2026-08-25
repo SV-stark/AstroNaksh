@@ -1,4 +1,5 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/panchanga.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../../core/ayanamsa_calculator.dart';
 import '../../core/ephemeris_manager.dart';
@@ -34,13 +35,28 @@ class BirthDetailsService {
     final ascendantIndex = (chart.houses.cusps[0] / 30.0).floor();
 
     // Calculate Sunrise/Sunset
-    final (sunrise, sunset) = await EphemerisManager.jyotish.getSunriseSunset(
-      date: birthData.dateTime,
-      location: GeographicLocation(
-        latitude: birthData.location.latitude,
-        longitude: birthData.location.longitude,
-      ),
-    );
+    DateTime? sunrise;
+    DateTime? sunset;
+    try {
+      final (sr, ss) = await EphemerisManager.jyotish.getSunriseSunset(
+        date: birthData.dateTime,
+        location: GeographicLocation(
+          latitude: birthData.location.latitude,
+          longitude: birthData.location.longitude,
+        ),
+      );
+      sunrise = sr;
+      sunset = ss;
+    } on PolarRegionException {
+      sunrise = null;
+      sunset = null;
+    } on CalculationException {
+      sunrise = null;
+      sunset = null;
+    } catch (_) {
+      sunrise = null;
+      sunset = null;
+    }
 
     // Calculate Ishtakala (Time since sunrise)
     var ishtakala = '--';

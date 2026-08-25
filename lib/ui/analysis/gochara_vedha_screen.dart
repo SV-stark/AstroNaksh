@@ -1,7 +1,7 @@
-// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first, implementation_imports
+// ignore_for_file: avoid_slow_async_io, unawaited_futures, deprecated_member_use, sort_constructors_first
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart' as j;
-import 'package:jyotish/src/transit/gochara_vedha_service.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/transit.dart';
 
 import '../../core/utils/formatters.dart';
 import '../../data/models.dart';
@@ -40,7 +40,7 @@ class _GocharaVedhaScreenState extends State<GocharaVedhaScreen> {
           widget
               .chartData
               .baseChart
-              .planets[j.Planet.moon]
+              .planets[Planet.moon]
               ?.position
               .nakshatraIndex ??
           0;

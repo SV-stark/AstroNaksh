@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jyotish/jyotish.dart' hide ChartStyle;
+import 'package:jyotish/core.dart';
+import 'package:jyotish/systems.dart';
 
 import '../../core/chart_customization.dart';
 import '../../core/ephemeris_manager.dart';

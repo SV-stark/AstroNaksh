@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 
 import '../../data/models.dart';
 import '../../logic/remedies_service.dart';

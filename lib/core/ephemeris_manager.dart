@@ -4,7 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/astronomy.dart';
+import 'package:jyotish/core.dart';
 import 'package:path/path.dart' as p;
 
 import 'app_environment.dart';
@@ -292,13 +293,14 @@ class EphemerisManager {
 
   /// Initialize the jyotish library once and correctly
   static Future<void> _initializeLibrary(String ephemerisPath) async {
-    // 1. Initialize the main Jyotish wrapper
-    // This internally creates an EphemerisService and initializes it.
+    // Initialize the main Jyotish facade. Since v2.19.0 EphemerisService()
+    // is a shared singleton factory, initializing the facade also initializes
+    // EphemerisManager.service.
     await _jyotish.initialize(ephemerisPath: ephemerisPath);
-
-    // 2. IMPORTANT: Initialize the direct service instance too!
-    // Many modules in the app use EphemerisManager.service directly.
-    await service.initialize(ephemerisPath: ephemerisPath);
+    assert(
+      service.isInitialized,
+      'EphemerisService must be initialized via facade',
+    );
   }
 
   /// Check if ephemeris files are available for a date range

@@ -9,3 +9,6 @@ export 'package:jyotish/src/models/geographic_location.dart';
 export 'package:jyotish/src/models/planet.dart';
 export 'package:jyotish/src/models/rashi.dart';
 export 'package:jyotish/src/models/aspect.dart';
+export 'package:jyotish/src/models/special_lagnas.dart';
+export 'package:jyotish/src/models/varga_configuration.dart';
+export 'package:jyotish/src/models/vedic_chart.dart';

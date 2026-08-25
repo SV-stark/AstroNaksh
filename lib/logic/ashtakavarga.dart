@@ -1,4 +1,5 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/systems.dart';
 
 /// Ashtakavarga System Calculator
 /// Calculates Bhinnashtakavarga (Individual) and Sarvashtakavarga (Total) points.

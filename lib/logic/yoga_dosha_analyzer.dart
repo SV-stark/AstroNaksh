@@ -1,4 +1,4 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/analysis.dart';
 
 import '../data/models.dart';
 

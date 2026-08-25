@@ -19,3 +19,6 @@ export 'package:jyotish/src/analysis/chart_renderer.dart';
 export 'package:jyotish/src/analysis/dosha.dart';
 export 'package:jyotish/src/analysis/dosha_service.dart';
 export 'package:jyotish/src/analysis/graha_yuddha_service.dart';
+export 'package:jyotish/src/models/graha_yuddha.dart';
+export 'package:jyotish/src/models/varga_configuration.dart';
+export 'package:jyotish/src/models/vedic_chart.dart';

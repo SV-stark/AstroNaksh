@@ -1,6 +1,6 @@
 import 'package:astronaksh/logic/panchang_service.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/astronomy.dart';
 
 import 'panchang_helpers.dart';
 

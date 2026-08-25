@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/analysis.dart';
+import 'package:jyotish/core.dart';
 
 /// Chart Customization Settings
 /// Manages user preferences for chart display

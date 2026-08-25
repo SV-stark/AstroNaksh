@@ -1,4 +1,4 @@
-import 'package:jyotish/jyotish.dart' as jy;
+import 'package:jyotish/analysis.dart' as jy;
 import '../../data/models.dart';
 
 class ProgenyService {

@@ -2,7 +2,7 @@
 // Life Predictions Data Models
 // Models for life aspect predictions based on Vedic astrology
 
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
 
 /// Represents a planet's influence on a life aspect
 class PlanetaryInfluence {

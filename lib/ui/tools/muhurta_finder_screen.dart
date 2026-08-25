@@ -4,7 +4,8 @@ import 'dart:io';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' show showDatePicker;
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/muhurta.dart';
 
 import '../../core/ephemeris_manager.dart';
 import '../../core/utils/formatters.dart';
@@ -116,6 +117,38 @@ class _MuhurtaFinderScreenState extends State<MuhurtaFinderScreen> {
         _suitabilityTimeline = suitabilityTimelineSorted;
         _isLoading = false;
       });
+    } on PolarRegionException catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted && !Platform.environment.containsKey('FLUTTER_TEST')) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (context, close) => InfoBar(
+              title: const Text('Polar Region Notice'),
+              content: Text(
+                'Sunrise/sunset cannot be determined in polar regions during perpetual day/night: ${e.message}',
+              ),
+              severity: InfoBarSeverity.warning,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    } on CalculationException catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted && !Platform.environment.containsKey('FLUTTER_TEST')) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (context, close) => InfoBar(
+              title: const Text('Calculation Error'),
+              content: Text(e.message),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          ),
+        );
+      }
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted && !Platform.environment.containsKey('FLUTTER_TEST')) {

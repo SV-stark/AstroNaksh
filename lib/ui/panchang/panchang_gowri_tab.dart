@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/muhurta.dart';
 import 'panchang_helpers.dart';
 
 /// Tab 6: Gowri Panchanga

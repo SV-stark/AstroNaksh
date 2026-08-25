@@ -6,7 +6,6 @@ import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/models/vedic_chart.dart';
 import 'package:jyotish/src/analysis/divisional_chart_service.dart';
 import 'package:jyotish/src/astronomy/ephemeris_service.dart';
-import 'package:dartx/dartx.dart';
 
 /// Service for calculating Shadbala (Six-fold Strength) of planets.
 ///
@@ -1311,7 +1310,7 @@ class ShadbalaService {
     VedicChart chart,
   ) {
     final netVirupas = Planet.traditionalPlanets
-        .filter((otherPlanet) => otherPlanet != planet)
+        .where((otherPlanet) => otherPlanet != planet)
         .map((otherPlanet) {
       final otherInfo = chart.getPlanet(otherPlanet);
       if (otherInfo == null) return 0.0;
@@ -1323,7 +1322,7 @@ class ShadbalaService {
       );
 
       return _applyAspectNature(otherPlanet, aspectStrength, chart: chart);
-    }).sum();
+    }).fold<double>(0.0, (sum, v) => sum + v);
 
     return netVirupas.clamp(-60.0, 60.0);
   }
@@ -1485,10 +1484,11 @@ class ShadbalaService {
   /// Full aspects (180) get full 60 virupas, partial aspects get reduced.
   double _getAspectStrengthMultiplier(double aspectAngle) {
     // Full 7th aspect
-    if (aspectAngle == 180.0) return 1.0;
+    if ((aspectAngle - 180.0).abs() < 1e-4) return 1.0;
 
     // Special aspects (Mars 4th/8th, Jupiter 5th/9th, Saturn 3rd/10th)
-    if ([90.0, 120.0, 210.0, 240.0, 60.0, 270.0].contains(aspectAngle)) {
+    const specialAngles = [90.0, 120.0, 210.0, 240.0, 60.0, 270.0];
+    if (specialAngles.any((a) => (a - aspectAngle).abs() < 1e-4)) {
       return 1.0; // Full strength for special aspects
     }
 
@@ -1533,12 +1533,13 @@ class ShadbalaService {
   /// Gets maximum orb allowance for different aspect types.
   double _getMaxOrbForAspect(Planet planet, double aspectAngle) {
     // Full aspects (7th house) get 30 orb for all planets
-    if (aspectAngle == 180.0) {
+    if ((aspectAngle - 180.0).abs() < 1e-4) {
       return 30.0;
     }
 
     // Special aspects get 15 orb
-    if ([90.0, 210.0, 120.0, 240.0, 60.0, 270.0].contains(aspectAngle)) {
+    const specialAngles = [90.0, 210.0, 120.0, 240.0, 60.0, 270.0];
+    if (specialAngles.any((a) => (a - aspectAngle).abs() < 1e-4)) {
       return 15.0;
     }
 

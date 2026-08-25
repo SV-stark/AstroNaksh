@@ -1,4 +1,5 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/panchanga.dart';
 
 class AstrologyConstants {
   static List<String> get nakshatraNames => NakshatraInfo.nakshatraNames;

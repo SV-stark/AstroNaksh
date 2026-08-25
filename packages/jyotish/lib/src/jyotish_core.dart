@@ -309,6 +309,7 @@ class Jyotish {
       _doshaService = const DoshaService();
       _isInitialized = true;
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to initialize Jyotish: ${e.toString()}',
         originalError: e,
@@ -343,6 +344,7 @@ class Jyotish {
         flags: flags ?? CalculationFlags.defaultFlags(),
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate planet position: ${e.toString()}',
         originalError: e,
@@ -605,6 +607,7 @@ class Jyotish {
 
       return _aspectService!.calculateAspects(positions, config: config);
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate aspects: ${e.toString()}',
         originalError: e,
@@ -635,6 +638,7 @@ class Jyotish {
 
       return _aspectService!.getAspectsForPlanet(planet, positions);
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate aspects for planet: ${e.toString()}',
         originalError: e,
@@ -713,6 +717,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate transits: ${e.toString()}',
         originalError: e,
@@ -764,6 +769,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to find transit events: ${e.toString()}',
         originalError: e,
@@ -1172,6 +1178,7 @@ class Jyotish {
         atmosphericTemperature: atmosphericTemperature,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate Panchanga: ${e.toString()}',
         originalError: e,
@@ -1192,6 +1199,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Tithi: ${e.toString()}',
         originalError: e,
@@ -1232,6 +1240,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Nakshatra: ${e.toString()}',
         originalError: e,
@@ -1252,6 +1261,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Yoga: ${e.toString()}',
         originalError: e,
@@ -1272,6 +1282,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Karana: ${e.toString()}',
         originalError: e,
@@ -1521,6 +1532,7 @@ class Jyotish {
         attemp: attemp,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate sunrise/sunset: ${e.toString()}',
         originalError: e,
@@ -1551,6 +1563,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get planet visibility: ${e.toString()}',
         originalError: e,
@@ -1578,6 +1591,7 @@ class Jyotish {
         eclipseType: eclipseType ?? EclipseType.any,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get eclipse data: ${e.toString()}',
         originalError: e,
@@ -1611,6 +1625,7 @@ class Jyotish {
         upperCulmination: upperCulmination,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate meridian transit: ${e.toString()}',
         originalError: e,
@@ -1653,6 +1668,7 @@ class Jyotish {
       );
       return result;
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate rise/set: ${e.toString()}',
         originalError: e,
@@ -1686,6 +1702,7 @@ class Jyotish {
         transitDate: transitDate,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to analyze Ashtakavarga transit: ${e.toString()}',
         originalError: e,
@@ -1795,6 +1812,7 @@ class Jyotish {
         useNewAyanamsa: useNewAyanamsa,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate KP data: ${e.toString()}',
         originalError: e,
@@ -1999,6 +2017,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate special transits: ${e.toString()}',
         originalError: e,
@@ -2053,6 +2072,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate Muhurta: ${e.toString()}',
         originalError: e,
@@ -2078,6 +2098,7 @@ class Jyotish {
         birthRashiIndex: birthRashiIndex,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate Muhurta suitability score: ${e.toString()}',
         originalError: e,
@@ -2105,6 +2126,7 @@ class Jyotish {
         birthRashiIndex: birthRashiIndex,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to scan Muhurta suitability: ${e.toString()}',
         originalError: e,
@@ -2305,6 +2327,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate Hora Lords for day: ${e.toString()}',
         originalError: e,
@@ -2354,6 +2377,7 @@ class Jyotish {
         type: type,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate Masa: ${e.toString()}',
         originalError: e,
@@ -2697,8 +2721,81 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Samvatsara: ${e.toString()}',
+        originalError: e,
+      );
+    }
+  }
+
+  /// Gets Samvat information (Vikram Samvat, Shaka Samvat, Gujarati Samvat, Samvatsara).
+  ///
+  /// [dateTime] - The date to calculate for
+  /// [location] - Geographic location
+  Future<SamvatInfo> getSamvatInfo({
+    required DateTime dateTime,
+    required GeographicLocation location,
+  }) async {
+    _ensureInitialized();
+
+    try {
+      return await _masaService!.getSamvatInfo(
+        dateTime: dateTime,
+        location: location,
+      );
+    } catch (e) {
+      if (e is JyotishException) rethrow;
+      throw JyotishException(
+        'Failed to get Samvat info: ${e.toString()}',
+        originalError: e,
+      );
+    }
+  }
+
+  /// Gets the solar half-year (Ayana: Uttarayana or Dakshinayana).
+  ///
+  /// [dateTime] - The date to calculate for
+  /// [location] - Geographic location
+  Future<Ayana> getAyana({
+    required DateTime dateTime,
+    required GeographicLocation location,
+  }) async {
+    _ensureInitialized();
+
+    try {
+      return await _masaService!.getAyana(
+        dateTime: dateTime,
+        location: location,
+      );
+    } catch (e) {
+      if (e is JyotishException) rethrow;
+      throw JyotishException(
+        'Failed to get Ayana: ${e.toString()}',
+        originalError: e,
+      );
+    }
+  }
+
+  /// Gets the solar date (Pravishte / Gata - solar day and solar sign month).
+  ///
+  /// [dateTime] - The date to calculate for
+  /// [location] - Geographic location
+  Future<PravishteInfo> getPravishte({
+    required DateTime dateTime,
+    required GeographicLocation location,
+  }) async {
+    _ensureInitialized();
+
+    try {
+      return await _masaService!.getPravishte(
+        dateTime: dateTime,
+        location: location,
+      );
+    } catch (e) {
+      if (e is JyotishException) rethrow;
+      throw JyotishException(
+        'Failed to get Pravishte: ${e.toString()}',
         originalError: e,
       );
     }
@@ -2725,6 +2822,7 @@ class Jyotish {
         type: type,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Masa list: ${e.toString()}',
         originalError: e,
@@ -2760,6 +2858,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Ritu details: ${e.toString()}',
         originalError: e,
@@ -2788,6 +2887,7 @@ class Jyotish {
         houseSystem: houseSystem,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate houses: ${e.toString()}',
         originalError: e,
@@ -2838,6 +2938,7 @@ class Jyotish {
         location: location,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Nakshatra with Abhijit: ${e.toString()}',
         originalError: e,
@@ -2907,6 +3008,7 @@ class Jyotish {
 
       return _masaService!.calculateNakshatraFromLongitude(position.longitude);
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to get Nakshatra for ${planet.displayName}: ${e.toString()}',
         originalError: e,
@@ -3190,6 +3292,33 @@ class Jyotish {
   int calculateVashya(VedicChart boyChart, VedicChart girlChart) {
     _ensureInitialized();
     return _compatibilityService!.calculateVashya(boyChart, girlChart);
+  }
+
+  /// Calculates Yoni compatibility score (0-4 pts) between two Nakshatras.
+  int calculateYoni(String boyNakshatra, String girlNakshatra) {
+    _ensureInitialized();
+    return _compatibilityService!.calculateYoni(boyNakshatra, girlNakshatra);
+  }
+
+  /// Calculates Dasha compatibility between two charts.
+  DashaCompatibility calculateDashaCompatibility(
+    VedicChart boyChart,
+    VedicChart girlChart,
+  ) {
+    _ensureInitialized();
+    return _compatibilityService!.calculateDashaCompatibility(
+      boyChart,
+      girlChart,
+    );
+  }
+
+  /// Checks for all doshas (Nadi, Bhakoot, Manglik) between two charts.
+  DoshaCheck checkDoshas(
+    VedicChart boyChart,
+    VedicChart girlChart,
+  ) {
+    _ensureInitialized();
+    return _compatibilityService!.checkDoshas(boyChart, girlChart);
   }
 
   /// Calculates Guna Milan (Ashtakoota) scores.
@@ -3593,6 +3722,7 @@ class Jyotish {
         timezoneId: location?.timezone,
       );
     } catch (e) {
+      if (e is JyotishException) rethrow;
       throw JyotishException(
         'Failed to calculate ayanamsa: ${e.toString()}',
         originalError: e,

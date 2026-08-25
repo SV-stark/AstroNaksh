@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/analysis.dart';
+import 'package:jyotish/core.dart';
 
 import '../../data/models.dart';
 import '../../ui/utils/responsive_helper.dart';

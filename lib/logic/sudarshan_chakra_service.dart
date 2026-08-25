@@ -1,4 +1,4 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/analysis.dart';
 
 class SudarshanChakraServiceWrapper {
   final SudarshanChakraService _service = SudarshanChakraService();

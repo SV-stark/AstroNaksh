@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/muhurta.dart';
 
 class PanchangSpecialYogasTab extends StatelessWidget {
   const PanchangSpecialYogasTab({super.key, required this.specialYogas});

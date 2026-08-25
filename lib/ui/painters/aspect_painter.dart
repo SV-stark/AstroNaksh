@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jyotish/jyotish.dart' as j;
+import 'package:jyotish/core.dart' as j;
 
 import '../../core/chart_customization.dart';
 import '../../logic/planetary_aspect_service.dart';

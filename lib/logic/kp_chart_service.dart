@@ -1,4 +1,5 @@
-import 'package:jyotish/jyotish.dart';
+import 'package:jyotish/core.dart';
+import 'package:jyotish/systems.dart';
 import '../core/ephemeris_manager.dart';
 import '../core/error_handler.dart';
 import '../data/models.dart';
@@ -35,13 +36,23 @@ class KPChartService {
 
         // Calculate correct Day Lord (Sunrise based)
         // We need to fetch sunrise for the location
-        final (sunrise, _) = await EphemerisManager.jyotish.getSunriseSunset(
-          date: birthData.dateTime,
-          location: GeographicLocation(
-            latitude: birthData.location.latitude,
-            longitude: birthData.location.longitude,
-          ),
-        );
+        DateTime? sunrise;
+        try {
+          final (sr, _) = await EphemerisManager.jyotish.getSunriseSunset(
+            date: birthData.dateTime,
+            location: GeographicLocation(
+              latitude: birthData.location.latitude,
+              longitude: birthData.location.longitude,
+            ),
+          );
+          sunrise = sr;
+        } on PolarRegionException {
+          sunrise = null;
+        } on CalculationException {
+          sunrise = null;
+        } catch (_) {
+          sunrise = null;
+        }
 
         Planet? dayLord;
         if (sunrise != null) {

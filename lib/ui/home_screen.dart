@@ -90,6 +90,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  /// Deleting a saved chart is irreversible, so ask first.
+  Future<void> _confirmDeleteChart(Chart chart) async {
+    final name = chart.name?.trim().isNotEmpty == true
+        ? chart.name!.trim()
+        : 'this chart';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => ContentDialog(
+        title: const Text('Delete chart?'),
+        content: Text(
+          'Permanently delete "$name" and its saved birth details.',
+        ),
+        actions: [
+          Button(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      final db = ref.read(databaseProvider);
+      await (db.delete(db.charts)..where((t) => t.id.equals(chart.id))).go();
+      await _loadCharts();
+      if (!mounted) return;
+      displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text('Chart deleted'),
+          severity: InfoBarSeverity.success,
+          onClose: close,
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text('Delete Failed'),
+          content: Text('$error'),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ),
+      );
+    }
+  }
+
   void _openChart(Chart chart) {
     try {
       final birthData = BirthData(
@@ -255,18 +308,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       crossAxisCount: ResponsiveHelper.useMobileLayout(context)
-                          ? 2
+                          ? 1
                           : 3,
                       mainAxisSpacing: ResponsiveHelper.useMobileLayout(context)
                           ? 16
                           : 12,
                       crossAxisSpacing:
                           ResponsiveHelper.useMobileLayout(context) ? 16 : 12,
-                      childAspectRatio:
-                          ResponsiveHelper.getGridChildAspectRatio(context) *
-                          (ResponsiveHelper.useMobileLayout(context)
-                              ? 1.0
-                              : 1.5),
+                      // Sizing the tiles from the actual available width keeps
+                      // the icon + title + chevron row inside its cell; the old
+                      // fixed aspect ratio overflowed on narrow windows.
+                      childAspectRatio: _quickActionAspectRatio(context),
                       children: [
                         _buildQuickAction(
                           icon: FluentIcons.sunny,
@@ -346,7 +398,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           },
                         ),
                       ],
-
                     ),
                   ],
                 ),
@@ -545,14 +596,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       color: Colors.red,
                                       size: isMobile ? 24 : 16,
                                     ),
-                                    onPressed: () async {
-                                      final db = ref.read(databaseProvider);
-                                      await (db.delete(db.charts)..where(
-                                            (t) => t.id.equals(chart.id),
-                                          ))
-                                          .go();
-                                      _loadCharts();
-                                    },
+                                    onPressed: () => _confirmDeleteChart(chart),
                                   ),
                                 ),
                               ),
@@ -566,6 +610,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+  }
+
+  /// Width/height ratio for one quick-action tile.
+  double _quickActionAspectRatio(BuildContext context) {
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
+    final crossAxisCount = isMobile ? 1 : 3;
+    final tileWidth =
+        (MediaQuery.sizeOf(context).width -
+            (isMobile ? 32 : 48) - // horizontal page padding
+            12 * (crossAxisCount - 1)) / // inter-tile spacing
+        crossAxisCount;
+    // Tiles must be wide enough for a 40px icon, 8px gap, two text columns and
+    // a 16px chevron; height stays at the 56px content height.
+    final usable = tileWidth.isFinite && tileWidth > 0 ? tileWidth : 320.0;
+    return (usable / 56).clamp(1.0, 12.0);
   }
 
   Widget _buildQuickAction({
@@ -602,6 +661,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Text(
                     title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: isMobile ? 14 : 13,
@@ -609,6 +670,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   Text(
                     subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: isMobile ? 12 : 11,
                       color: Colors.grey.withAlpha(150),

@@ -11,6 +11,9 @@ class SouthIndianChartPainter extends CustomPainter {
     this.selectedHouse,
     this.showSigns = true,
     this.showHouseNumbers = true,
+    this.showHouses = true,
+    this.showHouseCusps = true,
+    this.planetTextScale = 1.0,
     this.transitPlanetsBySign,
   });
   final Map<int, List<String>> planetsBySign;
@@ -21,6 +24,17 @@ class SouthIndianChartPainter extends CustomPainter {
   final int? selectedHouse;
   final bool showSigns;
   final bool showHouseNumbers;
+
+  /// Whether the house divisions (outer frame, diagonals, inner diamond) and
+  /// the grid are drawn. Driven by the "Show Houses" setting.
+  final bool showHouses;
+
+  /// Whether per-house cusp/grid detail is drawn.
+  final bool showHouseCusps;
+
+  /// Multiplier applied to the planet label font size, driven by the
+  /// "Planet Size" setting.
+  final double planetTextScale;
 
   Rect getCellRect(int signIndex, double width, double height) {
     final cellWidth = width / 4;
@@ -115,51 +129,55 @@ class SouthIndianChartPainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
-    // Outer border
-    canvas.drawRect(Rect.fromLTWH(0, 0, width, height), borderPaint);
+    // House grid: the South Indian layout *is* the 4x4 sign grid, so the grid
+    // lines are the "Show Houses" / "Show House Cusps" toggles.
+    if (showHouses) {
+      canvas.drawRect(Rect.fromLTWH(0, 0, width, height), borderPaint);
+    }
+    if (showHouseCusps) {
+      // Inner lines
+      canvas.drawLine(
+        Offset(0, cellHeight),
+        Offset(width, cellHeight),
+        borderPaint,
+      );
+      canvas.drawLine(
+        Offset(0, cellHeight * 2),
+        Offset(cellWidth, cellHeight * 2),
+        borderPaint,
+      );
+      canvas.drawLine(
+        Offset(cellWidth * 3, cellHeight * 2),
+        Offset(width, cellHeight * 2),
+        borderPaint,
+      );
+      canvas.drawLine(
+        Offset(0, cellHeight * 3),
+        Offset(width, cellHeight * 3),
+        borderPaint,
+      );
 
-    // Inner lines
-    canvas.drawLine(
-      Offset(0, cellHeight),
-      Offset(width, cellHeight),
-      borderPaint,
-    );
-    canvas.drawLine(
-      Offset(0, cellHeight * 2),
-      Offset(cellWidth, cellHeight * 2),
-      borderPaint,
-    );
-    canvas.drawLine(
-      Offset(cellWidth * 3, cellHeight * 2),
-      Offset(width, cellHeight * 2),
-      borderPaint,
-    );
-    canvas.drawLine(
-      Offset(0, cellHeight * 3),
-      Offset(width, cellHeight * 3),
-      borderPaint,
-    );
-
-    canvas.drawLine(
-      Offset(cellWidth, 0),
-      Offset(cellWidth, height),
-      borderPaint,
-    );
-    canvas.drawLine(
-      Offset(cellWidth * 2, 0),
-      Offset(cellWidth * 2, cellHeight),
-      borderPaint,
-    );
-    canvas.drawLine(
-      Offset(cellWidth * 2, cellHeight * 3),
-      Offset(cellWidth * 2, height),
-      borderPaint,
-    );
-    canvas.drawLine(
-      Offset(cellWidth * 3, 0),
-      Offset(cellWidth * 3, height),
-      borderPaint,
-    );
+      canvas.drawLine(
+        Offset(cellWidth, 0),
+        Offset(cellWidth, height),
+        borderPaint,
+      );
+      canvas.drawLine(
+        Offset(cellWidth * 2, 0),
+        Offset(cellWidth * 2, cellHeight),
+        borderPaint,
+      );
+      canvas.drawLine(
+        Offset(cellWidth * 2, cellHeight * 3),
+        Offset(cellWidth * 2, height),
+        borderPaint,
+      );
+      canvas.drawLine(
+        Offset(cellWidth * 3, 0),
+        Offset(cellWidth * 3, height),
+        borderPaint,
+      );
+    }
 
     final cellOffsets = [
       Offset(cellWidth * 1.5, cellHeight * 0.5), // Aries
@@ -230,7 +248,7 @@ class SouthIndianChartPainter extends CustomPainter {
       if (displayList.isEmpty && cleanTransitPlanets.isEmpty) continue;
 
       double natalHeight = 0;
-      final fontSize = cellWidth / 8;
+      final fontSize = (cellWidth / 8) * planetTextScale;
 
       if (displayList.isNotEmpty) {
         final text = displayList.join(' ');

@@ -10,8 +10,10 @@ class KPChartService {
   Future<CompleteChartData?> generateCompleteChart(
     BirthData birthData, {
     VargaConfiguration? vargaConfig,
+    FailureCallback? onFailure,
   }) async {
     return AppErrorHandler().safeAsync<CompleteChartData?>(
+      onFailure: onFailure,
       () async {
         await EphemerisManager.ensureEphemerisData();
 

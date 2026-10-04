@@ -281,7 +281,10 @@ as double,
 /// @nodoc
 mixin _$BirthData {
 
- DateTime get dateTime; Location get location; String get name; String get place; String get timezone;
+ DateTime get dateTime;/// The converters are required: without them the generator writes the raw
+/// [Location] instance into the map, and `fromJson` then throws when it
+/// casts the value back to `Map<String, dynamic>`.
+@JsonKey(fromJson: _locationFromJson, toJson: _locationToJson) Location get location; String get name; String get place; String get timezone;
 /// Create a copy of BirthData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -314,7 +317,7 @@ abstract mixin class $BirthDataCopyWith<$Res>  {
   factory $BirthDataCopyWith(BirthData value, $Res Function(BirthData) _then) = _$BirthDataCopyWithImpl;
 @useResult
 $Res call({
- DateTime dateTime, Location location, String name, String place, String timezone
+ DateTime dateTime,@JsonKey(fromJson: _locationFromJson, toJson: _locationToJson) Location location, String name, String place, String timezone
 });
 
 
@@ -432,7 +435,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime dateTime,  Location location,  String name,  String place,  String timezone)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime dateTime, @JsonKey(fromJson: _locationFromJson, toJson: _locationToJson)  Location location,  String name,  String place,  String timezone)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BirthData() when $default != null:
 return $default(_that.dateTime,_that.location,_that.name,_that.place,_that.timezone);case _:
@@ -453,7 +456,7 @@ return $default(_that.dateTime,_that.location,_that.name,_that.place,_that.timez
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime dateTime,  Location location,  String name,  String place,  String timezone)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime dateTime, @JsonKey(fromJson: _locationFromJson, toJson: _locationToJson)  Location location,  String name,  String place,  String timezone)  $default,) {final _that = this;
 switch (_that) {
 case _BirthData():
 return $default(_that.dateTime,_that.location,_that.name,_that.place,_that.timezone);case _:
@@ -473,7 +476,7 @@ return $default(_that.dateTime,_that.location,_that.name,_that.place,_that.timez
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime dateTime,  Location location,  String name,  String place,  String timezone)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime dateTime, @JsonKey(fromJson: _locationFromJson, toJson: _locationToJson)  Location location,  String name,  String place,  String timezone)?  $default,) {final _that = this;
 switch (_that) {
 case _BirthData() when $default != null:
 return $default(_that.dateTime,_that.location,_that.name,_that.place,_that.timezone);case _:
@@ -488,11 +491,14 @@ return $default(_that.dateTime,_that.location,_that.name,_that.place,_that.timez
 @JsonSerializable()
 
 class _BirthData implements BirthData {
-  const _BirthData({required this.dateTime, required this.location, this.name = '', this.place = '', this.timezone = ''});
+  const _BirthData({required this.dateTime, @JsonKey(fromJson: _locationFromJson, toJson: _locationToJson) required this.location, this.name = '', this.place = '', this.timezone = ''});
   factory _BirthData.fromJson(Map<String, dynamic> json) => _$BirthDataFromJson(json);
 
 @override final  DateTime dateTime;
-@override final  Location location;
+/// The converters are required: without them the generator writes the raw
+/// [Location] instance into the map, and `fromJson` then throws when it
+/// casts the value back to `Map<String, dynamic>`.
+@override@JsonKey(fromJson: _locationFromJson, toJson: _locationToJson) final  Location location;
 @override@JsonKey() final  String name;
 @override@JsonKey() final  String place;
 @override@JsonKey() final  String timezone;
@@ -530,7 +536,7 @@ abstract mixin class _$BirthDataCopyWith<$Res> implements $BirthDataCopyWith<$Re
   factory _$BirthDataCopyWith(_BirthData value, $Res Function(_BirthData) _then) = __$BirthDataCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime dateTime, Location location, String name, String place, String timezone
+ DateTime dateTime,@JsonKey(fromJson: _locationFromJson, toJson: _locationToJson) Location location, String name, String place, String timezone
 });
 
 

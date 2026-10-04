@@ -9,13 +9,25 @@ class PlanetaryAspectService {
   static j.AspectService? _aspectService;
 
   /// Calculate all planetary aspects for a natal chart
-  /// Uses native jyotish library for accurate Vedic aspects
-  static List<PlanetaryAspect> calculateAspects(j.VedicChart chart) {
+  /// Uses native jyotish library for accurate Vedic aspects.
+  ///
+  /// [includeNodes] and [includeSpecialAspects] are forwarded to
+  /// [j.AspectConfig] so the "Include Nodes in Aspects" / "Include Special
+  /// Aspects" settings actually change the rendered drishti lines.
+  static List<PlanetaryAspect> calculateAspects(
+    j.VedicChart chart, {
+    bool includeNodes = true,
+    bool includeSpecialAspects = true,
+  }) {
     _aspectService ??= j.AspectService();
 
     final libraryAspects = _aspectService!.calculateAspects(
       chart.planets.map((key, value) => MapEntry(key, value.position)),
-      config: j.AspectConfig.vedic,
+      config: j.AspectConfig(
+        includeSpecialAspects: includeSpecialAspects,
+        includeNodes: includeNodes,
+        useWholeSignAspects: true,
+      ),
     );
 
     return libraryAspects.map((aspect) {

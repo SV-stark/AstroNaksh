@@ -74,6 +74,7 @@ class _PDFReportScreenState extends ConsumerState<PDFReportScreen> {
     'Basic Info': true,
     'Chart Diagram': true,
     'Planetary Positions': true,
+    'Divisional Charts (Vargas)': false,
     'Dasha Periods': true,
     'Ashtakavarga': false,
     'Shadbala': false,
@@ -118,7 +119,11 @@ class _PDFReportScreenState extends ConsumerState<PDFReportScreen> {
             _accentColorController.text = settings.brandAccentColorHex;
 
             _sections['Chart Diagram'] = settings.pdfIncludeD1;
-            _sections['Planetary Positions'] = settings.pdfIncludeD9;
+            // pdfIncludeD9 gates the Navamsa page; the planetary positions
+            // table has its own checkbox and was previously wired to this key,
+            // which made that toggle a no-op.
+            _sections['Planetary Positions'] = true;
+            _sections['Divisional Charts (Vargas)'] = settings.pdfIncludeVargas;
             _sections['Dasha Periods'] = settings.pdfIncludeDasha;
             _sections['KP System'] = settings.pdfIncludeKP;
             _sections['Yogas & Doshas'] = settings.pdfIncludeInterpretations;
@@ -901,10 +906,14 @@ class _PDFReportScreenState extends ConsumerState<PDFReportScreen> {
         pdfPageMargins: settings?.pdfPageMargins,
         includeCover: settings?.pdfIncludeCover ?? true,
         includeD1: _sections['Chart Diagram'] ?? true,
-        includeD9: _sections['Planetary Positions'] ?? true,
+        includePlanetaryPositions: _sections['Planetary Positions'] ?? true,
+        includeD9: settings?.pdfIncludeD9 ?? true,
+        includeVargas:
+            _sections['Divisional Charts (Vargas)'] ??
+            settings?.pdfIncludeVargas ??
+            false,
         includeDasha: _sections['Dasha Periods'] ?? true,
         includeKP: _sections['KP System'] ?? true,
-        includeDivisional: _reportType == 'comprehensive',
         includeYogaDosha: _sections['Yogas & Doshas'] ?? true,
         includeAshtakavarga: _sections['Ashtakavarga'] ?? false,
         includeShadbala: _sections['Shadbala'] ?? false,

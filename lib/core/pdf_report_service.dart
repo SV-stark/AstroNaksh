@@ -23,7 +23,9 @@ class PDFReportService {
     CompleteChartData chartData, {
     String? reportTitle,
     bool includeD1 = true,
+    bool includePlanetaryPositions = true,
     bool includeD9 = true,
+    bool includeVargas = false,
     bool includeDasha = true,
     bool includeKP = true,
     bool includePredictions = true,
@@ -174,21 +176,23 @@ class PDFReportService {
                   ),
                 ),
                 pw.SizedBox(height: 40),
-                PdfWidgets.sectionHeader('Planetary Positions', h3),
-                PdfWidgets.premiumTable(
-                  headers: ['Planet', 'Sign', 'Degree', 'House', 'Status'],
-                  rows: chartData.baseChart.planets.entries.map((e) {
-                    final p = e.value;
-                    return [
-                      e.key.displayName,
-                      p.zodiacSign,
-                      '${(p.longitude % 30).toStringAsFixed(2)}°',
-                      'H${p.house}',
-                      p.dignity.english,
-                    ];
-                  }).toList(),
-                  bodyStyle: body,
-                ),
+                if (includePlanetaryPositions) ...[
+                  PdfWidgets.sectionHeader('Planetary Positions', h3),
+                  PdfWidgets.premiumTable(
+                    headers: ['Planet', 'Sign', 'Degree', 'House', 'Status'],
+                    rows: chartData.baseChart.planets.entries.map((e) {
+                      final p = e.value;
+                      return [
+                        e.key.displayName,
+                        p.zodiacSign,
+                        '${(p.longitude % 30).toStringAsFixed(2)}°',
+                        'H${p.house}',
+                        p.dignity.english,
+                      ];
+                    }).toList(),
+                    bodyStyle: body,
+                  ),
+                ],
               ],
             ),
           ),
@@ -315,6 +319,78 @@ class PDFReportService {
         );
       }
 
+      // 4b. Divisional Charts (Vargas) Section
+      //
+      // `includeDivisional` used to be accepted but never read, so the Vargas
+      // pages were unreachable no matter what the caller asked for.
+      if (includeVargas && chartData.divisionalCharts.isNotEmpty) {
+        final vargaLabels = <String, String>{
+          'D-1': 'Rashi (D-1)',
+          'D-2': 'Hora (D-2)',
+          'D-3': 'Drekkana (D-3)',
+          'D-7': 'Saptamsa (D-7)',
+          'D-9': 'Navamsa (D-9)',
+          'D-10': 'Dasamsa (D-10)',
+          'D-12': 'Dwadasamsa (D-12)',
+          'D-16': 'Shodasamsa (D-16)',
+          'D-20': 'Vimsamsa (D-20)',
+          'D-24': 'Chaturthamsa (D-24)',
+          'D-27': 'Bhamsa (D-27)',
+          'D-30': 'Trimsamsa (D-30)',
+          'D-40': 'Khavedamsa (D-40)',
+          'D-45': 'Akshavedamsa (D-45)',
+          'D-60': 'Shashtiamsa (D-60)',
+        };
+
+        final entries =
+            chartData.divisionalCharts.entries
+                .where((e) => e.key != 'D-9')
+                .toList()
+              ..sort((a, b) => a.key.compareTo(b.key));
+
+        for (final entry in entries) {
+          final positions = entry.value.positions.entries.toList()
+            ..sort((a, b) => a.key.compareTo(b.key));
+          if (positions.isEmpty) continue;
+
+          pdf.addPage(
+            PdfWidgets.premiumPage(
+              backgroundImage: bgImage,
+              logo: logo,
+              margin: pageMargin,
+              brandOrgName: brandOrgName,
+              brandOrgTagline: brandOrgTagline,
+              brandContactInfo: brandContactInfo,
+              build: (context) => pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  PdfWidgets.sectionHeader(
+                    vargaLabels[entry.key] ?? 'Divisional Chart (${entry.key})',
+                    h2,
+                  ),
+                  PdfWidgets.premiumTable(
+                    headers: ['Planet', 'Longitude', 'Sign'],
+                    rows: positions.map((p) {
+                      final longitude = p.value;
+                      final signIndex = (longitude % 360 / 30).floor().clamp(
+                        0,
+                        11,
+                      );
+                      return [
+                        p.key,
+                        '${(longitude % 30).toStringAsFixed(2)}\u00b0',
+                        AstrologyConstants.signNames[signIndex],
+                      ];
+                    }).toList(),
+                    bodyStyle: body,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+
       // 5. Dasha Section
       if (includeDasha) {
         pdf.addPage(
@@ -384,61 +460,63 @@ class PDFReportService {
 
         final sookshmaRows = <List<String>>[];
         if (activeA != null) {
-        const vLords = [
-          'Ketu',
-          'Venus',
-          'Sun',
-          'Moon',
-          'Mars',
-          'Rahu',
-          'Jupiter',
-          'Saturn',
-          'Mercury',
-        ];
-        const vYears = {
-          'Ketu': 7,
-          'Venus': 20,
-          'Sun': 6,
-          'Moon': 10,
-          'Mars': 7,
-          'Rahu': 18,
-          'Jupiter': 16,
-          'Saturn': 19,
-          'Mercury': 17,
-        };
+          const vLords = [
+            'Ketu',
+            'Venus',
+            'Sun',
+            'Moon',
+            'Mars',
+            'Rahu',
+            'Jupiter',
+            'Saturn',
+            'Mercury',
+          ];
+          const vYears = {
+            'Ketu': 7,
+            'Venus': 20,
+            'Sun': 6,
+            'Moon': 10,
+            'Mars': 7,
+            'Rahu': 18,
+            'Jupiter': 16,
+            'Saturn': 19,
+            'Mercury': 17,
+          };
 
-        for (final pd in activeA.pratyantardashas) {
-          final pdLord = pd.lord;
-          final pdStart = pd.startDate;
-          final pdEnd = pd.endDate;
-          final durationMs = pdEnd.difference(pdStart).inMilliseconds;
+          for (final pd in activeA.pratyantardashas) {
+            final pdLord = pd.lord;
+            final pdStart = pd.startDate;
+            final pdEnd = pd.endDate;
+            final durationMs = pdEnd.difference(pdStart).inMilliseconds;
 
-          var startIdx = vLords.indexWhere(
-            (l) => l.toLowerCase() == pdLord.toLowerCase(),
-          );
-          if (startIdx == -1) startIdx = 0;
+            var startIdx = vLords.indexWhere(
+              (l) => l.toLowerCase() == pdLord.toLowerCase(),
+            );
+            if (startIdx == -1) startIdx = 0;
 
-          var currentStart = pdStart;
-          for (var i = 0; i < 9; i++) {
-            final lord = vLords[(startIdx + i) % 9];
-            final ratio = vYears[lord]! / 120.0;
-            final chunkMs = (durationMs * ratio).round();
-            var currentEnd = currentStart.add(Duration(milliseconds: chunkMs));
+            var currentStart = pdStart;
+            for (var i = 0; i < 9; i++) {
+              final lord = vLords[(startIdx + i) % 9];
+              final ratio = vYears[lord]! / 120.0;
+              final chunkMs = (durationMs * ratio).round();
+              var currentEnd = currentStart.add(
+                Duration(milliseconds: chunkMs),
+              );
 
-            if (i == 8) {
-              currentEnd = pdEnd;
+              if (i == 8) {
+                currentEnd = pdEnd;
+              }
+
+              sookshmaRows.add([
+                pd.lord, // Pratyantardasha Lord
+                lord, // Sookshmadasha Lord
+                _formatDate(currentStart),
+                _formatDate(currentEnd),
+              ]);
+
+              currentStart = currentEnd;
             }
-
-            sookshmaRows.add([
-              pd.lord, // Pratyantardasha Lord
-              lord, // Sookshmadasha Lord
-              _formatDate(currentStart),
-              _formatDate(currentEnd),
-            ]);
-
-            currentStart = currentEnd;
           }
-        }
         }
 
         if (activeM != null && activeA != null && sookshmaRows.isNotEmpty) {
@@ -509,7 +587,10 @@ class PDFReportService {
                 );
               },
               build: (context) => [
-                PdfWidgets.sectionHeader('Detailed 4-Level Dasha Breakdown', h2),
+                PdfWidgets.sectionHeader(
+                  'Detailed 4-Level Dasha Breakdown',
+                  h2,
+                ),
                 pw.SizedBox(height: 5),
                 pw.Text(
                   'Detailed Vimshottari Sookshmadasha cycles under the active Mahadasha (${activeM!.lord}) and active Antardasha (${activeA!.lord}: ${_formatDate(activeA.startDate)} to ${_formatDate(activeA.endDate)}).',

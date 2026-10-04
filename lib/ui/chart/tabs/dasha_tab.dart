@@ -1,10 +1,13 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/chart_customization.dart';
+import '../../../core/settings_provider.dart';
 import '../../../data/models.dart';
 import '../chart_helpers.dart';
 
-class DashaTab extends StatelessWidget {
+class DashaTab extends ConsumerWidget {
   const DashaTab({
     super.key,
     required this.data,
@@ -17,7 +20,12 @@ class DashaTab extends StatelessWidget {
   final ValueChanged<int> onDashaTabChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Sub-period visibility is configurable and used to be ignored.
+    final chartSettings =
+        ref.watch(settingsProvider).asData?.value.chartSettings ??
+        ChartCustomization();
+
     return Column(
       children: [
         // Tab bar for selecting dasha type
@@ -79,8 +87,13 @@ class DashaTab extends StatelessWidget {
               _buildVimshottariDashaContent(
                 context,
                 data.dashaData.vimshottari,
+                chartSettings,
               ),
-              _buildYoginiDashaContent(context, data.dashaData.yogini),
+              _buildYoginiDashaContent(
+                context,
+                data.dashaData.yogini,
+                chartSettings,
+              ),
               _buildCharaDashaContent(context, data.dashaData.chara),
               _buildAshtottariDashaContent(context, data.dashaData.ashtottari),
               _buildKalachakraDashaContent(context, data.dashaData.kalachakra),
@@ -141,6 +154,7 @@ class DashaTab extends StatelessWidget {
   Widget _buildVimshottariDashaContent(
     BuildContext context,
     VimshottariDasha dasha,
+    ChartCustomization chartSettings,
   ) {
     final now = DateTime.now();
     final currentMahaIndex = dasha.mahadashas.indexWhere(
@@ -320,64 +334,66 @@ class DashaTab extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Divider(),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                'Antardashas:',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                            if (chartSettings.showAntardasha) ...[
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  'Antardashas:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
-                            ),
-                            ...maha.antardashas.map((antar) {
-                              final isCurrentAntar =
-                                  isCurrent &&
-                                  now.isAfter(antar.startDate) &&
-                                  now.isBefore(antar.endDate);
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 4),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 6,
-                                  horizontal: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isCurrentAntar
-                                      ? FluentTheme.of(
-                                          context,
-                                        ).accentColor.withAlpha(20)
-                                      : null,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        antar.lord,
-                                        style: TextStyle(
-                                          fontWeight: isCurrentAntar
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                          fontSize: 12,
+                              ...maha.antardashas.map((antar) {
+                                final isCurrentAntar =
+                                    isCurrent &&
+                                    now.isAfter(antar.startDate) &&
+                                    now.isBefore(antar.endDate);
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 6,
+                                    horizontal: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isCurrentAntar
+                                        ? FluentTheme.of(
+                                            context,
+                                          ).accentColor.withAlpha(20)
+                                        : null,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          antar.lord,
+                                          style: TextStyle(
+                                            fontWeight: isCurrentAntar
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                            fontSize: 12,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Text(
-                                      '${antar.periodYears.toStringAsFixed(2)}y',
-                                      style: const TextStyle(fontSize: 11),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      '${ChartHelpers.formatDate(antar.startDate)} - ${ChartHelpers.formatDate(antar.endDate)}',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        color: m.Colors.grey,
+                                      Text(
+                                        '${antar.periodYears.toStringAsFixed(2)}y',
+                                        style: const TextStyle(fontSize: 11),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        '${ChartHelpers.formatDate(antar.startDate)} - ${ChartHelpers.formatDate(antar.endDate)}',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: m.Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ],
                           ],
                         ),
                       ),
@@ -392,7 +408,11 @@ class DashaTab extends StatelessWidget {
     );
   }
 
-  Widget _buildYoginiDashaContent(BuildContext context, YoginiDasha dasha) {
+  Widget _buildYoginiDashaContent(
+    BuildContext context,
+    YoginiDasha dasha,
+    ChartCustomization chartSettings,
+  ) {
     final now = DateTime.now();
     final currentIndex = dasha.mahadashas.indexWhere(
       (m) => now.isAfter(m.startDate) && now.isBefore(m.endDate),
@@ -636,59 +656,65 @@ class DashaTab extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Padding(
-                                        padding: EdgeInsets.only(bottom: 4),
-                                        child: Text(
-                                          'Pratyantardashas (Sub-sub-periods):',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 11,
-                                            fontStyle: FontStyle.italic,
+                                      if (chartSettings
+                                          .showPratyantardasha) ...[
+                                        const Padding(
+                                          padding: EdgeInsets.only(bottom: 4),
+                                          child: Text(
+                                            'Pratyantardashas (Sub-sub-periods):',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11,
+                                              fontStyle: FontStyle.italic,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      ...antar.pratyantardashas.map((pratyan) {
-                                        final isCurrentPratyan =
-                                            now.isAfter(pratyan.startDate) &&
-                                            now.isBefore(pratyan.endDate);
-                                        return Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 2,
-                                            horizontal: 4,
-                                          ),
-                                          color: isCurrentPratyan
-                                              ? FluentTheme.of(
-                                                  context,
-                                                ).accentColor.withAlpha(10)
-                                              : null,
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  '  - ${pratyan.name}',
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: isCurrentPratyan
-                                                        ? FontWeight.bold
-                                                        : FontWeight.normal,
+                                        ...antar.pratyantardashas.map((
+                                          pratyan,
+                                        ) {
+                                          final isCurrentPratyan =
+                                              now.isAfter(pratyan.startDate) &&
+                                              now.isBefore(pratyan.endDate);
+                                          return Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 2,
+                                              horizontal: 4,
+                                            ),
+                                            color: isCurrentPratyan
+                                                ? FluentTheme.of(
+                                                    context,
+                                                  ).accentColor.withAlpha(10)
+                                                : null,
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  flex: 2,
+                                                  child: Text(
+                                                    '  - ${pratyan.name}',
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      fontWeight:
+                                                          isCurrentPratyan
+                                                          ? FontWeight.bold
+                                                          : FontWeight.normal,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              Expanded(
-                                                flex: 3,
-                                                child: Text(
-                                                  '${ChartHelpers.formatDate(pratyan.startDate)} - ${ChartHelpers.formatDate(pratyan.endDate)}',
-                                                  style: const TextStyle(
-                                                    fontSize: 10,
-                                                    color: m.Colors.grey,
+                                                Expanded(
+                                                  flex: 3,
+                                                  child: Text(
+                                                    '${ChartHelpers.formatDate(pratyan.startDate)} - ${ChartHelpers.formatDate(pratyan.endDate)}',
+                                                    style: const TextStyle(
+                                                      fontSize: 10,
+                                                      color: m.Colors.grey,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }),
+                                              ],
+                                            ),
+                                          );
+                                        }),
+                                      ],
                                     ],
                                   ),
                                 ),

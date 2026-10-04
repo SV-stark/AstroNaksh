@@ -18,7 +18,7 @@ Map<String, dynamic> _$LocationToJson(_Location instance) => <String, dynamic>{
 
 _BirthData _$BirthDataFromJson(Map<String, dynamic> json) => _BirthData(
   dateTime: DateTime.parse(json['dateTime'] as String),
-  location: Location.fromJson(json['location'] as Map<String, dynamic>),
+  location: _locationFromJson(json['location'] as Map<String, dynamic>),
   name: json['name'] as String? ?? '',
   place: json['place'] as String? ?? '',
   timezone: json['timezone'] as String? ?? '',
@@ -27,7 +27,7 @@ _BirthData _$BirthDataFromJson(Map<String, dynamic> json) => _BirthData(
 Map<String, dynamic> _$BirthDataToJson(_BirthData instance) =>
     <String, dynamic>{
       'dateTime': instance.dateTime.toIso8601String(),
-      'location': instance.location.toJson(),
+      'location': _locationToJson(instance.location),
       'name': instance.name,
       'place': instance.place,
       'timezone': instance.timezone,

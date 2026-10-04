@@ -2,38 +2,137 @@ import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
 import 'package:jyotish/core.dart';
 
+import '../../core/chart_customization.dart';
 import '../../core/constants.dart';
 import '../../data/models.dart';
 
 class ChartHelpers {
-  static Map<int, List<String>> getPlanetsMap(VedicChart chart) {
-    final map = <int, List<String>>{};
-    chart.planets.forEach((planet, info) {
-      final sign = (info.longitude / 30).floor() + 1; // 1-12
-      final planetName = planet.toString().split('.').last;
-      final abbr = AppConstants.getPlanetAbbreviation(planetName);
+  /// Separation from the Sun, in degrees, within which a planet is combust.
+  static const double combustionOrb = 14.0;
 
+  /// Exaltation sign index per two-letter planet abbreviation.
+  static const Map<String, int> exaltationTable = {
+    'Su': 0, // Aries
+    'Mo': 1, // Taurus
+    'Me': 5, // Libra
+    'Ve': 11, // Pisces
+    'Ma': 9, // Capricorn
+    'Ju': 3, // Cancer
+    'Sa': 6, // Libra
+  };
+
+  /// Builds the sign -> planet labels map consumed by the chart painters.
+  ///
+  /// [options] carries the display toggles from Settings; when omitted the
+  /// defaults apply. Formatting here is what makes "Show Degrees", "Show
+  /// Retrograde", "Show Nakshatras", "Show Combust" and "Show Exalted/Debilitated"
+  /// take effect instead of being write-only settings.
+  static Map<int, List<String>> getPlanetsMap(
+    VedicChart chart, [
+    ChartCustomization? options,
+  ]) {
+    final settings = options ?? ChartCustomization();
+    final map = <int, List<String>>{};
+    final ascSign = getAscendantSignInt(chart);
+
+    final sunEntry = chart.planets.entries.where((e) => e.key == Planet.sun);
+    final sunLongitude = sunEntry.isEmpty
+        ? null
+        : sunEntry.first.value.longitude;
+
+    void place(String label, double longitude, {required bool isRetrograde}) {
+      final sign = ((longitude % 360) / 30).floor() + 1; // 1-12
       map
           .putIfAbsent(sign, () => [])
-          .add(abbr + (info.isRetrograde ? '(R)' : ''));
+          .add(
+            formatLabel(
+              label: label,
+              longitude: longitude,
+              isRetrograde: isRetrograde,
+              settings: settings,
+              sunLongitude: sunLongitude,
+            ),
+          );
+    }
+
+    chart.planets.forEach((planet, info) {
+      final planetName = planet.toString().split('.').last;
+      place(
+        AppConstants.getPlanetAbbreviation(planetName),
+        info.longitude,
+        isRetrograde: info.isRetrograde,
+      );
     });
 
-    // Add Rahu
-    {
-      final rahuSign = (chart.rahu.longitude / 30).floor() + 1;
-      map.putIfAbsent(rahuSign, () => []).add('Ra');
-    }
+    // Rahu / Ketu are conventionally shown retrograde.
+    place('Ra', chart.rahu.longitude, isRetrograde: true);
+    place('Ke', chart.ketu.longitude, isRetrograde: true);
 
-    // Add Ketu
-    {
-      final ketuSign = (chart.ketu.longitude / 30).floor() + 1;
-      map.putIfAbsent(ketuSign, () => []).add('Ke');
-    }
-
-    // Ascendant
-    final ascSign = getAscendantSignInt(chart);
     map.putIfAbsent(ascSign, () => []).add('Asc');
     return map;
+  }
+
+  /// Renders one planet label honouring the toggles in [settings].
+  static String formatLabel({
+    required String label,
+    required double longitude,
+    required bool isRetrograde,
+    required ChartCustomization settings,
+    double? sunLongitude,
+  }) {
+    final normalized = longitude % 360;
+    final buffer = StringBuffer(label);
+
+    if (settings.showDegrees) {
+      buffer.write(' ${_formatDegree(normalized % 30)}');
+    }
+
+    if (settings.showNakshatras) {
+      final index = (normalized / 13.333333).floor().clamp(0, 26);
+      final nakshatra = AppConstants.nakshatras[index];
+      buffer.write(' ${nakshatra.substring(0, 3)}');
+    }
+
+    if (settings.showExaltedDebilitated) {
+      final marker = _dignityMarker(label, normalized);
+      if (marker != null) buffer.write(marker);
+    }
+
+    if (settings.showCombust && !isRetrograde) {
+      if (sunLongitude != null && _isCombust(normalized, sunLongitude)) {
+        buffer.write('*');
+      }
+    }
+
+    if (settings.showRetrograde && isRetrograde) {
+      buffer.write('(R)');
+    }
+
+    return buffer.toString();
+  }
+
+  static bool _isCombust(double longitude, double sunLongitude) {
+    final separation = (longitude - sunLongitude).abs() % 360;
+    final orb = separation > 180 ? 360 - separation : separation;
+    return orb <= combustionOrb;
+  }
+
+  /// `'Ex'` for exalted, `'Deb'` for debilitated, otherwise `null`.
+  static String? _dignityMarker(String label, double longitude) {
+    final exaltation = exaltationTable[label];
+    if (exaltation == null) return null;
+    final signIndex = (longitude / 30).floor().clamp(0, 11);
+    if (signIndex == exaltation) return 'Ex';
+    if (signIndex == (exaltation + 6) % 12) return 'Deb';
+    return null;
+  }
+
+  /// Degrees and arc-minutes within the sign, e.g. `5°30'`.
+  static String _formatDegree(double degreeInSign) {
+    final d = degreeInSign.floor();
+    final m = ((degreeInSign - d) * 60).floor();
+    // The arc-minute mark is required, otherwise `5°30` is ambiguous.
+    return "$d\u00b0${m.toString().padLeft(2, '0')}'";
   }
 
   static Map<int, List<String>> getDivisionalPlanetsMap(

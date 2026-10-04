@@ -256,11 +256,17 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
   @override
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsProvider);
-    final settings = settingsAsync.asData?.value ??
+    final settings =
+        settingsAsync.asData?.value ??
         SettingsState(chartSettings: ChartCustomization());
 
     final chartSettings = settings.chartSettings;
     final colors = chartSettings.colorScheme.colors;
+    final planetTextScale = switch (chartSettings.planetSize) {
+      PlanetSize.small => 0.8,
+      PlanetSize.medium => 1.0,
+      PlanetSize.large => 1.25,
+    };
 
     final activeHouseIndex = _hoveredHouseIndex ?? _selectedHouseIndex;
     Widget? tooltipCard;
@@ -280,10 +286,7 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
                 color: colors.background.withAlpha(191),
                 borderRadius: BorderRadius.circular(8),
@@ -415,6 +418,9 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                         selectedHouse: _selectedHouseIndex,
                         showSigns: chartSettings.showSigns,
                         showHouseNumbers: chartSettings.showHouseNumbers,
+                        showHouses: chartSettings.showHouses,
+                        showHouseCusps: chartSettings.showHouseCusps,
+                        planetTextScale: planetTextScale,
                         transitPlanetsBySign: widget.transitPlanetsBySign,
                       )
                     : SouthIndianChartPainter(
@@ -425,6 +431,9 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
                         selectedHouse: _selectedHouseIndex,
                         showSigns: chartSettings.showSigns,
                         showHouseNumbers: chartSettings.showHouseNumbers,
+                        showHouses: chartSettings.showHouses,
+                        showHouseCusps: chartSettings.showHouseCusps,
+                        planetTextScale: planetTextScale,
                         transitPlanetsBySign: widget.transitPlanetsBySign,
                       ),
               ),

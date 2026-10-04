@@ -5,6 +5,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jyotish/core.dart' hide HouseSystem;
 
+import '../core/app_environment.dart';
 import '../core/ayanamsa_calculator.dart';
 import '../core/backup_service.dart';
 import '../core/chart_customization.dart';
@@ -83,114 +84,134 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     super.dispose();
   }
 
-  void _saveSettings() {
-    ref.read(settingsProvider.notifier).updateChartSettings(_settings);
+  /// Pushes [_settings] into the text boxes so they never disagree with the
+  /// values a later save would persist.
+  void _syncTextControllers() {
+    _brandOrgNameController.text = _settings.brandOrgName;
+    _brandOrgTaglineController.text = _settings.brandOrgTagline;
+    _brandContactInfoController.text = _settings.brandContactInfo;
+    _brandPrimaryColorHexController.text = _settings.brandPrimaryColorHex;
+    _brandAccentColorHexController.text = _settings.brandAccentColorHex;
+    _webdavUrlController.text = _settings.webdavUrl;
+    _webdavUsernameController.text = _settings.webdavUsername;
+    _webdavPasswordController.text = _settings.webdavPassword;
+  }
+
+  void _notify(String title, InfoBarSeverity severity, {String? detail}) {
+    if (!mounted) return;
     displayInfoBar(
       context,
       builder: (context, close) => InfoBar(
-        title: const Text('Settings saved'),
-        severity: InfoBarSeverity.success,
+        title: Text(title),
+        content: detail == null ? null : Text(detail),
+        severity: severity,
         onClose: close,
       ),
     );
   }
 
+  Future<void> _saveSettings() async {
+    try {
+      await ref.read(settingsProvider.notifier).updateChartSettings(_settings);
+      if (!mounted) return;
+      unawaited(
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('Settings saved'),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        ),
+      );
+    } catch (error) {
+      _notify('Settings not saved', InfoBarSeverity.error, detail: '$error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _initSettingsIfNeeded();
-    final isMobile = ResponsiveHelper.useMobileLayout(context);
 
-    return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-      },
-      child: NavigationView(
-        titleBar: TitleBar(
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!isMobile)
-                IconButton(
-                  icon: const Icon(FluentIcons.back),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              if (isMobile)
-                IconButton(
-                  icon: const Icon(FluentIcons.back),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              const SizedBox(width: 8),
-              const Text('Settings'),
-            ],
-          ),
-          endHeader: Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: FilledButton(
-              onPressed: _saveSettings,
-              child: const Text('Save'),
+    return NavigationView(
+      titleBar: TitleBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+              onPressed: () => Navigator.pop(context),
             ),
-          ),
-        ),
-        pane: NavigationPane(
-          selected: _currentIndex,
-          onChanged: (i) => setState(() => _currentIndex = i),
-          displayMode: context.paneDisplayMode,
-          items: [
-            PaneItem(
-              icon: const Icon(FluentIcons.brush),
-              title: const Text('Appearance'),
-              body: _buildAppearanceSettings(),
-            ),
-            PaneItem(
-              icon: const Icon(FluentIcons.design),
-              title: const Text('Chart Display'),
-              body: _buildChartDisplaySettings(),
-            ),
-            PaneItem(
-              icon: const Icon(FluentIcons.globe),
-              title: const Text('Planets'),
-              body: _buildPlanetSettings(),
-            ),
-            PaneItem(
-              icon: const Icon(FluentIcons.home),
-              title: const Text('Houses'),
-              body: _buildHouseSettings(),
-            ),
-            PaneItem(
-              icon: const Icon(FluentIcons.settings),
-              title: const Text('Ayanamsa'),
-              body: _buildAyanamsaSettings(),
-            ),
-            PaneItem(
-              icon: const Icon(FluentIcons.pdf),
-              title: const Text('PDF Report'),
-              body: _buildPdfSettings(),
-            ),
-            PaneItem(
-              icon: const Icon(FluentIcons.timer),
-              title: const Text('Dasha'),
-              body: _buildDashaSettings(),
-            ),
-            PaneItem(
-              icon: const Icon(FluentIcons.grid_view_small),
-              title: const Text('Vargas'),
-              body: _buildVargaSettings(),
-            ),
-            PaneItem(
-              icon: const Icon(FluentIcons.database),
-              title: const Text('Backup & Sync'),
-              body: _buildBackupSyncSettings(),
-            ),
-          ],
-          footerItems: [
-            PaneItem(
-              icon: const Icon(FluentIcons.reset),
-              title: const Text('Reset'),
-              body: _buildPresetsSection(),
-            ),
+            const SizedBox(width: 8),
+            const Text('Settings'),
           ],
         ),
+        endHeader: Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: FilledButton(
+            onPressed: _saveSettings,
+            child: const Text('Save'),
+          ),
+        ),
+      ),
+      pane: NavigationPane(
+        selected: _currentIndex,
+        onChanged: (i) => setState(() => _currentIndex = i),
+        displayMode: context.paneDisplayMode,
+        items: [
+          PaneItem(
+            icon: const Icon(FluentIcons.brush),
+            title: const Text('Appearance'),
+            body: _buildAppearanceSettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.design),
+            title: const Text('Chart Display'),
+            body: _buildChartDisplaySettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.globe),
+            title: const Text('Planets'),
+            body: _buildPlanetSettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.home),
+            title: const Text('Houses'),
+            body: _buildHouseSettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.settings),
+            title: const Text('Ayanamsa'),
+            body: _buildAyanamsaSettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.pdf),
+            title: const Text('PDF Report'),
+            body: _buildPdfSettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.timer),
+            title: const Text('Dasha'),
+            body: _buildDashaSettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.grid_view_small),
+            title: const Text('Vargas'),
+            body: _buildVargaSettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.database),
+            title: const Text('Backup & Sync'),
+            body: _buildBackupSyncSettings(),
+          ),
+        ],
+        footerItems: [
+          PaneItem(
+            icon: const Icon(FluentIcons.reset),
+            title: const Text('Reset'),
+            body: _buildPresetsSection(),
+          ),
+        ],
       ),
     );
   }
@@ -355,6 +376,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 (v) {
                   setState(() => _settings.showExaltedDebilitated = v);
                 },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text('Chart Summary'),
+        const SizedBox(height: 8),
+        Card(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              _buildListTileToggle(
+                'Show Birth Details',
+                _settings.showBirthDetails,
+                (v) => setState(() => _settings.showBirthDetails = v),
+              ),
+              _buildListTileToggle(
+                'Show Ayanamsa',
+                _settings.showAyanamsa,
+                (v) => setState(() => _settings.showAyanamsa = v),
+              ),
+              _buildListTileToggle(
+                'Show Current Dasha',
+                _settings.showCurrentDasha,
+                (v) => setState(() => _settings.showCurrentDasha = v),
               ),
             ],
           ),
@@ -645,7 +691,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: Colors.grey.withValues(alpha: 0.3),
+                          color: FluentTheme.of(
+                            context,
+                          ).resources.dividerStrokeColorDefault,
                         ),
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -657,10 +705,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             : 'No logo selected (using default text brand)',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        // Hard-coded black was unreadable on the dark card.
                         style: TextStyle(
                           color: _settings.brandLogoPath.isNotEmpty
-                              ? Colors.black
-                              : Colors.grey,
+                              ? FluentTheme.of(
+                                  context,
+                                ).typography.bodyLarge?.color
+                              : _secondaryText(context),
                         ),
                       ),
                     ),
@@ -679,8 +730,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             _settings.brandLogoPath = result.files.single.path!;
                           });
                         }
-                      } catch (e) {
-                        debugPrint('Error picking logo: $e');
+                      } catch (error) {
+                        if (!mounted) return;
+                        _notify(
+                          'Could not open file picker',
+                          InfoBarSeverity.error,
+                          detail: '$error',
+                        );
                       }
                     },
                     child: const Text('Choose File'),
@@ -693,7 +749,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           _settings.brandLogoPath = '';
                         });
                       },
-                      child: Icon(FluentIcons.clear, color: Colors.red),
+                      child: Tooltip(
+                        message: 'Remove selected logo',
+                        child: Icon(
+                          FluentIcons.clear,
+                          color: FluentTheme.of(context).accentColor,
+                        ),
+                      ),
                     ),
                   ],
                 ],
@@ -821,12 +883,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 8),
               Slider(
-                value: _settings.dashaYearsToShow.toDouble(),
-                min: 5,
-                max: 50,
-                divisions: 9,
+                value: _settings.dashaYearsToShow.toDouble().clamp(
+                  ChartCustomization.minDashaYears.toDouble(),
+                  ChartCustomization.maxDashaYears.toDouble(),
+                ),
+                min: ChartCustomization.minDashaYears.toDouble(),
+                max: ChartCustomization.maxDashaYears.toDouble(),
+                divisions:
+                    ChartCustomization.maxDashaYears -
+                    ChartCustomization.minDashaYears,
                 onChanged: (v) {
-                  setState(() => _settings.dashaYearsToShow = v.toInt());
+                  setState(() => _settings.dashaYearsToShow = v.round());
                 },
                 label: '${_settings.dashaYearsToShow} years',
               ),
@@ -870,13 +937,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const SizedBox(height: 8),
                 Slider(
-                  value: _settings.transitDaysToShow.toDouble(),
-                  min: 7,
-                  max: 90,
-                  divisions: 11,
+                  value: _settings.transitDaysToShow.toDouble().clamp(
+                    ChartCustomization.minTransitDays.toDouble(),
+                    ChartCustomization.maxTransitDays.toDouble(),
+                  ),
+                  min: ChartCustomization.minTransitDays.toDouble(),
+                  max: ChartCustomization.maxTransitDays.toDouble(),
+                  // 7..90 in 7-day steps, so every tick is a whole week and the
+                  // label always matches a detent.
+                  divisions:
+                      (ChartCustomization.maxTransitDays -
+                          ChartCustomization.minTransitDays) ~/
+                      7,
                   onChanged: (v) {
-                    setState(() => _settings.transitDaysToShow = v.toInt());
+                    setState(() => _settings.transitDaysToShow = v.round());
                   },
+                  label: '${_settings.transitDaysToShow} days',
                 ),
               ],
             ],
@@ -929,9 +1005,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: const Text('Reset All Settings'),
             subtitle: const Text('Restore default configuration'),
             trailing: Button(
-              onPressed: () {
-                setState(() => _settings.resetToDefaults());
-              },
+              onPressed: () => unawaited(_resetAllSettings()),
               child: const Text('Reset'),
             ),
           ),
@@ -973,73 +1047,139 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  /// Toggle row where the whole row is the hit target. Previously only the
+  /// ~40x32 switch itself was interactive, which is below the 48px minimum and
+  /// made every setting look dead when tapping its label.
   Widget _buildListTileToggle(
     String label,
     bool value,
     ValueChanged<bool> onChanged,
   ) {
     final isMobile = ResponsiveHelper.useMobileLayout(context);
-    return Column(
-      children: [
-        ListTile(
-          title: Text(label, style: TextStyle(fontSize: isMobile ? 16 : 14)),
-          trailing: SizedBox(
-            height: isMobile ? 48 : 32,
-            child: ToggleSwitch(checked: value, onChanged: onChanged),
-          ),
+    return ListTile(
+      onPressed: () => onChanged(!value),
+      title: Text(label, style: TextStyle(fontSize: isMobile ? 16 : 14)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+      trailing: SizedBox(
+        height: 32,
+        child: IgnorePointer(
+          child: ToggleSwitch(checked: value, onChanged: null),
         ),
-        const Divider(),
-      ],
+      ),
     );
   }
 
-  // Simple toggle for inside cards without dividers
+  /// Toggle row used where the surrounding card already draws separators.
   Widget _buildSimpleToggle(
     String label,
     bool value,
     ValueChanged<bool> onChanged,
   ) {
     final isMobile = ResponsiveHelper.useMobileLayout(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Text(label, style: TextStyle(fontSize: isMobile ? 16 : 14)),
-        ),
-        SizedBox(
-          height: isMobile ? 48 : 32,
-          child: ToggleSwitch(checked: value, onChanged: onChanged),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onChanged(!value),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  label,
+                  style: TextStyle(fontSize: isMobile ? 16 : 14),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            height: 32,
+            child: ToggleSwitch(checked: value, onChanged: onChanged),
+          ),
+        ],
+      ),
     );
   }
 
   void _applyPreset(String name) {
+    final preset = switch (name) {
+      'beginner' => ChartPresets.beginner,
+      'professional' => ChartPresets.professional,
+      'minimal' => ChartPresets.minimal,
+      'print' => ChartPresets.printFriendly,
+      _ => null,
+    };
+    if (preset == null) {
+      AppEnvironment.log('Unknown chart preset "$name"');
+      return;
+    }
+
+    // Presets only describe display/PDF preferences. Reusing them verbatim
+    // reset the WebDAV and branding fields to defaults, which silently wiped
+    // stored cloud credentials on the next save.
+    final credentials = _credentialSnapshot();
     setState(() {
-      switch (name) {
-        case 'beginner':
-          _settings = ChartPresets.beginner;
-          break;
-        case 'professional':
-          _settings = ChartPresets.professional;
-          break;
-        case 'minimal':
-          _settings = ChartPresets.minimal;
-          break;
-        case 'print':
-          _settings = ChartPresets.printFriendly;
-          break;
-      }
+      _settings = preset;
+      _restoreCredentials(credentials);
+      _syncTextControllers();
     });
+  }
+
+  /// Cloud-sync credentials that chart presets must never clobber.
+  ({String url, String username, String password}) _credentialSnapshot() {
+    return (
+      url: _webdavUrlController.text,
+      username: _webdavUsernameController.text,
+      password: _webdavPasswordController.text,
+    );
+  }
+
+  void _restoreCredentials(
+    ({String url, String username, String password}) credentials,
+  ) {
+    _settings.webdavUrl = credentials.url;
+    _settings.webdavUsername = credentials.username;
+    _settings.webdavPassword = credentials.password;
+  }
+
+  Future<void> _resetAllSettings() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => ContentDialog(
+        title: const Text('Reset all settings?'),
+        content: const Text(
+          'Every chart, PDF, branding and cloud-sync preference returns to its '
+          'default and is saved immediately. This cannot be undone.',
+        ),
+        actions: [
+          Button(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(_settings.resetToDefaults);
+    _syncTextControllers();
+    await _saveSettings();
   }
 
   Widget _buildVargaSettings() {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Divisional Charts (Vargas)')),
       children: [
-        const Text(
+        Text(
           'Configure divisional chart calculation methods. These settings determine which algorithms are used when generating the Hora, Drekkana, Navamsha, and Dashamsha charts.',
-          style: TextStyle(color: Colors.grey),
+          style: TextStyle(color: _secondaryText(context)),
         ),
         const SizedBox(height: 24),
 
@@ -1150,54 +1290,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Safeguard your chart database offline by exporting a local backup file, or restore from a previously exported file.',
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+                style: TextStyle(color: _secondaryText(context), fontSize: 13),
               ),
               const SizedBox(height: 16),
-              Row(
+              Wrap(
+                spacing: 16,
+                runSpacing: 12,
                 children: [
                   Button(
-                    onPressed: () async {
-                      try {
-                        final result = await FilePicker.platform.saveFile(
-                          dialogTitle: 'Export Local Backup',
-                          fileName: 'astronaksh_backup.db',
-                          type: FileType.any,
-                        );
-                        if (result != null) {
-                          final backupService = ref.read(backupServiceProvider);
-                          await backupService.backupLocal(result);
-                          if (mounted) {
-                            unawaited(
-                              displayInfoBar(
-                                context,
-                                builder: (context, close) => InfoBar(
-                                  title: const Text('Backup Successful'),
-                                  content: Text('Database exported to: $result'),
-                                  severity: InfoBarSeverity.success,
-                                  onClose: close,
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          unawaited(
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Backup Failed'),
-                                content: Text('Error: $e'),
-                                severity: InfoBarSeverity.error,
-                                onClose: close,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    },
+                    onPressed: () => unawaited(_exportLocalBackup()),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1207,78 +1310,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
                   Button(
-                    onPressed: () async {
-                      try {
-                        final result = await FilePicker.platform.pickFiles(
-                          dialogTitle: 'Select Backup File to Restore',
-                          type: FileType.any,
-                          allowMultiple: false,
-                        );
-                        if (result != null &&
-                            result.files.single.path != null) {
-                          final sourcePath = result.files.single.path!;
-                          final backupService = ref.read(backupServiceProvider);
-
-                          if (!mounted) return;
-                          // Show a warning/confirmation dialog
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => ContentDialog(
-                              title: const Text('Confirm Restore'),
-                              content: const Text(
-                                'Restoring this backup file will overwrite your current charts database. This cannot be undone. Are you sure you want to proceed?',
-                              ),
-                              actions: [
-                                Button(
-                                  onPressed: () =>
-                                      Navigator.pop(context, false),
-                                  child: const Text('Cancel'),
-                                ),
-                                FilledButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text('Restore'),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          if (confirm == true) {
-                            await backupService.restoreLocal(sourcePath);
-                            if (mounted) {
-                              unawaited(
-                                displayInfoBar(
-                                  context,
-                                  builder: (context, close) => InfoBar(
-                                    title: const Text('Database Restored'),
-                                    content: const Text(
-                                      'Charts database has been successfully restored.',
-                                    ),
-                                    severity: InfoBarSeverity.success,
-                                    onClose: close,
-                                  ),
-                                ),
-                              );
-                            }
-                          }
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          unawaited(
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Restore Failed'),
-                                content: Text('Error: $e'),
-                                severity: InfoBarSeverity.error,
-                                onClose: close,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    },
+                    onPressed: () => unawaited(_restoreLocalBackup()),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1303,9 +1336,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Configure private cloud WebDAV credentials to sync backups securely across devices. This app is offline-first; sync is only triggered manually.',
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+                style: TextStyle(color: _secondaryText(context), fontSize: 13),
               ),
               const SizedBox(height: 16),
               InfoLabel(
@@ -1351,48 +1384,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
               const SizedBox(height: 24),
-              Row(
+              // Three labelled buttons need ~500px, which overflowed the pane
+              // between 500 and 600px. Wrap keeps every action reachable.
+              Wrap(
+                spacing: 16,
+                runSpacing: 12,
                 children: [
                   Button(
-                    onPressed: () async {
-                      try {
-                        final backupService = ref.read(backupServiceProvider);
-                        final success = await backupService.testWebDAV(
-                          _settings.webdavUrl,
-                          _settings.webdavUsername,
-                          _settings.webdavPassword,
-                        );
-                        if (success && mounted) {
-                          unawaited(
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Connection Successful'),
-                                content: const Text(
-                                  'Successfully connected to WebDAV server!',
-                                ),
-                                severity: InfoBarSeverity.success,
-                                onClose: close,
-                              ),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          unawaited(
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Connection Failed'),
-                                content: Text('Error: $e'),
-                                severity: InfoBarSeverity.error,
-                                onClose: close,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    },
+                    onPressed: () => unawaited(_testWebDavConnection()),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1402,47 +1401,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
                   Button(
-                    onPressed: () async {
-                      try {
-                        final backupService = ref.read(backupServiceProvider);
-                        await backupService.uploadToWebDAV(
-                          _settings.webdavUrl,
-                          _settings.webdavUsername,
-                          _settings.webdavPassword,
-                        );
-                        if (mounted) {
-                          unawaited(
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Upload Complete'),
-                                content: const Text(
-                                  'Database backup uploaded to WebDAV server!',
-                                ),
-                                severity: InfoBarSeverity.success,
-                                onClose: close,
-                              ),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          unawaited(
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Upload Failed'),
-                                content: Text('Error: $e'),
-                                severity: InfoBarSeverity.error,
-                                onClose: close,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    },
+                    onPressed: () => unawaited(_uploadBackup()),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1452,71 +1412,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
                   Button(
-                    onPressed: () async {
-                      try {
-                        // Confirm restore
-                        if (!mounted) return;
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => ContentDialog(
-                            title: const Text('Confirm Restore from Cloud'),
-                            content: const Text(
-                              'Downloading and restoring from the cloud backup will overwrite your local charts database. This cannot be undone. Are you sure you want to proceed?',
-                            ),
-                            actions: [
-                              Button(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
-                              ),
-                              FilledButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text('Download & Restore'),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirm == true) {
-                          final backupService = ref.read(backupServiceProvider);
-                          await backupService.downloadAndRestoreFromWebDAV(
-                            _settings.webdavUrl,
-                            _settings.webdavUsername,
-                            _settings.webdavPassword,
-                          );
-                          if (mounted) {
-                            unawaited(
-                              displayInfoBar(
-                                context,
-                                builder: (context, close) => InfoBar(
-                                  title: const Text('Sync Complete'),
-                                  content: const Text(
-                                    'Successfully restored database from cloud WebDAV backup!',
-                                  ),
-                                  severity: InfoBarSeverity.success,
-                                  onClose: close,
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          unawaited(
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Restore Failed'),
-                                content: Text('Error: $e'),
-                                severity: InfoBarSeverity.error,
-                                onClose: close,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    },
+                    onPressed: () => unawaited(_restoreFromCloud()),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1533,6 +1430,182 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _testWebDavConnection() async {
+    try {
+      final backupService = ref.read(backupServiceProvider);
+      final success = await backupService.testWebDAV(
+        _settings.webdavUrl,
+        _settings.webdavUsername,
+        _settings.webdavPassword,
+      );
+      if (!mounted) return;
+      _notify(
+        success ? 'Connection Successful' : 'Connection Failed',
+        success ? InfoBarSeverity.success : InfoBarSeverity.error,
+        detail: success
+            ? 'Successfully connected to WebDAV server!'
+            : 'The server rejected the credentials or was unreachable.',
+      );
+    } catch (error) {
+      _notify('Connection Failed', InfoBarSeverity.error, detail: '$error');
+    }
+  }
+
+  Future<void> _uploadBackup() async {
+    try {
+      final backupService = ref.read(backupServiceProvider);
+      await backupService.uploadToWebDAV(
+        _settings.webdavUrl,
+        _settings.webdavUsername,
+        _settings.webdavPassword,
+      );
+      if (!mounted) return;
+      _notify(
+        'Upload Complete',
+        InfoBarSeverity.success,
+        detail: 'Database backup uploaded to WebDAV server!',
+      );
+    } catch (error) {
+      _notify('Upload Failed', InfoBarSeverity.error, detail: '$error');
+    }
+  }
+
+  Future<void> _restoreFromCloud() async {
+    final confirmed = await _confirmDestructive(
+      title: 'Restore from cloud?',
+      message:
+          'The backup on the server replaces the local database and settings. '
+          'Local charts that are not in the backup are lost.',
+      confirmLabel: 'Restore',
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      final backupService = ref.read(backupServiceProvider);
+      await backupService.downloadAndRestoreFromWebDAV(
+        _settings.webdavUrl,
+        _settings.webdavUsername,
+        _settings.webdavPassword,
+      );
+      if (!mounted) return;
+
+      // Mirror restoreLocal(): reload the editor so the restored values are
+      // not clobbered by the next Save.
+      await ref.read(settingsProvider.future);
+      if (!mounted) return;
+      _adoptLoadedSettings();
+
+      _notify(
+        'Restore Complete',
+        InfoBarSeverity.success,
+        detail: 'Settings reloaded from the cloud backup.',
+      );
+    } catch (error) {
+      _notify('Restore Failed', InfoBarSeverity.error, detail: '$error');
+    }
+  }
+
+  /// Shows a yes/no confirmation and resolves to the user's answer.
+  Future<bool?> _confirmDestructive({
+    required String title,
+    required String message,
+    required String confirmLabel,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => ContentDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          Button(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(confirmLabel),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _exportLocalBackup() async {
+    try {
+      final result = await FilePicker.platform.saveFile(
+        dialogTitle: 'Export Local Backup',
+        fileName: 'astronaksh_backup.db',
+        type: FileType.any,
+      );
+      if (result == null) return;
+      await ref.read(backupServiceProvider).backupLocal(result);
+      if (!mounted) return;
+      _notify(
+        'Backup Successful',
+        InfoBarSeverity.success,
+        detail: 'Database exported to: $result',
+      );
+    } catch (error) {
+      _notify('Backup Failed', InfoBarSeverity.error, detail: '$error');
+    }
+  }
+
+  Future<void> _restoreLocalBackup() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        dialogTitle: 'Select Backup File to Restore',
+        type: FileType.any,
+        allowMultiple: false,
+      );
+      final path = result?.files.single.path;
+      if (path == null || !mounted) return;
+
+      final confirmed = await _confirmDestructive(
+        title: 'Confirm Restore',
+        message:
+            'Restoring this backup file overwrites the current charts '
+            'database and settings. This cannot be undone.',
+        confirmLabel: 'Restore',
+      );
+      if (confirmed != true || !mounted) return;
+
+      await ref.read(backupServiceProvider).restoreLocal(path);
+      if (!mounted) return;
+
+      // restoreLocal() invalidates the provider, so pull the reloaded values
+      // into the editor instead of letting the next Save overwrite them.
+      await ref.read(settingsProvider.future);
+      if (!mounted) return;
+      _adoptLoadedSettings();
+
+      _notify(
+        'Database Restored',
+        InfoBarSeverity.success,
+        detail: 'Charts and settings were restored from the backup.',
+      );
+    } catch (error) {
+      _notify('Restore Failed', InfoBarSeverity.error, detail: '$error');
+    }
+  }
+
+  /// Replaces the in-progress edits with the freshly persisted values.
+  void _adoptLoadedSettings() {
+    final loaded = ref.read(settingsProvider).value?.chartSettings;
+    setState(() {
+      _settings = loaded == null
+          ? _settings
+          : ChartCustomization.fromJson(loaded.toJson());
+      _syncTextControllers();
+    });
+  }
+
+  /// Muted body-text colour that stays legible in both light and dark themes.
+  Color _secondaryText(BuildContext context) {
+    return FluentTheme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFB3B3B3)
+        : const Color(0xFF5A5A5A);
   }
 
   String _formatEnumName(String name) {

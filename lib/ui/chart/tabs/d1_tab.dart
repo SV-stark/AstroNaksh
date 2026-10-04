@@ -1,7 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
 import 'package:flutter/material.dart' as m;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/chart_customization.dart';
+import '../../../core/settings_provider.dart';
 import '../../../data/models.dart';
 import '../../../logic/planetary_aspect_service.dart';
 import '../../utils/responsive_helper.dart';
@@ -10,7 +12,7 @@ import '../../widgets/planetary_timeline.dart';
 import '../chart_helpers.dart';
 import '../widgets/house_details_panel.dart';
 
-class D1Tab extends StatelessWidget {
+class D1Tab extends ConsumerWidget {
   const D1Tab({
     super.key,
     required this.data,
@@ -39,10 +41,23 @@ class D1Tab extends StatelessWidget {
   final ValueChanged<double> onTimelineSpeedChanged;
 
   @override
-  Widget build(BuildContext context) {
-    final planetsMap = ChartHelpers.getPlanetsMap(data.baseChart);
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Planet labels are formatted here, so the label toggles have to be read
+    // from the live settings rather than left at their defaults.
+    final chartSettings =
+        ref.watch(settingsProvider).asData?.value.chartSettings ??
+        ChartCustomization();
+    final planetsMap = ChartHelpers.getPlanetsMap(
+      data.baseChart,
+      chartSettings,
+    );
+    final now = DateTime.now();
     final ascSign = ChartHelpers.getAscendantSignInt(data.baseChart);
-    final aspects = PlanetaryAspectService.calculateAspects(data.baseChart);
+    final aspects = PlanetaryAspectService.calculateAspects(
+      data.baseChart,
+      includeNodes: chartSettings.includeNodesInAspects,
+      includeSpecialAspects: chartSettings.includeSpecialAspects,
+    );
     final chartSize = ResponsiveHelper.getChartSize(context);
 
     return SingleChildScrollView(
@@ -58,6 +73,12 @@ class D1Tab extends StatelessWidget {
             'Lagna: ${ChartHelpers.getAscendantSign(data.baseChart)}',
             style: FluentTheme.of(context).typography.body,
           ),
+          if (chartSettings.showBirthDetails ||
+              chartSettings.showAyanamsa ||
+              chartSettings.showCurrentDasha) ...[
+            const SizedBox(height: 8),
+            _buildChartSummary(context, chartSettings, now),
+          ],
           const SizedBox(height: 16),
           RepaintBoundary(
             key: d1ChartKey,
@@ -110,10 +131,18 @@ class D1Tab extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   PlanetaryTimeline(
-                    startDate: DateTime.now().subtract(
-                      const Duration(days: 365),
+                    // Window follows the "Dasha Years to Show" setting instead
+                    // of being hard-coded to a two-year span.
+                    startDate: now.subtract(
+                      Duration(
+                        days: 365 * (chartSettings.dashaYearsToShow ~/ 2),
+                      ),
                     ),
-                    endDate: DateTime.now().add(const Duration(days: 365)),
+                    endDate: now.add(
+                      Duration(
+                        days: 365 * (chartSettings.dashaYearsToShow ~/ 2),
+                      ),
+                    ),
                     currentDate: timelineCurrentDate,
                     onDateChanged: onTimelineDateChanged,
                     onPlayPressed: onTimelinePlay,
@@ -167,5 +196,66 @@ class D1Tab extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Birth details, ayanamsa and the running dasha. Each line is governed by
+  /// its own setting; previously all three were write-only with no UI at all.
+  Widget _buildChartSummary(
+    BuildContext context,
+    ChartCustomization chartSettings,
+    DateTime now,
+  ) {
+    final birth = data.birthData;
+    final lines = <String>[];
+
+    if (chartSettings.showBirthDetails) {
+      final place = birth.place.isEmpty ? '' : ' \u2022 ${birth.place}';
+      final zone = birth.timezone.isEmpty ? '' : ' (${birth.timezone})';
+      lines.add(
+        'Born: ${ChartHelpers.formatDate(birth.dateTime)} '
+        '${birth.dateTime.hour.toString().padLeft(2, '0')}:'
+        '${birth.dateTime.minute.toString().padLeft(2, '0')}$zone$place',
+      );
+    }
+
+    if (chartSettings.showAyanamsa) {
+      lines.add('Ayanamsa: ${chartSettings.ayanamsaSystem}');
+    }
+
+    if (chartSettings.showCurrentDasha) {
+      final current = _currentMahaDasha(now);
+      if (current != null) {
+        lines.add(
+          'Current Dasha: ${current.lord} '
+          '(${ChartHelpers.formatDate(current.startDate)} - '
+          '${ChartHelpers.formatDate(current.endDate)})',
+        );
+      }
+    }
+
+    if (lines.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final line in lines)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Text(line, style: FluentTheme.of(context).typography.body),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Mahadasha? _currentMahaDasha(DateTime now) {
+    for (final maha in data.dashaData.vimshottari.mahadashas) {
+      if (!now.isBefore(maha.startDate) && now.isBefore(maha.endDate)) {
+        return maha;
+      }
+    }
+    return null;
   }
 }

@@ -3,11 +3,11 @@ import 'dart:async';
 
 import 'package:drift/drift.dart' as drift;
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
-import 'package:flutter/material.dart' as m;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jyotish/core.dart';
 
+import '../../core/app_environment.dart';
 import '../../core/ayanamsa_calculator.dart';
 import '../../core/chart_customization.dart';
 import '../../core/chart_share_service.dart';
@@ -59,13 +59,12 @@ class ChartScreen extends ConsumerStatefulWidget {
 class _ChartScreenState extends ConsumerState<ChartScreen> {
   final KPChartService _kpChartService = KPChartService();
   Future<CompleteChartData?>? _chartDataFuture;
-  ChartStyle _style = ChartStyle.northIndian;
+  ChartStyle? _styleOverride;
   String _selectedDivisionalChart = 'D-9';
   BirthData? _birthData;
   int _currentIndex = 0;
   int _dashaTabIndex = 0; // 0 = Vimshottari, 1 = Yogini, 2 = Chara
   bool _showAspects = false; // Toggle for planetary aspects (drishti)
-  final GlobalKey<m.ScaffoldState> _scaffoldKey = GlobalKey<m.ScaffoldState>();
   final GlobalKey _d1ChartKey = GlobalKey();
 
   // Timeline state variables
@@ -74,71 +73,147 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
   double _timelineSpeed = 1.0;
   Timer? _timelineTimer;
 
+  /// Human readable reason the last [generateCompleteChart] call failed.
+  /// The service intentionally swallows errors and returns `null`, so without
+  /// this the screen would show a bare "No Data" with no way to recover.
+  String? _lastChartError;
+
+  /// Chart style in effect, falling back to the persisted preference.
+  ChartStyle get _style =>
+      _styleOverride ??
+      ref.watch(settingsProvider).asData?.value.chartSettings.chartStyle ??
+      ChartStyle.northIndian;
+
+  /// Flips the chart style and persists it, so Settings and the chart screen
+  /// can no longer disagree about which style is active.
+  void _toggleChartStyle() {
+    final next = _style == ChartStyle.northIndian
+        ? ChartStyle.southIndian
+        : ChartStyle.northIndian;
+    setState(() => _styleOverride = next);
+    final current =
+        ref.read(settingsProvider).asData?.value.chartSettings ??
+        ChartCustomization();
+    unawaited(
+      ref
+          .read(settingsProvider.notifier)
+          .updateChartSettings(current.copyWith(chartStyle: next))
+          .catchError((Object error) {
+            AppEnvironment.log('Failed to persist chart style: $error');
+          }),
+    );
+  }
+
+  /// Guards the one-shot birth-data resolution in [didChangeDependencies],
+  /// which otherwise re-runs (and re-pops) on every inherited-widget change.
+  bool _birthDataResolved = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_birthData == null) {
-      if (widget.birthData != null) {
-        _birthData = widget.birthData;
-        _loadChartData();
-      } else {
-        // Try to get from GoRouter extra first
-        try {
-          final extra = GoRouterState.of(context).extra;
-          if (extra is BirthData) {
-            _birthData = extra;
-            _loadChartData();
-            return;
-          }
-        } catch (_) {}
+    if (_birthDataResolved) return;
+    _birthDataResolved = true;
 
-        final args = ModalRoute.of(context)?.settings.arguments;
-        if (args is BirthData) {
-          _birthData = args;
-          _loadChartData();
-        } else {
-          // Handle missing arguments
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              displayInfoBar(
-                context,
-                builder: (context, close) => const InfoBar(
-                  title: Text('Error'),
-                  content: Text('No birth data provided'),
-                  severity: InfoBarSeverity.error,
-                ),
-              );
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                Navigator.pop(context);
-              }
-            }
-          });
-        }
-      }
+    final birthData = _resolveBirthData();
+    if (birthData != null) {
+      _birthData = birthData;
+      _loadChartData();
+      return;
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text('Error'),
+          content: const Text('No birth data provided'),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ),
+      );
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        Navigator.pop(context);
+      }
+    });
+  }
+
+  /// Resolves the birth data handed to this screen. The router always supplies
+  /// it via `extra`, so `GoRouterState`/`ModalRoute` are checked only as a
+  /// fallback for direct `Navigator.push` callers.
+  BirthData? _resolveBirthData() {
+    final provided = widget.birthData;
+    if (provided != null) return provided;
+
+    try {
+      final extra = GoRouterState.of(context).extra;
+      if (extra is BirthData) return extra;
+    } on Object catch (error, stackTrace) {
+      AppEnvironment.log('Failed to read GoRouter extra: $error\n$stackTrace');
+    }
+
+    final args = ModalRoute.of(context)?.settings.arguments;
+    return args is BirthData ? args : null;
   }
 
   void _loadChartData() {
-    if (_birthData != null) {
-      final settingsState =
-          ref.read(settingsProvider).value ??
-          SettingsState(chartSettings: ChartCustomization());
-      final chartSettings = settingsState.chartSettings;
-      final vargaConfig = VargaConfiguration(
-        horaMethod: chartSettings.horaMethod,
-        drekkanaMethod: chartSettings.drekkanaMethod,
-        navamshaMethod: chartSettings.navamshaMethod,
-        dashamshaMethod: chartSettings.dashamshaMethod,
-      );
-      setState(() {
-        _chartDataFuture = _kpChartService.generateCompleteChart(
-          _birthData!,
-          vargaConfig: vargaConfig,
-        );
-      });
+    final birthData = _birthData;
+    if (birthData == null) return;
+
+    final settingsState =
+        ref.read(settingsProvider).value ??
+        SettingsState(chartSettings: ChartCustomization());
+    final chartSettings = settingsState.chartSettings;
+    final vargaConfig = VargaConfiguration(
+      horaMethod: chartSettings.horaMethod,
+      drekkanaMethod: chartSettings.drekkanaMethod,
+      navamshaMethod: chartSettings.navamshaMethod,
+      dashamshaMethod: chartSettings.dashamshaMethod,
+    );
+
+    _lastChartError = null;
+    final future = _kpChartService.generateCompleteChart(
+      birthData,
+      vargaConfig: vargaConfig,
+      onFailure: (error, _) {
+        _lastChartError = _describeChartFailure(error);
+      },
+    );
+    if (mounted) {
+      setState(() => _chartDataFuture = future);
+    } else {
+      _chartDataFuture = future;
     }
+  }
+
+  /// Turns a swallowed chart-generation failure into something the user can act on.
+  String _describeChartFailure(Object error) {
+    final message = error.toString();
+
+    const ephemerisMarkers = [
+      'swisseph',
+      'Failed to load dynamic library',
+      'Dll',
+      'FFI',
+    ];
+    if (ephemerisMarkers.any(message.contains)) {
+      return 'The Swiss Ephemeris library could not be loaded. '
+          'Reinstall the application or check that swisseph.dll is present.';
+    }
+
+    const coordinateMarkers = [
+      'latitude',
+      'longitude',
+      'RangeError',
+    ];
+    if (coordinateMarkers.any(message.contains)) {
+      return 'The birth details contain coordinates outside the supported '
+          'range. Latitude must be -90..90 and longitude -180..180.';
+    }
+
+    return message;
   }
 
   void _openAyanamsaSelection() {
@@ -257,14 +332,136 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
 
   void _showBirthDetails() async {
     final data = await _chartDataFuture;
-    if (data == null || !mounted) return;
+    if (!mounted) return;
+    if (data == null) {
+      _showInfo(
+        'Chart unavailable',
+        _lastChartError ?? 'The chart data failed to load.',
+        severity: InfoBarSeverity.error,
+      );
+      return;
+    }
 
-    Navigator.push(
+    await Navigator.push(
       context,
       FluentPageRoute(
         builder: (context) => BirthDetailsScreen(chartData: data),
       ),
     );
+  }
+
+  /// Shows a transient message anchored to this screen.
+  void _showInfo(
+    String title,
+    String message, {
+    InfoBarSeverity severity = InfoBarSeverity.info,
+  }) {
+    if (!mounted) return;
+    displayInfoBar(
+      context,
+      builder: (context, close) => InfoBar(
+        title: Text(title),
+        content: Text(message),
+        severity: severity,
+        onClose: close,
+      ),
+    );
+  }
+
+  /// Opens the birth-time rectifier and reloads the chart if it returns new data.
+  Future<void> _openRectifier() async {
+    final birthData = _birthData;
+    if (birthData == null) return;
+
+    final result = await Navigator.push(
+      context,
+      FluentPageRoute(
+        builder: (context) => const BirthTimeRectifierScreen(),
+        settings: RouteSettings(arguments: birthData),
+      ),
+    );
+
+    if (!mounted) return;
+    if (result is! BirthData) return;
+
+    _birthData = result;
+    _loadChartData();
+  }
+
+  /// Single share sheet used by both the primary and the overflow command bar.
+  void _showShareDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => ContentDialog(
+        title: const Text('Share Chart'),
+        content: const Text('How would you like to share this chart?'),
+        actions: [
+          Button(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _shareChartImage();
+            },
+            child: const Text('Image (D-1)'),
+          ),
+          Button(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _shareChartPdf();
+            },
+            child: const Text('PDF Report'),
+          ),
+          Button(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _shareChartImage() async {
+    // The D-1 chart only exists while its pane is mounted, so say so instead of
+    // failing silently.
+    if (_d1ChartKey.currentContext == null) {
+      _showInfo(
+        'Chart image unavailable',
+        'Open the D-1 Rashi tab first, then share the chart image.',
+        severity: InfoBarSeverity.warning,
+      );
+      return;
+    }
+    try {
+      await ChartShareService.shareChartImage(
+        _d1ChartKey,
+        filename: '${_birthData?.name ?? 'chart'}_D1.png',
+      );
+    } catch (error) {
+      _showInfo('Share Failed', '$error', severity: InfoBarSeverity.error);
+    }
+  }
+
+  Future<void> _shareChartPdf() async {
+    final birthData = _birthData;
+    if (birthData == null) return;
+    final data = await _chartDataFuture;
+    if (!mounted) return;
+    if (data == null) {
+      _showInfo(
+        'Report unavailable',
+        _lastChartError ?? 'The chart data failed to load.',
+        severity: InfoBarSeverity.error,
+      );
+      return;
+    }
+    try {
+      await ChartShareService.shareChartPdf(
+        data,
+        birthData,
+        filename: '${birthData.name.isEmpty ? 'report' : birthData.name}.pdf',
+      );
+    } catch (error) {
+      _showInfo('Share Failed', '$error', severity: InfoBarSeverity.error);
+    }
   }
 
   void _saveCurrentChart() async {
@@ -275,16 +472,18 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
 
     final db = ref.read(databaseProvider);
     final birthIso = _birthData!.dateTime.toIso8601String();
-    final existing = await (db.select(db.charts)
-          ..where(
-            (tbl) =>
-                tbl.name.equals(_birthData!.name) &
-                tbl.birthTime.equals(birthIso),
-          ))
-        .getSingleOrNull();
+    final existing =
+        await (db.select(db.charts)..where(
+              (tbl) =>
+                  tbl.name.equals(_birthData!.name) &
+                  tbl.birthTime.equals(birthIso),
+            ))
+            .getSingleOrNull();
 
     if (existing == null) {
-      await db.into(db.charts).insert(
+      await db
+          .into(db.charts)
+          .insert(
             ChartsCompanion.insert(
               name: drift.Value(_birthData!.name),
               birthTime: drift.Value(birthIso),
@@ -297,17 +496,18 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
             ),
           );
     } else {
-      await (db.update(db.charts)..where((tbl) => tbl.id.equals(existing.id)))
-          .write(
-            ChartsCompanion(
-              latitude: drift.Value(_birthData!.location.latitude),
-              longitude: drift.Value(_birthData!.location.longitude),
-              locationName: drift.Value(_birthData!.place),
-              timezone: drift.Value(
-                _birthData!.timezone.isEmpty ? 'UTC' : _birthData!.timezone,
-              ),
-            ),
-          );
+      await (db.update(
+        db.charts,
+      )..where((tbl) => tbl.id.equals(existing.id))).write(
+        ChartsCompanion(
+          latitude: drift.Value(_birthData!.location.latitude),
+          longitude: drift.Value(_birthData!.location.longitude),
+          locationName: drift.Value(_birthData!.place),
+          timezone: drift.Value(
+            _birthData!.timezone.isEmpty ? 'UTC' : _birthData!.timezone,
+          ),
+        ),
+      );
     }
 
     if (!mounted) return;
@@ -334,34 +534,52 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
     });
   }
 
+  /// Upper bound on the timeline refresh rate. Every tick rebuilds the whole
+  /// chart screen, so faster speeds would starve the UI thread for no gain.
+  static const _minTimelineTick = Duration(milliseconds: 120);
+
   void _onTimelinePlay() {
+    // Always drop any previous ticker first: calling play twice used to orphan
+    // the old timer, leaving two tickers that could never be cancelled.
+    _stopTimelineTimer();
     setState(() {
       _isTimelinePlaying = true;
     });
+
+    final rawTick = Duration(milliseconds: (100 / _timelineSpeed).round());
     _timelineTimer = Timer.periodic(
-      Duration(milliseconds: (100 / _timelineSpeed).round()),
+      rawTick < _minTimelineTick ? _minTimelineTick : rawTick,
       (timer) {
-        setState(() {
-          _timelineCurrentDate = _timelineCurrentDate.add(
-            const Duration(days: 1),
-          );
-          if (_timelineCurrentDate.isAfter(
-            DateTime.now().add(const Duration(days: 365)),
-          )) {
-            _timelineCurrentDate = DateTime.now().add(
-              const Duration(days: 365),
-            );
-            _onTimelinePause();
+        final next = _timelineCurrentDate.add(const Duration(days: 1));
+        final horizon = DateTime.now().add(const Duration(days: 365));
+        if (next.isAfter(horizon)) {
+          if (mounted) {
+            setState(() {
+              _timelineCurrentDate = horizon;
+            });
           }
-        });
+          _onTimelinePause();
+          return;
+        }
+        if (mounted) {
+          setState(() {
+            _timelineCurrentDate = next;
+          });
+        }
       },
     );
   }
 
   void _onTimelinePause() {
-    setState(() {
-      _isTimelinePlaying = false;
-    });
+    _stopTimelineTimer();
+    if (mounted) {
+      setState(() {
+        _isTimelinePlaying = false;
+      });
+    }
+  }
+
+  void _stopTimelineTimer() {
     _timelineTimer?.cancel();
     _timelineTimer = null;
   }
@@ -369,11 +587,13 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
   void _onTimelineSpeedChanged(double speed) {
     setState(() {
       _timelineSpeed = speed;
-      if (_isTimelinePlaying) {
-        _onTimelinePause();
-        _onTimelinePlay();
-      }
     });
+    // Restart the ticker so the new speed takes effect immediately, without
+    // nesting one setState inside another.
+    if (_isTimelinePlaying) {
+      _onTimelinePause();
+      _onTimelinePlay();
+    }
   }
 
   @override
@@ -384,8 +604,6 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = ResponsiveHelper.useMobileLayout(context);
-
     final content = NavigationView(
       pane: NavigationPane(
         selected: _currentIndex,
@@ -488,127 +706,34 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
       ),
     );
 
-    if (isMobile) {
-      return m.Scaffold(
-        key: _scaffoldKey,
-        drawer: _buildMobileDrawer(),
-        body: content,
-      );
-    }
-
-    return PopScope(
-      canPop: true,
-      onPopInvoked: (didPop) {
-        if (didPop) return;
-      },
-      child: content,
-    );
+    // The NavigationPane already collapses to its own menu button in
+    // [PaneDisplayMode.minimal], so a parallel Material Drawer would render a
+    // second, competing hamburger and swallow the back button.
+    return content;
   }
 
-  Widget _buildMobileDrawer() {
-    return m.Drawer(
-      child: Container(
-        color: FluentTheme.of(context).scaffoldBackgroundColor,
-        child: m.ListView(
-          padding: m.EdgeInsets.zero,
-          children: [
-            m.DrawerHeader(
-              decoration: m.BoxDecoration(
-                color: FluentTheme.of(
-                  context,
-                ).accentColor.withValues(alpha: 0.1),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: m.MainAxisAlignment.end,
-                children: [
-                  Icon(
-                    FluentIcons.contact_card,
-                    size: 40,
-                    color: FluentTheme.of(context).accentColor,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'AstroNaksh',
-                    style: FluentTheme.of(context).typography.title,
-                  ),
-                ],
-              ),
-            ),
-            _buildDrawerHeader('Main Charts'),
-            _buildDrawerItem(0, 'D-1 Rashi', FluentIcons.contact_card),
-            _buildDrawerItem(1, 'Vargas', FluentIcons.grid_view_large),
-            _buildDrawerItem(2, 'KP System', FluentIcons.scatter_chart),
-            _buildDrawerItem(3, 'Dasha Periods', FluentIcons.timer),
-            _buildDrawerItem(4, 'Planet Details', FluentIcons.list),
-            _buildDrawerHeader('Analysis'),
-            _buildDrawerItem(5, 'Life Predictions', FluentIcons.heart),
-            _buildDrawerItem(6, 'Daily Rashiphal', FluentIcons.lightbulb),
-            const m.Divider(),
-            _buildDrawerItem(7, 'Planetary Strength', FluentIcons.scale_volume),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerHeader(String title) {
+  Widget _buildAnalysisLink(String title, IconData icon) {
     return Padding(
-      padding: const m.EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
-      child: Text(
-        title,
-        style: FluentTheme.of(context).typography.caption?.copyWith(
-          color: FluentTheme.of(context).accentColor,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(int index, String title, IconData icon) {
-    final isSelected = _currentIndex == index;
-    return m.ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? FluentTheme.of(context).accentColor : null,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? FluentTheme.of(context).accentColor : null,
-          fontWeight: isSelected ? FontWeight.bold : null,
-        ),
-      ),
-      selected: isSelected,
-      onTap: () {
-        setState(() => _currentIndex = index);
-        Navigator.pop(context); // Close drawer
-      },
-    );
-  }
-
-  Widget _buildMobileAnalysisLink(String title, String navKey, IconData icon) {
-    final isMobile = ResponsiveHelper.useMobileLayout(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 3.0),
       child: SizedBox(
-        height: isMobile ? 56 : 44,
+        height: 48,
         child: Button(
           onPressed: () {
             Navigator.pop(context);
-            _navigateTo(navKey);
+            _navigateTo(title);
           },
           child: Row(
             children: [
-              Icon(icon, size: isMobile ? 24 : 18),
+              Icon(icon, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: isMobile ? 16 : 14),
+                  style: const TextStyle(fontSize: 15),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(FluentIcons.chevron_right, size: isMobile ? 20 : 12),
+              const Icon(FluentIcons.chevron_right, size: 14),
             ],
           ),
         ),
@@ -616,122 +741,272 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
     );
   }
 
-  void _navigateTo(String value) async {
-    if (_chartDataFuture == null) return;
-    // Wait for data? We can pass future or wait.
-    // Usually users click after data loads.
-    // For simplicity, we assume loaded or handle inside screen.
-    // Most screens take 'chartData'.
-    final chartData = await _chartDataFuture;
-    if (chartData == null || !mounted) return;
+  /// Single source of truth for every analysis destination reachable from the
+  /// chart. Both the desktop drop-down and the compact dialog render from this
+  /// list, so a destination can never end up missing on one form factor only.
+  static const List<_AnalysisGroup> _analysisGroups = <_AnalysisGroup>[
+    _AnalysisGroup('Strength', FluentIcons.favorite_star, [
+      _AnalysisDestination('shadbala', 'Shadbala', FluentIcons.favorite_star),
+      _AnalysisDestination(
+        'ashtakavarga',
+        'Ashtakavarga',
+        FluentIcons.grid_view_small,
+      ),
+      _AnalysisDestination('bhava-bala', 'Bhava Bala', FluentIcons.home),
+    ]),
+    _AnalysisGroup('Predictions', FluentIcons.calendar, [
+      _AnalysisDestination('transit', 'Transit', FluentIcons.history),
+      _AnalysisDestination('varshaphal', 'Varshaphal', FluentIcons.calendar),
+      _AnalysisDestination(
+        'sudarshan-chakra',
+        'Sudarshan Chakra',
+        FluentIcons.view_all,
+      ),
+    ]),
+    _AnalysisGroup('Special', FluentIcons.lightbulb, [
+      _AnalysisDestination(
+        'jaimini',
+        'Jaimini (AK, Karakamsa)',
+        FluentIcons.favorite_star,
+      ),
+      _AnalysisDestination(
+        'yoga-dosha',
+        'Yoga & Dosha',
+        FluentIcons.scale_volume,
+      ),
+      _AnalysisDestination(
+        'planetary-maitri',
+        'Planetary Maitri',
+        FluentIcons.people,
+      ),
+      _AnalysisDestination('retrograde', 'Retrograde', FluentIcons.repeat_one),
+      _AnalysisDestination('comparison', 'Comparison', FluentIcons.compare),
+      _AnalysisDestination(
+        'ayanamsa-sandbox',
+        'Ayanamsa Sandbox',
+        FluentIcons.globe,
+      ),
+      _AnalysisDestination('progeny', 'Progeny', FluentIcons.reminder_person),
+      _AnalysisDestination('nadi', 'Nadi Analysis', FluentIcons.flow),
+      _AnalysisDestination(
+        'gochara-vedha',
+        'Gochara Vedha',
+        FluentIcons.sync_occurence,
+      ),
+      _AnalysisDestination(
+        'graha-yuddha',
+        'Planetary War (Graha Yuddha)',
+        FluentIcons.warning,
+      ),
+      _AnalysisDestination(
+        'remedies',
+        'Remedies & Gemstones',
+        FluentIcons.diamond,
+      ),
+    ]),
+    _AnalysisGroup('Reports', FluentIcons.pdf, [
+      _AnalysisDestination('pdf-report', 'PDF Report', FluentIcons.pdf),
+    ]),
+  ];
 
-    Widget screen;
-    switch (value) {
-      case 'ashtakavarga':
-        screen = AshtakavargaScreen(chartData: chartData);
-        break;
-      case 'shadbala':
-        screen = ShadbalaScreen(chartData: chartData);
-        break;
-      case 'bhava_bala':
-        screen = BhavaBalaScreen(chartData: chartData);
-        break;
-      case 'yoga_dosha':
-        screen = YogaDoshaScreen(chartData: chartData);
-        break;
-      case 'planetary_maitri':
-        screen = PlanetaryMaitriScreen(chartData: chartData);
-        break;
-      case 'transit':
-        screen = TransitScreen(natalChart: chartData);
-        break;
-      case 'varshaphal':
-        screen = VarshaphalScreen(birthData: _birthData!);
-        break;
-      case 'retrograde':
-        screen = RetrogradeScreen(chartData: chartData);
-        break;
-      case 'sudarshan_chakra':
-        screen = SudarshanChakraScreen(chartData: chartData);
-        break;
-      case 'comparison':
-        screen = ChartComparisonScreen(chart1: chartData);
-        break;
-      case 'ayanamsa_sandbox':
-        screen = AyanamsaSandboxScreen(birthData: _birthData);
-        break;
-      case 'jaimini':
-        screen = JaiminiScreen(chartData: chartData);
-        break;
-      case 'progeny':
-        screen = ProgenyScreen(chartData: chartData);
-        break;
-      case 'nadi':
-        screen = NadiScreen(chartData: chartData);
-        break;
-      case 'gochara_vedha':
-        screen = GocharaVedhaScreen(chartData: chartData);
-        break;
-      case 'graha_yuddha':
-        screen = GrahaYuddhaScreen(chartData: chartData);
-        break;
-      case 'pdf_report':
-        screen = PDFReportScreen(chartData: chartData);
-        break;
-      case 'remedies':
-        screen = RemediesScreen(chart: chartData.baseChart);
-        break;
-
-      default:
-
-        return;
-    }
-
-    Navigator.push(context, FluentPageRoute(builder: (context) => screen));
+  /// Drop-down used on wide layouts, where there is room for nested sub-menus.
+  ///
+  /// `DropDownButton` is a plain widget rather than a `CommandBarItem`, so it is
+  /// smuggled in through [CommandBarBuilderItem]. When the bar overflows, the
+  /// item is rebuilt in secondary mode and the wrapped button is used instead,
+  /// which keeps the destination reachable from the overflow menu.
+  CommandBarItem _buildAnalysisDropDown() {
+    return CommandBarBuilderItem(
+      builder: (context, displayMode, wrapped) {
+        if (displayMode == CommandBarItemDisplayMode.inSecondary) {
+          return wrapped;
+        }
+        return DropDownButton(
+          title: const Text('Analysis'),
+          leading: const Icon(FluentIcons.analytics_view),
+          items: [
+            for (var i = 0; i < _analysisGroups.length; i++) ...[
+              MenuFlyoutSubItem(
+                text: Text(_analysisGroups[i].title),
+                leading: Icon(_analysisGroups[i].icon),
+                items: (context) => [
+                  for (final destination in _analysisGroups[i].destinations)
+                    MenuFlyoutItem(
+                      text: Text(destination.title),
+                      leading: Icon(destination.icon),
+                      onPressed: () => _navigateTo(destination.key),
+                    ),
+                ],
+              ),
+              if (i != _analysisGroups.length - 1) const MenuFlyoutSeparator(),
+            ],
+          ],
+        );
+      },
+      wrappedItem: CommandBarButton(
+        icon: const Icon(FluentIcons.analytics_view),
+        label: const Text('Analysis Tools'),
+        onPressed: _showAnalysisDialog,
+      ),
+    );
   }
 
-  Widget _buildBody(Widget Function(CompleteChartData) builder) {
-    return FutureBuilder<CompleteChartData?>(
-      future: _chartDataFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: ProgressRing());
-        } else if (snapshot.hasError) {
-          return ScaffoldPage(
-            header: PageHeader(
-              title: const Text('Error'),
-              leading: IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
+  /// Compact list used when there is not enough room for a drop-down.
+  void _showAnalysisDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => ContentDialog(
+        title: const Text('Analysis Tools'),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(dialogContext).height * 0.6,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final group in _analysisGroups) ...[
+                  for (final destination in group.destinations)
+                    _buildAnalysisLink(destination.title, destination.icon),
+                  const Divider(),
+                ],
+              ],
             ),
-            content: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(FluentIcons.error, size: 48, color: m.Colors.red),
+          ),
+        ),
+        actions: [
+          Button(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the destination screen for [key], or `null` when the key is unknown.
+  Widget? _buildAnalysisScreen(String key, CompleteChartData chartData) {
+    switch (key) {
+      case 'shadbala':
+        return ShadbalaScreen(chartData: chartData);
+      case 'ashtakavarga':
+        return AshtakavargaScreen(chartData: chartData);
+      case 'bhava_bala':
+        return BhavaBalaScreen(chartData: chartData);
+      case 'yoga-dosha':
+        return YogaDoshaScreen(chartData: chartData);
+      case 'planetary-maitri':
+        return PlanetaryMaitriScreen(chartData: chartData);
+      case 'transit':
+        return TransitScreen(natalChart: chartData);
+      case 'varshaphal':
+        return VarshaphalScreen(birthData: _birthData!);
+      case 'retrograde':
+        return RetrogradeScreen(chartData: chartData);
+      case 'sudarshan-chakra':
+        return SudarshanChakraScreen(chartData: chartData);
+      case 'comparison':
+        return ChartComparisonScreen(chart1: chartData);
+      case 'ayanamsa-sandbox':
+        return AyanamsaSandboxScreen(birthData: _birthData);
+      case 'jaimini':
+        return JaiminiScreen(chartData: chartData);
+      case 'progeny':
+        return ProgenyScreen(chartData: chartData);
+      case 'nadi':
+        return NadiScreen(chartData: chartData);
+      case 'gochara-vedha':
+        return GocharaVedhaScreen(chartData: chartData);
+      case 'graha-yuddha':
+        return GrahaYuddhaScreen(chartData: chartData);
+      case 'pdf-report':
+        return PDFReportScreen(chartData: chartData);
+      case 'remedies':
+        return RemediesScreen(chart: chartData.baseChart);
+      default:
+        return null;
+    }
+  }
+
+  Future<void> _navigateTo(String key) async {
+    final birthData = _birthData;
+    if (_chartDataFuture == null || birthData == null) return;
+
+    final chartData = await _chartDataFuture;
+    if (!mounted) return;
+    if (chartData == null) {
+      _showInfo(
+        'Chart unavailable',
+        _lastChartError ?? 'The chart data failed to load.',
+        severity: InfoBarSeverity.error,
+      );
+      return;
+    }
+
+    final screen = _buildAnalysisScreen(key, chartData);
+    if (screen == null) {
+      AppEnvironment.log('No analysis screen registered for key "$key"');
+      return;
+    }
+
+    await Navigator.push(context, FluentPageRoute(builder: (_) => screen));
+  }
+
+  /// Full-pane placeholder used while the chart loads or after it failed.
+  Widget _buildChartMessage(
+    String title,
+    String? message, {
+    VoidCallback? onRetry,
+  }) {
+    final theme = FluentTheme.of(context);
+    return ScaffoldPage(
+      header: PageHeader(
+        title: Text(title, overflow: TextOverflow.ellipsis),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      content: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (message == null)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: ProgressRing(),
+                  )
+                else ...[
+                  Icon(FluentIcons.error, size: 48, color: theme.accentColor),
                   const SizedBox(height: 16),
                   Text(
-                    'Error: ${snapshot.error}',
+                    message,
                     textAlign: TextAlign.center,
-                    style: FluentTheme.of(context).typography.bodyLarge,
+                    style: theme.typography.bodyLarge,
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(height: 20),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
                     children: [
-                      Button(
-                        onPressed: _loadChartData,
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(FluentIcons.refresh, size: 16),
-                            SizedBox(width: 8),
-                            Text('Retry'),
-                          ],
+                      if (onRetry != null)
+                        Button(
+                          onPressed: onRetry,
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(FluentIcons.refresh, size: 16),
+                              SizedBox(width: 8),
+                              Text('Retry'),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
                       Button(
                         onPressed: () => Navigator.pop(context),
                         child: const Text('Go Back'),
@@ -739,11 +1014,36 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                     ],
                   ),
                 ],
-              ),
+              ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(Widget Function(CompleteChartData) builder) {
+    final isMobile = ResponsiveHelper.useMobileLayout(context);
+    return FutureBuilder<CompleteChartData?>(
+      future: _chartDataFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildChartMessage('Loading', null);
+        }
+
+        final failure =
+            snapshot.error?.toString() ??
+            (snapshot.data == null
+                ? _lastChartError ?? 'No chart data was returned.'
+                : null);
+        if (snapshot.data == null) {
+          // generateCompleteChart() reports failures by returning null, so this
+          // is the branch real errors land in. Surface the cause and a retry.
+          return _buildChartMessage(
+            'Chart unavailable',
+            failure,
+            onRetry: _loadChartData,
           );
-        } else if (!snapshot.hasData || snapshot.data == null) {
-          return const Center(child: Text('No Data'));
         }
 
         return ScaffoldPage(
@@ -751,24 +1051,16 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
             title: const Flexible(
               child: Text('Vedic Chart', overflow: TextOverflow.ellipsis),
             ),
-            leading: ResponsiveHelper.useMobileLayout(context)
-                ? IconButton(
-                    icon: const Icon(FluentIcons.global_nav_button),
-                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                  )
-                : IconButton(
-                    icon: const Icon(
-                      FluentIcons.back,
-                      semanticLabel: 'Go back',
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+            leading: IconButton(
+              icon: const Icon(FluentIcons.back, semanticLabel: 'Go back'),
+              onPressed: () => Navigator.pop(context),
+            ),
             commandBar: CommandBar(
               overflowBehavior: CommandBarOverflowBehavior.dynamicOverflow,
               mainAxisAlignment: MainAxisAlignment.end,
               primaryItems: [
                 // --- View & Calculation Options (Left/Start) ---
-                if (!ResponsiveHelper.useMobileLayout(context)) ...[
+                if (!isMobile) ...[
                   CommandBarButton(
                     icon: Icon(
                       _style == ChartStyle.northIndian
@@ -780,13 +1072,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                     tooltip: _style == ChartStyle.northIndian
                         ? 'Currently North Indian style. Tap to switch to South Indian.'
                         : 'Currently South Indian style. Tap to switch to North Indian.',
-                    onPressed: () {
-                      setState(() {
-                        _style = _style == ChartStyle.northIndian
-                            ? ChartStyle.southIndian
-                            : ChartStyle.northIndian;
-                      });
-                    },
+                    onPressed: _toggleChartStyle,
                   ),
                   CommandBarButton(
                     icon: Icon(
@@ -813,265 +1099,15 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                 ],
 
                 // --- Analysis & Tools ---
-                if (!ResponsiveHelper.useMobileLayout(context))
-                  CommandBarBuilderItem(
-                    builder: (context, mode, w) {
-                      return DropDownButton(
-                        title: const Text('Analysis'),
-                        leading: const Icon(FluentIcons.analytics_view),
-                        items: [
-                          MenuFlyoutSubItem(
-                            text: const Text('Strength'),
-                            leading: const Icon(FluentIcons.favorite_star),
-                            items: (context) => [
-                              MenuFlyoutItem(
-                                text: const Text('Shadbala'),
-                                leading: const Icon(FluentIcons.favorite_star),
-                                onPressed: () => _navigateTo('shadbala'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Ashtakavarga'),
-                                leading: const Icon(
-                                  FluentIcons.grid_view_small,
-                                ),
-                                onPressed: () => _navigateTo('ashtakavarga'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Bhava Bala'),
-                                leading: const Icon(FluentIcons.home),
-                                onPressed: () => _navigateTo('bhava_bala'),
-                              ),
-                            ],
-                          ),
-                          MenuFlyoutSubItem(
-                            text: const Text('Predictions'),
-                            leading: const Icon(FluentIcons.calendar),
-                            items: (context) => [
-                              MenuFlyoutItem(
-                                text: const Text('Transit'),
-                                leading: const Icon(FluentIcons.history),
-                                onPressed: () => _navigateTo('transit'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Varshaphal'),
-                                leading: const Icon(FluentIcons.calendar),
-                                onPressed: () => _navigateTo('varshaphal'),
-                              ),
-                            ],
-                          ),
-                          MenuFlyoutSubItem(
-                            text: const Text('Special'),
-                            leading: const Icon(FluentIcons.lightbulb),
-                            items: (context) => [
-                              MenuFlyoutItem(
-                                text: const Text('Jaimini (AK, Karakamsa)'),
-                                leading: const Icon(FluentIcons.favorite_star),
-                                onPressed: () => _navigateTo('jaimini'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Yoga & Dosha'),
-                                leading: const Icon(FluentIcons.scale_volume),
-                                onPressed: () => _navigateTo('yoga_dosha'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Planetary Maitri'),
-                                leading: const Icon(FluentIcons.people),
-                                onPressed: () =>
-                                    _navigateTo('planetary_maitri'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Retrograde'),
-                                leading: const Icon(FluentIcons.repeat_one),
-                                onPressed: () => _navigateTo('retrograde'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Sudarshan Chakra'),
-                                leading: const Icon(FluentIcons.view_all),
-                                onPressed: () =>
-                                    _navigateTo('sudarshan_chakra'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Comparison'),
-                                leading: const Icon(FluentIcons.compare),
-                                onPressed: () => _navigateTo('comparison'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Ayanamsa Sandbox'),
-                                leading: const Icon(FluentIcons.globe),
-                                onPressed: () =>
-                                    _navigateTo('ayanamsa_sandbox'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Progeny'),
-                                leading: const Icon(
-                                  FluentIcons.reminder_person,
-                                ),
-                                onPressed: () => _navigateTo('progeny'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Nadi Analysis'),
-                                leading: const Icon(FluentIcons.flow),
-                                onPressed: () => _navigateTo('nadi'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text('Gochara Vedha'),
-                                leading: const Icon(FluentIcons.sync_occurence),
-                                onPressed: () => _navigateTo('gochara_vedha'),
-                              ),
-                              MenuFlyoutItem(
-                                text: const Text(
-                                  'Planetary War (Graha Yuddha)',
-                                ),
-                                leading: const Icon(FluentIcons.warning),
-                                onPressed: () => _navigateTo('graha_yuddha'),
-                              ),
-                            ],
-                          ),
-                          const MenuFlyoutSeparator(),
-                          MenuFlyoutItem(
-                            text: const Text('PDF Report'),
-                            leading: const Icon(FluentIcons.pdf),
-                            onPressed: () => _navigateTo('pdf_report'),
-                          ),
-                        ],
-                      );
-                    },
-                    wrappedItem: CommandBarButton(
-                      icon: const Icon(FluentIcons.analytics_view),
-                      label: const Text('Analysis'),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => ContentDialog(
-                            title: const Text('Analysis Tools'),
-                            content: SizedBox(
-                              height: 300,
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    _buildMobileAnalysisLink(
-                                      'Shadbala',
-                                      'shadbala',
-                                      FluentIcons.favorite_star,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Ashtakavarga',
-                                      'ashtakavarga',
-                                      FluentIcons.grid_view_small,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Bhava Bala',
-                                      'bhava_bala',
-                                      FluentIcons.home,
-                                    ),
-                                    const Divider(),
-                                    _buildMobileAnalysisLink(
-                                      'Transit',
-                                      'transit',
-                                      FluentIcons.history,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Varshaphal',
-                                      'varshaphal',
-                                      FluentIcons.calendar,
-                                    ),
-                                    const Divider(),
-                                    _buildMobileAnalysisLink(
-                                      'Yoga & Dosha',
-                                      'yoga_dosha',
-                                      FluentIcons.scale_volume,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Remedies & Gemstones',
-                                      'remedies',
-                                      FluentIcons.diamond,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Planetary Maitri',
-                                      'planetary_maitri',
-                                      FluentIcons.people,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Retrograde',
-                                      'retrograde',
-                                      FluentIcons.repeat_one,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Sudarshan Chakra',
-                                      'sudarshan_chakra',
-                                      FluentIcons.view_all,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Comparison',
-                                      'comparison',
-                                      FluentIcons.compare,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Ayanamsa Sandbox',
-                                      'ayanamsa_sandbox',
-                                      FluentIcons.globe,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Gochara Vedha',
-                                      'gochara_vedha',
-                                      FluentIcons.sync_occurence,
-                                    ),
-                                    _buildMobileAnalysisLink(
-                                      'Planetary War (Graha Yuddha)',
-                                      'graha_yuddha',
-                                      FluentIcons.warning,
-                                    ),
-                                    const Divider(),
-                                    _buildMobileAnalysisLink(
-                                      'PDF Report',
-                                      'pdf_report',
-                                      FluentIcons.pdf,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            actions: [
-                              Button(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Close'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                if (!ResponsiveHelper.useMobileLayout(context))
+                if (!isMobile) _buildAnalysisDropDown(),
+                if (!isMobile)
                   CommandBarButton(
                     icon: const Icon(FluentIcons.build),
                     label: const Text('Rectify'),
-                    onPressed: () async {
-                      // ... (Logic)
-                      if (_birthData == null) return;
-                      final newData = await Navigator.push(
-                        context,
-                        FluentPageRoute(
-                          builder: (context) =>
-                              const BirthTimeRectifierScreen(),
-                          settings: RouteSettings(arguments: _birthData),
-                        ),
-                      );
-
-                      if (newData != null && newData is BirthData) {
-                        setState(() {
-                          _birthData = newData;
-                          _loadChartData();
-                        });
-                      }
-                    },
+                    onPressed: _openRectifier,
                   ),
 
-                // --- Primary Actions (End) ---
-                if (!ResponsiveHelper.useMobileLayout(context)) ...[
+                if (!isMobile) ...[
                   const CommandBarSeparator(),
                   CommandBarButton(
                     icon: const Icon(FluentIcons.save),
@@ -1081,82 +1117,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                   CommandBarButton(
                     icon: const Icon(FluentIcons.share),
                     label: const Text('Share'),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return ContentDialog(
-                            title: const Text('Share Chart'),
-                            content: const Text(
-                              'How would you like to share this chart?',
-                            ),
-                            actions: [
-                              Button(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  if (_d1ChartKey.currentContext == null) {
-                                    return;
-                                  }
-                                  try {
-                                    await ChartShareService.shareChartImage(
-                                      _d1ChartKey,
-                                      filename:
-                                          '${_birthData?.name ?? 'chart'}_D1.png',
-                                    );
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      displayInfoBar(
-                                        context,
-                                        builder: (context, close) => InfoBar(
-                                          title: const Text('Share Failed'),
-                                          content: Text(e.toString()),
-                                          severity: InfoBarSeverity.error,
-                                          onClose: close,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: const Text('Image (D-1)'),
-                              ),
-                              Button(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  final data = await _chartDataFuture;
-                                  if (data != null && _birthData != null) {
-                                    try {
-                                      await ChartShareService.shareChartPdf(
-                                        data,
-                                        _birthData!,
-                                        filename:
-                                            '${_birthData?.name ?? 'report'}.pdf',
-                                      );
-                                    } catch (e) {
-                                      if (context.mounted) {
-                                        displayInfoBar(
-                                          context,
-                                          builder: (context, close) => InfoBar(
-                                            title: const Text('Share Failed'),
-                                            content: Text(e.toString()),
-                                            severity: InfoBarSeverity.error,
-                                            onClose: close,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  }
-                                },
-                                child: const Text('PDF Report'),
-                              ),
-                              Button(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
+                    onPressed: _showShareDialog,
                   ),
                   const CommandBarSeparator(),
                   CommandBarButton(
@@ -1174,7 +1135,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
               secondaryItems: [
                 // --- Secondary Actions (Overflow Menu) ---
                 // Force these into overflow on mobile for better touch targets
-                if (ResponsiveHelper.useMobileLayout(context)) ...[
+                if (isMobile) ...[
                   CommandBarButton(
                     icon: const Icon(FluentIcons.save),
                     label: const Text('Save Chart'),
@@ -1183,82 +1144,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                   CommandBarButton(
                     icon: const Icon(FluentIcons.share),
                     label: const Text('Share Chart'),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return ContentDialog(
-                            title: const Text('Share Chart'),
-                            content: const Text(
-                              'How would you like to share this chart?',
-                            ),
-                            actions: [
-                              Button(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  if (_d1ChartKey.currentContext == null) {
-                                    return;
-                                  }
-                                  try {
-                                    await ChartShareService.shareChartImage(
-                                      _d1ChartKey,
-                                      filename:
-                                          '${_birthData?.name ?? 'chart'}_D1.png',
-                                    );
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      displayInfoBar(
-                                        context,
-                                        builder: (context, close) => InfoBar(
-                                          title: const Text('Share Failed'),
-                                          content: Text(e.toString()),
-                                          severity: InfoBarSeverity.error,
-                                          onClose: close,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: const Text('Image (D-1)'),
-                              ),
-                              Button(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  final data = await _chartDataFuture;
-                                  if (data != null && _birthData != null) {
-                                    try {
-                                      await ChartShareService.shareChartPdf(
-                                        data,
-                                        _birthData!,
-                                        filename:
-                                            '${_birthData?.name ?? 'report'}.pdf',
-                                      );
-                                    } catch (e) {
-                                      if (context.mounted) {
-                                        displayInfoBar(
-                                          context,
-                                          builder: (context, close) => InfoBar(
-                                            title: const Text('Share Failed'),
-                                            content: Text(e.toString()),
-                                            severity: InfoBarSeverity.error,
-                                            onClose: close,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  }
-                                },
-                                child: const Text('PDF Report'),
-                              ),
-                              Button(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
+                    onPressed: _showShareDialog,
                   ),
                   const CommandBarSeparator(),
                   CommandBarButton(
@@ -1270,13 +1156,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                     label: Text(
                       'Style: ${_style == ChartStyle.northIndian ? 'North Indian' : 'South Indian'}',
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _style = _style == ChartStyle.northIndian
-                            ? ChartStyle.southIndian
-                            : ChartStyle.northIndian;
-                      });
-                    },
+                    onPressed: _toggleChartStyle,
                   ),
                   CommandBarButton(
                     icon: Icon(
@@ -1297,119 +1177,12 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                   CommandBarButton(
                     icon: const Icon(FluentIcons.analytics_view),
                     label: const Text('Analysis Tools'),
-                    onPressed: () {
-                      // Show a dialog or bottom sheet for analysis tools because
-                      // a nested dropdown in a command bar menu might be weird.
-                      // Or we can just navigate to a "Menu" or show the same Dropdown logic.
-                      // Let's use a simple dialog for now to match the desktop dropdown content.
-                      showDialog(
-                        context: context,
-                        builder: (context) => ContentDialog(
-                          title: const Text('Analysis Tools'),
-                          content: SizedBox(
-                            height: 300,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  _buildMobileAnalysisLink(
-                                    'Shadbala',
-                                    'shadbala',
-                                    FluentIcons.favorite_star,
-                                  ),
-                                  _buildMobileAnalysisLink(
-                                    'Ashtakavarga',
-                                    'ashtakavarga',
-                                    FluentIcons.grid_view_small,
-                                  ),
-                                  _buildMobileAnalysisLink(
-                                    'Bhava Bala',
-                                    'bhava_bala',
-                                    FluentIcons.home,
-                                  ),
-                                  const Divider(),
-                                  _buildMobileAnalysisLink(
-                                    'Transit',
-                                    'transit',
-                                    FluentIcons.history,
-                                  ),
-                                  _buildMobileAnalysisLink(
-                                    'Varshaphal',
-                                    'varshaphal',
-                                    FluentIcons.calendar,
-                                  ),
-                                  const Divider(),
-                                  _buildMobileAnalysisLink(
-                                    'Yoga & Dosha',
-                                    'yoga_dosha',
-                                    FluentIcons.scale_volume,
-                                  ),
-                                  _buildMobileAnalysisLink(
-                                    'Planetary Maitri',
-                                    'planetary_maitri',
-                                    FluentIcons.people,
-                                  ),
-                                  _buildMobileAnalysisLink(
-                                    'Retrograde',
-                                    'retrograde',
-                                    FluentIcons.repeat_one,
-                                  ),
-                                  _buildMobileAnalysisLink(
-                                    'Sudarshan Chakra',
-                                    'sudarshan_chakra',
-                                    FluentIcons.view_all,
-                                  ),
-                                  _buildMobileAnalysisLink(
-                                    'Comparison',
-                                    'comparison',
-                                    FluentIcons.compare,
-                                  ),
-                                  _buildMobileAnalysisLink(
-                                    'Planetary War (Graha Yuddha)',
-                                    'graha_yuddha',
-                                    FluentIcons.warning,
-                                  ),
-                                  const Divider(),
-                                  _buildMobileAnalysisLink(
-                                    'PDF Report',
-                                    'pdf_report',
-                                    FluentIcons.pdf,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          actions: [
-                            Button(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Close'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                    onPressed: _showAnalysisDialog,
                   ),
                   CommandBarButton(
                     icon: const Icon(FluentIcons.build),
                     label: const Text('Birth Time Rectification'),
-                    onPressed: () async {
-                      if (_birthData == null) return;
-                      final newData = await Navigator.push(
-                        context,
-                        FluentPageRoute(
-                          builder: (context) =>
-                              const BirthTimeRectifierScreen(),
-                          settings: RouteSettings(arguments: _birthData),
-                        ),
-                      );
-
-                      if (newData != null && newData is BirthData) {
-                        setState(() {
-                          _birthData = newData;
-                          _loadChartData();
-                        });
-                      }
-                    },
+                    onPressed: _openRectifier,
                   ),
                   CommandBarButton(
                     icon: const Icon(FluentIcons.info),
@@ -1430,4 +1203,23 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
       },
     );
   }
+}
+
+/// A single analysis destination offered by the chart screen's Analysis menu.
+class _AnalysisDestination {
+  const _AnalysisDestination(this.key, this.title, this.icon);
+
+  /// Stable identifier resolved by [_ChartScreenState._buildAnalysisScreen].
+  final String key;
+  final String title;
+  final IconData icon;
+}
+
+/// A titled group of [ _AnalysisDestination]s shown as a drop-down sub-menu.
+class _AnalysisGroup {
+  const _AnalysisGroup(this.title, this.icon, this.destinations);
+
+  final String title;
+  final IconData icon;
+  final List<_AnalysisDestination> destinations;
 }

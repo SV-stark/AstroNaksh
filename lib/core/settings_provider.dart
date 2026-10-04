@@ -17,26 +17,28 @@ part 'settings_provider.g.dart';
 class Settings extends _$Settings {
   static const String _chartSettingsKey = 'chart_settings';
   static const String _themeModeKey = 'theme_mode';
-  static const String _hasSeenTutorialKey = 'has_seen_tutorial';
   static const String _webdavPasswordKey = 'astronaksh_webdav_password';
   static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static Future<String?> getSecureWebdavPassword() async {
     try {
       return await _secureStorage.read(key: _webdavPasswordKey);
-    } catch (_) {
+    } catch (error) {
+      // Hosts without a working keystore (bare Linux/Windows) land here; the
+      // obfuscated copy in the settings blob is the remaining fallback.
+      AppEnvironment.log(
+        'Secure storage unavailable, password not loaded: $error',
+      );
       return null;
     }
   }
 
   static Future<void> saveSecureWebdavPassword(String password) async {
-    try {
-      if (password.isEmpty) {
-        await _secureStorage.delete(key: _webdavPasswordKey);
-      } else {
-        await _secureStorage.write(key: _webdavPasswordKey, value: password);
-      }
-    } catch (_) {}
+    if (password.isEmpty) {
+      await _secureStorage.delete(key: _webdavPasswordKey);
+    } else {
+      await _secureStorage.write(key: _webdavPasswordKey, value: password);
+    }
   }
 
   @override
@@ -72,7 +74,9 @@ class Settings extends _$Settings {
           );
         }
       } catch (e) {
-        AppEnvironment.log('SettingsNotifier: Failed to parse chart settings from prefs: $e');
+        AppEnvironment.log(
+          'SettingsNotifier: Failed to parse chart settings from prefs: $e',
+        );
       }
     }
 
@@ -81,11 +85,7 @@ class Settings extends _$Settings {
       chartSettings.webdavPassword = securePassword;
     }
 
-    return SettingsState(
-      chartSettings: chartSettings,
-      themeMode: themeMode,
-      hasSeenTutorial: prefs.getBool(_hasSeenTutorialKey) ?? false,
-    );
+    return SettingsState(chartSettings: chartSettings, themeMode: themeMode);
   }
 
   Future<SettingsState> _loadSettingsFromDb() async {
@@ -112,7 +112,9 @@ class Settings extends _$Settings {
           );
         }
       } catch (e) {
-        AppEnvironment.log('SettingsNotifier: Failed to parse chart settings from DB: $e');
+        AppEnvironment.log(
+          'SettingsNotifier: Failed to parse chart settings from DB: $e',
+        );
       }
     }
 
@@ -121,11 +123,7 @@ class Settings extends _$Settings {
       chartSettings.webdavPassword = securePassword;
     }
 
-    return SettingsState(
-      chartSettings: chartSettings,
-      themeMode: themeMode,
-      hasSeenTutorial: settingsMap[_hasSeenTutorialKey] == 'true',
-    );
+    return SettingsState(chartSettings: chartSettings, themeMode: themeMode);
   }
 
   SettingsState _currentOrDefault() {
@@ -133,31 +131,50 @@ class Settings extends _$Settings {
         SettingsState(chartSettings: ChartCustomization());
   }
 
+  /// Defensive copy so callers cannot keep mutating the object that lives
+  /// inside provider state (the settings screen edits its instance in place,
+  /// which previously leaked unsaved values to every other reader).
+  static ChartCustomization _snapshot(ChartCustomization settings) {
+    return ChartCustomization.fromJson(settings.toJson());
+  }
+
+  /// Persists [body], rolling [state] back to the last known-good value if the
+  /// write fails so the UI can never claim success for a lost setting.
+  Future<void> _persist(
+    SettingsState previous,
+    Future<void> Function() body,
+  ) async {
+    try {
+      await body();
+    } catch (error) {
+      state = AsyncValue.data(previous);
+      AppEnvironment.log('Failed to persist settings: $error');
+      Error.throwWithStackTrace(
+        StateError('Could not save settings: $error'),
+        StackTrace.current,
+      );
+    }
+  }
+
   Future<void> updateThemeMode(ThemeMode mode) async {
-    final current = _currentOrDefault();
-    state = AsyncValue.data(current.copyWith(themeMode: mode));
-    await AsyncValue.guard(() async {
-      await _saveSetting(_themeModeKey, mode.toString());
-      return current.copyWith(themeMode: mode);
-    });
+    final previous = _currentOrDefault();
+    final next = previous.copyWith(themeMode: mode);
+    state = AsyncValue.data(next);
+    await _persist(
+      previous,
+      () => _saveSetting(_themeModeKey, mode.toString()),
+    );
   }
 
   Future<void> updateChartSettings(ChartCustomization chartSettings) async {
-    final current = _currentOrDefault();
-    state = AsyncValue.data(current.copyWith(chartSettings: chartSettings));
-    await AsyncValue.guard(() async {
-      await saveSecureWebdavPassword(chartSettings.webdavPassword);
-      await _saveSetting(_chartSettingsKey, jsonEncode(chartSettings.toJson()));
-      return current.copyWith(chartSettings: chartSettings);
-    });
-  }
+    final previous = _currentOrDefault();
+    final snapshot = _snapshot(chartSettings);
+    state = AsyncValue.data(previous.copyWith(chartSettings: snapshot));
 
-  Future<void> setHasSeenTutorial(bool value) async {
-    final current = _currentOrDefault();
-    state = AsyncValue.data(current.copyWith(hasSeenTutorial: value));
-    await AsyncValue.guard(() async {
-      await _saveSetting(_hasSeenTutorialKey, value.toString());
-      return current.copyWith(hasSeenTutorial: value);
+    final encoded = jsonEncode(snapshot.toJson());
+    await _persist(previous, () async {
+      await saveSecureWebdavPassword(snapshot.webdavPassword);
+      await _saveSetting(_chartSettingsKey, encoded);
     });
   }
 

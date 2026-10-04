@@ -10,6 +10,9 @@ class NorthIndianChartPainter extends CustomPainter {
     this.selectedHouse,
     this.showSigns = true,
     this.showHouseNumbers = true,
+    this.showHouses = true,
+    this.showHouseCusps = true,
+    this.planetTextScale = 1.0,
     this.transitPlanetsBySign,
   });
   final Map<int, List<String>> planetsBySign;
@@ -20,6 +23,58 @@ class NorthIndianChartPainter extends CustomPainter {
   final int? selectedHouse;
   final bool showSigns;
   final bool showHouseNumbers;
+
+  /// Whether the house divisions (outer frame, diagonals, inner diamond) and
+  /// the grid are drawn. Driven by the "Show Houses" setting.
+  final bool showHouses;
+
+  /// Whether per-house cusp/grid detail is drawn.
+  final bool showHouseCusps;
+
+  /// Multiplier applied to the planet label font size, driven by the
+  /// "Planet Size" setting.
+  final double planetTextScale;
+
+  /// Top-left corner of the outer edge of [houseIndex], used to place the
+  /// bhava number clear of the sign glyph and the planet list.
+  static Offset _houseNumberAnchors(
+    int houseIndex,
+    double width,
+    double height,
+  ) {
+    final w4 = width / 4;
+    final w2 = width / 2;
+    final w3_4 = 3 * w4;
+    final h4 = height / 4;
+    final h2 = height / 2;
+
+    return switch (houseIndex) {
+      // 1st house: top edge diamond
+      0 => Offset(w2 - w4 * 0.15, 0),
+      // 2nd: top-left triangle
+      1 => Offset.zero,
+      // 3rd: left edge, upper half
+      2 => Offset(0, h2 - h4 * 0.15),
+      // 4th: left edge, lower half
+      3 => Offset(0, h2 + h4 * 0.15),
+      // 5th: left-bottom triangle
+      4 => Offset(0, height - h4 * 0.15),
+      // 6th: bottom edge, left of centre
+      5 => Offset(w4 - w4 * 0.15, height - h4 * 0.15),
+      // 7th: bottom edge diamond
+      6 => Offset(w2 - w4 * 0.15, height - h4 * 0.15),
+      // 8th: bottom-right triangle
+      7 => Offset(width - w4 * 0.15, height - h4 * 0.15),
+      // 9th: right edge, lower half
+      8 => Offset(width - w4 * 0.15, h2 + h4 * 0.15),
+      // 10th: right edge, upper half
+      9 => Offset(width - w4 * 0.15, h2 - h4 * 0.15),
+      // 11th: top-right triangle
+      10 => Offset(w3_4 - w4 * 0.15, 0),
+      // 12th: top-right, next to centre
+      _ => Offset(w3_4 - w4 * 0.15, 0),
+    };
+  }
 
   Path getHousePath(int houseIndex, double width, double height) {
     final path = Path();
@@ -141,30 +196,34 @@ class NorthIndianChartPainter extends CustomPainter {
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    // 2. Draw Outer Square
-    canvas.drawRect(Rect.fromLTWH(0, 0, width, height), borderPaint);
+    // 2. Outer frame ("Show Houses")
+    if (showHouses) {
+      canvas.drawRect(Rect.fromLTWH(0, 0, width, height), borderPaint);
+    }
 
-    // 3. Draw Diagonals
-    canvas.drawLine(const Offset(0, 0), Offset(width, height), borderPaint);
-    canvas.drawLine(Offset(width, 0), Offset(0, height), borderPaint);
+    // 3-4. Cusp boundaries: the diagonals and inner diamond that carve the
+    // square into twelve bhava. These are the "Show House Cusps" setting.
+    if (showHouseCusps) {
+      canvas.drawLine(const Offset(0, 0), Offset(width, height), borderPaint);
+      canvas.drawLine(Offset(width, 0), Offset(0, height), borderPaint);
 
-    // 4. Draw Inner Diamond
-    canvas.drawLine(Offset(width / 2, 0), Offset(0, height / 2), borderPaint);
-    canvas.drawLine(
-      Offset(0, height / 2),
-      Offset(width / 2, height),
-      borderPaint,
-    );
-    canvas.drawLine(
-      Offset(width / 2, height),
-      Offset(width, height / 2),
-      borderPaint,
-    );
-    canvas.drawLine(
-      Offset(width, height / 2),
-      Offset(width / 2, 0),
-      borderPaint,
-    );
+      canvas.drawLine(Offset(width / 2, 0), Offset(0, height / 2), borderPaint);
+      canvas.drawLine(
+        Offset(0, height / 2),
+        Offset(width / 2, height),
+        borderPaint,
+      );
+      canvas.drawLine(
+        Offset(width / 2, height),
+        Offset(width, height / 2),
+        borderPaint,
+      );
+      canvas.drawLine(
+        Offset(width, height / 2),
+        Offset(width / 2, 0),
+        borderPaint,
+      );
+    }
 
     // 5. Centers & Glyph Positions
     final w4 = width / 4;
@@ -234,10 +293,28 @@ class NorthIndianChartPainter extends CustomPainter {
         textPainter.paint(canvas, offset);
       }
 
+      // Bhava (house) number in the outer corner of each house. This was accepted
+      // as a constructor argument but never rendered.
+      if (showHouseNumbers) {
+        final inset = (width / 4) * 0.09;
+        final anchor = _houseNumberAnchors(houseIndex, width, height);
+        final numberPainter = TextPainter(
+          text: TextSpan(
+            text: '${houseIndex + 1}',
+            style: TextStyle(
+              color: colors.planetText.withAlpha(80),
+              fontSize: width / 40,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        numberPainter.paint(canvas, anchor + Offset(inset, inset));
+      }
+
       // Draw Planets
       final planets = planetsBySign[signIndex + 1] ?? [];
       final transitPlanets = transitPlanetsBySign?[signIndex + 1] ?? [];
-      final fontSize = width / 25; // Responsive size
+      final fontSize = (width / 25) * planetTextScale;
 
       final lines = <String>[];
       if (planets.length > 3) {

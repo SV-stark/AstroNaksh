@@ -34,6 +34,13 @@ class AppError {
 
 typedef ErrorCallback = void Function(AppError error);
 
+/// Invoked with the raw failure that caused [AppErrorHandler.safe] /
+/// [AppErrorHandler.safeAsync] to fall back to their `defaultValue`.
+///
+/// Lets callers surface the real cause instead of showing a blank
+/// "no data" state after an error was swallowed.
+typedef FailureCallback = void Function(Object error, StackTrace stackTrace);
+
 class AppErrorHandler {
   factory AppErrorHandler() => _instance;
   AppErrorHandler._internal();
@@ -82,6 +89,7 @@ class AppErrorHandler {
     ErrorSeverity severity = ErrorSeverity.error,
     String? context,
     String? userMessage,
+    FailureCallback? onFailure,
   }) {
     try {
       return operation();
@@ -93,6 +101,7 @@ class AppErrorHandler {
         context: context,
         userMessage: userMessage,
       );
+      onFailure?.call(e, st);
       return defaultValue as T;
     }
   }
@@ -103,6 +112,7 @@ class AppErrorHandler {
     ErrorSeverity severity = ErrorSeverity.error,
     String? context,
     String? userMessage,
+    FailureCallback? onFailure,
   }) async {
     try {
       return await operation();
@@ -114,6 +124,7 @@ class AppErrorHandler {
         context: context,
         userMessage: userMessage,
       );
+      onFailure?.call(e, st);
       return defaultValue as T;
     }
   }

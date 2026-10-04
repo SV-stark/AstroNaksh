@@ -155,33 +155,3 @@ class AyanamsaSystem {
   final String description;
   final SiderealMode? mode;
 }
-
-/// Settings manager for ayanamsa preferences
-class AyanamsaSettings {
-  String _currentSystem = 'lahiri';
-
-  String get currentSystem => _currentSystem;
-
-  void setSystem(String system) {
-    if (AyanamsaCalculator.getSystem(system) != null) {
-      _currentSystem = system;
-    }
-  }
-
-  Future<double> calculateForDate(DateTime date) {
-    return AyanamsaCalculator.calculate(_currentSystem, date);
-  }
-}
-
-/// Extension for easy ayanamsa conversion
-extension AyanamsaConversion on double {
-  /// Convert tropical to sidereal
-  double toSidereal(double ayanamsa) {
-    return AyanamsaCalculator.tropicalToSidereal(this, ayanamsa);
-  }
-
-  /// Convert sidereal to tropical
-  double toTropical(double ayanamsa) {
-    return AyanamsaCalculator.siderealToTropical(this, ayanamsa);
-  }
-}

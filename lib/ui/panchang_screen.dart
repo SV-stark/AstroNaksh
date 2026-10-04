@@ -733,6 +733,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
                         child: PanchangMuhurtaTab(
                           abhijit: _abhijit,
                           brahma: _brahma,
+                          choghadiya: _choghadiya,
                         ),
                       ),
                     )

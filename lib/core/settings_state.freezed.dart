@@ -11,33 +11,30 @@ part of 'settings_state.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$SettingsState {
 
- ChartCustomization get chartSettings; ThemeMode get themeMode; bool get hasSeenTutorial;
+ ChartCustomization get chartSettings; ThemeMode get themeMode;
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $SettingsStateCopyWith<SettingsState> get copyWith => _$SettingsStateCopyWithImpl<SettingsState>(this as SettingsState, _$identity);
 
-  /// Serializes this SettingsState to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsState&&(identical(other.chartSettings, chartSettings) || other.chartSettings == chartSettings)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.hasSeenTutorial, hasSeenTutorial) || other.hasSeenTutorial == hasSeenTutorial));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsState&&(identical(other.chartSettings, chartSettings) || other.chartSettings == chartSettings)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
-int get hashCode => Object.hash(runtimeType,chartSettings,themeMode,hasSeenTutorial);
+int get hashCode => Object.hash(runtimeType,chartSettings,themeMode);
 
 @override
 String toString() {
-  return 'SettingsState(chartSettings: $chartSettings, themeMode: $themeMode, hasSeenTutorial: $hasSeenTutorial)';
+  return 'SettingsState(chartSettings: $chartSettings, themeMode: $themeMode)';
 }
 
 
@@ -48,7 +45,7 @@ abstract mixin class $SettingsStateCopyWith<$Res>  {
   factory $SettingsStateCopyWith(SettingsState value, $Res Function(SettingsState) _then) = _$SettingsStateCopyWithImpl;
 @useResult
 $Res call({
- ChartCustomization chartSettings, ThemeMode themeMode, bool hasSeenTutorial
+ ChartCustomization chartSettings, ThemeMode themeMode
 });
 
 
@@ -65,12 +62,11 @@ class _$SettingsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? chartSettings = null,Object? themeMode = null,Object? hasSeenTutorial = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? chartSettings = null,Object? themeMode = null,}) {
   return _then(_self.copyWith(
 chartSettings: null == chartSettings ? _self.chartSettings : chartSettings // ignore: cast_nullable_to_non_nullable
 as ChartCustomization,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
-as ThemeMode,hasSeenTutorial: null == hasSeenTutorial ? _self.hasSeenTutorial : hasSeenTutorial // ignore: cast_nullable_to_non_nullable
-as bool,
+as ThemeMode,
   ));
 }
 
@@ -155,10 +151,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ChartCustomization chartSettings,  ThemeMode themeMode,  bool hasSeenTutorial)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ChartCustomization chartSettings,  ThemeMode themeMode)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
-return $default(_that.chartSettings,_that.themeMode,_that.hasSeenTutorial);case _:
+return $default(_that.chartSettings,_that.themeMode);case _:
   return orElse();
 
 }
@@ -176,10 +172,10 @@ return $default(_that.chartSettings,_that.themeMode,_that.hasSeenTutorial);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ChartCustomization chartSettings,  ThemeMode themeMode,  bool hasSeenTutorial)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ChartCustomization chartSettings,  ThemeMode themeMode)  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState():
-return $default(_that.chartSettings,_that.themeMode,_that.hasSeenTutorial);case _:
+return $default(_that.chartSettings,_that.themeMode);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +192,10 @@ return $default(_that.chartSettings,_that.themeMode,_that.hasSeenTutorial);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ChartCustomization chartSettings,  ThemeMode themeMode,  bool hasSeenTutorial)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ChartCustomization chartSettings,  ThemeMode themeMode)?  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
-return $default(_that.chartSettings,_that.themeMode,_that.hasSeenTutorial);case _:
+return $default(_that.chartSettings,_that.themeMode);case _:
   return null;
 
 }
@@ -208,15 +204,14 @@ return $default(_that.chartSettings,_that.themeMode,_that.hasSeenTutorial);case 
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _SettingsState implements SettingsState {
-  const _SettingsState({required this.chartSettings, this.themeMode = ThemeMode.system, this.hasSeenTutorial = false});
-  factory _SettingsState.fromJson(Map<String, dynamic> json) => _$SettingsStateFromJson(json);
+  const _SettingsState({required this.chartSettings, this.themeMode = ThemeMode.system});
+  
 
 @override final  ChartCustomization chartSettings;
 @override@JsonKey() final  ThemeMode themeMode;
-@override@JsonKey() final  bool hasSeenTutorial;
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
@@ -224,23 +219,20 @@ class _SettingsState implements SettingsState {
 @pragma('vm:prefer-inline')
 _$SettingsStateCopyWith<_SettingsState> get copyWith => __$SettingsStateCopyWithImpl<_SettingsState>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$SettingsStateToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsState&&(identical(other.chartSettings, chartSettings) || other.chartSettings == chartSettings)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.hasSeenTutorial, hasSeenTutorial) || other.hasSeenTutorial == hasSeenTutorial));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsState&&(identical(other.chartSettings, chartSettings) || other.chartSettings == chartSettings)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
-int get hashCode => Object.hash(runtimeType,chartSettings,themeMode,hasSeenTutorial);
+int get hashCode => Object.hash(runtimeType,chartSettings,themeMode);
 
 @override
 String toString() {
-  return 'SettingsState(chartSettings: $chartSettings, themeMode: $themeMode, hasSeenTutorial: $hasSeenTutorial)';
+  return 'SettingsState(chartSettings: $chartSettings, themeMode: $themeMode)';
 }
 
 
@@ -251,7 +243,7 @@ abstract mixin class _$SettingsStateCopyWith<$Res> implements $SettingsStateCopy
   factory _$SettingsStateCopyWith(_SettingsState value, $Res Function(_SettingsState) _then) = __$SettingsStateCopyWithImpl;
 @override @useResult
 $Res call({
- ChartCustomization chartSettings, ThemeMode themeMode, bool hasSeenTutorial
+ ChartCustomization chartSettings, ThemeMode themeMode
 });
 
 
@@ -268,12 +260,11 @@ class __$SettingsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? chartSettings = null,Object? themeMode = null,Object? hasSeenTutorial = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? chartSettings = null,Object? themeMode = null,}) {
   return _then(_SettingsState(
 chartSettings: null == chartSettings ? _self.chartSettings : chartSettings // ignore: cast_nullable_to_non_nullable
 as ChartCustomization,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
-as ThemeMode,hasSeenTutorial: null == hasSeenTutorial ? _self.hasSeenTutorial : hasSeenTutorial // ignore: cast_nullable_to_non_nullable
-as bool,
+as ThemeMode,
   ));
 }
 

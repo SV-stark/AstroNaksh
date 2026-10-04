@@ -134,17 +134,37 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
     );
   }
 
+  /// Scrub window in days, taken from the "Days to show" transit setting.
+  int get _transitRangeDays =>
+      ref
+          .watch(settingsProvider)
+          .asData
+          ?.value
+          .chartSettings
+          .transitDaysToShow ??
+      30;
+
+  static String _rangeLabel(int days) {
+    if (days % 365 == 0) {
+      final years = days ~/ 365;
+      return years == 1 ? '1 Year' : '$years Years';
+    }
+    return '$days Days';
+  }
+
   Widget _buildCurrentTransitsTab() {
     final transit = _transitChart!;
     final settingsState = ref.watch(settingsProvider).value;
-    final chartStyle =
-        settingsState?.chartSettings.chartStyle ?? ChartStyle.northIndian;
+    final chartSettings = settingsState?.chartSettings ?? ChartCustomization();
+    final chartStyle = chartSettings.chartStyle;
 
     final natalPlanetsMap = ChartHelpers.getPlanetsMap(
       widget.natalChart.baseChart,
+      chartSettings,
     );
     final transitPlanetsMap = ChartHelpers.getPlanetsMap(
       transit.transitPositions,
+      chartSettings,
     );
     final ascSign = ChartHelpers.getAscendantSignInt(
       widget.natalChart.baseChart,
@@ -163,7 +183,10 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
               ascendantSign: ascSign,
               style: chartStyle,
               size: chartSize,
-              transitPlanetsBySign: transitPlanetsMap,
+              // "Show Transits" actually hides the overlay layer.
+              transitPlanetsBySign: chartSettings.showTransits
+                  ? transitPlanetsMap
+                  : null,
               completeData: widget.natalChart,
             ),
           ),
@@ -257,12 +280,12 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            // Slider to scrub days within a +/- 1 year range
+            // Scrub range follows the "Days to show" transit setting.
             Row(
               children: [
-                const Text(
-                  '-1 Year',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(
+                  '-${_rangeLabel(_transitRangeDays)}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 Expanded(
                   child: Slider(
@@ -270,9 +293,12 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
                         .difference(DateTime.now())
                         .inDays
                         .toDouble()
-                        .clamp(-365.0, 365.0),
-                    min: -365.0,
-                    max: 365.0,
+                        .clamp(
+                          -_transitRangeDays.toDouble(),
+                          _transitRangeDays.toDouble(),
+                        ),
+                    min: -_transitRangeDays.toDouble(),
+                    max: _transitRangeDays.toDouble(),
                     onChanged: (val) {
                       setState(() {
                         _selectedDate = DateTime.now().add(
@@ -283,9 +309,9 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
                     },
                   ),
                 ),
-                const Text(
-                  '+1 Year',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(
+                  '+${_rangeLabel(_transitRangeDays)}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -469,7 +495,7 @@ class _TransitScreenState extends ConsumerState<TransitScreen> {
             ],
             transit.vedha!.affectedTransits.isNotEmpty
                 ? [
-                    'Mitigate obstructed planet effects with relevant stotras and charities.'
+                    'Mitigate obstructed planet effects with relevant stotras and charities.',
                   ]
                 : ['Current favorable planetary transits yield optimal results.'],
           ),

@@ -9,6 +9,11 @@ class ChartCustomization {
   ChartCustomization();
 
   /// Create from JSON
+  ///
+  /// Every field is read defensively: a single malformed entry used to throw a
+  /// [TypeError] that the caller swallowed, silently resetting the whole
+  /// configuration to defaults and letting the next save overwrite the user's
+  /// real settings.
   factory ChartCustomization.fromJson(Map<String, dynamic> json) {
     final settings = ChartCustomization();
 
@@ -22,13 +27,19 @@ class ChartCustomization {
       orElse: () => ColorScheme.classic,
     );
 
-    settings.showHouses = json['showHouses'] ?? true;
-    settings.showSigns = json['showSigns'] ?? true;
-    settings.showDegrees = json['showDegrees'] ?? true;
-    settings.showNakshatras = json['showNakshatras'] ?? false;
-    settings.showRetrograde = json['showRetrograde'] ?? true;
-    settings.showCombust = json['showCombust'] ?? true;
-    settings.showExaltedDebilitated = json['showExaltedDebilitated'] ?? true;
+    settings.showHouses = _readBool(json['showHouses'], fallback: true);
+    settings.showSigns = _readBool(json['showSigns'], fallback: true);
+    settings.showDegrees = _readBool(json['showDegrees'], fallback: true);
+    settings.showNakshatras = _readBool(
+      json['showNakshatras'],
+      fallback: false,
+    );
+    settings.showRetrograde = _readBool(json['showRetrograde'], fallback: true);
+    settings.showCombust = _readBool(json['showCombust'], fallback: true);
+    settings.showExaltedDebilitated = _readBool(
+      json['showExaltedDebilitated'],
+      fallback: true,
+    );
 
     settings.planetSize = PlanetSize.values.firstWhere(
       (e) => e.toString() == json['planetSize'],
@@ -40,48 +51,80 @@ class ChartCustomization {
       orElse: () => HouseSystem.placidus,
     );
 
-    settings.showHouseCusps = json['showHouseCusps'] ?? true;
-    settings.showHouseNumbers = json['showHouseNumbers'] ?? true;
-    settings.showBirthDetails = json['showBirthDetails'] ?? true;
-    settings.showAyanamsa = json['showAyanamsa'] ?? true;
-    settings.showCurrentDasha = json['showCurrentDasha'] ?? true;
+    settings.showHouseCusps = _readBool(json['showHouseCusps'], fallback: true);
+    settings.showHouseNumbers = _readBool(
+      json['showHouseNumbers'],
+      fallback: true,
+    );
+    settings.showBirthDetails = _readBool(
+      json['showBirthDetails'],
+      fallback: true,
+    );
+    settings.showAyanamsa = _readBool(json['showAyanamsa'], fallback: true);
+    settings.showCurrentDasha = _readBool(
+      json['showCurrentDasha'],
+      fallback: true,
+    );
 
-    settings.pdfIncludeD1 = json['pdfIncludeD1'] ?? true;
-    settings.pdfIncludeD9 = json['pdfIncludeD9'] ?? true;
-    settings.pdfIncludeDasha = json['pdfIncludeDasha'] ?? true;
-    settings.pdfIncludeKP = json['pdfIncludeKP'] ?? true;
-    settings.pdfIncludeVargas = json['pdfIncludeVargas'] ?? false;
-    settings.pdfIncludeInterpretations =
-        json['pdfIncludeInterpretations'] ?? false;
+    settings.pdfIncludeD1 = _readBool(json['pdfIncludeD1'], fallback: true);
+    settings.pdfIncludeD9 = _readBool(json['pdfIncludeD9'], fallback: true);
+    settings.pdfIncludeDasha = _readBool(
+      json['pdfIncludeDasha'],
+      fallback: true,
+    );
+    settings.pdfIncludeKP = _readBool(json['pdfIncludeKP'], fallback: true);
+    settings.pdfIncludeVargas = _readBool(
+      json['pdfIncludeVargas'],
+      fallback: false,
+    );
+    settings.pdfIncludeInterpretations = _readBool(
+      json['pdfIncludeInterpretations'],
+      fallback: false,
+    );
 
-    settings.dashaYearsToShow = json['dashaYearsToShow'] ?? 20;
-    settings.showAntardasha = json['showAntardasha'] ?? true;
-    settings.showPratyantardasha = json['showPratyantardasha'] ?? false;
+    settings.dashaYearsToShow = _readInt(
+      json['dashaYearsToShow'],
+      fallback: 20,
+      min: minDashaYears,
+      max: maxDashaYears,
+    );
+    settings.showAntardasha = _readBool(json['showAntardasha'], fallback: true);
+    settings.showPratyantardasha = _readBool(
+      json['showPratyantardasha'],
+      fallback: false,
+    );
 
-    settings.showTransits = json['showTransits'] ?? true;
-    settings.transitDaysToShow = json['transitDaysToShow'] ?? 30;
+    settings.showTransits = _readBool(json['showTransits'], fallback: true);
+    settings.transitDaysToShow = _readInt(
+      json['transitDaysToShow'],
+      fallback: 30,
+      min: minTransitDays,
+      max: maxTransitDays,
+    );
 
-    settings.ayanamsaSystem = json['ayanamsaSystem'] ?? 'newKP';
+    settings.ayanamsaSystem = _readString(
+      json['ayanamsaSystem'],
+      fallback: 'newKP',
+    );
 
-    settings.useTrueNode = json['useTrueNode'] ?? false;
-    settings.useTopocentric = json['useTopocentric'] ?? false;
-    settings.calculateSpeed = json['calculateSpeed'] ?? true;
-    settings.includeSpecialAspects = json['includeSpecialAspects'] ?? true;
-    settings.includeNodesInAspects = json['includeNodesInAspects'] ?? true;
-    settings.includeOuterPlanets = json['includeOuterPlanets'] ?? false;
-
-    settings.dailyTransitNotifications =
-        json['dailyTransitNotifications'] == true ||
-        json['dailyTransitNotifications'] == 'true';
-    if (json['notificationTime'] != null) {
-      try {
-        final parts = json['notificationTime'].toString().split(':');
-        if (parts.length >= 2) {
-          settings.notificationHour = int.tryParse(parts[0]) ?? 8;
-          settings.notificationMinute = int.tryParse(parts[1]) ?? 0;
-        }
-      } catch (_) {}
-    }
+    settings.useTrueNode = _readBool(json['useTrueNode'], fallback: false);
+    settings.useTopocentric = _readBool(
+      json['useTopocentric'],
+      fallback: false,
+    );
+    settings.calculateSpeed = _readBool(json['calculateSpeed'], fallback: true);
+    settings.includeSpecialAspects = _readBool(
+      json['includeSpecialAspects'],
+      fallback: true,
+    );
+    settings.includeNodesInAspects = _readBool(
+      json['includeNodesInAspects'],
+      fallback: true,
+    );
+    settings.includeOuterPlanets = _readBool(
+      json['includeOuterPlanets'],
+      fallback: false,
+    );
 
     settings.horaMethod = HoraMethod.values.firstWhere(
       (e) => e.toString() == json['horaMethod'],
@@ -101,21 +144,81 @@ class ChartCustomization {
     );
 
     // Brand Identity
-    settings.brandOrgName = json['brandOrgName'] ?? 'ASTRONAKSH';
-    settings.brandOrgTagline = json['brandOrgTagline'] ?? 'Vedic Insights';
-    settings.brandLogoPath = json['brandLogoPath'] ?? '';
-    settings.brandContactInfo = json['brandContactInfo'] ?? '';
-    settings.brandPrimaryColorHex = json['brandPrimaryColorHex'] ?? '#1A237E';
-    settings.brandAccentColorHex = json['brandAccentColorHex'] ?? '#B8860B';
-    settings.pdfPageMargins = json['pdfPageMargins'] ?? 'medium';
+    settings.brandOrgName = _readString(
+      json['brandOrgName'],
+      fallback: 'ASTRONAKSH',
+    );
+    settings.brandOrgTagline = _readString(
+      json['brandOrgTagline'],
+      fallback: 'Vedic Insights',
+    );
+    settings.brandLogoPath = _readString(json['brandLogoPath'], fallback: '');
+    settings.brandContactInfo = _readString(
+      json['brandContactInfo'],
+      fallback: '',
+    );
+    settings.brandPrimaryColorHex = _readString(
+      json['brandPrimaryColorHex'],
+      fallback: '#1A237E',
+    );
+    settings.brandAccentColorHex = _readString(
+      json['brandAccentColorHex'],
+      fallback: '#B8860B',
+    );
+    final margins = _readString(json['pdfPageMargins'], fallback: 'medium');
+    settings.pdfPageMargins = pdfMarginOptions.contains(margins)
+        ? margins
+        : 'medium';
     settings.pdfIncludeCover = json['pdfIncludeCover'] ?? true;
 
     // WebDAV Settings
-    settings.webdavUrl = json['webdavUrl'] ?? '';
-    settings.webdavUsername = json['webdavUsername'] ?? '';
-    settings.webdavPassword = _decodePassword(json['webdavPassword']?.toString() ?? '');
+    settings.webdavUrl = _readString(json['webdavUrl'], fallback: '');
+    settings.webdavUsername = _readString(json['webdavUsername'], fallback: '');
+    settings.webdavPassword = _decodePassword(
+      json['webdavPassword']?.toString() ?? '',
+    );
 
     return settings;
+  }
+
+  /// Inclusive bounds for the numeric settings that back a [Slider]. A value
+  /// outside the range makes the slider assert on the next build.
+  static const int minDashaYears = 5;
+  static const int maxDashaYears = 50;
+  static const int minTransitDays = 7;
+  static const int maxTransitDays = 90;
+  static const List<String> pdfMarginOptions = ['small', 'medium', 'large'];
+
+  static bool _readBool(Object? raw, {required bool fallback}) {
+    if (raw is bool) return raw;
+    if (raw is num) return raw != 0;
+    if (raw is String) {
+      if (raw.toLowerCase() == 'true') return true;
+      if (raw.toLowerCase() == 'false') return false;
+    }
+    return fallback;
+  }
+
+  static String _readString(Object? raw, {required String fallback}) {
+    return raw is String ? raw : fallback;
+  }
+
+  static int _readInt(
+    Object? raw, {
+    required int fallback,
+    int? min,
+    int? max,
+  }) {
+    var value = raw is int
+        ? raw
+        : raw is num
+        ? raw.toInt()
+        : raw is String
+        ? int.tryParse(raw) ?? fallback
+        : fallback;
+    if (min != null && value < min) value = min;
+    if (max != null && value > max) value = max;
+    return value;
   }
 
   static String _encodePassword(String raw) {
@@ -141,6 +244,7 @@ class ChartCustomization {
       return stored;
     }
   }
+
   // Chart Style Settings
   ChartStyle chartStyle = ChartStyle.northIndian;
   ColorScheme colorScheme = ColorScheme.classic;
@@ -200,10 +304,7 @@ class ChartCustomization {
   bool includeOuterPlanets = false;
 
   // Notification Settings
-  bool dailyTransitNotifications = true;
   // Using hours and minutes instead of TimeOfDay to remove Material dependency
-  int notificationHour = 8;
-  int notificationMinute = 0;
 
   // Varga Settings
   HoraMethod horaMethod = HoraMethod.parashara;
@@ -263,8 +364,6 @@ class ChartCustomization {
       'includeSpecialAspects': includeSpecialAspects,
       'includeNodesInAspects': includeNodesInAspects,
       'includeOuterPlanets': includeOuterPlanets,
-      'dailyTransitNotifications': dailyTransitNotifications,
-      'notificationTime': '$notificationHour:$notificationMinute',
       'horaMethod': horaMethod.toString(),
       'drekkanaMethod': drekkanaMethod.toString(),
       'navamshaMethod': navamshaMethod.toString(),
@@ -319,9 +418,6 @@ class ChartCustomization {
     includeSpecialAspects = true;
     includeNodesInAspects = true;
     includeOuterPlanets = false;
-    dailyTransitNotifications = true;
-    notificationHour = 8;
-    notificationMinute = 0;
     horaMethod = HoraMethod.parashara;
     drekkanaMethod = DrekkanaMethod.parashara;
     navamshaMethod = NavamshaMethod.parashara;
@@ -374,9 +470,6 @@ class ChartCustomization {
     bool? includeSpecialAspects,
     bool? includeNodesInAspects,
     bool? includeOuterPlanets,
-    bool? dailyTransitNotifications,
-    int? notificationHour,
-    int? notificationMinute,
     HoraMethod? horaMethod,
     DrekkanaMethod? drekkanaMethod,
     NavamshaMethod? navamshaMethod,
@@ -434,10 +527,6 @@ class ChartCustomization {
         includeNodesInAspects ?? this.includeNodesInAspects;
     result.includeOuterPlanets =
         includeOuterPlanets ?? this.includeOuterPlanets;
-    result.dailyTransitNotifications =
-        dailyTransitNotifications ?? this.dailyTransitNotifications;
-    result.notificationHour = notificationHour ?? this.notificationHour;
-    result.notificationMinute = notificationMinute ?? this.notificationMinute;
     result.horaMethod = horaMethod ?? this.horaMethod;
     result.drekkanaMethod = drekkanaMethod ?? this.drekkanaMethod;
     result.navamshaMethod = navamshaMethod ?? this.navamshaMethod;

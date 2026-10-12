@@ -1,4 +1,5 @@
 import 'package:jyotish/src/models/geographic_location.dart';
+import 'package:jyotish/src/models/calculation_flags.dart';
 import 'package:jyotish/src/astronomy/ephemeris_service.dart';
 
 /// Represents a period ruled by a specific Zodiac sign (Lagna/Ascendant).
@@ -48,19 +49,30 @@ class UdayaLagnaService {
     required DateTime date,
     required GeographicLocation location,
     required DateTime sunrise,
+    SiderealMode siderealMode = SiderealMode.lahiri,
   }) async {
     final periods = <UdayaLagnaPeriod>[];
     final nextSunrise = sunrise.add(const Duration(days: 1));
 
+    Future<double> getSiderealAscendant(DateTime time) async {
+      final houses = await _ephemerisService.calculateHouses(
+        dateTime: time,
+        location: location,
+        houseSystem: 'W',
+      );
+      final rawAsc = houses['ascmc']![0];
+      final ayanamsa = await _ephemerisService.getAyanamsa(
+        dateTime: time,
+        mode: siderealMode,
+        timezoneId: location.timezone,
+      );
+      return (rawAsc - ayanamsa + 360.0) % 360.0;
+    }
+
     var currentTime = sunrise;
 
     while (periods.length < 12 && currentTime.isBefore(nextSunrise)) {
-      final houses = await _ephemerisService.calculateHouses(
-        dateTime: currentTime,
-        location: location,
-      );
-
-      final ascendant = houses['ascmc']![0];
+      final ascendant = await getSiderealAscendant(currentTime);
       final currentRashiIndex = (ascendant / 30).floor() % 12;
 
       // Estimate minutes until next sign (approx 4 mins per degree)
@@ -79,11 +91,7 @@ class UdayaLagnaService {
           break;
         }
 
-        final checkHouses = await _ephemerisService.calculateHouses(
-          dateTime: nextTime,
-          location: location,
-        );
-        final nextAsc = checkHouses['ascmc']![0];
+        final nextAsc = await getSiderealAscendant(nextTime);
         final nextRashiIndex = (nextAsc / 30).floor() % 12;
 
         if (nextRashiIndex != currentRashiIndex) {

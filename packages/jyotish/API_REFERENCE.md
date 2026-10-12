@@ -11,31 +11,29 @@ A comprehensive API reference for the Jyotish Flutter library - production-ready
   - [Jyotish](#jyotish)
   - [GeographicLocation](#geographiclocation)
   - [CalculationFlags](#calculationflags)
-- [New in v2.14.0 — Natal Dosha Detection Engine](#new-in-v2140--natal-dosha-detection-engine)
-- [New in v2.13.0 — Natal & Raja Yoga Detection Engine](#new-in-v2130--natal-raja-yoga-detection-engine)
-- [New in v2.12.0 — Tajika Varshapal (Solar Return) Engine Suite](#new-in-v2120--tajika-varshapal-solar-return-engine-suite)
-- [New in v2.11.0 — Advanced Jyotish Feature Suite](#new-in-v2110--advanced-jyotish-feature-suite)
-- [New in v2.10.0 — Tree Shaking & Module Isolation](#new-in-v2100--tree-shaking--module-isolation)
-- [New in v2.9.0 & v2.9.1 — JSON, Sanskrit, Jaimini, and Julian Day](#new-in-v290--v291--json-sanskrit-jaimini-and-julian-day)
-- [New in v2.7.0 — Performance & Modernization](#new-in-v270--performance--modernization)
-- [New in v2.6.0 — High-Precision Eclipse Reporting](#new-in-v260--high-precision-eclipse-reporting)
-- [New in v2.5.0 — AstrologicalSystem](#new-in-v250--astrologicalsystem)
+- [New in v2.14.0 — Natal Dosha Detection Engine](#new-in-v2140-natal-dosha-detection-engine)
+- [New in v2.13.0 — Natal & Raja Yoga Detection Engine](#new-in-v2130-natal-raja-yoga-detection-engine)
+- [New in v2.12.0 — Tajika Varshapal (Solar Return) Engine Suite](#new-in-v2120-tajika-varshapal-solar-return-engine-suite)
+- [New in v2.11.0 — Advanced Jyotish Feature Suite](#new-in-v2110-advanced-jyotish-feature-suite)
+- [New in v2.10.0 — Tree Shaking & Module Isolation](#new-in-v2100-tree-shaking-module-isolation)
+- [New in v2.9.0 & v2.9.1 — JSON, Sanskrit, Jaimini, and Julian Day](#new-in-v290-v291-json-sanskrit-jaimini-and-julian-day)
+- [New in v2.7.0 — Performance & Modernization](#new-in-v270-performance-modernization)
+- [New in v2.6.0 — High-Precision Eclipse Reporting](#new-in-v260-high-precision-eclipse-reporting)
+- [New in v2.5.0 — AstrologicalSystem](#new-in-v250-astrologicalsystem)
 - [New in v2.4.0](#new-in-v240)
   - [Bhava Chalit (Cuspal Chart)](#bhava-chalit-cuspal-chart)
   - [Pancha-Vargeeya Maitri (5-fold Friendship)](#pancha-vargeeya-maitri)
   - [Ayanamsa Utility](#ayanamsa-utility)
   - [Reference Chart Test Suite](#reference-chart-test-suite)
-- [New in v2.5.0](#new-in-v250)
-  - [Ashtakavarga Shodhana (Reductions)](#ashtakavarga-shodhana-reductions)
-  - [BPHS Dasha Applicability](#bphs-dasha-applicability)
-  - [Shadbala Minimum Requirements](#shadbala-minimum-requirements)
 - [New in v2.3.0](#new-in-v230)
   - [Professional Features Suite](#professional-features-suite)
-  - [Graha Avastha & Strength Reports](#graha-avastha--strength-reports)
+  - [Graha Avastha & Strength Reports](#graha-avastha-strength-reports)
   - [Event Timing Engine](#event-timing-engine)
   - [Sarvatobhadra Chakra](#sarvatobhadra-chakra)
+  - [Tajaka Enhancements](#tajaka-enhancements)
 - [Services](#services)
   - [EphemerisService](#ephemerisservice)
+  - [EclipseService](#eclipseservice)
   - [VedicChartService](#vedicchartservice)
   - [DashaService](#dashaservice)
   - [VarshapalService](#varshapalservice)
@@ -91,7 +89,7 @@ A comprehensive API reference for the Jyotish Flutter library - production-ready
   - [PravishteInfo](#pravishteinfo)
   - [DashaResult](#dasharesult)
   - [Varshapal](#varshapal)
-  - [VarshapalPeriod](#varshapaperiod)
+  - [VarshapalPeriod](#varshapalperiod)
   - [Ashtakavarga](#ashtakavarga)
   - [VimshopakBala](#vimshopakbala)
   - [CombustionInfo](#combustioninfo)
@@ -136,7 +134,7 @@ A comprehensive API reference for the Jyotish Flutter library - production-ready
   - [PindaResult](#pindaresult)
   - [TransitSnapshot](#transitsnapshot)
   - [FavorablePeriod](#favorableperiod)
-  - [IshtaKashtaResult](#ishtakastharesult)
+  - [IshtaKashtaResult](#ishtakashtaresult)
   - [VimshopakStrength](#vimshopakstrength)
   - [PlanetaryFriendship](#planetaryfriendship)
   - [YogaPindaRating](#yogapindarating)
@@ -146,13 +144,9 @@ A comprehensive API reference for the Jyotish Flutter library - production-ready
   - [FullDoshaReport](#fulldoshareport)
   - [NatalYoga](#natalyoga)
 - [Enums](#enums)
-- [Professional Features (v2.3.0)](#professional-features-v230)
-- [New in v2.10.0 — Tree Shaking & Module Isolation](#new-in-v2100--tree-shaking--module-isolation)
-- [New in v2.9.0 & v2.9.1 — JSON, Sanskrit, Jaimini, and Julian Day](#new-in-v290--v291--json-sanskrit-jaimini-and-julian-day)
-- [New in v2.7.0 — Performance & Modernization](#new-in-v270--performance--modernization)
-- [New in v2.6.0 — High-Precision Eclipse Reporting](#new-in-v260--high-precision-eclipse-reporting)
 - [Error Handling](#error-handling)
 - [Best Practices](#best-practices)
+
 
 ---
 
@@ -217,6 +211,69 @@ await jyotish.initialize({String? ephemerisPath});
 | `clearCache()` | `void` | Clears all cached Swiss Ephemeris FFI calculations (planetary positions, houses, rise/set times) |
 | `loadTimezoneDatabase(bytes)` | `static void` | Dynamically loads a newer IANA zoneinfo database at runtime |
 
+#### Direct Service Access (`jyotish.<service>`)
+
+In addition to top-level helper methods, `Jyotish` exposes direct instances for all 44 domain services (also accessible via `jyotish.systems.<service>`):
+
+```dart
+// Direct service access
+final transitAspects = jyotish.transit.calculateTransitAspects(transitPos, natalChart);
+final sahams = jyotish.tajaka.calculateSahams(annualChart);
+final vedhas = jyotish.sarvatobhadra.getVedhaNakshatras(nakshatra);
+final sadeSati = await jyotish.specialTransit.calculateSadeSati(...);
+final nadi = jyotish.nadi.getNadiInfo(42);
+final bhavaLord = jyotish.bhavaBala.getHouseLord(chart, 1);
+```
+
+| Getter | Type | Description |
+|---|---|---|
+| `jyotish.ephemeris` | `EphemerisService` | Swiss Ephemeris FFI wrapper |
+| `jyotish.eclipse` | `EclipseService` | High-precision solar/lunar eclipse predictions |
+| `jyotish.chart` | `VedicChartService` | Vedic chart calculation and ascendant |
+| `jyotish.dasha` | `DashaService` | Vimshottari, Yogini, Kalachakra, Ashtottari |
+| `jyotish.varshapal` | `VarshapalService` | Tajaka annual solar return charts & Mudda dasha |
+| `jyotish.panchanga` | `PanchangaService` | Tithi, Vara, Nakshatra, Yoga, Karana |
+| `jyotish.ashtakavarga` | `AshtakavargaService` | BAV, SAV, Prastara, and Shodhana reductions |
+| `jyotish.aspect` | `AspectService` | Graha Drishti, orbs, and planetary aspects |
+| `jyotish.transit` | `TransitService` | Transit positions, events, aspects, windows |
+| `jyotish.specialTransit` | `SpecialTransitService` | Sade Sati, Dhaiya, Panchak tracking |
+| `jyotish.divisionalChart` | `DivisionalChartService` | D1-D60 and D249 divisional vargas |
+| `jyotish.shadbala` | `ShadbalaService` | Classical 6-fold planetary strength |
+| `jyotish.kp` | `KPService` | Krishnamurti Paddhati sub-lords & significators |
+| `jyotish.muhurta` | `MuhurtaService` | Auspicious timing, Abhijit, Brahma muhurta |
+| `jyotish.muhurtaScoring` | `MuhurtaScoringService` | 0-100% suitability activity scoring |
+| `jyotish.masa` | `MasaService` | Amanta/Purnimanta lunar months & Samvatsara |
+| `jyotish.sudarshanChakra`| `SudarshanChakraService` | Triple-perspective (Lagna, Moon, Sun) |
+| `jyotish.relationship` | `PlanetaryRelationshipService` | Panchadha Maitri & friendship matrix |
+| `jyotish.vedha` | `GocharaVedhaService` | Transit obstruction rules & remedies |
+| `jyotish.hora` | `HoraService` | Planetary hours |
+| `jyotish.choghadiya` | `ChoghadiyaService` | Day & night Choghadiya periods |
+| `jyotish.gowri` | `GowriPanchangamService` | South Indian Gowri Panchangam |
+| `jyotish.bhavaBala` | `BhavaBalaService` | 12 house strengths & category rankings |
+| `jyotish.chalit` | `BhavaChalitService` | Sripati / Placidus mid-cusp house shifts |
+| `jyotish.avastha` | `GrahaAvasthaService` | Baladi & Jagratadi avasthas |
+| `jyotish.yuddha` | `GrahaYuddhaService` | Planetary war victor, loser, and light deficit |
+| `jyotish.specialLagnas` | `SpecialLagnasService` | Bhava, Hora, Ghati, Varnada, Sree, Pranapada, Indu |
+| `jyotish.jaimini` | `JaiminiService` | Chara Karakas, Chara & Narayana Dashas |
+| `jyotish.arudha` | `ArudhaPadaService` | Arudha Lagna, Upapada, and house padas |
+| `jyotish.argala` | `ArgalaService` | Interventions and Virodha argala |
+| `jyotish.prashna` | `PrashnaService` | Horary sphutas (Trisphuta, Chatursphuta) |
+| `jyotish.houseStrength` | `HouseStrengthService` | Detailed bhava bala components |
+| `jyotish.strengthReport` | `StrengthReportService` | Comprehensive chart strength reports |
+| `jyotish.nadi` | `NadiService` | 150 Nadi amshas (Chandra Kala Nadi) |
+| `jyotish.progeny` | `ProgenyService` | Kshetra/Beeja sphuta, Sthira Karakas, D7 |
+| `jyotish.career` | `CareerAnalysisService` | D10 Dashamsha career indicators |
+| `jyotish.timing` | `EventTimingService` | Combined Dasha + Transit search windows |
+| `jyotish.sarvatobhadra` | `SarvatobhadraService` | 81-square Sarvatobhadra chakra vedhas |
+| `jyotish.tajaka` | `TajakaService` | Annual Tajaka yogas, Sahams, Panchavargiya |
+| `jyotish.yoga` | `YogaService` | 280+ natal and Raja yogas |
+| `jyotish.dosha` | `DoshaService` | Kala Sarpa, Manglik, Pitru, Guru Chandala |
+| `jyotish.compatibility` | `CompatibilityService` | Ashtakoota Guna Milan (36 points) |
+| `jyotish.panchangStrength`| `PanchangStrengthService` | Chandrabalam & Tarabalam |
+| `jyotish.udayaLagna` | `UdayaLagnaService` | Ascendant rising time intervals |
+| `jyotish.ritual` | `RitualService` | Agnivasa, Shivavasa, Homahuti |
+| `jyotish.astrologyTime` | `AstrologyTimeService` | Ghatis, Vighatis, Vedic time conversions |
+
 #### Planetary Position Methods
 
 | Method | Returns | Description |
@@ -232,7 +289,7 @@ await jyotish.initialize({String? ephemerisPath});
 | `calculateVedicChart({required dateTime, required location, houseSystem = 'W', includeOuterPlanets = false, flags?})` | `Future<VedicChart>` | Complete Vedic birth chart |
 | `getDivisionalChart({required rashiChart, required type, config?})` | `VedicChart` | Calculate divisional chart (D1-D60, D249) |
 | `calculateNatalChart(...)` | `Future<VedicChart>` | Legacy alias for `calculateVedicChart` |
-| `calculateSpecialLagnas(chart)` | `SpecialLagnas` | Calculates Bhava, Hora, Ghati, Varnada, Sree, Pranapada, and Indu Lagnas |
+| `calculateSpecialLagnas(chart, sunrise, {sunLongitudeAtSunrise})` | `SpecialLagnas` | Calculates Bhava, Hora, Ghati, Varnada, Sree, Pranapada, and Indu Lagnas |
 
 #### Aspect Methods
 
@@ -435,6 +492,7 @@ No initialization required — call directly on the class.
 | `Jyotish.localToUtc(DateTime localDt, String zoneId)` | `DateTime` | Convert local time to UTC using IANA timezone |
 | `Jyotish.getTimezoneOffset(DateTime date, String zoneId)` | `Duration` | UTC offset for a timezone on a specific date (DST-aware) |
 | `Jyotish.availableTimezones` | `List<String>` | All available IANA timezone identifiers |
+| `Jyotish.getCurrentVarshaNumber(DateTime date, {int? referenceYear})` | `int` | Current Jovian Samvatsara varsha number (1-60, 1987 Prabhava reference epoch) |
 
 #### Sudarshan Chakra & Bhava Bala
 
@@ -797,7 +855,7 @@ CalculationFlags.withNodeType(NodeType nodeType);
 > **v2.5.0**: All factory constructors now carry an explicit `AstrologicalSystem` tag.
 > `CalculationFlags.kp()` sets `system: AstrologicalSystem.kp`; all others set
 > `system: AstrologicalSystem.traditional`. Use `.isKP` / `.isTraditional` getters to
-> branch logic at runtime. See [New in v2.5.0](#new-in-v250--astrologicalsystem).
+> branch logic at runtime. See [New in v2.5.0](#new-in-v250-astrologicalsystem).
 
 #### Main Constructor
 
@@ -821,7 +879,40 @@ CalculationFlags({
 | `siderealMode` | `SiderealMode` | Ayanamsa mode |
 | `useTopocentric` | `bool` | Use topocentric calculations |
 | `calculateSpeed` | `bool` | Calculate planetary speed |
-| `nodeType` | `NodeType` | Mean or True Node |
+---
+
+## New in v2.3.0
+
+### Professional Features Suite
+
+The "Professional Features" suite adds high-level analysis engines that aggregate core library data into predictive and strength-based reports.
+
+### Graha Avastha & Strength Reports
+
+Strength analysis now considers the **Avastha** (state) of the planet:
+- **Baladi Avastha**: 5 states (Bala, Kumara, Yuva, Vriddha, Mrita) based on longitude parity in signs.
+- **Jagratadi Avastha**: 3 states (Jagrat, Swapna, Sushupti) based on dignity.
+
+The `StrengthReport` aggregates Shadbala, Vimshopaka, Dignity, and Avastha into a single score.
+
+### Event Timing Engine
+
+The `EventTimingService` searches for optimal windows by scoring:
+1. **Dasha Favorability**: Active Dasha/Antardasha lords.
+2. **Transit Support**: Transit positions of Dasha lords.
+3. **Gochara Vedha**: Obstructions from other transiting planets.
+4. **House Activation**: Transits through houses relevant to the event category (e.g., 2nd/7th for Marriage).
+
+### Sarvatobhadra Chakra
+
+A comprehensive transit analysis grid. It maps the 27 Nakshatras onto a square lattice and identifies **Vedha** (aspects) cast by transiting planets onto natal points (Moon, Ascendant, Sun).
+
+### Tajaka Enhancements
+
+Expands the annual `Varshapal` chart with:
+- **Muntha**: The progressed Ascendant sign for the year.
+- **Sahams**: Arabic Parts (Punya, Vidya, etc.) calculated from Sun/Moon/Ascendant.
+- **Tajaka Yogas**: Specific annual aspects like *Itthasala* (applying) and *Ishrafa* (separating).
 
 ---
 
@@ -956,42 +1047,6 @@ final service = DashaService();
 
 ---
 
-## New in v2.3.0
-
-### Professional Features Suite
-
-The "Professional Features" suite adds high-level analysis engines that aggregate core library data into predictive and strength-based reports.
-
-### Graha Avastha & Strength Reports
-
-Strength analysis now considers the **Avastha** (state) of the planet:
-- **Baladi Avastha**: 5 states (Bala, Kumara, Yuva, Vriddha, Mrita) based on longitude parity in signs.
-- **Jagratadi Avastha**: 3 states (Jagrat, Swapna, Sushupti) based on dignity.
-
-The `StrengthReport` aggregates Shadbala, Vimshopaka, Dignity, and Avastha into a single score.
-
-### Event Timing Engine
-
-The `EventTimingService` searches for optimal windows by scoring:
-1. **Dasha Favorability**: Active Dasha/Antardasha lords.
-2. **Transit Support**: Transit positions of Dasha lords.
-3. **Gochara Vedha**: Obstructions from other transiting planets.
-4. **House Activation**: Transits through houses relevant to the event category (e.g., 2nd/7th for Marriage).
-
-### Sarvatobhadra Chakra
-
-A comprehensive transit analysis grid. It maps the 27 Nakshatras onto a square lattice and identifies **Vedha** (aspects) cast by transiting planets onto natal points (Moon, Ascendant, Sun).
-
-### Tajaka Enhancements
-
-Expands the annual `Varshapal` chart with:
-- **Muntha**: The progressed Ascendant sign for the year.
-- **Sahams**: Arabic Parts (Punya, Vidya, etc.) calculated from Sun/Moon/Ascendant.
-- **Tajaka Yogas**: Specific annual aspects like *Itthasala* (applying) and *Ishrafa* (separating).
-
-
----
-
 ### VarshapalService
 
 Varshapal (Annual Chart) calculations. The annual chart is calculated from the birthday each year.
@@ -1011,7 +1066,12 @@ final service = VarshapalService(ephemerisService);
 | `getVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateVarshapal` |
 | `calculateCurrentVarshapal(...)` | `Future<Varshapal>` | Alias for `calculateCurrentVarshapal` (corrected description/redundancy check) |
 | `getSamvatsaraName(int yearNumber)` | `static String` | Gets Samvatsara name from year number (1-60) |
-| `getCurrentVarshaNumber(DateTime date, {int? referenceYear})` | `static int` | Gets current varsha number (1-60). `referenceYear` defaults to `DateTime.now().year`; reference epoch: 1983 = Prabhava (year 1). |
+| `getCurrentVarshaNumber(DateTime date, {int? referenceYear})` | `static int` | Gets current varsha number (1-60). `referenceYear` defaults to `DateTime.now().year`; reference epoch: 1987 = Prabhava (year 1). |
+
+> **Classical Parity & Accuracy (v2.20.7)**:
+> - **Prabhava Epoch**: Fixed Jovian 60-year North Indian cycle anchor to 1987 = Prabhava (year 1).
+> - **Hayanaratna Bounds**: Egyptian term (Hadda) boundaries strictly follow classical Tajaka *Hayanaratna* (e.g., Gemini, Leo, Scorpio distributions) rather than Western Ptolemaic variants.
+> - **Diurnal Sect**: IsDay calculation accurately reflects the birth chart's diurnal/nocturnal sectarian status for Panchadhikari selection.
 
 ---
 
@@ -1144,6 +1204,11 @@ final service = TransitService(ephemerisService);
 |--------|---------|-------------|
 | `calculateTransits({natalChart, transitDateTime, location})` | `Future<Map<Planet, TransitInfo>>` | Transit positions |
 | `findTransitEvents({natalChart, config, location})` | `Future<List<TransitEvent>>` | Transit events |
+| `calculateTransitAspects(transitPositions, natalChart)` | `List<TransitAspect>` | Calculate transit-to-natal aspects |
+
+> **Dynamic Windowing & Node Traversal (v2.20.7)**:
+> - **Transit Events**: `findTransitEvents` dynamically calculates step spans via `exactOrb / relativeSpeed`, preventing fast bodies (like Moon) from skipping window boundaries. `exactOrb` is strictly non-negative.
+> - **Retrograde Nodes**: Rahu and Ketu transit step projections correctly advance backward through the zodiac.
 
 ---
 
@@ -1159,6 +1224,16 @@ final service = SpecialTransitService(ephemerisService);
 |--------|---------|-------------|
 | `calculateSpecialTransits({natalChart, checkDate?, location})` | `Future<SpecialTransits>` | All special transits |
 | `predictSadeSatiPeriods(natalChart, {yearsBefore?, yearsAfter?})` | `Future<List<SadeSatiPeriod>>` | Past/future Sade Sati |
+| `calculateSadeSati({natalMoonLongitude, transitSaturnLongitude, checkDate?, signEntryAccuracy?})` | `Future<SadeSatiStatus>` | Calculate Sade Sati status, phase (Rising/Peak/Setting), and dates |
+| `calculateDhaiya({natalMoonLongitude, transitSaturnLongitude, checkDate?, signEntryAccuracy?})` | `Future<DhaiyaStatus>` | Calculate Dhaiya (Small Panoti / Kantaka Shani in 4th or 8th house) |
+| `calculatePanchak({transitMoonLongitude, checkDate})` | `PanchakStatus` | Check Panchak transit status (Dhanishta 3rd/4th pada through Revati) |
+
+> **1-Based Classical House Counting (v2.20.7)**:
+> House-from-Moon is calculated via `((saturnSign - moonSign) % 12 + 12) % 12 + 1`. This accurately maps:
+> - **12th House**: Rising phase (first 2.5 years)
+> - **1st House**: Peak phase (Janma Shani, middle 2.5 years)
+> - **2nd House**: Setting phase (last 2.5 years)
+> - **4th & 8th Houses**: Kantaka Dhaiya and Ashtama Shani
 
 ---
 
@@ -1217,7 +1292,7 @@ Krishnamurti Paddhati (KP) system calculations.
 > assert that the supplied chart was created with `CalculationFlags.kp()`. A descriptive
 > `StateError` is thrown if a traditional-system chart is passed by mistake. This prevents
 > the silent bug of KP Sub-Lord tables being calculated against Lahiri ayanamsa.
-> See [New in v2.5.0](#new-in-v250--astrologicalsystem) for the migration guide.
+> See [New in v2.5.0](#new-in-v250-astrologicalsystem) for the migration guide.
 
 ```dart
 final service = KPService(ephemerisService);
@@ -1274,6 +1349,24 @@ final service = MuhurtaService();
 | `getRahuVasa({nakshatra})` | `RahuVasaInfo` | Rahu's residence (Sky/Earth/Underworld) based on Nakshatra |
 | `getChandraVasa({moonLongitude})` | `ChandraVasaInfo` | Moon's directional residence (East/South/West/North) based on longitude |
 | `calculateVarjyam({nakshatra, nakshatraStart, nakshatraEnd})` | `TimePeriod?` | Varjyam (Thyajya) inauspicious 4-ghati window within a Nakshatra transit |
+
+---
+
+### MuhurtaScoringService
+
+Auspicious Muhurtas Comprehensive Scoring Engine that calculates time suitability scores (0-100%) and scans time ranges.
+
+```dart
+final service = MuhurtaScoringService(muhurtaService);
+// Or via Jyotish facade:
+// final score = await jyotish.muhurtaScoring.calculateScore(...);
+// final score = await jyotish.calculateMuhurtaScore(...);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateScore({required dateTime, required location, birthChart?, category?, requiredActivity?})` | `Future<MuhurtaScore>` | 0-100% composite suitability score combining Tithi, Nakshatra, Vara, Yoga, Karana, and optional Tarabalam/Chandrabalam |
+| `scanSuitabilityWindows({required startDate, required endDate, required location, birthChart?, interval, category?})` | `Future<List<MuhurtaSuitabilityWindow>>` | Scans time range for optimal timing windows, sorted descending by score |
 
 ---
 
@@ -1428,6 +1521,79 @@ final service = BhavaBalaService(shadbalaService);
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `calculateBhavaBala(chart)` | `Future<Map<int, BhavaBalaResult>>` | Strength for all 12 houses |
+| `getBhavaStrengthCategory(strength)` | `BhavaStrengthCategory` | Category ranking for house strength |
+| `getHouseLord(chart, houseNumber)` | `Planet` | Ruling planet of a house |
+| `calculateBhavaDigBala(houseNumber, ascendant)` | `double` | Directional strength of a house |
+
+---
+
+### BhavaChalitService
+
+Computes the Bhava Chalit (Cuspal) chart using mid-cusp boundaries to redistribute planets into their true bhava positions.
+
+```dart
+final service = const BhavaChalitService();
+// Or via Jyotish facade:
+// final chalit = jyotish.chalit.calculateBhavaChalit(rashiChart);
+// final chalit = jyotish.getBhavaChalit(rashiChart);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateBhavaChalit(VedicChart chart)` | `BhavaChalit` | Computes mid-cusp boundaries for all 12 bhavas and determines planet house shifts |
+
+---
+
+### GrahaAvasthaService
+
+Calculates planetary states including Baladi Avastha (age/infancy states) and Jagratadi Avastha (states of consciousness).
+
+```dart
+final service = const GrahaAvasthaService();
+// Or via Jyotish facade:
+// final avastha = jyotish.avastha.calculateAvastha(planetInfo);
+// final avasthas = jyotish.getAllGrahaAvasthas(chart);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateAllAvasthas(VedicChart chart)` | `Map<Planet, GrahaAvastha>` | Calculates Baladi, Jagratadi, and Deeptadi avasthas for all non-node planets |
+| `calculateAvastha(VedicPlanetInfo planetInfo)` | `GrahaAvastha` | Calculates composite avastha and effective strength factor (0.25 - 1.0) |
+
+---
+
+### GrahaYuddhaService
+
+Detects planetary war (*Graha Yuddha*) occurring between true planets (Mars, Mercury, Jupiter, Venus, Saturn) within 1° longitude.
+
+```dart
+final service = const GrahaYuddhaService();
+// Or via Jyotish facade:
+// final war = jyotish.yuddha.checkChartForWar(chart);
+// final war = jyotish.checkGrahaYuddha(chart);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `evaluateWar(PlanetPosition p1, PlanetPosition p2, {double? diameter1, double? diameter2})` | `GrahaYuddhaResult?` | Evaluates planetary war between two planets based on northern latitude/declination and apparent diameter |
+| `checkChartForWar(VedicChart chart)` | `List<GrahaYuddhaResult>` | Scans complete birth chart for any pairs of conflicting planets |
+
+---
+
+### SpecialLagnasService
+
+Calculates special mathematical and time-proportionate ascendants (Bhava, Hora, Ghati, Varnada, Sree, Pranapada, and Indu Lagnas).
+
+```dart
+final service = const SpecialLagnasService();
+// Or via Jyotish facade:
+// final lagnas = jyotish.specialLagnas.calculateSpecialLagnas(chart, sunrise, sunLongitudeAtSunrise: sunLong);
+// final lagnas = jyotish.calculateSpecialLagnas(chart, sunrise);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateSpecialLagnas(VedicChart chart, DateTime sunrise, {double? sunLongitudeAtSunrise})` | `SpecialLagnas` | Calculates all special lagnas anchored at sunrise. Sun position is rewound to sunrise using `longitudeSpeed` unless pinned via `sunLongitudeAtSunrise`. |
 
 ---
 
@@ -1539,20 +1705,50 @@ final service = HouseStrengthService(shadbalaService);
 
 ---
 
-### NadiService
+### StrengthReportService
 
-Nadi astrology identification system.
+Aggregates all planetary strength metrics (Shadbala, Vimshopaka, Dig Bala, Avasthas, Ishtaphala, Kashtaphala) into a unified report.
 
 ```dart
-final service = NadiService();
+final service = StrengthReportService(
+  shadbalaService: shadbalaService,
+  houseStrengthService: houseStrengthService,
+  grahaAvasthaService: grahaAvasthaService,
+  strengthAnalysisService: strengthAnalysisService,
+);
+// Or via Jyotish facade:
+// final report = await jyotish.strengthReport.generateChartReport(chart);
+// final report = await jyotish.getStrengthReport(chart);
 ```
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `calculateNadiChart(chart)` | `NadiChart` | Complete Nadi positions |
-| `getNadiFromLongitude(longitude)` | `NadiInfo` | Nadi for a longitude |
-| `getNadiInterpretation(nadiNumber)` | `String` | Nadi prediction text |
+| `generateChartReport(VedicChart chart)` | `Future<ChartStrengthReport>` | Full composite report ranking all 7 classical planets by strength and minimum threshold compliance |
+| `getPlanetReport(Planet planet, VedicChart chart)` | `Future<PlanetStrengthReport>` | Detailed strength breakdown for a single classical planet |
+
+---
+
+### NadiService
+
+Nadi astrology identification system (150 Nadi Amshas based on Chandra Kala Nadi / Deva Keralam).
+
+```dart
+final service = const NadiService();
+// Or via Jyotish facade:
+// final info = jyotish.nadi.getNadiInfo(42);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateNadiChart(chart)` | `NadiChart` | Complete Nadi positions for all planets and ascendant |
+| `getNadiFromLongitude(longitude)` | `NadiInfo` | Nadi for a specific ecliptic longitude |
+| `getNadiInterpretation(nadiNumber)` | `String` | Classical Nadi prediction and trait text |
 | `identifyNadiSeed(nakshatra, pada)` | `NadiSeedResult` | Primary Nadi seed |
+| `getNadiInfo(int absoluteNadiNumber)` | `NadiInfo` | Comprehensive Nadi info by absolute number (1-150) |
+| `getNadiType(int absoluteNadiNumber)` | `NadiType` | Nadi lineage classification |
+| `getNadiRulingPlanet(int absoluteNadiNumber)` | `Planet` | Ruling planet of the Nadi Amsha |
+| `getNadiElement(int absoluteNadiNumber)` | `String` | Classical element (Fire, Earth, Air, Water) |
+| `getNadiCharacteristics(int absoluteNadiNumber)` | `List<String>` | Personality and life path characteristics |
 
 **Nadi Types**: Agasthiya, Bhrigu, Saptarshi, Nandi, Bharga, Chandra
 
@@ -1594,17 +1790,99 @@ final service = ProgenyService();
 
 ---
 
+### CareerAnalysisService
+
+Analyzes Dashamsha (D10) divisional chart to identify career indications, professional strengths, and dominant karmic spheres.
+
+```dart
+final service = const CareerAnalysisService();
+// Or via Jyotish facade:
+// final career = jyotish.career.analyzeCareer(d10Chart);
+// final career = jyotish.getD10CareerAnalysis(natalChart: chart);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `analyzeCareer(VedicChart d10Chart)` | `D10CareerAnalysis` | Analyzes 10th house lord, exalted/moolatrikona placements in D10, and provides career domain suggestions |
+
+---
+
+### EventTimingService
+
+Combines Vimshottari Dasha periods and Planetary Transits to locate optimal timing windows for life events (career, marriage, finance, health).
+
+```dart
+final service = EventTimingService(
+  dashaService: dashaService,
+  gocharaVedhaService: gocharaVedhaService,
+  ephemerisService: ephemerisService,
+);
+// Or via Jyotish facade:
+// final windows = await jyotish.timing.findEventTimingWindows(request);
+// final windows = await jyotish.findEventTimingWindows(request);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `findEventTimingWindows(EventTimingRequest request)` | `Future<List<EventTimingWindow>>` | Searches a date interval for favorable combinations of active Dasha lords and unobstructed transits |
+
+---
+
+### SarvatobhadraService
+
+Analyzes transit aspects (*Vedhas*) on the classical 81-square Sarvatobhadra Chakra lattice.
+
+```dart
+final service = const SarvatobhadraService();
+// Or via Jyotish facade:
+// final analysis = await jyotish.sarvatobhadra.analyze(natalChart: chart, transitPositions: transits);
+// final analysis = await jyotish.analyzeSarvatobhadra(...);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `analyze({required VedicChart natalChart, required Map<Planet, TransitInfo> transitPositions})` | `Future<SarvatobhadraAnalysis>` | Complete Sarvatobhadra grid evaluation detecting front, right, and left vedhas on natal Moon, Ascendant, and Sun |
+| `getVedhaNakshatras(int nakshatra)` | `List<int>` | Returns the aspected nakshatras on the 81-square grid |
+| `getNakshatra(double longitude)` | `int` | Converts ecliptic longitude to nakshatra index (0-26) |
+
+---
+
+### TajakaService
+
+Annual solar return chart (*Varshapal*) enhancements including Muntha, Sahams (Arabic Parts), Panchavargiya Bala, and Tajaka yogas.
+
+```dart
+final service = const TajakaService();
+// Or via Jyotish facade:
+// final sahams = jyotish.tajaka.calculateSahams(annualChart);
+// final yogas = jyotish.tajaka.detectYogas(annualChart, Planet.sun, Planet.jupiter);
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculateMuntha({required int age, required int birthAscendantSign})` | `int` | Progressed Muntha sign index (0-11) for the annual year |
+| `calculateSahams(VedicChart annualChart)` | `List<Saham>` | Calculates classical Arabic Parts (Punya, Vidya, Yashas, Mitra, etc.) |
+| `calculatePanchavargiyaBala(VedicChart annualChart)` | `Map<Planet, PanchavargiyaBala>` | Five-fold strength for all planets in the annual chart |
+| `detectYogas(VedicChart annualChart, Planet planet1, Planet planet2)` | `List<TajakaYoga>` | Detects annual Tajaka yogas (Ithasala, Ishrafa, Nakta, Yamaya, etc.) |
+| `enhanceAnnualChart({required VedicChart natalChart, required VedicChart annualChart, required int age})` | `TajakaEnhancement` | Combined annual analysis bundling Muntha, Sahams, and active yogas |
+
+---
+
 ### YogaService
 
 A comprehensive yoga detection module to identify natal, Raja, and Nabhasa yogas at par with PyJHora.
 
 ```dart
-final service = YogaService();
+final service = const YogaService();
 ```
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `detectNatalYogas(chart)` | `List<NatalYoga>` | Detects 50+ core solar, lunar, Nabhasa, and Raja yogas |
+| `detectNatalYogas(chart)` | `List<NatalYoga>` | Detects 280+ classical solar, lunar, Nabhasa, and Raja yogas |
+
+> **Classical Parity & Accuracy (v2.20.7)**:
+> - **Vajra & Yava Yogas**: Evaluated using authentic classical presence rules per BPHS / PyJHora (benefics in 1st/7th and malefics in 4th/10th for Vajra; vice versa for Yava).
+> - **Vipareetha Raja Yoga**: Strictly enforces cross-placement (lords of 6th, 8th, or 12th must occupy alternate dusthanas rather than self-placement).
 
 #### Example Usage
 ```dart
@@ -2688,6 +2966,93 @@ This differs from the old sequential block-of-9 approach which was incorrect.
 
 ---
 
+### CompatibilityReport
+
+Comprehensive marriage compatibility analysis report with detailed breakdown and recommendations.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `result` | `CompatibilityResult` | Composite compatibility result and Guna scores |
+| `recommendations` | `List<String>` | Astrological recommendations |
+| `strengths` | `List<String>` | High-scoring affinity areas |
+| `challenges` | `List<String>` | Low-scoring or afflicted areas requiring remedies |
+
+---
+
+### GrahaYuddha
+
+Represents the outcome of a planetary war (*Graha Yuddha*), also aliased as `GrahaYuddhaResult`.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `planet1` | `Planet` | First competing planet |
+| `planet2` | `Planet` | Second competing planet |
+| `winner` | `Planet` | Victor of the planetary war |
+| `loser` | `Planet` | Defeated planet in the war |
+| `longitudeDifference` | `double` | Ecliptic separation in degrees (< 1.0°) |
+| `winnerDeclination` | `double` | Declination/latitude of victor |
+| `loserDeclination` | `double` | Declination/latitude of loser |
+
+---
+
+### SpecialLagnas
+
+Container for all sunrise-anchored special mathematical ascendants.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `bhavaLagna` | `double` | Bhava Lagna longitude |
+| `horaLagna` | `double` | Hora Lagna longitude (wealth and resources) |
+| `ghatiLagna` | `double` | Ghati Lagna longitude (power and status) |
+| `varnadaLagna` | `double` | Varnada Lagna longitude |
+| `sreeLagna` | `double` | Sree Lagna longitude (auspiciousness) |
+| `pranapadaLagna` | `double` | Pranapada Lagna longitude (vitality) |
+| `induLagna` | `double` | Indu Lagna longitude (financial prosperity) |
+
+---
+
+### PrastaraResult
+
+Eight-fold Prastara Ashtakavarga grid showing individual contributor bindus across all 12 signs.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `planet` | `Planet` | Planet evaluated |
+| `matrix` | `Map<Planet, List<int>>` | 8 rows (7 planets + Ascendant) by 12 sign columns of 0/1 bindus |
+| `columnSums` | `List<int>` | Total bindus in each sign (matching Bhinna Ashtakavarga) |
+
+---
+
+### FullDoshaReport
+
+Comprehensive natal afflictions report aggregating 8 major classical doshas.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `kalaSarpa` | `KalaSarpaDoshaResult` | Kala Sarpa evaluation and type |
+| `manglik` | `ManglikDoshaResult` | Manglik Dosha evaluation with 17 Raman exceptions |
+| `pitru` | `PitruDoshaResult` | Ancestral affliction status |
+| `guruChandala` | `GuruChandalaDoshaResult` | Jupiter-Node conjunction affliction |
+| `gandaMoola` | `GandaMoolaDoshaResult` | Sandhi/junction nakshatra birth |
+| `kalathra` | `KalathraDoshaResult` | Spouse/partner house afflictions |
+| `ghata` | `ConjunctionDoshaResult` | Mars-Saturn conjunction dosha |
+| `shrapit` | `ConjunctionDoshaResult` | Saturn-Rahu conjunction dosha |
+
+---
+
+### NatalYoga
+
+Detailed representation of an identified natal, Raja, or Nabhasa yoga.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `String` | Classical name of the yoga (e.g. 'Gaja Kesari', 'Hamsa') |
+| `category` | `YogaCategory` | Category (Raja, Dhana, Nabhasa, Solar, Lunar, etc.) |
+| `isPresent` | `bool` | Whether the yoga criteria are fully satisfied in the chart |
+| `description` | `String` | Formation rules and classical criteria |
+| `benefits` | `String` | Astrological effects and auspicious results |
+| `explanation` | `String` | Specific chart placements that formed this yoga |
+
 ---
 
 ## New in v2.5.0 — AstrologicalSystem
@@ -3640,39 +4005,6 @@ final service = RitualService();
 
 ---
 
-### MuhurtaScoringService
-
-Auspicious Muhurtas Comprehensive Scoring Engine that calculates time suitability scores (0-100%) and scans time ranges.
-
-```dart
-final service = MuhurtaScoringService(panchangaService, panchangStrengthService);
-// Or use via Jyotish facade (preferred):
-// jyotish.calculateMuhurtaScore(...)
-// jyotish.scanMuhurtaSuitability(...)
-```
-
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `calculateMuhurtaScore({dateTime, location, birthNakshatraIndex?, birthRashiIndex?})` | `Future<MuhurtaScoreResult>` | Calculates overall suitability score (0-100) combining Tithi, Nakshatra, Weekday (Vara), Yoga, Karana, and optional native Tarabalam/Chandrabalam factors. |
-| `scanMuhurtaSuitability({startDateTime, endDateTime, location, step, birthNakshatraIndex?, birthRashiIndex?})` | `Future<List<MuhurtaScoreResult>>` | Scans a time window for the best times, returning results sorted descending by score. |
-
-**MuhurtaScoreResult properties:**
-
-| Property | Type | Description |
-|---|---|---|
-| `dateTime` | `DateTime` | Date and time evaluated |
-| `panchanga` | `Panchanga` | Raw Panchanga data for the time |
-| `tithiScore` | `double` | Score contributed by Tithi (max 20) |
-| `nakshatraScore` | `double` | Score contributed by Nakshatra (max 20) |
-| `varaScore` | `double` | Score contributed by Vara/Weekday (max 15) |
-| `yogaScore` | `double` | Score contributed by Yoga (max 10) |
-| `karanaScore` | `double` | Score contributed by Karana (max 10) |
-| `tarabalamScore` | `double?` | Score contributed by native Tarabalam (max 15, null if not provided) |
-| `chandrabalamScore` | `double?` | Score contributed by native Chandrabalam (max 10, null if not provided) |
-| `finalScore` | `double` | Final combined percentage score (0.0 - 100.0) |
-
----
-
 ### AstrologyTimeService
 
 High-precision historical timezone conversion using the IANA/Olson database. All methods are **static** — no instantiation required.
@@ -3746,26 +4078,6 @@ final nadi = jyotish.systems.nadi;
 | `jyotish.systems.panchanga` | `PanchangaService` | Tithi, Nakshatra, Yoga, Karana, and Vara astronomical calculations |
 | `jyotish.systems.ephemeris` | `EphemerisService` | Direct high-precision Swiss Ephemeris calculation engine |
 | `jyotish.systems.eclipse` | `EclipseService` | Global and local solar/lunar eclipse predictions |
-
----
-
-### GrahaYuddhaService
-
-Scans for Planetary Wars (*Graha Yuddha*) occurring between true planets (Mars, Mercury, Jupiter, Venus, Saturn) when separated by less than $1^\circ$ in ecliptic longitude.
-
-```dart
-final war = jyotish.checkGrahaYuddha(chart);
-// Or via service:
-final war = jyotish.systems.grahaYuddha.checkGrahaYuddha(chart);
-
-if (war != null) {
-  print('War between ${war.planet1.displayName} and ${war.planet2.displayName}');
-  print('Winner: ${war.winnerId.displayName}');
-  print('Longitude difference: ${war.longitudeDifference.toStringAsFixed(2)}°');
-  print('Planet 1 Declination: ${war.planet1Declination}');
-  print('Planet 2 Declination: ${war.planet2Declination}');
-}
-```
 
 ---
 

@@ -149,13 +149,19 @@ class PlanetPosition {
   }
 
   /// Gets the zodiac sign (0-11, where 0=Aries, 1=Taurus, etc.).
-  int get zodiacSignIndex => (longitude / 30).floor() % 12;
+  int get zodiacSignIndex {
+    final norm = (longitude % 360.0 + 360.0) % 360.0;
+    return (norm / 30).floor() % 12;
+  }
 
   /// Gets the zodiac sign name.
   String get zodiacSign => _zodiacSigns[zodiacSignIndex];
 
   /// Gets the position within the zodiac sign (0.0 - 30.0 degrees).
-  double get positionInSign => longitude % 30;
+  double get positionInSign {
+    final norm = (longitude % 360.0 + 360.0) % 360.0;
+    return norm % 30;
+  }
 
   /// Gets the position in degrees, minutes, and seconds within the sign.
   Map<String, dynamic> get positionInSignDMS {

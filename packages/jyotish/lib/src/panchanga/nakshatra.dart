@@ -82,7 +82,7 @@ class NakshatraInfo {
   ];
 
   static const double abhijitStart = 276.6666667;
-  static const double abhijitEnd = 286.6666667;
+  static const double abhijitEnd = 280.8888889;
 
   static final Map<int, Planet> nakshatraDashaLords = {
     1: Planet.ketu,

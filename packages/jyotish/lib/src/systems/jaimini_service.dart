@@ -5,6 +5,8 @@ import 'package:jyotish/src/models/vedic_chart.dart';
 
 /// Service for Jaimini astrology calculations (Karakamsa, Rashi Drishti).
 class JaiminiService {
+  const JaiminiService();
+
   /// Returns all Chara Karakas ranked from highest to lowest degree.
   ///
   /// [useEightKarakaScheme] - if true (default), uses 8 candidates including Rahu.
@@ -195,10 +197,17 @@ class JaiminiService {
   }
 
   List<Planet> _getPlanetsInSign(VedicChart chart, Rashi sign) {
-    return chart.planets.entries
+    final planets = chart.planets.entries
         .where((e) => Rashi.fromLongitude(e.value.longitude) == sign)
         .map((e) => e.key)
         .toList();
+    if (Rashi.fromLongitude(chart.rahu.longitude) == sign) {
+      planets.add(chart.rahu.position.planet);
+    }
+    if (Rashi.fromLongitude(chart.ketu.longitude) == sign) {
+      planets.add(chart.ketu.position.planet);
+    }
+    return planets;
   }
 }
 

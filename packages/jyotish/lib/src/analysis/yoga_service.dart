@@ -9,6 +9,10 @@ class YogaService {
   const YogaService();
 
   /// Gets the house number (1-12) of a planet.
+  ///
+  /// The trailing `?? 1` is an unreachable defensive branch: callers go through
+  /// [detectNatalYogas], which first rejects any chart missing a traditional
+  /// planet. It is deliberately not a silent default.
   int _getPlanetHouse(VedicChart chart, Planet planet) {
     if (planet == Planet.ketu) {
       return chart.houses.getHouseForLongitude(chart.ketu.longitude);
@@ -20,6 +24,10 @@ class YogaService {
   }
 
   /// Gets the sign index (0-11) of a planet (Aries=0, Pisces=11).
+  ///
+  /// The trailing `?? 0` is an unreachable defensive branch: callers go through
+  /// [detectNatalYogas], which first rejects any chart missing a traditional
+  /// planet. It is deliberately not a silent default.
   int _getPlanetSign(VedicChart chart, Planet planet) {
     if (planet == Planet.ketu) {
       return (chart.ketu.longitude / 30).floor() % 12;
@@ -101,6 +109,20 @@ class YogaService {
   /// Detects all natal, Raja, and Nabhasa yogas for a Vedic Chart.
   List<NatalYoga> detectNatalYogas(VedicChart chart) {
     final result = <NatalYoga>[];
+
+    // Every yoga below is keyed off the seven traditional planets. If one is
+    // missing the chart is malformed, and quietly substituting a placeholder
+    // (house 1 / Aries) would fabricate yoga results from invented data, so the
+    // failure is surfaced here instead.
+    for (final planet in Planet.traditionalPlanets) {
+      if (chart.getPlanet(planet) == null) {
+        throw StateError(
+          'Chart for ${chart.location} at '
+          '${chart.dateTime.toIso8601String()} has no position for '
+          '${planet.displayName}; cannot detect yogas.',
+        );
+      }
+    }
 
     // House positions for traditional planets (Sun to Saturn)
     final pMap = <Planet, int>{};
@@ -236,7 +258,7 @@ class YogaService {
     {
       final isPresent = signMap[Planet.sun] == signMap[Planet.mercury];
       final explanation = isPresent
-          ? 'Sun and Mercury conjoined in sign ${Rashi.fromIndex(signMap[Planet.sun]!).name}'
+          ? 'Sun and Mercury conjoined in sign ${Rashi.fromIndex(signMap[Planet.sun]!).label}'
           : 'Sun and Mercury in different signs';
       result.add(
         NatalYoga(
@@ -323,7 +345,7 @@ class YogaService {
             moonHouse,
           ).where((p) => p != Planet.moon && p != Planet.sun).isEmpty &&
           Planet.traditionalPlanets
-              .where((p) => kendraHouses.contains(pMap[p]))
+              .where((p) => p != Planet.moon && kendraHouses.contains(pMap[p]))
               .isEmpty;
       final explanation = isPresent
           ? 'No planets in 1st, 2nd, 12th from Moon and no planets in Kendras from Lagna'
@@ -347,7 +369,7 @@ class YogaService {
     {
       final isPresent = signMap[Planet.moon] == signMap[Planet.mars];
       final explanation = isPresent
-          ? 'Moon and Mars conjoined in sign ${Rashi.fromIndex(signMap[Planet.moon]!).name}'
+          ? 'Moon and Mars conjoined in sign ${Rashi.fromIndex(signMap[Planet.moon]!).label}'
           : 'Moon and Mars in different signs';
       result.add(
         NatalYoga(
@@ -745,10 +767,17 @@ class YogaService {
 
     // Evaluation for vajra_yoga
     {
-      final isPresent = benefics.every((p) => pMap[p] == 1 || pMap[p] == 7) &&
-          malefics.every((p) => pMap[p] == 4 || pMap[p] == 10);
+      final hasBeneficIn1 = benefics.any((p) => pMap[p] == 1);
+      final hasBeneficIn7 = benefics.any((p) => pMap[p] == 7);
+      final hasMaleficIn4 = malefics.any((p) => pMap[p] == 4);
+      final hasMaleficIn10 = malefics.any((p) => pMap[p] == 10);
+
+      final isPresent = hasBeneficIn1 &&
+          hasBeneficIn7 &&
+          hasMaleficIn4 &&
+          hasMaleficIn10;
       final explanation = isPresent
-          ? 'Benefics in 1/7 and Malefics in 4/10'
+          ? 'Benefics occupy houses 1 and 7; Malefics occupy houses 4 and 10'
           : 'Vajra conditions not met';
       result.add(
         NatalYoga(
@@ -767,10 +796,17 @@ class YogaService {
 
     // Evaluation for yava_yoga
     {
-      final isPresent = malefics.every((p) => pMap[p] == 1 || pMap[p] == 7) &&
-          benefics.every((p) => pMap[p] == 4 || pMap[p] == 10);
+      final hasMaleficIn1 = malefics.any((p) => pMap[p] == 1);
+      final hasMaleficIn7 = malefics.any((p) => pMap[p] == 7);
+      final hasBeneficIn4 = benefics.any((p) => pMap[p] == 4);
+      final hasBeneficIn10 = benefics.any((p) => pMap[p] == 10);
+
+      final isPresent = hasMaleficIn1 &&
+          hasMaleficIn7 &&
+          hasBeneficIn4 &&
+          hasBeneficIn10;
       final explanation = isPresent
-          ? 'Malefics in 1/7 and Benefics in 4/10'
+          ? 'Malefics occupy houses 1 and 7; Benefics occupy houses 4 and 10'
           : 'Yava conditions not met';
       result.add(
         NatalYoga(
@@ -1235,10 +1271,42 @@ class YogaService {
     // Evaluation for gaja_kesari_yoga
     {
       final diffJupMoon = (pMap[Planet.jupiter]! - moonHouse + 12) % 12;
-      final isPresent = [0, 3, 6, 9].contains(diffJupMoon);
+      final inKendraFromMoon = [0, 3, 6, 9].contains(diffJupMoon);
+
+      final jupiterInfo = chart.getPlanet(Planet.jupiter);
+      final jupiterHouse = pMap[Planet.jupiter]!;
+
+      // Condition (2): a benefic conjoins or aspects Jupiter.
+      final conjunctBenefic = traditionalPlanetsInHouse(
+        jupiterHouse,
+      ).any((p) => p != Planet.jupiter && benefics.contains(p));
+      final aspectingBenefic = benefics.any(
+        (p) => p != Planet.jupiter && _doesPlanetAspectHouse(chart, p, jupiterHouse),
+      );
+      final hasBeneficSupport = conjunctBenefic || aspectingBenefic;
+
+      // Condition (3): Jupiter is not debilitated, combust, or in an enemy's
+      // house. An exalted Jupiter strengthens the yoga rather than spoiling it,
+      // so exaltation is deliberately not a disqualifier.
+      final dignity = jupiterInfo?.dignity;
+      final notAfflicted =
+          dignity != PlanetaryDignity.debilitated &&
+          !(jupiterInfo?.isCombust ?? false) &&
+          dignity != PlanetaryDignity.enemySign &&
+          dignity != PlanetaryDignity.greatEnemy;
+
+      final isPresent = inKendraFromMoon && hasBeneficSupport && notAfflicted;
+
       final explanation = isPresent
-          ? 'Jupiter is in house ${diffJupMoon + 1} from Moon'
-          : 'Jupiter not in Kendra from Moon';
+          ? 'Jupiter is in house ${diffJupMoon + 1} from Moon, supported by a '
+              'benefic, and unafflicted'
+          : !inKendraFromMoon
+              ? 'Jupiter not in Kendra from Moon'
+              : !hasBeneficSupport
+                  ? 'Jupiter in Kendra from Moon but without benefic '
+                      'conjunction or aspect'
+                  : 'Jupiter in Kendra from Moon but debilitated, combust or '
+                      'in an enemy\'s house';
       result.add(
         NatalYoga(
           key: "gaja_kesari_yoga",
@@ -5636,9 +5704,13 @@ class YogaService {
     {
       final lordOf9 = _getHouseLord(chart, 9);
       final lordOf10 = _getHouseLord(chart, 10);
-      final isPresent = areAssociated(lordOf9, lordOf10);
+      final h9 = pMap[lordOf9]!;
+      final h10 = pMap[lordOf10]!;
+      final diff = (h10 - h9 + 12) % 12;
+      final inMutualKendra = [0, 3, 6, 9].contains(diff);
+      final isPresent = areAssociated(lordOf9, lordOf10) || inMutualKendra;
       final explanation = isPresent
-          ? 'Lords of 9th and 10th associated'
+          ? 'Lords of 9th and 10th associated or in mutual kendras'
           : 'Lords of 9th and 10th not associated';
       result.add(
         NatalYoga(
@@ -5660,12 +5732,27 @@ class YogaService {
       final lordOf6 = _getHouseLord(chart, 6);
       final lordOf8 = _getHouseLord(chart, 8);
       final lordOf12 = _getHouseLord(chart, 12);
-      final isPresent = [6, 8, 12].contains(pMap[lordOf6]) ||
-          [6, 8, 12].contains(pMap[lordOf8]) ||
-          [6, 8, 12].contains(pMap[lordOf12]);
+
+      // Classical Vipareeta Raja Yoga (Uttara Kalamrita 4.22):
+      // Lords of 6, 8, or 12 occupy dusthanas (6, 8, 12).
+      // Requires at least two trik lords in dusthanas with at least one in
+      // a different dusthana (6th lord in 8/12, 8th lord in 6/12, 12th lord in 6/8)
+      // or conjoined in a dusthana, avoiding simple single-lord swakshetra false positives.
+      final h6 = pMap[lordOf6];
+      final h8 = pMap[lordOf8];
+      final h12 = pMap[lordOf12];
+
+      bool inTrik(int? h) => h != null && (h == 6 || h == 8 || h == 12);
+      final trikCount =
+          [inTrik(h6), inTrik(h8), inTrik(h12)].where((b) => b).length;
+      final hasCrossPlacement = (h6 == 8 || h6 == 12) ||
+          (h8 == 6 || h8 == 12) ||
+          (h12 == 6 || h12 == 8);
+
+      final isPresent = trikCount >= 2 && hasCrossPlacement;
       final explanation = isPresent
-          ? 'Trik lords occupy dusthanas'
-          : 'Trik lords not in dusthanas';
+          ? 'Trik lords occupy adverse dusthanas in reciprocal Vipareeta alignment'
+          : 'Trik lords do not form Vipareeta Raja alignment';
       result.add(
         NatalYoga(
           key: "vipareetha_raja_yoga",

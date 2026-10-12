@@ -6,6 +6,243 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.20.7] - 2026-10-09
+
+### Fixed
+- **Transit window inversion & negative orb** (`transit_service.dart`):
+  - In `_createTransitAspect`, `exactOrb` was taking a signed orb difference that could be negative, causing `startDate` to fall after `endDate` when constructing transit event windows. `exactOrb` is now always non-negative (`orb.abs()`), and `halfSpanDays` in `findTransitEvents` takes `aspect.exactOrb.abs() / relativeSpeed`, guaranteeing `startDate <= exactDate <= endDate`.
+- **Atmakaraka retrograde Rahu reverse degree calculation** (`dasha_service.dart`, `jaimini_service.dart`):
+  - In `DashaService`, `_getAtmakaraka` previously computed Rahu's degree as raw `longitude % 30.0`, ignoring retrograde movement and bypassing `CalculationFlags.nodeType`. It now delegates directly to `JaiminiService.getAtmakaraka`, which measures retrograde Rahu's distance traversed in sign as `30.0 - (longitude % 30.0)`. Added `const JaiminiService()` constructor.
+- **Varshaphala 60-year Jovian cycle anchor** (`varshapal_service.dart`):
+  - In `calculateVarshapal`, unified samvatsara determination directly with `getCurrentVarshaNumber(varshaDateTime)` (anchored to Prabhava 1987), eliminating the dead unanchored Jupiter-6° branch and unused Jupiter lookup.
+- **Vajra and Yava Nabhasa Yogas presence rule** (`yoga_service.dart`):
+  - In `vajra_yoga` and `yava_yoga`, removed the over-restrictive `all*` conjuncts that were mathematically incompatible with maximum planetary elongations (Mercury/Venus 90° from Sun). Conformed to PyJHora BVR-84/85 presence rules: `hasBeneficIn1 && hasBeneficIn7 && hasMaleficIn4 && hasMaleficIn10` for Vajra, and reciprocal for Yava.
+- **Varshaphala Egyptian Hadda bounds** (`varshapal_service.dart`):
+  - Conformed Gemini, Leo, and Scorpio term bounds in `_getHaddaLord` to classical *Hayanaratna* and *Tajaka Neelakanthi* Egyptian bounds rather than Ptolemy's modified bounds, correcting Mercury's hadda at 11°–19° Scorpio and Jupiter at 19°–24° Scorpio.
+- **Varshaphala Maasa period duration** (`varshapal_service.dart`):
+  - In `_addMaasaDuration`, scaled month lengths to 1/12th of the solar year (`365.24219 / 12` ≈ 30.437 days) instead of fixed 30 days, so the 12 periods fully span the annual return year.
+- **Varshaphala Dina-Ratri Lord day/night evaluation** (`varshapal_service.dart`):
+  - In `determineVarshesh`, evaluated `isDay` from the natal birth chart (`natalChart`) rather than the annual solar return chart, conforming to the classical Janma-kalina rule and PyJHora parity.
+- **AspectService exactOrb sign normalization** (`aspect_service.dart`):
+  - Enforced `exactOrb: orb.abs()` in `_createAspect`, ensuring orbs are consistently positive across degree-based calculations.
+
+### Tests
+- Added `test/confirmed_fixes_test.dart` (5 comprehensive test suites) verifying:
+  - Transit aspect windows and non-negative `exactOrb` via `getTransitPositions` and `getTransitEvents`.
+  - Atmakaraka consistency between DashaService and JaiminiService with retrograde Rahu reverse degree traversal.
+  - Varshaphala Samvatsara 1-60 cycle coverage and 2026 Paraabhava alignment.
+  - Vajra and Yava yoga dual-pole occupancy gating.
+  - Vipareetha Raja Yoga negative and positive cross-dusthana test cases.
+
+---
+
+## [2.20.6] - 2026-10-09
+
+### Fixed
+- **`findTransitEvents` fabricated the aspect window** (`transit_service.dart`):
+  - The `startDate`/`endDate` of every transit event were set to `exactDate ± 3 × intervalDays`, i.e. derived from the sampling interval rather than from the aspect itself. A 1-degree orb between two slow planets yields a window of months, and a wide orb between fast planets yields hours, yet both got the identical fabricated span. The window is now computed as `exactOrb / relativeSpeed` days either side, where the relative speed is the difference between the transiting and natal bodies' `longitudeSpeed`. A degenerate zero relative speed falls back to the sampling interval.
+
+### Tests
+- Added `test/classical_data_tables_test.dart` (6 tests) giving first-ever coverage to the two data tables that previously had none:
+  - **`naturalRelationships`** pinned to the table derived from the BPHS 3.55 rule, all 42 directed pairs, plus the four deliberately asymmetric pairs most likely to be "tidied" into symmetry, plus the Panchadha Maitri arithmetic.
+  - **Bhinnashtakavarga fixed totals** checked on two unrelated births, since 48/49/39/54/56/52/39 → 337 is a property of the tables rather than of any chart. This is the hard checksum B.V. Raman describes: a single mis-transcribed house list moves the total.
+  - **Minimum required Shadbala** pinned to BPHS 27.32-33, with the Sun's 390 virupas called out explicitly and asserted *not* to be 300.
+
+---
+
+## [2.20.5] - 2026-10-09
+
+### Fixed
+- **`ArgumentService.calculateArgalaForPlanet` reported every Argala as unobstructed** (`argala_service.dart`):
+  - `isObstructed` was hard-coded to `false` with a "simplified" comment, while `calculateArgalaForHouse` — the other half of the same public API — computed Virodha Argala properly. The two methods therefore disagreed on every chart. Obstructing houses are now looked up with the same offsets the house-based method uses (12th obstructs the 2nd; 10th and 9th obstruct the 4th and 5th; 3rd obstructs the 11th).
+- **`DashaResult.precisionWarning` understated timing drift by ~3 orders of magnitude** (`dasha_service.dart`):
+  - The warning reported `uncertainty / 60 * 0.2` days — 0.2 days for a one-hour uncertainty. The real figure is the fractional nakshatra error (one minute of clock error is 1/1440 of the Moon's synodic day) times the first dasha's years, which for a 20-year dasha is **~304 days**. Because the whole timeline is shifted by the same amount, that error propagates to every subsequent dasha boundary, so it is now reported as such.
+- **`_deduplicateEvents` collapsed genuinely distinct exact aspects** (`transit_service.dart`):
+  - The dedupe key bucketed `exactDate` into 7-day windows, so any two events sharing a transiting planet, natal body and aspect type within the same week collapsed into one — a Tuesday exact opposition and a Thursday exact trine to the same natal planet could not both be reported. The key is now the full identifying tuple including the exact instant.
+- **Junction searches could return a silently wrong instant** (`panchanga_service.dart`):
+  - `getTithiJunction`, `getNakshatraJunction` and `getYogaJunction` bisect a 48-hour window and return the converged bound with no check that it is actually the requested junction. Because the Moon-Sun elongation advances ~585 degrees across that span — more than a full cycle — the target angle is crossed **twice** inside the window, and a signed-difference bisection assumes monotonicity and can converge on either. The wrong crossing is ~29.5 days out. Each search now verifies its result and throws a `StateError` naming the actual offset instead of returning a plausible-looking wrong timestamp.
+- **`_getAtmakaraka` used the 7-karaka scheme, contradicting the rest of the library** (`dasha_service.dart`):
+  - It iterated only `Planet.traditionalPlanets`, so a chart whose Rahu held the highest degree got a different Atmakaraka from `JaiminiService.getAtmakaraka` and the facade's `getCharaKarakas`, both of which default to the eight-karaka scheme. Now consistent.
+
+### Verified, not changed
+- **Yogini enum** audited as having Mangala/Pingala swapped. Not a defect: classically Mangala is ruled by the Moon and Pingala by the Sun, which is what the enum declares. The nakshatra-to-Yogini starting index `(nakshatraIndex + 3) % 8` is also correct, matching the Ashwini→Bhramari, Ardra→Mangala, Krittika→Ulka, Mrigashira→Sankata assignment.
+- **`HouseSystem.getHouseForLongitude` silent house-1 fallback** — already throws `ArgumentError` listing the malformed cusps.
+- **`CalculationFlags.fromJson` silent enum defaults** — already throws `ArgumentError` for unrecognised `system`, `nodeType` and `siderealMode`, with identifier matching preferred over the legacy label.
+- **`AspectService.getPlanetsAspectingSign` counting same-sign as aspecting** — already returns `true` only for the 6th-house separation.
+
+---
+
+## [2.20.4] - 2026-10-09
+
+### Verified
+- **Purnimanta naming confirmed against the authoritative 2026 festival calendar.** The Krishna-paksha offset was audited as wrong on the theory that a Purnimanta month straddling two Amanta months cannot follow a fixed offset. It can, and the convention is externally verifiable: 19 April 2026 (Akshaya Tritiya) is Vaishakha in *both* calendars; 1 May 2026 is Vaishakha Purnima / Buddha Purnima, so Purnimanta Vaishakha ends that day; 2 May 2026 is therefore Krishna Pratipada of Purnimanta Jyeshtha while Amanta Vaishakha still runs to ~17 May. All four expectations now hold as regression tests.
+- **Gana Milan Varna table confirmed.** The nakshatra-to-Varna assignments were audited as outliers, specifically Hasta and Uttara Phalguni as Shudra. Both are correct: Kalidasa's *Poorvakalamrut* Ch. 3 shloka 93, the Madhaviya Grantha and B.V. Raman's *Muhurta* all list Hasta and Uttara Phalguni among the six Shudra nakshatras, and all three agree on every one of the 27 assignments.
+
+### Changed
+- **Documentation only, no behaviour change**:
+  - `_getNakshatraVarna` now cites the actual sources (*Poorvakalamrut* Ch. 3 shloka 93, Madhaviya Grantha, B.V. Raman) and states explicitly that all three agree on every assignment, including the two that were questioned.
+  - The Hora Lagna rate comment now spells out the unit trap — the classical rule is 30 degrees per 2.5 **ghatis**, which is one hour, not 2.5 hours — and records that the earlier revision's 2.5x error came from reading it as hours. This distinguishes it from the alternative "one sign per 2.5 hours" formulation.
+
+### Tests
+- Added a `matches the authoritative 2026 festival calendar` case to `test/round7_fixes_test.dart` pinning Purnimanta names to externally verifiable festival dates (Akshaya Tritiya 19 Apr, Buddha Purnima 1 May, and the Krishna Pratipada on 2 May) alongside the corresponding Amanta month, so the naming is checked against ground truth rather than only against an internal invariant.
+
+---
+
+## [2.20.3] - 2026-10-09
+
+### Fixed
+- **Special Lagnas anchoring** (`special_lagnas_service.dart`):
+  - Hora and Ghati Lagna are now anchored on the Sun's longitude at **sunrise** — the start of the elapsed interval — rather than on the Sun at the birth moment. Anchoring on the birth Sun while adding hours measured from sunrise counted the Sun's own motion across that window twice, an error of roughly 1 degree per hour of elapsed time (~6 degrees for a 6-hour gap), so the bias scales with birth hour.
+  - New optional `sunLongitudeAtSunrise` parameter on `SpecialLagnasService.calculateSpecialLagnas` and the `Jyotish` facade pins the anchor exactly when the caller already knows it. When omitted it is derived by rewinding the chart's Sun with its own `longitudeSpeed`, accurate to < 0.01 degrees.
+- **FFI error-buffer handling** (`ephemeris_service.dart`):
+  - All five `swe_*` error buffers now allocate with `calloc` and release with `calloc.free`. One site freed a `calloc`-allocated buffer with `malloc.free`, and the other four still allocated with `malloc` despite a comment explaining that an unwritten buffer must read as a genuine empty string rather than stale heap bytes — so the empty-error case remained non-deterministic on those paths. The rationale stated at the call site now holds everywhere.
+- **Unbounded divisional-chart cache** (`divisional_chart_service.dart`):
+  - The cache is now an LRU bounded at 512 entries. `VedicChart.isVargottama` holds a `static` shared `DivisionalChartService`, and `_cache` had no eviction, so the cache was process-global and grew without limit across every chart ever computed — an unbounded leak in any long-lived app or server.
+- **Purnimanta month naming** (`masa_service.dart`):
+  - The Amanta month name — used as the basis for both calendars — is now derived from the exact bisected **new-moon boundary** instead of being extrapolated from the current instant with a mean synodic rate. Previously the Adhika test used the bisected boundary while the month name came from a mean-rate estimate of the current Sun, so the two could disagree near a sankranti.
+  - The Purnimanta offset (Amanta name advanced by one during Krishna paksha, unchanged during Shukla paksha) is unchanged: it is a pure calendar convention needing no astronomical estimate, so it is now layered on top of the exact boundary-derived Amanta month rather than being folded into an approximation.
+  - `_calculateAmantaMonth` and `_calculatePurnimantaMonth` (the mean-rate estimators) were removed.
+
+### Migration Notes
+- **`Rashi.name` and `SiderealMode.name` now return the enum identifier**, not the display label. `Rashi.aries.name` is `'aries'` (previously `'Aries'`); `SiderealMode.lahiri.name` is `'lahiri'` (previously `'Lahiri'`). Use `Rashi.label` / `SiderealMode.label` for display, and `.name` for persistence, cache keys and matching. `CalculationFlags.toJson`/`fromJson` and the divisional-chart cache key already use the identifier, so serialised data is unaffected.
+  - `lib/` was grepped for comparisons of `.name` against labels — there are none, so the library itself is internally consistent.
+  - External code doing `rashi.name == 'Aries'` or `siderealMode.name == 'Lahiri'` will silently stop matching and must switch to `.label`.
+
+### Tests
+- Replaced the `Special Lagnas` test, which re-derived the implementation (`(250 + 6*30) % 360 = 70`) and therefore validated nothing, with an independent derivation: a Sun travelling 1 degree/day stands at 249.75 after a 6-hour rewind, giving Hora Lagna 69.75 and Ghati Lagna 339.75 — values that the previous birth-moment anchoring cannot produce. A pinned-anchor case is covered too.
+- Added `test/round7_fixes_test.dart` (3 tests): the paksha-aware Purnimanta invariant checked daily across a full year (exercising both halves of the cycle, and the days either side of a sankranti), boundary/Adhika consistency, and LRU eviction with cache-hit identity preserved.
+
+### Verification
+- `flutter analyze` — no issues.
+- `flutter test` — 232 passing (was 229).
+
+---
+
+## [2.20.2] - 2026-10-09
+
+### Fixed
+- **Ashtakoota Compatibility Tables**:
+  - Varna Koota: replaced the incomplete 26-of-27 nakshatra table — under which only Mula reached the `Shudra` fallback, producing a 12/10/4/1 distribution found in no classical source — with the complete Dakshin-Bharat serpentine classification (7 Brahmin, 7 Kshatriya, 7 Vaishya, 6 Shudra), sourced from the Madhaviya Grantha / Muhurta tables and cross-verified against two independent transcriptions that agree exactly.
+  - Yoni Koota: replaced the four-value matrix (`{0, 2, 3, 4}`) with the classical five-tier Muhurta Chintamani / Saravali matrix, restoring the missing `1 = inimical` band. The seven sworn-enemy pairs (Horse/Buffalo, Elephant/Lion, Goat/Monkey, Serpent/Mongoose, Dog/Deer, Cat/Rat, Cow/Tiger) remain the only cells scoring 0, and the matrix stays symmetric.
+  - Gana Koota: replaced the non-standard symmetric 3/0 scoring with the directional Parashari table — same gana 6, Deva groom + Manushya bride 6, the reverse 5, Rakshasa groom + Deva bride 1, all remaining cross-gana pairs 0.
+- **Shadbala**:
+  - Saptavargaja Bala: removed the non-existent `exalted => 60 Virupas` tier together with the non-classical 22.5 / 7.5 / 3.75 / 1.875 grades. The planet is now scored against the lord of the sign it occupies in each of the seven vargas, per BPHS Ch. 27 v.2-4 (Moolatrikona 45, own sign 30, great friend 20, friend 15, neutral 10, enemy 4, great enemy 2). This brings Sthana Bala back inside the classical 480-Virupa ceiling, which the old table could exceed.
+  - Chesta Bala: un-transposed *Manda* (30) and *Mandatara* (15), which were reversed relative to the table the remaining bands already followed.
+  - Saptavargaja Moolatrikona range for the Moon corrected to Taurus 4°–20°; 0°–3° of Taurus is the exaltation point and is not part of the Moolatrikona.
+- **Nitya Yoga Lords**:
+  - Replaced the scrambled ruling-planet table — which gave a 6/5/4/4/3/3/2 distribution, impossible for a seven-planet rotation over 27 entries — with the classical nine-planet Parashari cycle (Saturn, Mercury, Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter) repeated three times, so each planet rules exactly three of the 27 yogas. The `nature` classification (malefic = 1, 6, 9, 10, 13, 15, 17, 19, 27) was verified correct and left unchanged.
+- **Yoga Detection**:
+  - Gaja-Kesari Yoga now enforces all three of its stated conditions. Previously only the quadrant-from-Moon test was applied, so a Jupiter debilitated in Capricorn with no benefic association and no cancellation was reported as a full Gaja-Kesari.
+  - A chart missing any of the seven traditional planets now raises `StateError` from `detectNatalYogas` instead of substituting house 1 / Aries and fabricating yoga results from invented data.
+- **Jaimini Arudha**:
+  - `_getStrongerLord` now selects the *unassociated* co-lord for Scorpio (Mars/Ketu) and Aquarius (Saturn/Rahu), consistent with the own-sign rule immediately above it, which already preferred the candidate not tied up in the sign.
+- **Divisional Charts**:
+  - Ketu's varga placement is now derived from Ketu's own natal longitude (Rahu + 180°) run through the varga mapping, rather than from the already-projected Rahu. The two are equivalent for evenly divided vargas, so D2/D3/D4/D9/D10/D12/D16/D20/D24/D40/D45/D60 are unaffected, but D30 Trimsamsa and D249 did not commute with a 180° rotation and reported the wrong sign.
+- **Dasha**:
+  - The Mars/Ketu and Saturn/Rahu co-lord comparisons in `_getSignLordAdvanced` now count the lunar nodes themselves. `VedicChart.getPlanetsInHouse` iterates only the seven traditional planets, so a lone node previously always scored zero conjunctions while a lone Mars or Saturn scored its own presence — a structural bias towards the traditional lord.
+- **Panchanga**:
+  - `AdhikaMasaType.nija` is now returned when the preceding lunar month was Adhika. Previously it was never produced at all, so a Nija month was indistinguishable from any other ordinary month.
+- **Manglik Dosha**:
+  - Parihara 16 (Mars conjunct Jupiter or Moon) no longer fabricates an Aries Jupiter from a missing planet, which could spuriously cancel the dosha.
+- **Error Handling**:
+  - A missing Moon, Venus or Jupiter in `CompatibilityService` now raises `StateError`, and an unrecognised nakshatra name raises `ArgumentError`. These replace silent `?? 0` / `?? 'Ashwini'` / `?? 1` defaults that scored a coupling against fabricated Aries or Ashwini data. Callers relying on the previous permissive behaviour must handle these exceptions.
+  - Removed a second `return 1` in `calculateYoni` that shadowed the new unknown-nakshatra check.
+
+### Tests
+- Added `test/classical_table_fixes_test.dart` (11 tests) covering the Varna, Yoni, Gana and Nitya-Yoga tables, including the 7/7/7/6 Varna distribution, the five-tier Yoni scale, the directional Gana table, and the three-yogas-per-planet Nitya-Yoga distribution.
+- Added `test/divisional_ketu_fix_test.dart` (3 tests) covering Ketu's independent D30 projection and its preserved opposition to Rahu in the evenly divided D9.
+- Extended `test/natal_yoga_test.dart` with a negative Gaja-Kesari case (kendra from Moon without benefic support) and a positive case. The previous assertion encoded the incomplete single-condition rule and has been replaced.
+- Total passing tests grew from 215 to 229.
+
+---
+
+## [2.20.1] - 2026-10-08
+
+### Fixed
+- **Ashtakavarga Rebuild (BPHS Parashara Parity)**:
+  - Replaced planetary contributor tables in `Ashtakavarga` with canonical 12x7 matrices, restoring exact classical totals: Sun 48, Moon 49, Mars 39, Mercury 54, Jupiter 56, Venus 52, Saturn 39, and Sarvashtakavarga sum of 337.
+  - Corrected `getTotalBindusForHouse(h)` in `Ashtakavarga` to count from the Ascendant sign instead of hardcoded Aries.
+  - Implemented BPHS Chapter 68 Trikona Shodhana zero-preservation rule: if any sign in a trikona has 0 bindus, no reduction is made; if all three are equal, all become 0; else deduct the minimum from the other two.
+  - Fixed `calculateHousePinda` in `AshtakavargaService` to measure from the Ascendant sign.
+  - Updated `getFavorableTransitSigns(aav, planet)` to evaluate the queried planet's specific BAV ($\ge 4$ bindus).
+- **Shadbala Motional & Temporal Strengths**:
+  - Fixed Chesta Bala: Retrograde speed returns 0.0 virupas (resolving +60 virupa inflation into *ishtaPhala*); stationary motion (`speed.abs() < 0.05`) returns 15.0; *Chara* direct motion returns 60.0; *Atichara* returns classical 7.5.
+  - Zeroed Moon Chesta Bala to prevent double-counting *Paksha Bala*.
+  - Added Planetary War strength (*Yuddha Bala*) into Kala Bala via `GrahaYuddhaService` (+30 for victor, -30 for defeated), removing unneeded clamp that masked war deductions.
+  - Re-anchored modern Jovian year to Prabhava epoch (1987, JD 2446885.5) using 361.0220 days, eliminating non-monotonic cycle drift in Samvatsara Lord calculation.
+  - Classified waxing crescent Moon (Shukla Paksha 0°–180°) as benefic in Drik Bala.
+  - Corrected aspect strength multiplier ladder so only Mars (90°/210°), Jupiter (120°/240°), and Saturn (60°/270°) receive full strength (1.0), and partial aspects receive 0.25.
+  - Corrected Sun minimum required Shadbala to 300.0 virupas (5.0 Rupas per BPHS), and added node thresholds (`meanNode: 360.0`, `trueNode: 360.0`, `ketu: 300.0`, `saturn: 300.0`) in `_minimumShadbala`.
+- **Bhava Chalit & House Strength**:
+  - Corrected mid-cusp boundary index arithmetic in `BhavaChalitService` (`midCusps[(i + 11) % 12]` entering, `midCusps[i]` exiting).
+  - Preserved Whole Sign house invariant so Whole Sign natal and varga charts (`'Whole Sign (Varga)'`) strictly match Rashi placements (0 shifted planets).
+  - Added Ketu to `BhavaChalit.shiftedPlanets`.
+  - Corrected aspect vector to `(houseCusp - planetLongitude + 360) % 360` in `HouseStrengthService` (aspects cast forward from planet to cusp).
+  - Removed artificial `virupas * 4.8` multiplier in `BhavaBalaService`, and updated `BhavaStrengthCategory` enum thresholds directly to raw virupas (480-∞ veryStrong, 420-480 strong, 360-420 moderate, 300-360 weak, 0-300 veryWeak).
+- **Dignity, Compatibility & Natural Friendship**:
+  - Reordered `moolaTrikona` check before `ownSigns` in `DivisionalChartService`, restoring the 45.0 Saptavargaja and 18.0 Vimsopaka tiers for Sun, Mars, Mercury, Venus, and Saturn.
+  - Natural friendship (Naisargika Maitri) in `RelationshipCalculator`: BPHS Moolatrikona-derived directed relations preserved across all charts.
+  - Fixed Tara Koota in `CompatibilityService` to use 3-cycle grouping (`group != 2` awards 1.5 points).
+  - Corrected Jupiter deep debilitation degree to 275.0° (Capricorn 5°) in `VedicChartService`.
+  - Corrected Abhijit Nakshatra end longitude to 280.8888889° in `nakshatra.dart`.
+  - Consistently aligned transit special aspects to directed Parashari drishti (Mars 4th at 90°, 8th at 210° forward).
+  - Clamped `totalBala` in `ShadbalaService` to $\ge 0.0$ so negative Planetary War (Yuddha Bala) deductions preserve signal without allowing total Shadbala or Shadbala ratio to drop below zero.
+  - Replaced deprecated `CalculationFlags.defaultFlags()` with `CalculationFlags.traditionalist()` in `TransitService`, dynamically aligned transit node type to `natalChart.flags.nodeType`, and added transit Ketu calculation.
+  - Added Rahu and Ketu to sign planet counting in `JaiminiService` and `ArudhaPadaService`.
+  - Added JSON serialization (`toJson` and `fromJson`) for `CalculationFlags`, and preserved `calculationFlags`, `positionInSub`, and `subSpan` in `VedicChart` and `VedicPlanetInfo` roundtrips.
+- **Panchanga & Dasha Systems**:
+  - Anchored Amanta lunar month calculation to Sun's longitude at preceding New Moon (Amavasya), ensuring month name constancy across the full synodic cycle across mid-month Sankrantis.
+  - Fixed Yogini dasha starting index offset (`(nakshatraIndex + 3) % 8`), Ashtottari nakshatra group distribution `[4, 3, 4, 3, 4, 3, 4, 2]` (Rahu 4, Venus 2), exact duration millisecond consistency, Mahadasha level 0 / Antardasha level 1 bookkeeping.
+  - Kalachakra dasha: synchronized `duration` to exact milliseconds matching `endDate`.
+  - Fixed `DashaPeriod.isActiveAt` boundary to `!date.isBefore(startDate) && date.isBefore(endDate)` (`[startDate, endDate)`), eliminating false-negatives at exact transition points.
+  - Updated `YogaInfo.nature` and `YogaDetails` (Vajra 15) to consistently reflect classical inauspicious Nitya Yogas (Vishkumbha 1, Vajra 15, Parigha 19) and corrected Karana nature classification.
+  - Fixed `AstrologyTimeService.localToUtc` and `utcToLocal` fallbacks to construct explicit UTC/local representations instead of defaulting to host machine's local timezone.
+  - Corrected Narayana dasha subperiods: rotated to start from `mahadashaSign` and normalized proportions by total years so all 12 subperiods execute without premature truncation.
+- **Divisional Charts (D5 & D30) & Classical Algorithms**:
+  - Fixed D5 Panchamsa signs to strictly adhere to BPHS Ch. 6 Sloka 8: odd signs map to `[Aries, Aquarius, Sagittarius, Gemini, Libra]`, even signs map to `[Taurus, Virgo, Pisces, Capricorn, Scorpio]`.
+  - Fixed D30 Trimsamsa degree scaling: degrees in varga signs now scale proportionally within each unequal span across 30° instead of linear modulus.
+  - Exposed public `calculateVargaLongitude` on `DivisionalChartService` and cached service instance in `VedicChart.isVargottama`.
+  - Implemented complete 5-point Panchadha Maitri arithmetic in `RelationshipCalculator.calculateCompound` (+2 Great Friend to -2 Great Enemy), handling neutral temporary relationships accurately.
+  - Excluded `Planet.moon` from Lagna Kendra check in `kemadruma_yoga` evaluation.
+  - Corrected opposition aspect `exactOrb` to `angularDiff - 180`, ensuring proper `isApplying`/`isSeparating` detection.
+  - Added negative angle and wrap-around guards across `Rashi`, `PlanetPosition`, and `VedicChart.getHouseForLongitude`.
+  - Made `CalculationFlags.fromJson` enum matching case-insensitive and aliased both node enum keys in `TransitService`.
+
+---
+
+## [2.20.0] - 2026-09-18
+
+### Added
+- **Multi-Isolate Concurrency & `JyotishCompute`**:
+  - Implemented `JyotishCompute` (`jyotish_compute.dart`) providing safe, serialized background isolate computation via `JyotishCompute.run()` off the Flutter UI isolate.
+  - Documented Swiss Ephemeris C process-global static state and isolate concurrency constraints on `EphemerisService`.
+- **Fast-Path Daily Sunrise Arithmetic**:
+  - Added `VedicTime.fromSunrises(time, currentSunrise, nextSunrise)` to calculate precise Vedic time directly from pre-computed daily sunrise bounds without hitting native C-FFI.
+  - Implemented daily sunrise bounds caching in `VedicDigitalClock` and `VedicAnalogClock`, eliminating 2–4Hz native C-FFI polling and reducing UI thread battery/CPU overhead.
+- **Integration & Widget Test Suites**:
+  - Added `test/widget_rendering_test.dart` exercising `VedicChartView` (North & South styles), `VedicDigitalClock`, `VedicAnalogClock`, and CustomPainter repaint behavior.
+  - Added `test/comprehensive_services_test.dart` testing previously uncovered services (`AspectService`, `StrengthAnalysisService`, `GocharaVedhaService`, `JaiminiService`, `ArudhaPadaService`, `TajakaService`, `NadiService`).
+  - Total passing tests grew to 190 tests (+20 new tests) with +933 additional covered lines.
+
+### Refactored & Optimized
+- **CustomPainter Repaint Performance**:
+  - Implemented property-based equality checks in `shouldRepaint()` across `NorthIndianChartPainter` and `SouthIndianChartPainter`, eliminating wasteful repaint cycles and text layout recalculations on ancestor widget rebuilds.
+- **Data Model Const Optimization**:
+  - Refactored `GeographicLocation` constructor to be `const` with assert initializers, converting call sites across services and tests to `const` allocations.
+- **Clock Widget Lifecycle**:
+  - Improved `VedicDigitalClock` and `VedicAnalogClock` to properly react to controller and location changes in `didUpdateWidget()`.
+
+### Fixed & Packaging
+- **Android Gradle Cleanup**:
+  - Removed redundant `android/build.gradle.kts` and unified Android configuration in `android/build.gradle` under namespace `com.jyotish` and version `2.20.0`.
+- **Windows Binary Bundling**:
+  - Added `jyotish_bundled_libraries` to `windows/CMakeLists.txt` to ensure `swisseph.dll` is automatically bundled with host Flutter application executables.
+- **iOS Linker & Sandboxing Compatibility**:
+  - Updated `ios/jyotish.podspec` to version `2.20.0`.
+  - Added `DynamicLibrary.process()` and dynamic framework fallback loading in `swisseph_bindings.dart` for standard iOS app sandbox compliance.
+
+---
+
 ## [2.19.0] - 2026-08-25
 
 ### Added

@@ -39,6 +39,7 @@ export 'package:jyotish/src/astronomy/astrology_time_service.dart';
 export 'package:jyotish/src/astronomy/udaya_lagna_service.dart';
 export 'package:jyotish/src/astronomy/special_lagnas_service.dart';
 export 'package:jyotish/src/astronomy/eclipse_service.dart';
+export 'package:jyotish/src/astronomy/jyotish_compute.dart';
 
 // Analysis
 export 'package:jyotish/src/analysis/vedic_chart_service.dart';

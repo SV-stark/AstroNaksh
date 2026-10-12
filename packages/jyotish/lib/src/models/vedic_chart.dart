@@ -40,35 +40,51 @@ class HouseSystem {
   /// The Midheaven (MC) degree
   final double midheaven;
 
-  /// Gets the house number (1-12) for a given longitude
+  /// Gets the house number (1-12) for a given longitude.
+  ///
+  /// Throws [ArgumentError] if the longitude falls in no cusp interval, which
+  /// means [cusps] is malformed (unsorted or containing duplicates).  This
+  /// used to silently report house 1, producing a wrong answer with no signal.
   int getHouseForLongitude(double longitude) {
+    final lon = (longitude % 360.0 + 360.0) % 360.0;
     for (var i = 0; i < 12; i++) {
       final currentCusp = cusps[i];
       final nextCusp = cusps[(i + 1) % 12];
 
       if (nextCusp > currentCusp) {
-        if (longitude >= currentCusp && longitude < nextCusp) {
+        if (lon >= currentCusp && lon < nextCusp) {
           return i + 1;
         }
       } else {
         // House crosses 0 Aries
-        if (longitude >= currentCusp || longitude < nextCusp) {
+        if (lon >= currentCusp || lon < nextCusp) {
           return i + 1;
         }
       }
     }
-    return 1; // Default to first house
+    throw ArgumentError.value(
+      longitude,
+      'longitude',
+      'No house interval contains this longitude. The house cusps are '
+      'malformed (unsorted or containing duplicates): $cusps',
+    );
+  }
+
+  /// Gets the 0-based zodiac sign index of the Ascendant (0=Aries, 11=Pisces).
+  int get ascendantSignIndex {
+    final norm = (ascendant % 360.0 + 360.0) % 360.0;
+    return (norm / 30).floor() % 12;
   }
 
   /// Gets the zodiac sign of the Ascendant
   String get ascendantSign {
-    final signIndex = (ascendant / 30).floor() % 12;
+    final signIndex = ascendantSignIndex;
     return _zodiacSigns[signIndex];
   }
 
   /// Sanskrit name of the Ascendant sign.
   String get ascendantSignSanskrit {
-    final signIndex = (ascendant / 30).floor() % 12;
+    final signIndex = ascendantSignIndex;
     return Rashi.values[signIndex].sanskritName;
   }
 
@@ -168,6 +184,19 @@ class KetuPosition {
 
   /// Ketu's speed (opposite to Rahu)
   double get longitudeSpeed => rahuPosition.longitudeSpeed;
+
+  /// PlanetPosition representation of Ketu
+  PlanetPosition get position => PlanetPosition(
+        planet: Planet.ketu,
+        dateTime: rahuPosition.dateTime,
+        longitude: longitude,
+        latitude: latitude,
+        distance: distance,
+        longitudeSpeed: longitudeSpeed,
+        latitudeSpeed: -rahuPosition.latitudeSpeed,
+        distanceSpeed: rahuPosition.distanceSpeed,
+        isRetrograde: isRetrograde,
+      );
 
   /// Ketu always moves retrograde (like Rahu)
   bool get isRetrograde => true;
@@ -392,6 +421,8 @@ class VedicPlanetInfo {
         'isCombust': isCombust,
         'exaltationDegree': exaltationDegree,
         'debilitationDegree': debilitationDegree,
+        if (positionInSign != null) 'positionInSign': positionInSign,
+        if (subSpan != null) 'subSpan': subSpan,
         'position': position.toJson(),
       };
 
@@ -412,6 +443,8 @@ class VedicPlanetInfo {
       isCombust: json['isCombust'] as bool? ?? false,
       exaltationDegree: (json['exaltationDegree'] as num?)?.toDouble(),
       debilitationDegree: (json['debilitationDegree'] as num?)?.toDouble(),
+      positionInSign: (json['positionInSign'] as num?)?.toDouble(),
+      subSpan: (json['subSpan'] as num?)?.toDouble(),
     );
   }
 
@@ -494,6 +527,9 @@ class VedicChart {
   /// Gets the Ascendant sign
   String get ascendantSign => houses.ascendantSign;
 
+  /// Gets the 0-based zodiac sign index of the Ascendant (0=Aries, 11=Pisces)
+  int get ascendantSignIndex => houses.ascendantSignIndex;
+
   /// Gets the Ascendant degree
   double get ascendant => houses.ascendant;
 
@@ -567,6 +603,8 @@ class VedicChart {
         ),
         'rahu': rahu.toJson(),
         'ketu': ketu.toJson(),
+        if (calculationFlags != null)
+          'calculationFlags': calculationFlags!.toJson(),
       };
 
   /// Creates a VedicChart instance from a JSON map.
@@ -590,6 +628,10 @@ class VedicChart {
 
     final rahuInfo = VedicPlanetInfo.fromJson(json['rahu'] as Map<String, dynamic>);
     final ketuInfo = KetuPosition(rahuPosition: rahuInfo.position);
+    final calculationFlags = json['calculationFlags'] != null
+        ? CalculationFlags.fromJson(
+            json['calculationFlags'] as Map<String, dynamic>)
+        : null;
 
     return VedicChart(
       dateTime: dateTime,
@@ -601,6 +643,7 @@ class VedicChart {
       planets: planets,
       rahu: rahuInfo,
       ketu: ketuInfo,
+      calculationFlags: calculationFlags,
     );
   }
 
@@ -615,6 +658,7 @@ class VedicChart {
     Map<Planet, VedicPlanetInfo>? planets,
     VedicPlanetInfo? rahu,
     KetuPosition? ketu,
+    CalculationFlags? calculationFlags,
   }) {
     return VedicChart(
       dateTime: dateTime ?? this.dateTime,
@@ -626,6 +670,7 @@ class VedicChart {
       planets: planets ?? this.planets,
       rahu: rahu ?? this.rahu,
       ketu: ketu ?? this.ketu,
+      calculationFlags: calculationFlags ?? this.calculationFlags,
     );
   }
 
@@ -644,15 +689,19 @@ class VedicChart {
     return null;
   }
 
+  static final DivisionalChartService _defaultDivisionalService =
+      DivisionalChartService();
+
   /// Checks if a planet is Vargottama (occupies the same sign index in both this chart and the Navamsa D-9 chart).
-  bool isVargottama(Planet planet) {
+  bool isVargottama(Planet planet, [DivisionalChartService? service]) {
     final originalSignIndex = getPlanetSignIndex(planet);
     if (originalSignIndex == null) return false;
 
-    final d9Chart = DivisionalChartService().calculateDivisionalChart(
-      this,
-      DivisionalChartType.d9,
-    );
+    final d9Chart = (service ?? _defaultDivisionalService)
+        .calculateDivisionalChart(
+          this,
+          DivisionalChartType.d9,
+        );
     final d9SignIndex = d9Chart.getPlanetSignIndex(planet);
     return originalSignIndex == d9SignIndex;
   }

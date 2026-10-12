@@ -1,4 +1,3 @@
-import 'dart:collection';
 import '../exceptions/jyotish_exception.dart';
 import 'package:jyotish/src/models/divisional_chart_type.dart';
 import 'package:jyotish/src/models/planet.dart';
@@ -9,9 +8,17 @@ import 'package:jyotish/src/models/varga_configuration.dart';
 
 /// Service for calculating Divisional Charts (Varga).
 class DivisionalChartService {
+  /// Upper bound on [_cache] entries.
+  ///
+  /// The cache is keyed on natal chart identity, so a long-lived process that
+  /// computes charts for many births would otherwise grow it without bound.
+  /// [_evictOldest] keeps only the most recently used entries once the bound is
+  /// reached.
+  static const int _maxCacheSize = 512;
+
   /// Cache for calculated divisional charts.
   /// Key: composite of natal chart identity + divisional type.
-  final _cache = HashMap<String, VedicChart>();
+  final _cache = <String, VedicChart>{};
 
   /// Calculates a specific divisional chart from a base Rashi chart.
   VedicChart calculateDivisionalChart(
@@ -34,14 +41,28 @@ class DivisionalChartService {
         : '';
     final key = '${rashiChart.dateTime.millisecondsSinceEpoch}'
         '_${rashiChart.latitude}_${rashiChart.longitudeCoord}'
-        '_${rashiChart.calculationFlags?.siderealMode.name ?? 'default'}'
+        '_${rashiChart.calculationFlags?.siderealMode.name ?? 'default'}' // enum identifier: stable cache key
         '_${rashiChart.ascendant.hashCode}'
         '_${planetsHash}_${type.name}$configKey';
 
-    return _cache.putIfAbsent(
-      key,
-      () => _computeDivisionalChart(rashiChart, type, config: config),
-    );
+    final cached = _cache.remove(key);
+    if (cached != null) {
+      // Re-insert so the insertion order tracks recency of use.
+      _cache[key] = cached;
+      return cached;
+    }
+
+    final computed = _computeDivisionalChart(rashiChart, type, config: config);
+    _cache[key] = computed;
+    _evictOldest();
+    return computed;
+  }
+
+  /// Drops least-recently-used entries until the cache is back within bound.
+  void _evictOldest() {
+    while (_cache.length > _maxCacheSize) {
+      _cache.remove(_cache.keys.first);
+    }
   }
 
   VedicChart _computeDivisionalChart(
@@ -53,8 +74,8 @@ class DivisionalChartService {
       final chartAyanamsa = rashiChart.calculationFlags?.siderealMode;
       if (chartAyanamsa != type.requiredAyanamsa) {
         throw AyanamsaMismatchException(
-          'D${type.divisions} requires ${type.requiredAyanamsa!.name} ayanamsa. '
-          'Chart was calculated with ${chartAyanamsa?.name ?? "unknown"}. '
+          'D${type.divisions} requires ${type.requiredAyanamsa!.label} ayanamsa. '
+          'Chart was calculated with ${chartAyanamsa?.label ?? "unknown"}. '
           'Pass CalculationFlags(siderealMode: SiderealMode.${type.requiredAyanamsa!.name})'
           ' when calculating the root chart.',
         );
@@ -102,9 +123,35 @@ class DivisionalChartService {
     );
     planetHouseMap[rahuInfoTemp.position.planet] = rahuInfoTemp.house;
 
-    final ketuInfoTemp = KetuPosition(rahuPosition: rahuInfoTemp.position);
-    final ketuHouse = dHouses.getHouseForLongitude(ketuInfoTemp.longitude);
-    planetHouseMap[Planet.ketu] = ketuHouse;
+    // Ketu's varga placement must come from Ketu's own NATAL longitude
+    // (Rahu + 180) run through the varga mapping — NOT from the already
+    // projected Rahu. For evenly divided vargas the two agree, because a
+    // 180-degree rotation always maps to six varga signs; but the uneven
+    // Trimsamsa (D30) and D249 do not commute with that rotation, so deriving
+    // Ketu from the mapped Rahu puts Ketu in the wrong varga sign.
+    final natalKetuLongitude = (rashiChart.rahu.longitude + 180.0) % 360.0;
+    final ketuInfoTemp = _calculatePlanetVarga(
+      originalInfo: VedicPlanetInfo(
+        position: PlanetPosition(
+          planet: Planet.ketu,
+          dateTime: rashiChart.rahu.position.dateTime,
+          longitude: natalKetuLongitude,
+          latitude: -rashiChart.rahu.position.latitude,
+          distance: rashiChart.rahu.position.distance,
+          longitudeSpeed: rashiChart.rahu.position.longitudeSpeed,
+          latitudeSpeed: -rashiChart.rahu.position.latitudeSpeed,
+          distanceSpeed: rashiChart.rahu.position.distanceSpeed,
+          isRetrograde: true,
+        ),
+        house: dHouses.getHouseForLongitude(natalKetuLongitude),
+        dignity: PlanetaryDignity.neutralSign,
+      ),
+      type: type,
+      dHouses: dHouses,
+      planetHouseMap: null,
+      config: config,
+    );
+    planetHouseMap[Planet.ketu] = ketuInfoTemp.house;
 
     // Second pass: Calculate dignity
     final finalPlanets = <Planet, VedicPlanetInfo>{};
@@ -149,7 +196,21 @@ class DivisionalChartService {
       subSpan: rahuInfoTemp.subSpan,
     );
 
-    final finalKetu = KetuPosition(rahuPosition: finalRahu.position);
+    // `KetuPosition` derives Ketu from a Rahu position, so to pin Ketu at its
+    // own varga longitude we hand it a Rahu proxy exactly 180 degrees behind.
+    // Every other field comes from the mapped Rahu, so Ketu's date, speed and
+    // distance are unchanged from before.
+    final ketuRahuProxy = PlanetPosition(
+      planet: rahuInfoTemp.position.planet,
+      dateTime: rahuInfoTemp.position.dateTime,
+      longitude: (ketuInfoTemp.longitude + 180.0) % 360.0,
+      latitude: rahuInfoTemp.position.latitude,
+      distance: rahuInfoTemp.position.distance,
+      longitudeSpeed: rahuInfoTemp.position.longitudeSpeed,
+      latitudeSpeed: rahuInfoTemp.position.latitudeSpeed,
+      distanceSpeed: rahuInfoTemp.position.distanceSpeed,
+    );
+    final finalKetu = KetuPosition(rahuPosition: ketuRahuProxy);
 
     return VedicChart(
       dateTime: rashiChart.dateTime,
@@ -249,16 +310,16 @@ class DivisionalChartService {
       return PlanetaryDignity.debilitated;
     }
 
+    // Moola Trikona (must be checked BEFORE own signs because MT signs overlap)
+    final moolaTrikona = _getMoolaTrikona(planet);
+    if (moolaTrikona != null && signIndex == moolaTrikona) {
+      return PlanetaryDignity.moolaTrikona;
+    }
+
     // Own signs
     final ownSigns = _getOwnSigns(planet);
     if (ownSigns.contains(signIndex)) {
       return PlanetaryDignity.ownSign;
-    }
-
-    // Moola Trikona
-    final moolaTrikona = _getMoolaTrikona(planet);
-    if (moolaTrikona != null && signIndex == moolaTrikona) {
-      return PlanetaryDignity.moolaTrikona;
     }
 
     // Friend/enemy/neutral based on sign lord
@@ -398,6 +459,14 @@ class DivisionalChartService {
   }
 
   /// Calculates the absolute longitude (0-360) of a point in a divisional chart.
+  double calculateVargaLongitude(
+    double longitude,
+    DivisionalChartType type, {
+    VargaConfiguration? config,
+  }) =>
+      _calculateVargaLongitude(longitude, type, config: config);
+
+  /// Internal: Calculates the absolute longitude (0-360) of a point in a divisional chart.
   double _calculateVargaLongitude(
     double longitude,
     DivisionalChartType type, {
@@ -421,8 +490,13 @@ class DivisionalChartService {
     );
 
     // 3. Determine degrees in the new sign
-    // Typically: (degreeInSign * N) % 30
-    final degreesInNewSign = (degreeInSign * parts) % 30;
+    // For D30 (Trimsamsa), spans are unequal so degrees are scaled proportionally across 30°.
+    final double degreesInNewSign;
+    if (type == DivisionalChartType.d30) {
+      degreesInNewSign = _calculateD30DegreeInSign(signIndex, degreeInSign);
+    } else {
+      degreesInNewSign = (degreeInSign * parts) % 30;
+    }
 
     // Apply guardrail to degrees in new sign too
     var finalDegrees = degreesInNewSign;
@@ -534,18 +608,19 @@ class DivisionalChartService {
         return (signIndex + offset) % 12;
 
       case DivisionalChartType.d5: // Panchamsa
-        // D5 rules:
+        // D5 rules (BPHS Ch. 6, Sloka 8):
+        // 5 divisions of 6° each.
         // For odd signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius):
-        //   Start from Aries (0)
+        //   Aries (0), Aquarius (10), Sagittarius (8), Gemini (2), Libra (6)
         // For even signs (Taurus, Cancer, Virgo, Scorpio, Capricorn, Pisces):
-        //   Start from Libra (6)
-        final part = (degreeInSign / (30 / 5)).floor(); // 0-4
+        //   Taurus (1), Virgo (5), Pisces (11), Capricorn (9), Scorpio (7)
+        final part = (degreeInSign / (30 / 5)).floor().clamp(0, 4);
         if (isOdd) {
-          // Start from Aries for odd signs
-          return (0 + part) % 12;
+          const oddSigns = [0, 10, 8, 2, 6];
+          return oddSigns[part];
         } else {
-          // Start from Libra for even signs
-          return (6 + part) % 12;
+          const evenSigns = [1, 5, 11, 9, 7];
+          return evenSigns[part];
         }
 
       case DivisionalChartType.d6: // Shashthamsa
@@ -738,24 +813,15 @@ class DivisionalChartService {
         // Traditional D60 calculation (Shashtiamsa)
         // Each sign is divided into 60 parts of 0.5 each
         //
-        // Per BPHS and classical sources:
-        // - For odd signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius):
-        //   Count forward: Part 0 = same sign, Part 59 = 11th sign ahead
-        // - For even signs (Taurus, Cancer, Virgo, Scorpio, Capricorn, Pisces):
-        //   Count backward: Part 0 = 9th sign from current (traditional method)
-        //
-        // Alternative simpler method (also valid): Continuous count for all
+        // Per BPHS Ch.6 v.33: take the degrees traversed within the sign,
+        // double them, divide by 12, add 1 to the remainder, and count that far
+        // forward from the natal sign itself. This holds for odd AND even signs
+        // alike: for even signs only the 60 Shashtiamsa NAMES run in reverse
+        // order, the sign POSITION does not.
         final part = (degreeInSign / (30 / 60)).floor(); // 0-59
 
-        // Using the sign-based approach (most traditional):
-        if (isOdd) {
-          // Odd signs: forward count from sign
-          return (signIndex + part) % 12;
-        } else {
-          // Even signs: forward from 9th sign (traditional according to tests)
-          // 9th from current sign = (signIndex + 8) % 12
-          return (signIndex + 8 + part) % 12;
-        }
+        // `part` runs 0-59, so `% 12` wraps the count back into the zodiac.
+        return (signIndex + part) % 12;
 
       case DivisionalChartType.d150: // Nadi Amsa
         // D150: 150th division for micro-level analysis
@@ -878,5 +944,52 @@ class DivisionalChartService {
       // 25-30: Mars (Scorpio)
       return 7;
     }
+  }
+
+  double _calculateD30DegreeInSign(int signIndex, double degree) {
+    final sign = signIndex + 1;
+    final isOdd = sign % 2 != 0;
+
+    double spanStart;
+    double spanWidth;
+
+    if (isOdd) {
+      if (degree < 5 - 1e-11) {
+        spanStart = 0.0;
+        spanWidth = 5.0;
+      } else if (degree < 10 - 1e-11) {
+        spanStart = 5.0;
+        spanWidth = 5.0;
+      } else if (degree < 18 - 1e-11) {
+        spanStart = 10.0;
+        spanWidth = 8.0;
+      } else if (degree < 25 - 1e-11) {
+        spanStart = 18.0;
+        spanWidth = 7.0;
+      } else {
+        spanStart = 25.0;
+        spanWidth = 5.0;
+      }
+    } else {
+      if (degree < 5 - 1e-11) {
+        spanStart = 0.0;
+        spanWidth = 5.0;
+      } else if (degree < 12 - 1e-11) {
+        spanStart = 5.0;
+        spanWidth = 7.0;
+      } else if (degree < 20 - 1e-11) {
+        spanStart = 12.0;
+        spanWidth = 8.0;
+      } else if (degree < 25 - 1e-11) {
+        spanStart = 20.0;
+        spanWidth = 5.0;
+      } else {
+        spanStart = 25.0;
+        spanWidth = 5.0;
+      }
+    }
+
+    final ratio = ((degree - spanStart) / spanWidth).clamp(0.0, 1.0);
+    return ratio * 30.0;
   }
 }

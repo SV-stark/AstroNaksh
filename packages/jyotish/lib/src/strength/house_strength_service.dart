@@ -4,6 +4,7 @@ import 'package:jyotish/src/models/rashi.dart';
 import 'package:jyotish/src/models/vedic_chart.dart';
 import 'package:jyotish/src/models/divisional_chart_type.dart';
 import 'package:jyotish/src/strength/house_strength.dart';
+import 'package:jyotish/src/strength/relationship.dart';
 import 'package:jyotish/src/systems/shadbala_service.dart';
 import 'package:jyotish/src/analysis/divisional_chart_service.dart';
 
@@ -53,13 +54,12 @@ class HouseStrengthService {
   Future<Map<int, EnhancedBhavaBalaResult>> calculateEnhancedBhavaBala(
     VedicChart chart,
   ) async {
-    final service = _shadbalaService;
-    if (service == null) {
+    if (_shadbalaService == null) {
       throw StateError(
         'ShadbalaService must be provided to calculate Bhava Bala',
       );
     }
-    final shadbala = await service.calculateShadbala(chart);
+    final shadbala = await _shadbalaService.calculateShadbala(chart);
     final vimsopakaBala = calculateVimsopakaBala(chart);
     final results = <int, EnhancedBhavaBalaResult>{};
 
@@ -100,7 +100,10 @@ class HouseStrengthService {
   ) {
     final lord = _getHouseLord(chart, house);
     final lordBala = shadbala[lord];
-    return lordBala?.totalBala ?? 0.0;
+    if (lordBala == null) return 0.0;
+    final minReq =
+        lordBala.minimumRequired > 0 ? lordBala.minimumRequired : 390.0;
+    return (lordBala.totalBala / minReq * 60.0).clamp(0.0, 60.0);
   }
 
   Planet _getHouseLord(VedicChart chart, int houseNumber) {
@@ -134,7 +137,9 @@ class HouseStrengthService {
 
   double _calculateBhavaDrishtiStrength(VedicChart chart, int house) {
     var strength = 0.0;
-    final houseCusp = (chart.ascendant + (house - 1) * 30) % 360;
+    final houseCusp = (house >= 1 && house <= chart.houses.cusps.length)
+        ? chart.houses.cusps[house - 1]
+        : (chart.ascendant + (house - 1) * 30) % 360;
 
     for (final entry in chart.planets.entries) {
       final planet = entry.key;
@@ -142,7 +147,7 @@ class HouseStrengthService {
 
       if (Planet.lunarNodes.contains(planet)) continue;
 
-      final angle = (planetInfo.longitude - houseCusp + 360) % 360;
+      final angle = (houseCusp - planetInfo.longitude + 360) % 360;
       final aspectStrength = _calculateAspectStrength(angle);
 
       if (_isBenefic(planet)) {
@@ -223,7 +228,7 @@ class HouseStrengthService {
         chart,
         relevantCharts,
       );
-      final totalScore = (vargaScore * sambandhaScore / 20.0).clamp(5.0, 20.0);
+      final totalScore = (vargaScore * sambandhaScore / 20.0).clamp(0.0, 20.0);
       final category = _getVimsopakaCategory(totalScore);
 
       results[planet] = VimsopakaBalaResult(
@@ -270,13 +275,13 @@ class HouseStrengthService {
     return switch (dignity) {
       PlanetaryDignity.exalted => 20.0,
       PlanetaryDignity.moolaTrikona => 18.0,
-      PlanetaryDignity.ownSign => 18.0,
-      PlanetaryDignity.greatFriend => 15.0,
-      PlanetaryDignity.friendSign => 10.0,
-      PlanetaryDignity.neutralSign => 8.0,
-      PlanetaryDignity.enemySign => 5.0,
-      PlanetaryDignity.greatEnemy => 3.0,
-      PlanetaryDignity.debilitated => 1.0,
+      PlanetaryDignity.ownSign => 15.0,
+      PlanetaryDignity.greatFriend => 10.0,
+      PlanetaryDignity.friendSign => 7.0,
+      PlanetaryDignity.neutralSign => 5.0,
+      PlanetaryDignity.enemySign => 4.0,
+      PlanetaryDignity.greatEnemy => 2.0,
+      PlanetaryDignity.debilitated => 0.0,
     };
   }
 
@@ -340,34 +345,12 @@ class HouseStrengthService {
 
   PlanetaryFriendship _getFriendshipLevel(Planet planet1, Planet planet2) {
     if (planet1 == planet2) return PlanetaryFriendship.own;
-
-    const naturalFriends = {
-      Planet.sun: [Planet.moon, Planet.mars, Planet.jupiter],
-      Planet.moon: [Planet.sun, Planet.mercury, Planet.venus],
-      Planet.mars: [Planet.sun, Planet.moon, Planet.jupiter],
-      Planet.mercury: [Planet.sun, Planet.venus],
-      Planet.jupiter: [Planet.sun, Planet.moon, Planet.mars],
-      Planet.venus: [Planet.mercury, Planet.saturn],
-      Planet.saturn: [Planet.mercury, Planet.venus],
+    final rel = RelationshipCalculator.naturalRelationships[planet1]?[planet2];
+    return switch (rel) {
+      RelationshipType.friend => PlanetaryFriendship.friend,
+      RelationshipType.enemy => PlanetaryFriendship.enemy,
+      _ => PlanetaryFriendship.neutral,
     };
-
-    const naturalEnemies = {
-      Planet.sun: [Planet.venus, Planet.saturn],
-      Planet.moon: [], // Moon has no natural enemies
-      Planet.mars: [Planet.mercury],
-      Planet.mercury: [Planet.moon],
-      Planet.jupiter: [Planet.mercury, Planet.venus],
-      Planet.venus: [Planet.sun, Planet.moon],
-      Planet.saturn: [Planet.sun, Planet.moon, Planet.mars],
-    };
-
-    final p1Friends = naturalFriends[planet1] ?? [];
-    final p1Enemies = naturalEnemies[planet1] ?? [];
-
-    if (p1Friends.contains(planet2)) return PlanetaryFriendship.friend;
-    if (p1Enemies.contains(planet2)) return PlanetaryFriendship.enemy;
-
-    return PlanetaryFriendship.neutral;
   }
 
   VimsopakaCategory _getVimsopakaCategory(double score) {
@@ -406,7 +389,7 @@ class HouseStrengthService {
 
     return HouseStrengthSummary(
       houseResults: results,
-      averageStrength: totalStrength / 12,
+      averageStrength: results.isEmpty ? 0.0 : totalStrength / results.length,
       strongestHouse: strongest,
       weakestHouse: weakest,
     );

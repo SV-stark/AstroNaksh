@@ -12,13 +12,33 @@ class Ashtakavarga {
     required this.bhinnashtakavarga,
     required this.sarvashtakavarga,
     required this.samudayaAshtakavarga,
+    this.lagnaBhinnashtakavarga,
   });
 
   /// Birth chart used for calculations
   final VedicChart natalChart;
 
-  /// Bhinnashtakavarga for each planet
+  /// Bhinnashtakavarga for each of the 7 grahas (Sun..Saturn).
+  ///
+  /// Deliberately does **not** contain the Ascendant: see
+  /// [lagnaBhinnashtakavarga]. Parashara gives no Rahu/Ketu rows.
   final Map<Planet, Bhinnashtakavarga> bhinnashtakavarga;
+
+  /// The Ascendant's own Bhinnashtakavarga — the 8th row of classical Prastara.
+  ///
+  /// It is kept outside [bhinnashtakavarga] for two reasons:
+  /// 1. That map is keyed by [Planet] and the Ascendant is not a graha, so it
+  ///    has no key there.
+  /// 2. [sarvashtakavarga] is the sum of [bhinnashtakavarga]; the Ascendant is
+  ///    already counted through bit 7 of each graha's contribution mask, so an
+  ///    extra entry in the map would double count it and move the classical
+  ///    337 total.
+  ///
+  /// [Bhinnashtakavarga.bindus] of this row is the binary Prastara cell for the
+  /// Ascendant: 1 when any graha row gives the Ascendant a bindu in that sign,
+  /// 0 otherwise. Bit 7 of its contribution mask is set exactly when it is, so
+  /// [Bhinnashtakavarga.doesAscendantContribute] stays meaningful.
+  final Bhinnashtakavarga? lagnaBhinnashtakavarga;
 
   /// Sarvashtakavarga (total points per house)
   final Sarvashtakavarga sarvashtakavarga;
@@ -26,12 +46,13 @@ class Ashtakavarga {
   /// Samudaya Ashtakavarga (total for all planets)
   final List<int> samudayaAshtakavarga;
 
-  /// Gets the total bindus for a specific house (1-12)
+  /// Gets the total bindus for a specific house (1-12) counted from the Ascendant.
   int getTotalBindusForHouse(int houseNumber) {
     if (houseNumber < 1 || houseNumber > 12) {
       throw ArgumentError('House number must be between 1 and 12');
     }
-    return sarvashtakavarga.bindus[houseNumber - 1];
+    final signIndex = (natalChart.ascendantSignIndex + houseNumber - 1) % 12;
+    return sarvashtakavarga.bindus[signIndex];
   }
 
   /// Gets the total bindus for a specific sign (0=Aries, 11=Pisces)
@@ -68,13 +89,17 @@ class Ashtakavarga {
 /// plus ascendant in each of the 12 signs.
 class Bhinnashtakavarga {
   const Bhinnashtakavarga({
-    required this.planet,
     required this.bindus,
     required this.contributions,
+    this.planet,
   });
 
-  /// The planet this Ashtakavarga belongs to
-  final Planet planet;
+  /// The planet this Bhinnashtakavarga belongs to.
+  ///
+  /// `null` for the Ascendant's own Bhinnashtakavarga (the 8th Prastara row),
+  /// which is exposed via [Ashtakavarga.lagnaBhinnashtakavarga] rather than
+  /// through the [Planet]-keyed [Ashtakavarga.bhinnashtakavarga] map.
+  final Planet? planet;
 
   /// Number of bindus in each sign (0-8)
   final List<int> bindus;
@@ -118,6 +143,14 @@ class Bhinnashtakavarga {
     return result;
   }
 
+  /// Checks if the Ascendant contributed a bindu to a specific sign.
+  bool doesAscendantContribute(int signIndex) {
+    if (signIndex < 0 || signIndex > 11) {
+      throw ArgumentError('Sign index must be between 0 and 11');
+    }
+    return (contributions[signIndex] & (1 << 7)) != 0;
+  }
+
   /// Total bindus for this planet (should be between 0-337)
   int get totalBindus => bindus.fold(0, (sum, b) => sum + b);
 }
@@ -129,7 +162,10 @@ class Bhinnashtakavarga {
 class Sarvashtakavarga {
   const Sarvashtakavarga({required this.bindus});
 
-  /// Total bindus in each sign (0-11)
+  /// Total bindus in each sign (0-56).
+  ///
+  /// A sign can receive a bindu from each of the 8 Prastara contributors
+  /// (7 grahas + Ascendant), so the per-sign maximum is 56, not 12.
   final List<int> bindus;
 
   /// Alias for `bindus.length` for legacy tests.
@@ -221,124 +257,195 @@ class AshtakavargaTransit {
 /// These tables define which planets contribute bindus (1)
 /// in which signs from the perspective of each planet.
 class AshtakavargaTables {
-  // Contribution tables for each planet
-  // Each row represents a sign (0=Aries, 11=Pisces)
-  // Each column represents contributing planet (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn)
-  // 1 = contributes bindu, 0 = does not contribute
+  // Contribution tables for each planet (Brihat Parashara Hora Shastra).
+  // Indexed as table[relativeHouseFromContributor][contributorIndex]:
+  // row 0 = 1st house from the contributor, row 11 = 12th house from it.
+  // Rows are NOT absolute zodiac signs — the caller converts a zodiac sign to a
+  // relative house via (sign - contributorSign + 12) % 12 before indexing.
+  // Each column represents the contributor planet in order:
+  // Col 0: Sun, Col 1: Moon, Col 2: Mars, Col 3: Mercury, Col 4: Jupiter, Col 5: Venus, Col 6: Saturn.
+  // 1 = contributes bindu, 0 = does not contribute.
 
   /// Sun's Ashtakavarga contributions (standard Parashari)
-  /// Columns: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn
-  /// Jupiter contributes to Sun in houses: 1, 4, 5, 6, 9, 10, 11
+  /// Benefic houses from contributors (1-based):
+  /// Sun: 1, 2, 4, 7, 8, 9, 10, 11 (8)
+  /// Moon: 3, 6, 10, 11 (4)
+  /// Mars: 1, 2, 4, 7, 8, 9, 10, 11 (8)
+  /// Mercury: 3, 5, 6, 9, 10, 11, 12 (7)
+  /// Jupiter: 5, 6, 9, 11 (4)
+  /// Venus: 6, 7, 12 (3)
+  /// Saturn: 1, 2, 4, 7, 8, 9, 10, 11 (8)
+  /// (Lagna contributes 6 bindus at houses 3, 4, 6, 10, 11, 12 -> Total 48)
   static const List<List<int>> sunTable = [
     // Su Mo Ma Me Ju Ve Sa
-    [1, 0, 1, 0, 1, 0, 0], // Aries (1st from Sun)
-    [1, 0, 0, 1, 0, 1, 0], // Taurus (2nd from Sun)
-    [0, 1, 0, 1, 0, 0, 1], // Gemini (3rd from Sun)
-    [1, 0, 1, 0, 1, 0, 0], // Cancer (4th from Sun)
-    [0, 1, 0, 0, 1, 1, 0], // Leo (5th from Sun) - Jupiter contributes
-    [0, 0, 0, 1, 1, 0, 1], // Virgo (6th from Sun) - Jupiter contributes
-    [1, 1, 0, 0, 1, 1, 0], // Libra (7th from Sun)
-    [1, 0, 1, 0, 0, 0, 0], // Scorpio (8th from Sun)
-    [1, 0, 0, 1, 1, 0, 1], // Sagittarius (9th from Sun) - Jupiter contributes
-    [1, 1, 0, 0, 1, 1, 0], // Capricorn (10th from Sun) - Jupiter contributes
-    [1, 0, 1, 0, 1, 0, 1], // Aquarius (11th from Sun) - Jupiter contributes
-    [0, 1, 0, 1, 0, 0, 0], // Pisces (12th from Sun)
+    [1, 0, 1, 0, 0, 0, 1], // 1st from contributor
+    [1, 0, 1, 0, 0, 0, 1], // 2nd from contributor
+    [0, 1, 0, 1, 0, 0, 0], // 3rd from contributor
+    [1, 0, 1, 0, 0, 0, 1], // 4th from contributor
+    [0, 0, 0, 1, 1, 0, 0], // 5th from contributor
+    [0, 1, 0, 1, 1, 1, 0], // 6th from contributor
+    [1, 0, 1, 0, 0, 1, 1], // 7th from contributor
+    [1, 0, 1, 0, 0, 0, 1], // 8th from contributor
+    [1, 0, 1, 1, 1, 0, 1], // 9th from contributor
+    [1, 1, 1, 1, 0, 0, 1], // 10th from contributor
+    [1, 1, 1, 1, 1, 0, 1], // 11th from contributor
+    [0, 0, 0, 1, 0, 1, 0], // 12th from contributor
   ];
 
-  /// Moon's Ashtakavarga contributions
+  /// Moon's Ashtakavarga contributions (standard Parashari)
+  /// Benefic houses from contributors (1-based):
+  /// Sun: 3, 6, 7, 8, 10, 11 (6)
+  /// Moon: 1, 3, 6, 7, 10, 11 (6)
+  /// Mars: 2, 3, 5, 6, 9, 10, 11 (7)
+  /// Mercury: 1, 3, 4, 5, 7, 8, 10, 11 (8)
+  /// Jupiter: 1, 4, 7, 8, 10, 11, 12 (7)
+  /// Venus: 3, 4, 5, 7, 9, 10, 11 (7)
+  /// Saturn: 3, 5, 6, 11 (4)
+  /// (Lagna contributes 4 bindus at houses 3, 6, 10, 11 -> Total 49)
   static const List<List<int>> moonTable = [
-    [0, 1, 0, 0, 1, 0, 0], // Aries
-    [0, 0, 0, 0, 1, 1, 0], // Taurus
-    [0, 0, 0, 1, 0, 0, 1], // Gemini
-    [0, 1, 0, 0, 1, 0, 0], // Cancer
-    [0, 0, 0, 0, 1, 1, 0], // Leo
-    [1, 0, 0, 1, 0, 0, 1], // Virgo
-    [1, 1, 0, 0, 1, 0, 0], // Libra
-    [0, 0, 0, 0, 1, 0, 0], // Scorpio
-    [0, 0, 0, 1, 0, 0, 1], // Sagittarius
-    [0, 1, 0, 0, 0, 1, 0], // Capricorn
-    [0, 0, 1, 0, 0, 0, 1], // Aquarius
-    [0, 1, 0, 1, 0, 0, 0], // Pisces
+    // Su Mo Ma Me Ju Ve Sa
+    [0, 1, 0, 1, 1, 0, 0], // 1st
+    [0, 0, 1, 0, 0, 0, 0], // 2nd
+    [1, 1, 1, 1, 0, 1, 1], // 3rd
+    [0, 0, 0, 1, 1, 1, 0], // 4th
+    [0, 0, 1, 1, 0, 1, 1], // 5th
+    [1, 1, 1, 0, 0, 0, 1], // 6th
+    [1, 1, 0, 1, 1, 1, 0], // 7th
+    [1, 0, 0, 1, 1, 0, 0], // 8th
+    [0, 0, 1, 0, 0, 1, 0], // 9th
+    [1, 1, 1, 1, 1, 1, 0], // 10th
+    [1, 1, 1, 1, 1, 1, 1], // 11th
+    [0, 0, 0, 0, 1, 0, 0], // 12th
   ];
 
-  /// Mars' Ashtakavarga contributions
+  /// Mars' Ashtakavarga contributions (standard Parashari)
+  /// Benefic houses from contributors (1-based):
+  /// Sun: 3, 5, 6, 10, 11 (5)
+  /// Moon: 3, 6, 11 (3)
+  /// Mars: 1, 2, 4, 7, 8, 10, 11 (7)
+  /// Mercury: 3, 5, 6, 11 (4)
+  /// Jupiter: 6, 10, 11, 12 (4)
+  /// Venus: 6, 8, 11, 12 (4)
+  /// Saturn: 1, 4, 7, 8, 9, 10, 11 (7)
+  /// (Lagna contributes 5 bindus at houses 1, 3, 6, 10, 11 -> Total 39)
   static const List<List<int>> marsTable = [
-    [1, 0, 1, 0, 1, 0, 0], // Aries
-    [0, 0, 0, 1, 0, 1, 0], // Taurus
-    [0, 1, 0, 1, 0, 0, 1], // Gemini
-    [1, 0, 1, 0, 1, 0, 0], // Cancer
-    [0, 1, 1, 0, 1, 1, 0], // Leo
-    [0, 0, 0, 1, 0, 0, 1], // Virgo
-    [0, 1, 0, 0, 1, 1, 0], // Libra
-    [1, 0, 1, 0, 1, 0, 0], // Scorpio
-    [0, 0, 0, 1, 0, 0, 1], // Sagittarius
-    [0, 1, 0, 0, 0, 1, 0], // Capricorn
-    [0, 0, 1, 0, 0, 0, 1], // Aquarius
-    [1, 1, 0, 1, 0, 0, 0], // Pisces
+    // Su Mo Ma Me Ju Ve Sa
+    [0, 0, 1, 0, 0, 0, 1], // 1st
+    [0, 0, 1, 0, 0, 0, 0], // 2nd
+    [1, 1, 0, 1, 0, 0, 0], // 3rd
+    [0, 0, 1, 0, 0, 0, 1], // 4th
+    [1, 0, 0, 1, 0, 0, 0], // 5th
+    [1, 1, 0, 1, 1, 1, 0], // 6th
+    [0, 0, 1, 0, 0, 0, 1], // 7th
+    [0, 0, 1, 0, 0, 1, 1], // 8th
+    [0, 0, 0, 0, 0, 0, 1], // 9th
+    [1, 0, 1, 0, 1, 0, 1], // 10th
+    [1, 1, 1, 1, 1, 1, 1], // 11th
+    [0, 0, 0, 0, 1, 1, 0], // 12th
   ];
 
-  /// Mercury's Ashtakavarga contributions
+  /// Mercury's Ashtakavarga contributions (standard Parashari)
+  /// Benefic houses from contributors (1-based):
+  /// Sun: 5, 6, 9, 11, 12 (5)
+  /// Moon: 2, 4, 6, 8, 10, 11 (6)
+  /// Mars: 1, 2, 4, 7, 8, 9, 10, 11 (8)
+  /// Mercury: 1, 3, 5, 6, 9, 10, 11, 12 (8)
+  /// Jupiter: 6, 8, 11, 12 (4)
+  /// Venus: 1, 2, 3, 4, 5, 8, 9, 11 (8)
+  /// Saturn: 1, 2, 4, 7, 8, 9, 10, 11 (8)
+  /// (Lagna contributes 7 bindus at houses 1, 2, 4, 6, 8, 10, 11 -> Total 54)
   static const List<List<int>> mercuryTable = [
-    [1, 0, 0, 1, 1, 0, 0], // Aries
-    [0, 0, 0, 1, 0, 1, 0], // Taurus
-    [0, 1, 0, 1, 0, 0, 1], // Gemini
-    [1, 0, 0, 1, 1, 0, 0], // Cancer
-    [0, 1, 0, 1, 1, 1, 0], // Leo
-    [1, 0, 0, 1, 0, 0, 1], // Virgo
-    [0, 1, 0, 1, 1, 1, 0], // Libra
-    [1, 0, 0, 1, 1, 0, 0], // Scorpio
-    [0, 0, 0, 1, 0, 0, 1], // Sagittarius
-    [0, 1, 0, 1, 0, 1, 0], // Capricorn
-    [0, 0, 0, 1, 0, 0, 1], // Aquarius
-    [1, 1, 0, 1, 0, 0, 0], // Pisces
+    // Su Mo Ma Me Ju Ve Sa
+    [0, 0, 1, 1, 0, 1, 1], // 1st
+    [0, 1, 1, 0, 0, 1, 1], // 2nd
+    [0, 0, 0, 1, 0, 1, 0], // 3rd
+    [0, 1, 1, 0, 0, 1, 1], // 4th
+    [1, 0, 0, 1, 0, 1, 0], // 5th
+    [1, 1, 0, 1, 1, 0, 0], // 6th
+    [0, 0, 1, 0, 0, 0, 1], // 7th
+    [0, 1, 1, 0, 1, 1, 1], // 8th
+    [1, 0, 1, 1, 0, 1, 1], // 9th
+    [0, 1, 1, 1, 0, 0, 1], // 10th
+    [1, 1, 1, 1, 1, 1, 1], // 11th
+    [1, 0, 0, 1, 1, 0, 0], // 12th
   ];
 
-  /// Jupiter's Ashtakavarga contributions
+  /// Jupiter's Ashtakavarga contributions (standard Parashari)
+  /// Benefic houses from contributors (1-based):
+  /// Sun: 1, 2, 3, 4, 7, 8, 9, 10, 11 (9)
+  /// Moon: 2, 5, 7, 9, 11 (5)
+  /// Mars: 1, 2, 4, 7, 8, 10, 11 (7)
+  /// Mercury: 1, 2, 4, 5, 6, 9, 10, 11 (8)
+  /// Jupiter: 1, 2, 3, 4, 7, 8, 10, 11 (8)
+  /// Venus: 2, 5, 6, 9, 10, 11 (6)
+  /// Saturn: 3, 5, 6, 12 (4)
+  /// (Lagna contributes 9 bindus at houses 1, 2, 4, 5, 6, 7, 9, 10, 11 -> Total 56)
   static const List<List<int>> jupiterTable = [
-    [1, 0, 1, 0, 1, 0, 0], // Aries
-    [0, 0, 0, 0, 1, 1, 0], // Taurus
-    [0, 1, 0, 1, 1, 0, 1], // Gemini
-    [1, 0, 1, 0, 1, 0, 0], // Cancer
-    [0, 1, 1, 0, 1, 1, 0], // Leo
-    [0, 0, 0, 0, 1, 0, 1], // Virgo
-    [0, 1, 0, 0, 1, 1, 0], // Libra
-    [1, 0, 1, 0, 1, 0, 0], // Scorpio
-    [0, 0, 0, 1, 1, 0, 1], // Sagittarius
-    [0, 1, 0, 0, 0, 1, 0], // Capricorn
-    [0, 0, 1, 0, 0, 0, 1], // Aquarius
-    [1, 1, 0, 0, 1, 0, 0], // Pisces
+    // Su Mo Ma Me Ju Ve Sa
+    [1, 0, 1, 1, 1, 0, 0], // 1st
+    [1, 1, 1, 1, 1, 1, 0], // 2nd
+    [1, 0, 0, 0, 1, 0, 1], // 3rd
+    [1, 0, 1, 1, 1, 0, 0], // 4th
+    [0, 1, 0, 1, 0, 1, 1], // 5th
+    [0, 0, 0, 1, 0, 1, 1], // 6th
+    [1, 1, 1, 0, 1, 0, 0], // 7th
+    [1, 0, 1, 0, 1, 0, 0], // 8th
+    [1, 1, 0, 1, 0, 1, 0], // 9th
+    [1, 0, 1, 1, 1, 1, 0], // 10th
+    [1, 1, 1, 1, 1, 1, 0], // 11th
+    [0, 0, 0, 0, 0, 0, 1], // 12th
   ];
 
-  /// Venus' Ashtakavarga contributions
+  /// Venus' Ashtakavarga contributions (standard Parashari)
+  /// Benefic houses from contributors (1-based):
+  /// Sun: 8, 11, 12 (3)
+  /// Moon: 1, 2, 3, 4, 5, 8, 9, 11, 12 (9)
+  /// Mars: 3, 5, 6, 9, 11, 12 (6)
+  /// Mercury: 3, 5, 6, 9, 11 (5)
+  /// Jupiter: 5, 8, 9, 10, 11 (5)
+  /// Venus: 1, 2, 3, 4, 5, 8, 9, 10, 11 (9)
+  /// Saturn: 3, 4, 5, 8, 9, 10, 11 (7)
+  /// (Lagna contributes 8 bindus at houses 1, 2, 3, 4, 5, 8, 9, 11 -> Total 52)
   static const List<List<int>> venusTable = [
-    [0, 0, 0, 0, 1, 1, 0], // Aries
-    [0, 0, 0, 0, 1, 1, 0], // Taurus
-    [0, 0, 0, 1, 0, 0, 1], // Gemini
-    [0, 0, 0, 0, 1, 1, 0], // Cancer
-    [0, 1, 0, 0, 1, 1, 0], // Leo
-    [1, 0, 0, 1, 0, 0, 1], // Virgo
-    [1, 1, 0, 0, 1, 1, 0], // Libra
-    [0, 0, 0, 0, 1, 1, 0], // Scorpio
-    [0, 0, 0, 1, 0, 0, 1], // Sagittarius
-    [0, 1, 0, 0, 0, 1, 0], // Capricorn
-    [0, 0, 1, 0, 0, 0, 1], // Aquarius
-    [0, 1, 0, 0, 1, 1, 0], // Pisces
+    // Su Mo Ma Me Ju Ve Sa
+    [0, 1, 0, 0, 0, 1, 0], // 1st
+    [0, 1, 0, 0, 0, 1, 0], // 2nd
+    [0, 1, 1, 1, 0, 1, 1], // 3rd
+    [0, 1, 0, 0, 0, 1, 1], // 4th
+    [0, 1, 1, 1, 1, 1, 1], // 5th
+    [0, 0, 1, 1, 0, 0, 0], // 6th
+    [0, 0, 0, 0, 0, 0, 0], // 7th
+    [1, 1, 0, 0, 1, 1, 1], // 8th
+    [0, 1, 1, 1, 1, 1, 1], // 9th
+    [0, 0, 0, 0, 1, 1, 1], // 10th
+    [1, 1, 1, 1, 1, 1, 1], // 11th
+    [1, 1, 1, 0, 0, 0, 0], // 12th
   ];
 
-  /// Saturn's Ashtakavarga contributions
+  /// Saturn's Ashtakavarga contributions (standard Parashari)
+  /// Benefic houses from contributors (1-based):
+  /// Sun: 1, 2, 4, 7, 8, 10, 11 (7)
+  /// Moon: 3, 6, 11 (3)
+  /// Mars: 3, 5, 6, 10, 11, 12 (6)
+  /// Mercury: 6, 8, 9, 10, 11, 12 (6)
+  /// Jupiter: 5, 6, 11, 12 (4)
+  /// Venus: 6, 11, 12 (3)
+  /// Saturn: 3, 5, 6, 11 (4)
+  /// (Lagna contributes 6 bindus at houses 1, 3, 4, 6, 10, 11 -> Total 39)
   static const List<List<int>> saturnTable = [
-    [0, 0, 1, 0, 0, 0, 1], // Aries
-    [0, 0, 0, 1, 0, 0, 1], // Taurus
-    [0, 0, 0, 1, 0, 0, 1], // Gemini
-    [0, 0, 1, 0, 0, 0, 1], // Cancer
-    [0, 1, 1, 0, 0, 0, 1], // Leo
-    [1, 0, 0, 1, 0, 0, 1], // Virgo
-    [0, 1, 0, 0, 0, 0, 1], // Libra
-    [0, 0, 1, 0, 0, 0, 1], // Scorpio
-    [0, 0, 0, 1, 0, 0, 1], // Sagittarius
-    [0, 1, 0, 0, 0, 1, 1], // Capricorn
-    [0, 0, 1, 0, 0, 0, 1], // Aquarius
-    [1, 1, 0, 1, 0, 0, 1], // Pisces
+    // Su Mo Ma Me Ju Ve Sa
+    [1, 0, 0, 0, 0, 0, 0], // 1st
+    [1, 0, 0, 0, 0, 0, 0], // 2nd
+    [0, 1, 1, 0, 0, 0, 1], // 3rd
+    [1, 0, 0, 0, 0, 0, 0], // 4th
+    [0, 0, 1, 0, 1, 0, 1], // 5th
+    [0, 1, 1, 1, 1, 1, 1], // 6th
+    [1, 0, 0, 0, 0, 0, 0], // 7th
+    [1, 0, 0, 1, 0, 0, 0], // 8th
+    [0, 0, 0, 1, 0, 0, 0], // 9th
+    [1, 0, 1, 1, 0, 0, 0], // 10th
+    [1, 1, 1, 1, 1, 1, 1], // 11th
+    [0, 0, 1, 1, 1, 1, 0], // 12th
   ];
 
   /// Gets the contribution table for a specific planet

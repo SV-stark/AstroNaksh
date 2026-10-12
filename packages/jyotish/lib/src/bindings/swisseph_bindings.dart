@@ -70,23 +70,55 @@ class SwissEphBindings {
     'swe_get_ayanamsa_ut',
   );
 
-  late final _sweHouses = _lib.lookupFunction<
-      ffi.Int32 Function(
-        ffi.Double,
-        ffi.Double,
-        ffi.Double,
-        ffi.Int32,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-      ),
-      int Function(
-        double,
-        double,
-        double,
-        int,
-        ffi.Pointer<ffi.Double>,
-        ffi.Pointer<ffi.Double>,
-      )>('swe_houses');
+  late final _sweHousesEx = () {
+    try {
+      return _lib.lookupFunction<
+          ffi.Int32 Function(
+            ffi.Double,
+            ffi.Int32,
+            ffi.Double,
+            ffi.Double,
+            ffi.Int32,
+            ffi.Pointer<ffi.Double>,
+            ffi.Pointer<ffi.Double>,
+          ),
+          int Function(
+            double,
+            int,
+            double,
+            double,
+            int,
+            ffi.Pointer<ffi.Double>,
+            ffi.Pointer<ffi.Double>,
+          )>('swe_houses_ex');
+    } catch (_) {
+      return null;
+    }
+  }();
+
+  late final _sweHouses = () {
+    try {
+      return _lib.lookupFunction<
+          ffi.Int32 Function(
+            ffi.Double,
+            ffi.Double,
+            ffi.Double,
+            ffi.Int32,
+            ffi.Pointer<ffi.Double>,
+            ffi.Pointer<ffi.Double>,
+          ),
+          int Function(
+            double,
+            double,
+            double,
+            int,
+            ffi.Pointer<ffi.Double>,
+            ffi.Pointer<ffi.Double>,
+          )>('swe_houses');
+    } catch (_) {
+      return null;
+    }
+  }();
 
   late final _sweRiseTrans = _lib.lookupFunction<
       ffi.Int32 Function(
@@ -238,7 +270,17 @@ class SwissEphBindings {
     // Fall back to standard loading
     if (Platform.isAndroid) {
       return ffi.DynamicLibrary.open('libswisseph.so');
-    } else if (Platform.isIOS || Platform.isMacOS) {
+    } else if (Platform.isIOS) {
+      try {
+        return ffi.DynamicLibrary.process();
+      } catch (_) {
+        try {
+          return ffi.DynamicLibrary.open('jyotish.framework/jyotish');
+        } catch (_) {
+          return ffi.DynamicLibrary.open('libswisseph.dylib');
+        }
+      }
+    } else if (Platform.isMacOS) {
       return ffi.DynamicLibrary.open('libswisseph.dylib');
     } else if (Platform.isLinux) {
       try {
@@ -389,14 +431,28 @@ class SwissEphBindings {
     try {
       final systemCode = houseSystem.codeUnitAt(0);
 
-      final returnCode = _sweHouses(
-        julianDay,
-        latitude,
-        longitude,
-        systemCode,
-        cuspsPtr,
-        ascmcPtr,
-      );
+      final housesEx = _sweHousesEx;
+      final houses = _sweHouses;
+      final returnCode = housesEx != null
+          ? housesEx(
+              julianDay,
+              0,
+              latitude,
+              longitude,
+              systemCode,
+              cuspsPtr,
+              ascmcPtr,
+            )
+          : (houses != null
+              ? houses(
+                  julianDay,
+                  latitude,
+                  longitude,
+                  systemCode,
+                  cuspsPtr,
+                  ascmcPtr,
+                )
+              : -1);
 
       if (returnCode < 0) {
         return null;

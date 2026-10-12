@@ -98,14 +98,34 @@ class ArgalaService {
       final offset = ((planetHouse - targetHouse + 12) % 12) + 1;
       final type = (offset == 5) ? ArgalaType.secondary : ArgalaType.primary;
 
+      // Virodha Argala (obstruction) is looked up the same way `_addArgalaIfPresent`
+      // does it for `calculateArgalaForHouse`: the 12th, 10th and 3rd houses
+      // obstruct the 2nd, 4th/5th and 11th respectively, and the 9th obstructs
+      // the 5th. Reporting `false` here made the two public methods disagree —
+      // every Argala from this method appeared unobstructed.
+      final obstructOffsets = switch (offset) {
+        2 => const [12],
+        4 || 5 => const [10, 9],
+        11 => const [3],
+        _ => const <int>[],
+      };
+
+      var obstructing = 0;
+      for (final obstructOffset in obstructOffsets) {
+        final obstructHouse =
+            ((targetHouse - 1 + (obstructOffset - 1)) % 12) + 1;
+        obstructing += chart.getPlanetsInHouse(obstructHouse).length;
+      }
+      final sourceStrength = chart.getPlanetsInHouse(planetHouse).length;
+      final isObstructed = obstructing >= sourceStrength && obstructing > 0;
+
       argalas.add(
         ArgalaInfo(
           sourceHouse: planetHouse,
           targetHouse: targetHouse,
-          type: type,
+          type: isObstructed ? ArgalaType.virodha : type,
           causingPlanets: [planet],
-          isObstructed:
-              false, // Simplified - full check would verify obstruction
+          isObstructed: isObstructed,
         ),
       );
     }
@@ -121,15 +141,15 @@ class ArgalaService {
     required ArgalaType type,
     required List<ArgalaInfo> argalas,
   }) {
-    // Calculate source house
-    final sourceHouse = ((targetHouse - 1 + sourceOffset) % 12) + 1;
+    // Calculate source house (inclusive counting: Nth from targetHouse is targetHouse + N - 1)
+    final sourceHouse = ((targetHouse - 1 + (sourceOffset - 1)) % 12) + 1;
 
     // Get planets in source house
     final planetsInSource = chart.getPlanetsInHouse(sourceHouse);
     if (planetsInSource.isEmpty) return; // No Argala if no planets
 
     // Calculate obstruction house
-    final obstructHouse = ((targetHouse - 1 + obstructOffset) % 12) + 1;
+    final obstructHouse = ((targetHouse - 1 + (obstructOffset - 1)) % 12) + 1;
 
     // Get planets in obstruction house
     final planetsInObstruct = chart.getPlanetsInHouse(obstructHouse);

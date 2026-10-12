@@ -9,8 +9,9 @@ import 'package:jyotish/src/systems/jaimini_service.dart';
 ///
 /// **Vedic (whole-sign) mode** [default for [AspectConfig.vedic]]:
 /// Aspects are cast sign-to-sign  a planet in sign X aspects every planet
-/// in the target sign regardless of exact degree separation. Strength is
-/// always 1.0 (full).
+/// in the target sign regardless of exact degree separation. There is no orb
+/// in this model, so strength carries the classical Drishti weight of the
+/// aspect type (see [_wholeSignStrength]).
 ///
 /// Aspect houses from aspecting planets sign:
 /// - All planets aspect the 7th house (opposition sign)
@@ -31,7 +32,7 @@ class AspectService {
     VedicChart chart, {
     bool activeOnly = true,
   }) {
-    final jaiminiService = JaiminiService();
+    final jaiminiService = const JaiminiService();
     return activeOnly
         ? jaiminiService.calculateActiveRashiDrishti(chart)
         : jaiminiService.calculateRashiDrishti(chart);
@@ -89,16 +90,60 @@ class AspectService {
       }
     }
 
-    // Remove duplicate aspects and filter by minimum strength
-    final seen = <String>{};
-    return aspects.where((a) => a.strength >= config.minimumStrength).where((a) {
-      // Sort planets to handle bidirectional duplicates
-      final p1 = a.aspectingPlanet.index;
-      final p2 = a.aspectedPlanet.index;
-      final sortedPlanets = p1 < p2 ? '$p1-$p2' : '$p2-$p1';
-      return seen.add('$sortedPlanets-${a.type}');
-    }).toList();
+    // Remove duplicate aspects and filter by minimum strength.
+    //
+    // Conjunction and opposition are symmetric: A->B and B->A describe one
+    // and the same event, so a single record is kept and both planets are
+    // reported as casting and receiving it (see getAspectsCastBy). The Vishesh
+    // aspects are directional - a Mars 4th aspect onto Jupiter is not the same
+    // event as a Jupiter 9th aspect back onto Mars - so those are keyed by
+    // direction and never collapsed.
+    final seen = <String, AspectInfo>{};
+    for (final aspect in aspects) {
+      if (aspect.strength < config.minimumStrength) continue;
+
+      final p1 = aspect.aspectingPlanet.index;
+      final p2 = aspect.aspectedPlanet.index;
+      final String key;
+      if (_isSymmetricAspect(aspect.type)) {
+        key = 'mutual-${p1 < p2 ? p1 : p2}-${p1 < p2 ? p2 : p1}-${aspect.type}';
+      } else {
+        key = 'directed-$p1-$p2-${aspect.type}';
+      }
+
+      final existing = seen[key];
+      // Deterministic representative: for a mutual aspect prefer the direction
+      // whose aspecting planet has the lower Planet index, so the result never
+      // depends on the iteration order of [positions].
+      if (existing == null ||
+          (_isSymmetricAspect(aspect.type) &&
+              p1 < existing.aspectingPlanet.index)) {
+        seen[key] = aspect;
+      }
+    }
+
+    final result = seen.values.toList()
+      ..sort((a, b) {
+        final byAspecting = a.aspectingPlanet.index.compareTo(
+          b.aspectingPlanet.index,
+        );
+        if (byAspecting != 0) return byAspecting;
+        final byAspected = a.aspectedPlanet.index.compareTo(
+          b.aspectedPlanet.index,
+        );
+        if (byAspected != 0) return byAspected;
+        return a.type.index.compareTo(b.type.index);
+      });
+    return result;
   }
+
+  /// Whether [type] describes the same relation from either direction.
+  ///
+  /// Conjunction and opposition are mutual: two planets conjoin, or aspect each
+  /// other by the 7th, independently of which is named first. The Vishesh
+  /// aspects of Mars, Jupiter and Saturn are directional and are not mutual.
+  static bool _isSymmetricAspect(AspectType type) =>
+      type == AspectType.conjunction || type == AspectType.opposition;
 
   /// Gets aspects for a specific planet.
   ///
@@ -118,24 +163,50 @@ class AspectService {
         .toList();
   }
 
-  /// Gets aspects cast by a specific planet (where it is the aspecting planet).
+  /// Gets aspects cast by a specific planet.
+  ///
+  /// For directional aspects (the Vishesh aspects of Mars, Jupiter and Saturn)
+  /// this returns only those where [planet] is the aspecting planet.
+  ///
+  /// Conjunction and opposition are mutual: [calculateAspects] stores one
+  /// record per mutual pair, so those are returned for [planet] whether it is
+  /// the stored aspecting or the stored aspected member of the pair. This
+  /// matches the mutual nature of the relation - two planets in conjunction or
+  /// in 7th aspect each stand in it.
   List<AspectInfo> getAspectsCastBy(
     Planet planet,
     Map<Planet, PlanetPosition> positions, {
     AspectConfig config = AspectConfig.vedic,
   }) {
     final allAspects = calculateAspects(positions, config: config);
-    return allAspects.where((a) => a.aspectingPlanet == planet).toList();
+    return allAspects
+        .where(
+          (a) =>
+              a.aspectingPlanet == planet ||
+              (_isSymmetricAspect(a.type) && a.aspectedPlanet == planet),
+        )
+        .toList();
   }
 
-  /// Gets aspects received by a specific planet (where it is the aspected planet).
+  /// Gets aspects received by a specific planet.
+  ///
+  /// The mirror image of [getAspectsCastBy]: directional aspects are returned
+  /// only where [planet] is the aspected planet, while mutual aspects
+  /// (conjunction and opposition) are returned for [planet] as either member
+  /// of the stored pair.
   List<AspectInfo> getAspectsReceivedBy(
     Planet planet,
     Map<Planet, PlanetPosition> positions, {
     AspectConfig config = AspectConfig.vedic,
   }) {
     final allAspects = calculateAspects(positions, config: config);
-    return allAspects.where((a) => a.aspectedPlanet == planet).toList();
+    return allAspects
+        .where(
+          (a) =>
+              a.aspectedPlanet == planet ||
+              (_isSymmetricAspect(a.type) && a.aspectingPlanet == planet),
+        )
+        .toList();
   }
 
   /// Internal: Find aspects between two planets.
@@ -294,7 +365,7 @@ class AspectService {
             planet2,
             pos2,
             AspectType.opposition,
-            180 - angularDiff.abs(),
+            angularDiff - 180,
             config,
           ),
         );
@@ -431,7 +502,13 @@ class AspectService {
     return aspects;
   }
 
-  /// Internal: Calculate angular difference (0-360).
+  /// Internal: Angular difference from [lon1] forward to [lon2], in [0, 360).
+  ///
+  /// Note the range is one-sided: a gate written as `angularDiff.abs() <= orb`
+  /// only fires near 0, not near 360. That is safe here because
+  /// `calculateAspects` evaluates every planet pair in both directions, so the
+  /// reverse call supplies the near-360 half. Every other gate is centred on an
+  /// angle strictly inside (0, 360) and is therefore wrap-safe as written.
   double _calculateAngularDifference(double lon1, double lon2) {
     var diff = (lon2 - lon1) % 360;
     if (diff < 0) diff += 360;
@@ -443,7 +520,47 @@ class AspectService {
     return config.customOrbs?[type] ?? type.defaultOrb;
   }
 
-  /// Internal: Create a whole-sign aspect (strength always 1.0, orb = 0).
+  /// Orb reported for a whole-sign (Drishti) aspect, which has no orb.
+  ///
+  /// A whole-sign aspect is exact by construction - it relates two SIGNS, so
+  /// there is no degree at which it becomes "exact" or "tight". [AspectInfo]
+  /// exposes no nullable orb and no whole-sign flag, so the full 30-degree sign
+  /// width is reported: the relation holds across an entire sign, and 30.0 sits
+  /// outside both the exact (< 1.0) and tight (< 3.0) thresholds so neither flag
+  /// reads as accidentally true.
+  static const double wholeSignOrb = 30.0;
+
+  /// Classical Drishti weight of each aspect type in whole-sign mode.
+  ///
+  /// Whole-sign aspects have no orb, so `strength` carries the classical
+  /// relative weight of the aspect rather than a measure of proximity. The
+  /// gradation follows the classical aspect classes: conjunction, the 7th
+  /// opposition and the trine (trikona) are the full-strength aspects, the
+  /// kendra squares are strong, and the upachaya sextiles are mild. The Vishesh
+  /// aspects of Mars, Jupiter and Saturn inherit the weight of the pada they
+  /// fall on, so Jupiter's 5th and 9th are full while Saturn's 3rd is mild.
+  static const Map<AspectType, double> _wholeSignStrength = {
+    AspectType.conjunction: 1.0,
+    AspectType.opposition: 1.0,
+    AspectType.trine5th: 1.0,
+    AspectType.trine9th: 1.0,
+    AspectType.jupiterSpecial5th: 1.0,
+    AspectType.jupiterSpecial9th: 1.0,
+    AspectType.square4th: 0.75,
+    AspectType.square10th: 0.75,
+    AspectType.marsSpecial4th: 0.75,
+    AspectType.marsSpecial8th: 0.75,
+    AspectType.saturnSpecial10th: 0.75,
+    AspectType.sextile3rd: 0.5,
+    AspectType.sextile11th: 0.5,
+    AspectType.saturnSpecial3rd: 0.5,
+  };
+
+  /// Internal: Create a whole-sign aspect.
+  ///
+  /// A whole-sign relation has no orb and no applying/separating phase, so
+  /// [AspectInfo]'s orb-based readings are not meaningful for it. See
+  /// [wholeSignOrb] and [_wholeSignStrength] for the values passed and why.
   AspectInfo _createWholeSignAspect(
     Planet planet1,
     PlanetPosition pos1,
@@ -455,9 +572,9 @@ class AspectService {
       aspectingPlanet: planet1,
       aspectedPlanet: planet2,
       type: type,
-      exactOrb: 0.0,
+      exactOrb: wholeSignOrb,
       isApplying: false, // not meaningful for whole-sign
-      strength: 1.0, // full strength  whole signs are binary
+      strength: _wholeSignStrength[type] ?? 1.0,
       aspectingLongitude: pos1.longitude,
       aspectedLongitude: pos2.longitude,
     );
@@ -485,7 +602,7 @@ class AspectService {
       aspectingPlanet: planet1,
       aspectedPlanet: planet2,
       type: type,
-      exactOrb: orb,
+      exactOrb: orb.abs(),
       isApplying: isApplying,
       strength: strength,
       aspectingLongitude: pos1.longitude,
@@ -514,7 +631,8 @@ class AspectService {
             final planetSign = (pos.longitude / 30).floor() % 12;
             final d = (houseSignIndex - planetSign + 12) % 12;
 
-            if (d == 6 || d == 0) return true;
+            // 7th house aspect (d == 6 represents opposite sign, 7th house away)
+            if (d == 6) return true;
             if (planet == Planet.mars && (d == 3 || d == 7)) return true;
             if (planet == Planet.jupiter && (d == 4 || d == 8)) return true;
             if (planet == Planet.saturn && (d == 2 || d == 9)) return true;

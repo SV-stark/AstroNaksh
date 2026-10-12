@@ -11,23 +11,19 @@ class GeographicLocation {
   /// [timezone] - Optional IANA timezone ID (e.g., 'Asia/Kolkata').
   ///
   /// Throws [ArgumentError] if latitude or longitude is out of range.
-  GeographicLocation({
+  const GeographicLocation({
     required this.latitude,
     required this.longitude,
     this.altitude = 0.0,
     this.timezone,
-  }) {
-    if (latitude < -90.0 || latitude > 90.0) {
-      throw ArgumentError(
-        'Latitude must be between -90.0 and 90.0, got $latitude',
-      );
-    }
-    if (longitude < -180.0 || longitude > 180.0) {
-      throw ArgumentError(
-        'Longitude must be between -180.0 and 180.0, got $longitude',
-      );
-    }
-  }
+  })  : assert(
+          latitude >= -90.0 && latitude <= 90.0,
+          'Latitude must be between -90.0 and 90.0, got $latitude',
+        ),
+        assert(
+          longitude >= -180.0 && longitude <= 180.0,
+          'Longitude must be between -180.0 and 180.0, got $longitude',
+        );
 
   /// Creates a location from degrees, minutes, and seconds.
   ///

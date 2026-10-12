@@ -33,11 +33,11 @@ class BhavaBalaResult {
 
 /// Bhava strength categories
 enum BhavaStrengthCategory {
-  veryStrong('Very Strong', 90, 100),
-  strong('Strong', 70, 90),
-  moderate('Moderate', 50, 70),
-  weak('Weak', 30, 50),
-  veryWeak('Very Weak', 0, 30);
+  veryStrong('Very Strong', 480, double.infinity),
+  strong('Strong', 420, 480),
+  moderate('Moderate', 360, 420),
+  weak('Weak', 300, 360),
+  veryWeak('Very Weak', 0, 300);
 
   const BhavaStrengthCategory(this.name, this.minStrength, this.maxStrength);
   final String name;

@@ -262,8 +262,8 @@ class MuhurtaService {
       milliseconds: nightDuration.inMilliseconds ~/ 12,
     );
 
-    // Night starts with 5th lord from day start
-    startIndex = (startIndex + 4) % 7;
+    // Night hora 1 is the 13th lord in sequence: (startIndex + 12) % 7 = (startIndex + 5) % 7
+    startIndex = (startIndex + 5) % 7;
     currentTime = nightStart;
 
     for (var i = 0; i < 12; i++) {

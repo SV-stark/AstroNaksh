@@ -207,39 +207,33 @@ class PanchangaService {
     bool isFixed;
 
     // Traditional Karana sequence per Vedic astrology:
-    // Kimstughna is first (fixed), then Bava-Balava-Kaulava-Taitila-Garaja-Vanija-Vishti
-    // The 4 variable karanas (Shakuni, Chatushpada, Naga, Kimstughna) repeat
-    // In standard practice:
-    // - Karana 1: Kimstughna (fixed) - at start of Shukla Paksha
-    // - Karanas 2-7: Bava, Balava, Kaulava, Taitila, Garaja, Vanija (fixed)
-    // - Karana 8: Vishti (fixed) - last of first tithi half
-    // - Karanas 9-11: Shakuni, Chatushpada, Naga (variable)
-    // - Karana 12 onwards: Repeat Bava-Vishti cycle
-
-    // Fixed karanas: Bava(2), Balava(3), Kaulava(4), Taitila(5), Garaja(6), Vanija(7), Vishti(8)
-    // Variable: Shakuni(9), Chatushpada(10), Naga(11), Kimstughna(12)
+    // A half-tithi (karana) spans 6 degrees of elongation, giving 60 karanas
+    // across the 30-tithi lunar month.
+    // - Karana 1: Kimstughna (Sthira) - at start of Shukla Paksha
+    // - Karanas 2-59: the 7 Chara karanas repeat (Bava..Vishti)
+    // - Karanas 58-60: Shakuni, Chatushpada, Naga (Sthira) end the cycle
 
     // Sthira (Fixed) Karanas: Kimstughna, Shakuni, Chatushpada, Naga
     // - Karana 1: Kimstughna (Sthira) - at start of Shukla Paksha
     if (karanaNumber == 1) {
-      name = KaranaInfo.variableKaranaNames[3]; // Kimstughna
+      name = KaranaInfo.fixedKaranaNames[3]; // Kimstughna
       isFixed = true;
     }
     // - Karanas 58-60: Shakuni, Chatushpada, Naga (Sthira) at the end of the 60-karana cycle
     else if (karanaNumber == 58) {
-      name = KaranaInfo.variableKaranaNames[0]; // Shakuni
+      name = KaranaInfo.fixedKaranaNames[0]; // Shakuni
       isFixed = true;
     } else if (karanaNumber == 59) {
-      name = KaranaInfo.variableKaranaNames[1]; // Chatushpada
+      name = KaranaInfo.fixedKaranaNames[1]; // Chatushpada
       isFixed = true;
     } else if (karanaNumber == 60) {
-      name = KaranaInfo.variableKaranaNames[2]; // Naga
+      name = KaranaInfo.fixedKaranaNames[2]; // Naga
       isFixed = true;
     }
     // Chara (Repeating/Movable) karanas: Bava, Balava, Kaulava, Taitila, Garaja, Vanija, Vishti
     else {
       final index = (karanaNumber - 2) % 7;
-      name = KaranaInfo.fixedKaranaNames[index];
+      name = KaranaInfo.variableKaranaNames[index];
       isFixed = false;
     }
 
@@ -975,6 +969,11 @@ class PanchangaService {
   /// Similar to daytime Rahu Kaal, Gulika Kaal, and Yamagandam,
   /// but calculated for the nighttime period (sunset to sunrise).
   ///
+  /// The interval runs from the sunset of [date] to the sunrise of the
+  /// following day; the classical convention attributes such a night to the
+  /// Vara of the day on which it ends, so the sequences below are those of the
+  /// following day.
+  ///
   /// [date] - The date to calculate for
   /// [location] - Geographic location
   ///
@@ -1001,20 +1000,23 @@ class PanchangaService {
     // Divide night into 8 parts (like daytime)
     final partDuration = nightDuration ~/ 8;
 
-    // Get weekday (0 = Sunday, 6 = Saturday)
-    final weekday = date.weekday % 7;
+    // The interval spans today's sunset to tomorrow's sunrise, so it crosses
+    // midnight. By the classical convention the night belongs to the Vara of
+    // the day on which it ENDS, i.e. [tomorrow], not the day whose sunset
+    // opened it. Get weekday (0 = Sunday, 6 = Saturday)
+    final weekday = tomorrow.weekday % 7;
 
     // Nighttime Rahu Kaal sequence (different from daytime)
     // Sun: 7th part, Mon: 6th, Tue: 5th, Wed: 4th, Thu: 3rd, Fri: 2nd, Sat: 1st
-    final rahuPart = (7 - weekday) % 8;
+    final rahuPart = (6 - weekday + 7) % 7;
 
     // Nighttime Gulika Kaal sequence
     // Sun: 6th, Mon: 5th, Tue: 4th, Wed: 3rd, Thu: 2nd, Fri: 1st, Sat: 7th
-    final gulikaPart = (6 - weekday) % 8;
+    final gulikaPart = (5 - weekday + 7) % 7;
 
     // Nighttime Yamagandam sequence
-    // Sun: 5th, Mon: 4th, Tue: 3rd, Wed: 2nd, Thu: 1st, Fri: 7th, Sat: 6th
-    final yamaPart = (5 - weekday) % 8;
+    // Sun: 4th, Mon: 3rd, Tue: 2nd, Wed: 1st, Thu: 7th, Fri: 6th, Sat: 5th
+    final yamaPart = (3 - weekday + 7) % 7;
 
     return NighttimeInauspiciousPeriods(
       date: date,
@@ -1032,6 +1034,100 @@ class PanchangaService {
       ),
       description: 'Nighttime inauspicious periods (sunset to sunrise)',
     );
+  }
+
+  /// Verifies that [moment] is genuinely a Tithi junction.
+  ///
+  /// The search window spans 48 hours, across which the Moon-Sun elongation
+  /// advances about 585 degrees — more than a full cycle — so the target angle
+  /// is crossed **twice** inside the window. A signed-difference bisection
+  /// assumes monotonicity and can converge on either crossing; picking the
+  /// wrong one lands about 29.5 days out while still returning a
+  /// plausible-looking timestamp. Verifying converts that silent wrong answer
+  /// into a loud failure.
+  Future<void> _verifyElongationJunction(
+    DateTime moment,
+    double targetElongation,
+    GeographicLocation location,
+    CalculationFlags flags,
+  ) async {
+    final sunPos = await _ephemerisService.calculatePlanetPosition(
+      planet: Planet.sun,
+      dateTime: moment,
+      location: location,
+      flags: flags,
+    );
+    final moonPos = await _ephemerisService.calculatePlanetPosition(
+      planet: Planet.moon,
+      dateTime: moment,
+      location: location,
+      flags: flags,
+    );
+    final elongation = (moonPos.longitude - sunPos.longitude + 360) % 360;
+    final diff = (elongation - targetElongation + 180) % 360 - 180;
+    if (diff.abs() > 0.01) {
+      throw StateError(
+        'No Tithi junction found within the 48-hour search window. The '
+        'bisection converged on $moment, which is '
+        '${diff.abs().toStringAsFixed(3)} degrees from the target. Pass a '
+        'startDate closer to the junction.',
+      );
+    }
+  }
+
+  /// Verifies that [moment] is genuinely a Nakshatra junction.
+  Future<void> _verifyMoonJunction(
+    DateTime moment,
+    double targetLongitude,
+    GeographicLocation location,
+    CalculationFlags flags,
+  ) async {
+    final moonPos = await _ephemerisService.calculatePlanetPosition(
+      planet: Planet.moon,
+      dateTime: moment,
+      location: location,
+      flags: flags,
+    );
+    final diff = (moonPos.longitude - targetLongitude + 180) % 360 - 180;
+    if (diff.abs() > 0.01) {
+      throw StateError(
+        'No Nakshatra junction found within the 48-hour search window. The '
+        'bisection converged on $moment, which is '
+        '${diff.abs().toStringAsFixed(3)} degrees from the target. Pass a '
+        'startDate closer to the junction.',
+      );
+    }
+  }
+
+  /// Verifies that [moment] is genuinely a Yoga junction.
+  Future<void> _verifyYogaJunction(
+    DateTime moment,
+    double targetValue,
+    GeographicLocation location,
+    CalculationFlags flags,
+  ) async {
+    final sunPos = await _ephemerisService.calculatePlanetPosition(
+      planet: Planet.sun,
+      dateTime: moment,
+      location: location,
+      flags: flags,
+    );
+    final moonPos = await _ephemerisService.calculatePlanetPosition(
+      planet: Planet.moon,
+      dateTime: moment,
+      location: location,
+      flags: flags,
+    );
+    final yogaValue = (sunPos.longitude + moonPos.longitude + 360) % 360;
+    final diff = (yogaValue - targetValue + 180) % 360 - 180;
+    if (diff.abs() > 0.01) {
+      throw StateError(
+        'No Yoga junction found within the 48-hour search window. The '
+        'bisection converged on $moment, which is '
+        '${diff.abs().toStringAsFixed(3)} degrees from the target. Pass a '
+        'startDate closer to the junction.',
+      );
+    }
   }
 
   /// Gets the exact junction (change point) of a specific Tithi.
@@ -1106,6 +1202,7 @@ class PanchangaService {
       }
     }
 
+    await _verifyElongationJunction(searchStart, targetElongation, location, flags);
     return searchStart;
   }
 
@@ -1157,6 +1254,7 @@ class PanchangaService {
       }
     }
 
+    await _verifyMoonJunction(searchStart, targetLongitude, location, flags);
     return searchStart;
   }
 
@@ -1214,6 +1312,7 @@ class PanchangaService {
       }
     }
 
+    await _verifyYogaJunction(searchStart, targetValue, location, flags);
     return searchStart;
   }
 

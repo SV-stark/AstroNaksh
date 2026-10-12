@@ -1,5 +1,5 @@
-group 'com.example.jyotish'
-version '1.0-SNAPSHOT'
+group 'com.jyotish'
+version '2.20.6'
 
 buildscript {
     ext.kotlin_version = '1.9.20'
@@ -48,4 +48,4 @@ android {
       jvmTarget = "17"
   }
 }
-
+

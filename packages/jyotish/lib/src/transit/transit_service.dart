@@ -27,11 +27,19 @@ class TransitService {
     required DateTime transitDateTime,
     required GeographicLocation location,
   }) async {
-    final flags = CalculationFlags.defaultFlags();
+    final flags =
+        natalChart.calculationFlags ?? CalculationFlags.traditionalist();
     final transits = <Planet, TransitInfo>{};
 
     // Calculate transit positions for traditional planets + nodes
-    final planetsToCalculate = [...Planet.traditionalPlanets, Planet.meanNode];
+    final rahuPlanet = flags.nodeType == NodeType.trueNode
+        ? Planet.trueNode
+        : Planet.meanNode;
+    final planetsToCalculate = [
+      ...Planet.traditionalPlanets,
+      rahuPlanet,
+      Planet.ketu,
+    ];
 
     for (final planet in planetsToCalculate) {
       final transitPosition = await _ephemerisService.calculatePlanetPosition(
@@ -42,8 +50,14 @@ class TransitService {
       );
 
       // Get natal position for this planet
-      final natalInfo = natalChart.planets[planet];
-      final natalPosition = natalInfo?.position;
+      PlanetPosition? natalPosition;
+      if (natalChart.planets.containsKey(planet)) {
+        natalPosition = natalChart.planets[planet]?.position;
+      } else if (planet == Planet.meanNode || planet == Planet.trueNode) {
+        natalPosition = natalChart.rahu.position;
+      } else if (planet == Planet.ketu) {
+        natalPosition = natalChart.ketu.position;
+      }
 
       // Determine which house the transit planet is in (natal chart houses)
       final transitHouse = natalChart.houses.getHouseForLongitude(
@@ -57,7 +71,7 @@ class TransitService {
         natalChart,
       );
 
-      transits[planet] = TransitInfo(
+      final info = TransitInfo(
         planet: planet,
         transitPosition: transitPosition,
         natalPosition: natalPosition,
@@ -65,10 +79,24 @@ class TransitService {
         transitSignIndex: transitSignIndex,
         aspectsToNatal: aspectsToNatal,
       );
+      transits[planet] = info;
+      if (planet == Planet.meanNode && !transits.containsKey(Planet.trueNode)) {
+        transits[Planet.trueNode] = info;
+      } else if (planet == Planet.trueNode &&
+          !transits.containsKey(Planet.meanNode)) {
+        transits[Planet.meanNode] = info;
+      }
     }
 
     return transits;
   }
+
+  /// Calculates aspects from a single transit planet position to all natal positions.
+  List<AspectInfo> calculateTransitAspects(
+    PlanetPosition transitPos,
+    VedicChart natalChart,
+  ) =>
+      _calculateTransitAspects(transitPos, natalChart);
 
   /// Calculates aspects from a single transit planet to all natal positions.
   List<AspectInfo> _calculateTransitAspects(
@@ -77,10 +105,16 @@ class TransitService {
   ) {
     const config = AspectConfig.vedic;
 
-    return natalChart.planets.entries
+    final allNatal = <Planet, PlanetPosition>{
+      ...natalChart.planets.map((k, v) => MapEntry(k, v.position)),
+      natalChart.rahu.position.planet: natalChart.rahu.position,
+      natalChart.ketu.position.planet: natalChart.ketu.position,
+    };
+
+    return allNatal.entries
         .map((entry) {
           final natalPlanet = entry.key;
-          final natalPos = entry.value.position;
+          final natalPos = entry.value;
 
           // Calculate angular difference
           var angularDiff = (natalPos.longitude - transitPos.longitude) % 360;
@@ -150,7 +184,7 @@ class TransitService {
     final aspects = <AspectInfo>[];
     const orb = 10.0;
 
-    // Mars special aspects
+    // Mars special aspects (4th at 90°, 8th at 210° forward)
     if (transitPos.planet == Planet.mars) {
       if ((angularDiff - 90).abs() <= orb) {
         aspects.add(
@@ -242,7 +276,7 @@ class TransitService {
       aspectingPlanet: transitPos.planet,
       aspectedPlanet: natalPlanet,
       type: type,
-      exactOrb: orb,
+      exactOrb: orb.abs(),
       isApplying: transitPos.longitudeSpeed > 0,
       strength: 1.0 - (orb.abs() / type.defaultOrb).clamp(0.0, 1.0),
       aspectingLongitude: transitPos.longitude,
@@ -263,8 +297,12 @@ class TransitService {
     required GeographicLocation location,
   }) async {
     final events = <TransitEvent>[];
-    final planets =
-        config.planets ?? [...Planet.traditionalPlanets, Planet.meanNode];
+    final rahuPlanet =
+        (natalChart.calculationFlags?.nodeType == NodeType.trueNode)
+            ? Planet.trueNode
+            : Planet.meanNode;
+    final planets = config.planets ??
+        [...Planet.traditionalPlanets, rahuPlanet, Planet.ketu];
 
     var currentDate = config.startDate;
     while (currentDate.isBefore(config.endDate)) {
@@ -282,15 +320,39 @@ class TransitService {
         for (final aspect in transit.aspectsToNatal) {
           // Check if aspect is becoming exact (transitioning from applying)
           if (aspect.isExact) {
+            // The window during which the aspect holds must be COMPUTED, not
+            // guessed. An aspect is within orb while the separation sits
+            // inside `exactOrb` degrees of exact, and the separation changes
+            // at the two bodies' relative angular speed, so the time spent
+            // inside the orb is `exactOrb / relativeSpeed` days either side.
+            //
+            // The previous value, `±3 × intervalDays`, was fabricated from the
+            // sampling interval and bore no relation to the actual aspect: a
+            // tight orb between two slow planets yields a window of months,
+            // while a wide orb between fast planets yields hours — and the
+            // fabricated window was identical for both.
+            final relativeSpeed = (transit.transitPosition.longitudeSpeed -
+                    (natalChart
+                            .getPlanet(aspect.aspectedPlanet)
+                            ?.position
+                            .longitudeSpeed ??
+                        0.0))
+                .abs();
+            final halfSpanDays = relativeSpeed > 1e-9
+                ? aspect.exactOrb.abs() / relativeSpeed
+                : config.intervalDays.toDouble();
+            final halfSpan = Duration(
+              microseconds:
+                  (halfSpanDays * Duration.microsecondsPerDay).round(),
+            );
+
             final event = TransitEvent(
               transitPlanet: planet,
               natalPlanet: aspect.aspectedPlanet,
               aspectType: aspect.type,
               exactDate: currentDate,
-              startDate:
-                  currentDate.subtract(Duration(days: config.intervalDays * 3)),
-              endDate:
-                  currentDate.add(Duration(days: config.intervalDays * 3)),
+              startDate: currentDate.subtract(halfSpan),
+              endDate: currentDate.add(halfSpan),
               isRetrograde: transit.isRetrograde,
               description: _generateTransitDescription(
                 aspect,
@@ -312,10 +374,20 @@ class TransitService {
   }
 
   List<TransitEvent> _deduplicateEvents(List<TransitEvent> events) {
+    // Two events are the same only when every identifying field matches:
+    // transiting planet, the natal body or point aspected, the aspect, and the
+    // exact instant. Bucketing the date into 7-day windows (as this did) made
+    // two genuinely different exact aspects of the same pair and type collapse
+    // whenever they fell in the same week — so a Tuesday exact opposition and
+    // a Thursday exact trine to the same natal planet could not both be
+    // reported. Bucketing cannot distinguish them at all, because the key is
+    // the same for any instant inside the week.
     final seen = <String>{};
     return events.where((e) {
-      final key =
-          '${e.transitPlanet}-${e.natalPlanet}-${e.aspectType}-${(e.exactDate.millisecondsSinceEpoch / (1000 * 60 * 60 * 24 * 7)).floor()}';
+      final key = '${e.transitPlanet}-'
+          '${e.natalPlanet?.name ?? e.natalPointName}-'
+          '${e.aspectType.name}-'
+          '${e.exactDate.millisecondsSinceEpoch}';
       return seen.add(key);
     }).toList();
   }

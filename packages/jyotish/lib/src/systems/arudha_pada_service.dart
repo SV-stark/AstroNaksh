@@ -177,7 +177,7 @@ class ArudhaPadaService {
   }
 
   /// Jaimini Strength rules to find stronger of two lords:
-  /// 1. Planet with more planets in its sign is stronger.
+  /// 1. The lord that is ALONE is stronger (an engrossed lord is weakened).
   /// 2. If one is in the sign itself and other is not, the one NOT in sign is stronger (for Arudha).
   /// 3. If still equal, the one with more degrees is stronger.
   Rashi _getStrongerLord(
@@ -205,15 +205,27 @@ class ArudhaPadaService {
     if (sign2 == ownSign && sign1 != ownSign) return sign1;
 
     // Rule 1: More planets in sign
-    final planets1 = chart.planets.values
-        .where((p) => Rashi.fromLongitude(p.longitude) == sign1)
+    final allLongitudes = [
+      ...chart.planets.values.map((p) => p.longitude),
+      chart.rahu.longitude,
+      chart.ketu.longitude,
+    ];
+    final planets1 = allLongitudes
+        .where((lng) => Rashi.fromLongitude(lng) == sign1)
         .length;
-    final planets2 = chart.planets.values
-        .where((p) => Rashi.fromLongitude(p.longitude) == sign2)
+    final planets2 = allLongitudes
+        .where((lng) => Rashi.fromLongitude(lng) == sign2)
         .length;
 
-    if (planets1 > planets2) return sign1;
-    if (planets2 > planets1) return sign2;
+    // Rule 1: the lord that is ALONE is stronger.
+    //
+    // A lord already engrossed with other planets is weakened as a lord, so for
+    // the dual-lord signs (Scorpio: Mars/Ketu; Aquarius: Saturn/Rahu) the
+    // unassociated planet is taken as the sign lord. This is the opposite of
+    // counting the more crowded sign, and it is consistent with Rule 2 above,
+    // which likewise prefers the candidate that is NOT tied up in the sign.
+    if (planets1 < planets2) return sign1;
+    if (planets2 < planets1) return sign2;
 
     // Rule 3: More degrees
     final deg1 = info1.longitude % 30;

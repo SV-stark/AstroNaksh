@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'jyotish'
-  s.version          = '1.0.0'
+  s.version          = '2.20.6'
   s.summary          = 'A production-ready Flutter library for Vedic astrology (Jyotish) calculations using Swiss Ephemeris.'
   s.description      = <<-DESC
 A production-ready Flutter library for Vedic astrology (Jyotish) calculations using Swiss Ephemeris. 

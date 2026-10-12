@@ -219,7 +219,7 @@ class CalculationFlags {
         'system: ${system.name}, '
         'swissEph: $useSwissEphemeris, '
         'speed: $calculateSpeed, '
-        'ayanamsa: ${siderealMode.name}, '
+        'ayanamsa: ${siderealMode.label}, '
         'topocentric: $useTopocentric, '
         'equatorial: $useEquatorial, '
         'nodeType: ${nodeType.name})';
@@ -243,6 +243,105 @@ class CalculationFlags {
       useTopocentric: useTopocentric ?? this.useTopocentric,
       useEquatorial: useEquatorial ?? this.useEquatorial,
       nodeType: nodeType ?? this.nodeType,
+    );
+  }
+
+  /// Converts this CalculationFlags to a JSON map.
+  ///
+  /// Persistence contract: `system`, `siderealMode` and `nodeType` are written
+  /// as the **enum identifier** (e.g. `lahiri`), never as the human-readable
+  /// [SiderealMode.label].  Labels are cosmetic and may be reworded at any
+  /// time; identifiers are the stable wire format.
+  Map<String, dynamic> toJson() => {
+        'system': system.name,
+        'useSwissEphemeris': useSwissEphemeris,
+        'calculateSpeed': calculateSpeed,
+        'siderealMode': siderealMode.name,
+        'useTopocentric': useTopocentric,
+        'useEquatorial': useEquatorial,
+        'nodeType': nodeType.name,
+      };
+
+  /// Creates a CalculationFlags instance from a JSON map.
+  ///
+  /// Deserialization is **strict**: an unrecognised value throws an
+  /// [ArgumentError] naming the field and the offending value rather than
+  /// silently falling back to a default.  A silent fallback would, for
+  /// `siderealMode`, rotate the entire zodiac with no signal at all.
+  ///
+  /// A missing key still falls back to the constructor default (legacy JSON
+  /// written before a field existed); only a *present but unknown* value is an
+  /// error.
+  ///
+  /// For backwards compatibility with JSON written before the persistence
+  /// contract above, [SiderealMode] also accepts its legacy human-readable
+  /// label (e.g. `'Krishnamurti VP291 (KP New)'`); the identifier is matched
+  /// first, the legacy label only as a fallback.
+  factory CalculationFlags.fromJson(Map<String, dynamic> json) {
+    return CalculationFlags(
+      system: _parseAstrologicalSystem(json['system']),
+      useSwissEphemeris: json['useSwissEphemeris'] as bool? ?? true,
+      calculateSpeed: json['calculateSpeed'] as bool? ?? true,
+      siderealMode: _parseSiderealMode(json['siderealMode']),
+      useTopocentric: json['useTopocentric'] as bool? ?? false,
+      useEquatorial: json['useEquatorial'] as bool? ?? false,
+      nodeType: _parseNodeType(json['nodeType']),
+    );
+  }
+
+  static AstrologicalSystem _parseAstrologicalSystem(Object? raw) {
+    if (raw == null) return AstrologicalSystem.traditional;
+    final value = raw.toString();
+    final match = AstrologicalSystem.values
+        .where((s) => s.name.toLowerCase() == value.toLowerCase())
+        .firstOrNull;
+    if (match == null) {
+      throw ArgumentError(
+        'Unknown CalculationFlags.system value: "$value". '
+        'Expected one of: ${AstrologicalSystem.values.map((s) => s.name).join(', ')}',
+      );
+    }
+    return match;
+  }
+
+  static NodeType _parseNodeType(Object? raw) {
+    if (raw == null) return NodeType.meanNode;
+    final value = raw.toString();
+    final match = NodeType.values
+        .where((n) =>
+            n.name.toLowerCase() == value.toLowerCase() ||
+            n.description.toLowerCase() == value.toLowerCase())
+        .firstOrNull;
+    if (match == null) {
+      throw ArgumentError(
+        'Unknown CalculationFlags.nodeType value: "$value". '
+        'Expected one of: ${NodeType.values.map((n) => n.name).join(', ')}',
+      );
+    }
+    return match;
+  }
+
+  static SiderealMode _parseSiderealMode(Object? raw) {
+    if (raw == null) return SiderealMode.lahiri;
+    final value = raw.toString();
+    final lower = value.toLowerCase();
+
+    // Stable identifier wins (this is what toJson writes).
+    for (final mode in SiderealMode.values) {
+      if (mode.name.toLowerCase() == lower) return mode;
+    }
+
+    // Transition: accept the legacy human-readable label so JSON persisted
+    // before the identifier contract existed keeps loading.  Removed once
+    // that migration window closes.
+    for (final mode in SiderealMode.values) {
+      if (mode.label.toLowerCase() == lower) return mode;
+    }
+
+    throw ArgumentError(
+      'Unknown CalculationFlags.siderealMode value: "$value". '
+      'Expected a SiderealMode identifier '
+      '(e.g. "lahiri", "krishnamurtiVP291").',
     );
   }
 
@@ -369,11 +468,18 @@ enum SiderealMode {
   lahiriICRC(SwissEphConstants.sidmLahiriICRC, 'Lahiri ICRC'),
   khullar(SwissEphConstants.sidmKhullar, 'Khullar Ayanamsa');
 
-  const SiderealMode(this.constant, this.name);
+  const SiderealMode(this.constant, this.label);
 
   final int constant;
-  final String name;
+
+  /// Human-readable label for display only.
+  ///
+  /// Deliberately **not** called `name`: that would shadow the enum's own
+  /// `name` getter and make `SiderealMode.krishnamurtiVP291.name` return
+  /// 'Krishnamurti VP291 (KP New)' instead of the identifier.  Persistence
+  /// uses the identifier (see [CalculationFlags.toJson]).
+  final String label;
 
   @override
-  String toString() => name;
+  String toString() => label;
 }

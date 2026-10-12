@@ -37,6 +37,12 @@ class WarDetails {
   /// The planet that wins the war based on traditional and astronomical calculations.
   final Planet winnerId;
 
+  /// The winning planet.
+  Planet get winner => winnerId;
+
+  /// The losing planet.
+  Planet get loser => winnerId == planet1 ? planet2 : planet1;
+
   Map<String, dynamic> toJson() => {
         'planet1': planet1.displayName,
         'planet2': planet2.displayName,

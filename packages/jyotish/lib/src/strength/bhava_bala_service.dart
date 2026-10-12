@@ -40,11 +40,23 @@ class BhavaBalaService {
     };
   }
 
+  /// Categorizes a house's strength into a qualitative strength category.
+  BhavaStrengthCategory getBhavaStrengthCategory(double strength) =>
+      _getBhavaStrengthCategory(strength);
+
+  /// Determines the ruling planet (lord) of a given house number (1-12).
+  Planet getHouseLord(VedicChart chart, int houseNumber) =>
+      _getHouseLord(chart, houseNumber);
+
+  /// Calculates directional strength (Dig Bala) for a given house.
+  double calculateBhavaDigBala(int houseNumber, double ascendant) =>
+      _calculateBhavaDigBala(houseNumber, ascendant);
+
   BhavaStrengthCategory _getBhavaStrengthCategory(double strength) {
-    if (strength >= 90) return BhavaStrengthCategory.veryStrong;
-    if (strength >= 70) return BhavaStrengthCategory.strong;
-    if (strength >= 50) return BhavaStrengthCategory.moderate;
-    if (strength >= 30) return BhavaStrengthCategory.weak;
+    if (strength >= 480) return BhavaStrengthCategory.veryStrong;
+    if (strength >= 420) return BhavaStrengthCategory.strong;
+    if (strength >= 360) return BhavaStrengthCategory.moderate;
+    if (strength >= 300) return BhavaStrengthCategory.weak;
     return BhavaStrengthCategory.veryWeak;
   }
 
@@ -182,59 +194,7 @@ class BhavaBalaService {
 
     if (angle < 30 || angle > 300) return 0.0;
 
-    // Check Special Aspects first (Override or addition? usually override standard calculation for those ranges)
-    // Mars
-    if (planet == Planet.mars) {
-      // 4th House aspect (90 +/- orb? No, usually range)
-      // Special Rule: Mars gets 60 at 90 (4th) and 210 (8th)
-      // But we need a continuous function or standard values?
-      // Let's use the standard Drig Bala continuous formulas and boost for specials.
-      // Actually standard formulas cover standard aspect.
-      // Special aspects must be handled explicitly.
-
-      // B.V. Raman: "For Mars: add 15 to the ordinary values at 4th (90) and 8th (210)?"
-      // Simpler Implementation:
-      // If within range of special aspect, return 60 (Full).
-      if ((angle >= 80 && angle <= 100) || (angle >= 200 && angle <= 220)) {
-        return 60.0;
-      }
-    }
-
-    if (planet == Planet.jupiter) {
-      if ((angle >= 110 && angle <= 130) || (angle >= 230 && angle <= 250)) {
-        return 60.0;
-      }
-    }
-
-    if (planet == Planet.saturn) {
-      if ((angle >= 50 && angle <= 70) || (angle >= 260 && angle <= 280)) {
-        return 60.0;
-      }
-    }
-
-    // Standard Aspect Formulas
-    if (angle >= 30 && angle <= 60) {
-      aspectValue = (angle - 30); // 0 to 30
-    } else if (angle > 60 && angle <= 90) {
-      aspectValue =
-          (angle - 60) + 30; // 30 to 60 (At 90 becomes 60? No at 90 it drops?)
-      // Wait, standard view is 60-90 increases to 45 or 60?
-      // Parashara:
-      // 30-60: 0 to 15 (value/2 ?) -> Drik Bala = (Angle-30)/2
-      // Let's look up exact Parashara Formulas.
-      //
-      // 1. Substract planet's long from house long = d
-      // 2. d < 30 or d > 300 -> 0
-      // 3. 30 <= d <= 60 -> (d-30)/2
-      // 4. 60 < d <= 90 -> (d-60) + 15
-      // 5. 90 < d <= 120 -> (120-d)/2 + 45
-      // 6. 120 < d <= 150 -> (150-d)
-      // 7. 150 < d <= 180 -> (d-150)*2
-      // 8. 180 < d <= 300 -> (300-d)/2
-
-      // Let's use this standard set.
-    }
-
+    // Standard Parashara Aspect Formulas
     if (angle >= 30 && angle <= 60) {
       aspectValue = (angle - 30) / 2;
     } else if (angle > 60 && angle <= 90) {
@@ -248,29 +208,19 @@ class BhavaBalaService {
     } else if (angle > 180 && angle <= 300) {
       aspectValue = (300 - angle) / 2;
     } else {
-      aspectValue = 0;
+      aspectValue = 0.0;
     }
 
-    // Now Handle Special Aspects (Boost to 60 if applicable)
-    // Mars: 4th (90 deg approx) - formula gives: (120-90)/2 + 45 = 15+45 = 60. Matches!
-    // Mars: 8th (210 deg approx) - formula gives: (300-210)/2 = 45. (Mars gets 60 here).
-    // Jupiter: 5th (120 deg) - formula gives: 45. (Jupiter gets 60).
-    // Jupiter: 9th (240 deg) - formula gives: 30. (Jupiter gets 60).
-    // Saturn: 3rd (60 deg) - formula gives: 15. (Saturn gets 60).
-    // Saturn: 10th (270 deg) - formula gives: 15. (Saturn gets 60).
-
+    // Special Aspects Boost (to 60 Virupas)
     if (planet == Planet.mars) {
-      // Mars special aspects (4th ~90, 8th ~210)
-      if (angle > 200 && angle < 220) return 60.0; // Boost 8th
-      // 4th is already 60 by general formula at 90 deg.
+      if (angle >= 80 && angle <= 100) return 60.0; // 4th aspect
+      if (angle >= 200 && angle <= 220) return 60.0; // 8th aspect
     } else if (planet == Planet.jupiter) {
-      // Jupiter special (5th ~120, 9th ~240)
-      if (angle > 110 && angle < 130) return 60.0;
-      if (angle > 230 && angle < 250) return 60.0;
+      if (angle >= 110 && angle <= 130) return 60.0; // 5th aspect
+      if (angle >= 230 && angle <= 250) return 60.0; // 9th aspect
     } else if (planet == Planet.saturn) {
-      // Saturn special (3rd ~60, 10th ~270)
-      if (angle > 50 && angle < 70) return 60.0;
-      if (angle > 260 && angle < 280) return 60.0;
+      if (angle >= 50 && angle <= 70) return 60.0; // 3rd aspect
+      if (angle >= 260 && angle <= 280) return 60.0; // 10th aspect
     }
 
     return aspectValue;

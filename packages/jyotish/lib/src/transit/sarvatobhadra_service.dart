@@ -4,6 +4,14 @@ import 'package:jyotish/src/transit/sarvatobhadra.dart';
 
 /// Service to analyze transit effects using the Sarvatobhadra Chakra.
 class SarvatobhadraService {
+  const SarvatobhadraService();
+
+  /// Returns the nakshatras aspected (vedha) by a planet in the given [nakshatra] (1-28).
+  List<int> getVedhaNakshatras(int nakshatra) => _getVedhaNakshatras(nakshatra);
+
+  /// Returns the 1-28 nakshatra index (including Abhijit) for an ecliptic longitude.
+  int getNakshatra(double longitude) => _getNakshatra(longitude);
+
   /// Analyzes transits against a natal chart using Sarvatobhadra principles.
   SarvatobhadraAnalysis analyzeTransits({
     required VedicChart natalChart,

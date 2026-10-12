@@ -446,7 +446,13 @@ class SouthIndianChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant SouthIndianChartPainter oldDelegate) {
+    return oldDelegate.chart != chart ||
+        oldDelegate.strokeColor != strokeColor ||
+        oldDelegate.textColor != textColor ||
+        oldDelegate.labelColor != labelColor ||
+        oldDelegate.ascendantColor != ascendantColor;
+  }
 }
 
 /// A Flutter [CustomPainter] that draws a traditional North Indian style diamond chart.
@@ -599,7 +605,13 @@ class NorthIndianChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant NorthIndianChartPainter oldDelegate) {
+    return oldDelegate.chart != chart ||
+        oldDelegate.strokeColor != strokeColor ||
+        oldDelegate.textColor != textColor ||
+        oldDelegate.labelColor != labelColor ||
+        oldDelegate.ascendantColor != ascendantColor;
+  }
 }
 
 /// A convenient Flutter [Widget] for rendering Vedic astrology charts.

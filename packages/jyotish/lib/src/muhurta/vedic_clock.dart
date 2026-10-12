@@ -74,6 +74,8 @@ class VedicDigitalClock extends StatefulWidget {
 class _VedicDigitalClockState extends State<VedicDigitalClock> {
   late VedicClockController _clockController;
   Timer? _timer;
+  DateTime? _cachedCurrentSunrise;
+  DateTime? _cachedNextSunrise;
 
   @override
   void initState() {
@@ -85,7 +87,15 @@ class _VedicDigitalClockState extends State<VedicDigitalClock> {
   @override
   void didUpdateWidget(covariant VedicDigitalClock oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      if (oldWidget.controller == null) {
+        _clockController.dispose();
+      }
+      _clockController = widget.controller ?? VedicClockController();
+    }
     if (widget.location != oldWidget.location) {
+      _cachedCurrentSunrise = null;
+      _cachedNextSunrise = null;
       _timer?.cancel();
       _startClock();
     }
@@ -103,11 +113,28 @@ class _VedicDigitalClockState extends State<VedicDigitalClock> {
   Future<void> _updateVedicTime() async {
     try {
       final now = DateTime.now();
-      final vTime = await VedicTime.calculate(
-        time: now,
-        location: widget.location,
-        getSunriseSunset: widget.getSunriseSunset,
-      );
+      VedicTime vTime;
+      if (_cachedCurrentSunrise != null &&
+          _cachedNextSunrise != null &&
+          !now.isBefore(_cachedCurrentSunrise!) &&
+          now.isBefore(_cachedNextSunrise!)) {
+        // Fast path: use cached daily sunrise bounds without hitting C-FFI
+        vTime = VedicTime.fromSunrises(
+          time: now,
+          currentSunrise: _cachedCurrentSunrise!,
+          nextSunrise: _cachedNextSunrise!,
+          timezone: widget.location.timezone ?? 'UTC',
+        );
+      } else {
+        // Calculate fresh bounds via FFI
+        vTime = await VedicTime.calculate(
+          time: now,
+          location: widget.location,
+          getSunriseSunset: widget.getSunriseSunset,
+        );
+        _cachedCurrentSunrise = vTime.currentSunrise;
+        _cachedNextSunrise = vTime.nextSunrise;
+      }
       if (mounted) {
         _clockController.updateTime(vTime, isLoading: false);
       }
@@ -287,6 +314,8 @@ class _VedicAnalogClockState extends State<VedicAnalogClock> {
   bool _isLoading = true;
   String? _errorMessage;
   Timer? _timer;
+  DateTime? _cachedCurrentSunrise;
+  DateTime? _cachedNextSunrise;
 
   @override
   void initState() {
@@ -298,6 +327,8 @@ class _VedicAnalogClockState extends State<VedicAnalogClock> {
   void didUpdateWidget(covariant VedicAnalogClock oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.location != oldWidget.location) {
+      _cachedCurrentSunrise = null;
+      _cachedNextSunrise = null;
       _timer?.cancel();
       _startClock();
     }
@@ -315,11 +346,28 @@ class _VedicAnalogClockState extends State<VedicAnalogClock> {
   Future<void> _updateTime() async {
     try {
       final now = DateTime.now();
-      final vt = await VedicTime.calculate(
-        time: now,
-        location: widget.location,
-        getSunriseSunset: widget.getSunriseSunset,
-      );
+      VedicTime vt;
+      if (_cachedCurrentSunrise != null &&
+          _cachedNextSunrise != null &&
+          !now.isBefore(_cachedCurrentSunrise!) &&
+          now.isBefore(_cachedNextSunrise!)) {
+        // Fast path: use cached daily sunrise bounds without hitting C-FFI
+        vt = VedicTime.fromSunrises(
+          time: now,
+          currentSunrise: _cachedCurrentSunrise!,
+          nextSunrise: _cachedNextSunrise!,
+          timezone: widget.location.timezone ?? 'UTC',
+        );
+      } else {
+        // Calculate fresh bounds via FFI
+        vt = await VedicTime.calculate(
+          time: now,
+          location: widget.location,
+          getSunriseSunset: widget.getSunriseSunset,
+        );
+        _cachedCurrentSunrise = vt.currentSunrise;
+        _cachedNextSunrise = vt.nextSunrise;
+      }
       if (mounted) {
         setState(() {
           _currentTime = vt;

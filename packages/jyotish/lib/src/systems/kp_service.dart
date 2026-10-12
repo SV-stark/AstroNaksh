@@ -29,7 +29,7 @@ class KPService {
         '$methodName requires CalculationFlags.kp() '
         '(AstrologicalSystem.kp + KP VP291 ayanamsa). '
         'Received system: ${flags.system.name}, '
-        'ayanamsa: ${flags.siderealMode.name}. '
+        'ayanamsa: ${flags.siderealMode.label}. '
         'Create the chart with CalculationFlags.kp() and houseSystem: "P" '
         '(Placidus) before calling KP-specific services.',
       );
@@ -179,16 +179,29 @@ class KPService {
     // Total should be exactly 120 years
     const totalPeriods = 120;
 
+    final starLord = KPPlanetOwnership.getStarLord(star);
+    final searchStarLord =
+        (starLord == Planet.trueNode) ? Planet.meanNode : starLord;
+    final starLordIndex = dashaPeriods.indexWhere(
+      (p) =>
+          (p.$1 == Planet.meanNode && searchStarLord == Planet.meanNode) ||
+          (p.$1 == Planet.trueNode && searchStarLord == Planet.trueNode) ||
+          p.$1 == searchStarLord,
+    );
+    final startIndex = starLordIndex >= 0 ? starLordIndex : 0;
+
     var cumulative = 0.0;
 
-    for (final (planet, period) in dashaPeriods) {
+    for (var i = 0; i < dashaPeriods.length; i++) {
+      final idx = (startIndex + i) % dashaPeriods.length;
+      final (planet, period) = dashaPeriods[idx];
       cumulative += period / totalPeriods;
       if (posInStar <= cumulative - 1e-11) {
         return planet;
       }
     }
 
-    return Planet.mercury; // Default to last in sequence
+    return dashaPeriods[(startIndex + dashaPeriods.length - 1) % dashaPeriods.length].$1;
   }
 
   /// Calculates the Sub-Sub-Lord for a given longitude.
@@ -259,22 +272,35 @@ class KPService {
 
     // Full Vimshottari cycle - 9 planets, 120 years total
     final dashaPeriods = [
-      7, // Ketu
-      20, // Venus
-      6, // Sun
-      10, // Moon
-      7, // Mars
-      18, // Rahu
-      16, // Jupiter
-      19, // Saturn
-      17, // Mercury
+      (Planet.ketu, 7), // Ketu
+      (Planet.venus, 20), // Venus
+      (Planet.sun, 6), // Sun
+      (Planet.moon, 10), // Moon
+      (Planet.mars, 7), // Mars
+      (Planet.meanNode, 18), // Rahu
+      (Planet.jupiter, 16), // Jupiter
+      (Planet.saturn, 19), // Saturn
+      (Planet.mercury, 17), // Mercury
     ];
     const totalPeriods = 120; // Standard Vimshottari total
+
+    final starLord = KPPlanetOwnership.getStarLord(star);
+    final searchStarLord =
+        (starLord == Planet.trueNode) ? Planet.meanNode : starLord;
+    final starLordIndex = dashaPeriods.indexWhere(
+      (p) =>
+          (p.$1 == Planet.meanNode && searchStarLord == Planet.meanNode) ||
+          (p.$1 == Planet.trueNode && searchStarLord == Planet.trueNode) ||
+          p.$1 == searchStarLord,
+    );
+    final startIndex = starLordIndex >= 0 ? starLordIndex : 0;
 
     var cumulative = 0.0;
     var subStart = starStart;
 
-    for (final period in dashaPeriods) {
+    for (var i = 0; i < dashaPeriods.length; i++) {
+      final idx = (startIndex + i) % dashaPeriods.length;
+      final period = dashaPeriods[idx].$2;
       final subSpan = starSpan * (period / totalPeriods);
       if (posInStar <= cumulative + subSpan - 1e-11) {
         return (subStart, subStart + subSpan);

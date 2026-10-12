@@ -4,6 +4,20 @@ import 'package:jyotish/src/models/vedic_chart.dart';
 import 'package:jyotish/src/systems/tajaka.dart';
 
 class TajakaService {
+  const TajakaService();
+
+  /// Calculates the 14 standard Tajaka Sahams for an annual chart.
+  Map<String, double> calculateSahams(VedicChart annualChart) =>
+      _calculateSahams(annualChart);
+
+  /// Detects Tajaka yogas (Itthasala, Ishrafa) between two planets in an annual chart.
+  List<TajakaYoga> detectYogas(
+    VedicChart annualChart,
+    Planet planet1,
+    Planet planet2,
+  ) =>
+      _detectYogas(annualChart, planet1, planet2);
+
   TajakaEnhancement calculateTajakaEnhancements({
     required VedicChart natalChart,
     required VedicChart annualChart,
@@ -89,7 +103,7 @@ class TajakaService {
     // Rog (Disease)
     sahams['Rog'] = calc(marsLon, satLon, ascLon, true);
     // Kali (Conflict)
-    sahams['Kali'] = calc(jupLon, marsLon, ascLon, true);
+    sahams['Kali'] = calc(satLon, marsLon, ascLon, true);
     // Labha (Gain)
     sahams['Labha'] = calc(jupLon, sunLon, ascLon, false); // No reverse
     // Karma (Action)

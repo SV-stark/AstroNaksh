@@ -403,7 +403,7 @@ class VedicChartService {
       Planet.mercury: 345.0, // 15 Pisces  (330 + 15)
       Planet.venus: 177.0, // 27 Virgo  (150 + 27)  fixed from 165.0
       Planet.mars: 118.0, // 28 Cancer  (90 + 28)
-      Planet.jupiter: 278.0, // 5 Capricorn (270 + 5)  corrected to 275.0
+      Planet.jupiter: 275.0, // 5 Capricorn (270 + 5)
       Planet.saturn: 20.0, // 20 Aries   (0 + 20)
     };
     return degrees[planet];

@@ -89,8 +89,13 @@ class MasaInfo {
   ];
 
   static LunarMonth getMonthFromSunLongitude(double sunLongitude) {
-    final signIndex = (sunLongitude / 30).floor();
-    return amantaMonthOrder[signIndex];
+    // In Vedic calendar:
+    // Sun in Pisces (sign 11) -> Chaitra
+    // Sun in Aries (sign 0) -> Vaishakha
+    // Sun in Taurus (sign 1) -> Jyeshtha, etc.
+    final signIndex = (sunLongitude / 30).floor() % 12;
+    final monthIndex = (signIndex + 1) % 12;
+    return amantaMonthOrder[monthIndex];
   }
 
   String get displayName {

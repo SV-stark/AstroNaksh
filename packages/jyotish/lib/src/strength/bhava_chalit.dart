@@ -119,9 +119,20 @@ class BhavaChalit {
     final rahuBhava = getBhavaForLongitude(chart.rahu.position.longitude);
     if (rahuBhava != chart.rahu.house) {
       shifted.add((
-        planet: Planet.meanNode, // Rahu
+        planet: chart.rahu.position.planet, // Rahu (mean or true node)
         rashiHouse: chart.rahu.house,
         bhavaHouse: rahuBhava,
+      ));
+    }
+
+    // Also check Ketu
+    final ketuRashiHouse = chart.houses.getHouseForLongitude(chart.ketu.longitude);
+    final ketuBhava = getBhavaForLongitude(chart.ketu.longitude);
+    if (ketuBhava != ketuRashiHouse) {
+      shifted.add((
+        planet: Planet.ketu,
+        rashiHouse: ketuRashiHouse,
+        bhavaHouse: ketuBhava,
       ));
     }
 

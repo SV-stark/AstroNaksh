@@ -151,7 +151,7 @@ class DashaPeriod {
 
   /// Whether this period is currently active
   bool isActiveAt(DateTime date) =>
-      date.isAfter(startDate) && date.isBefore(endDate);
+      !date.isBefore(startDate) && date.isBefore(endDate);
 
   /// Whether this is a mahadasha (major period)
   bool get isMahadasha => level == 0;
@@ -164,7 +164,7 @@ class DashaPeriod {
 
   /// Gets the display name for the lord (uses lordName if available, otherwise lord.displayName)
   String get lordDisplayName =>
-      lordName ?? rashi?.name ?? lord?.displayName ?? 'Unknown';
+      lordName ?? rashi?.label ?? lord?.displayName ?? 'Unknown';
 
   /// Gets the full path name (e.g., "Sun-Moon-Mars")
   String get fullName {
@@ -212,7 +212,7 @@ class DashaPeriod {
   /// Converts to JSON map (without circular references)
   Map<String, dynamic> toJson() => {
         'lord': lord?.displayName,
-        'rashi': rashi?.name,
+        'rashi': rashi?.label,
         'lordDisplayName': lordDisplayName,
         'startDate': startDate.toIso8601String(),
         'endDate': endDate.toIso8601String(),
@@ -235,7 +235,10 @@ class DashaPeriod {
     final rashiStr = json['rashi'] as String?;
     final rashi = rashiStr != null
         ? Rashi.values.firstWhere(
-            (r) => r.name == rashiStr || r.sanskritName == rashiStr,
+            // Identifier first (stable wire format), then the legacy label.
+            (r) => r.name == rashiStr ||
+                r.label == rashiStr ||
+                r.sanskritName == rashiStr,
             orElse: () => Rashi.aries,
           )
         : null;

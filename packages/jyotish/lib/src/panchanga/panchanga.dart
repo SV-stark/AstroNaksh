@@ -215,14 +215,10 @@ class YogaInfo {
 
   /// Gets the yoga nature (benefic or malefic)
   YogaNature get nature {
-    final maleficYogas = [
-      6,
-      9,
-      10,
-      13,
-      17,
-      27,
-    ]; // Atiganda, Shula, Ganda, Vyaghata, Vyatipata, Vaidhriti
+    // Inauspicious Nitya Yogas per classical Muhurta texts:
+    // 1: Vishkumbha, 6: Atiganda, 9: Shula, 10: Ganda, 13: Vyaghata,
+    // 15: Vajra, 17: Vyatipata, 19: Parigha, 27: Vaidhriti
+    const maleficYogas = [1, 6, 9, 10, 13, 15, 17, 19, 27];
     return maleficYogas.contains(number)
         ? YogaNature.malefic
         : YogaNature.benefic;
@@ -286,13 +282,20 @@ class YogaDetails {
     return recommendations.contains(activity);
   }
 
+  /// The 27 Nitya Yogas, in order.
+  ///
+  /// `rulingPlanet` follows the classical Parashari lord sequence — Saturn,
+  /// Mercury, Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter — repeated three
+  /// times over the 27 yogas, so each of the nine planets rules exactly three.
+  /// The `nature` classification (malefic = 1, 6, 9, 10, 13, 15, 17, 19, 27)
+  /// likewise matches the standard tables.
   static const List<YogaDetails> _yogaDetails = [
     // 1. Vishkumbha
     YogaDetails(
       number: 1,
       name: 'Vishkumbha',
       nature: YogaNature.malefic,
-      rulingPlanet: Planet.sun,
+      rulingPlanet: Planet.saturn,
       description:
           'Supported or Pillar Yoga - Indication of support and foundation',
       effects:
@@ -309,7 +312,7 @@ class YogaDetails {
       number: 2,
       name: 'Priti',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.moon,
+      rulingPlanet: Planet.mercury,
       description: 'Love or Affection Yoga - Indicates harmony and love',
       effects:
           'Excellent for relationships, artistic pursuits, and social activities.',
@@ -320,7 +323,7 @@ class YogaDetails {
       number: 3,
       name: 'Ayushman',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.mars,
+      rulingPlanet: Planet.ketu,
       description:
           'Longevity or Life-span Yoga - Promotes health and long life',
       effects: 'Good for health matters, physical activities, and longevity.',
@@ -336,7 +339,7 @@ class YogaDetails {
       number: 4,
       name: 'Saubhagya',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.mercury,
+      rulingPlanet: Planet.venus,
       description: 'Good Fortune Yoga - Indicates luck and prosperity',
       effects:
           'Excellent for starting new ventures, signing contracts, and education.',
@@ -347,7 +350,7 @@ class YogaDetails {
       number: 5,
       name: 'Shobhana',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.jupiter,
+      rulingPlanet: Planet.sun,
       description: 'Splendor or Brilliance Yoga - Promotes beauty and success',
       effects:
           'Very auspicious for all activities, especially ceremonies and celebrations.',
@@ -364,7 +367,7 @@ class YogaDetails {
       number: 6,
       name: 'Atiganda',
       nature: YogaNature.malefic,
-      rulingPlanet: Planet.saturn,
+      rulingPlanet: Planet.moon,
       description: 'Great Danger Yoga - Caution required',
       effects: 'Avoid risky activities, conflicts, and important decisions.',
       recommendations: [
@@ -379,7 +382,7 @@ class YogaDetails {
       number: 7,
       name: 'Sukarma',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.mercury,
+      rulingPlanet: Planet.mars,
       description: 'Good Work Yoga - Excellent for positive actions',
       effects:
           'Very favorable for all good works, charity, and virtuous activities.',
@@ -390,7 +393,7 @@ class YogaDetails {
       number: 8,
       name: 'Dhriti',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.jupiter,
+      rulingPlanet: Planet.meanNode,
       description: 'Determination or Firmness Yoga - Promotes stability',
       effects:
           'Good for perseverance, completing tasks, and long-term projects.',
@@ -401,7 +404,7 @@ class YogaDetails {
       number: 9,
       name: 'Shula',
       nature: YogaNature.malefic,
-      rulingPlanet: Planet.mars,
+      rulingPlanet: Planet.jupiter,
       description: 'Spear or Pain Yoga - Indicates difficulties',
       effects: 'Challenging period. Avoid confrontations and risky activities.',
       recommendations: [
@@ -446,7 +449,7 @@ class YogaDetails {
       number: 12,
       name: 'Dhruva',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.jupiter,
+      rulingPlanet: Planet.ketu,
       description: 'Fixed or Constant Yoga - Promotes stability',
       effects:
           'Very favorable for permanent arrangements and long-term commitments.',
@@ -462,7 +465,7 @@ class YogaDetails {
       number: 13,
       name: 'Vyaghata',
       nature: YogaNature.malefic,
-      rulingPlanet: Planet.mars,
+      rulingPlanet: Planet.venus,
       description: 'Obstacle or Hindrance Yoga - Indicates setbacks',
       effects:
           'Challenging period with potential obstacles. Proceed with caution.',
@@ -478,7 +481,7 @@ class YogaDetails {
       number: 14,
       name: 'Harshana',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.moon,
+      rulingPlanet: Planet.sun,
       description: 'Joy or Delight Yoga - Promotes happiness',
       effects:
           'Very auspicious for celebrations, social gatherings, and enjoyment.',
@@ -493,8 +496,8 @@ class YogaDetails {
     YogaDetails(
       number: 15,
       name: 'Vajra',
-      nature: YogaNature.benefic,
-      rulingPlanet: Planet.jupiter,
+      nature: YogaNature.malefic,
+      rulingPlanet: Planet.moon,
       description: 'Thunderbolt or Diamond Yoga - Indicates strength',
       effects:
           'Good for overcoming obstacles and achieving success through effort.',
@@ -510,7 +513,7 @@ class YogaDetails {
       number: 16,
       name: 'Siddhi',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.mercury,
+      rulingPlanet: Planet.mars,
       description: 'Success or Accomplishment Yoga - Promotes achievement',
       effects: 'Excellent for completing tasks and achieving goals.',
       recommendations: [
@@ -525,7 +528,7 @@ class YogaDetails {
       number: 17,
       name: 'Vyatipata',
       nature: YogaNature.malefic,
-      rulingPlanet: Planet.sun,
+      rulingPlanet: Planet.meanNode,
       description: 'Calamity or Disaster Yoga - Caution required',
       effects: 'Very challenging period. Avoid all important activities.',
       recommendations: [
@@ -540,7 +543,7 @@ class YogaDetails {
       number: 18,
       name: 'Variyana',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.venus,
+      rulingPlanet: Planet.jupiter,
       description: 'Comfort or Luxury Yoga - Promotes enjoyment',
       effects: 'Good for comfort, luxury, and enjoying life\'s pleasures.',
       recommendations: [
@@ -571,7 +574,7 @@ class YogaDetails {
       number: 20,
       name: 'Shiva',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.jupiter,
+      rulingPlanet: Planet.mercury,
       description: 'Auspicious Yoga - Highly favorable',
       effects:
           'One of the best yogas. Excellent for all auspicious activities.',
@@ -587,7 +590,7 @@ class YogaDetails {
       number: 21,
       name: 'Siddha',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.mercury,
+      rulingPlanet: Planet.ketu,
       description: 'Perfection or Completion Yoga - Promotes success',
       effects: 'Very favorable for achieving perfection and completing tasks.',
       recommendations: [
@@ -602,7 +605,7 @@ class YogaDetails {
       number: 22,
       name: 'Sadhya',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.mars,
+      rulingPlanet: Planet.venus,
       description: 'Attainable or Possible Yoga - Success achievable',
       effects: 'Good for pursuing goals and achieving what is desired.',
       recommendations: [
@@ -617,7 +620,7 @@ class YogaDetails {
       number: 23,
       name: 'Shubha',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.venus,
+      rulingPlanet: Planet.sun,
       description: 'Auspicious Yoga - Highly favorable',
       effects: 'Very auspicious for beauty, arts, and pleasant activities.',
       recommendations: [
@@ -647,7 +650,7 @@ class YogaDetails {
       number: 25,
       name: 'Brahma',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.jupiter,
+      rulingPlanet: Planet.mars,
       description: 'Creator or Knowledge Yoga - Highly spiritual',
       effects:
           'Excellent for spiritual growth, knowledge, and creative activities.',
@@ -663,7 +666,7 @@ class YogaDetails {
       number: 26,
       name: 'Indra',
       nature: YogaNature.benefic,
-      rulingPlanet: Planet.sun,
+      rulingPlanet: Planet.meanNode,
       description: 'King or Leader Yoga - Promotes authority',
       effects: 'Good for leadership, authority, and gaining recognition.',
       recommendations: [
@@ -678,7 +681,7 @@ class YogaDetails {
       number: 27,
       name: 'Vaidhriti',
       nature: YogaNature.malefic,
-      rulingPlanet: Planet.saturn,
+      rulingPlanet: Planet.jupiter,
       description: 'Supporting or Holding Yoga - Requires caution',
       effects: 'Challenging period. Best for rest and spiritual practice.',
       recommendations: [
@@ -706,13 +709,26 @@ class KaranaInfo {
   /// Karana name
   final String name;
 
-  /// Whether it's a fixed karana (first 7) or variable
+  /// Whether it's a fixed (Sthira) karana - true only for the 4 Sthira
+  /// karanas (Kimstughna, Shakuni, Chatushpada, Naga); false for the 7
+  /// repeating (Chara) karanas.
   final bool isFixed;
 
   /// Elapsed portion of the karana (0.0 - 1.0)
   final double elapsed;
 
+  /// The 4 fixed (Sthira) karanas, which occur at fixed points of the lunar
+  /// month: Kimstughna, Shakuni, Chatushpada and Naga.
   static const List<String> fixedKaranaNames = [
+    'Shakuni',
+    'Chatushpada',
+    'Naga',
+    'Kimstughna',
+  ];
+
+  /// The 7 repeating (Chara/movable) karanas, which recur throughout the
+  /// 60-karana cycle: Bava, Balava, Kaulava, Taitila, Garaja, Vanija, Vishti.
+  static const List<String> variableKaranaNames = [
     'Bava',
     'Balava',
     'Kaulava',
@@ -722,18 +738,14 @@ class KaranaInfo {
     'Vishti',
   ];
 
-  static const List<String> variableKaranaNames = [
-    'Shakuni',
-    'Chatushpada',
-    'Naga',
-    'Kimstughna',
-  ];
-
   /// Gets the karana nature
   KaranaNature get nature {
     if (name == 'Vishti') return KaranaNature.malefic;
-    if (isFixed) return KaranaNature.benefic;
-    return KaranaNature.mixed;
+    if (name == 'Shakuni' || name == 'Chatushpada' || name == 'Naga') {
+      return KaranaNature.malefic;
+    }
+    if (name == 'Kimstughna') return KaranaNature.mixed;
+    return KaranaNature.benefic;
   }
 }
 

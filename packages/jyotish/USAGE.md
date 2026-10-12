@@ -440,7 +440,7 @@ final navamsa = jyotish.getDivisionalChart(
   type: DivisionalChartType.d9,
 );
 final karakamsa = jyotish.getKarakamsa(rashiChart: d1Chart, navamsaChart: navamsa);
-print('Karakamsa: ${karakamsa.sign.name}');
+print('Karakamsa: ${karakamsa.karakamsaSign.label}');
 
 // Other Jaimini points available:
 // - Amatyakaraka (Career significator)

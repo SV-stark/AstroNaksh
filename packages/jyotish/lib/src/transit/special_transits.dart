@@ -97,10 +97,8 @@ class SadeSatiStatus {
     final moonSign = (natalMoonLongitude / 30).floor();
     final saturnSign = (transitSaturnLongitude / 30).floor();
 
-    // Calculate house from Moon
-    var house = (saturnSign - moonSign + 12) % 12;
-    if (house == 0) house = 12;
-
+    // Calculate house from Moon (1-12)
+    final house = ((saturnSign - moonSign) % 12 + 12) % 12 + 1;
     return house;
   }
 }
@@ -164,9 +162,8 @@ class DhaiyaStatus {
     final moonSign = (natalMoonLongitude / 30).floor();
     final saturnSign = (transitSaturnLongitude / 30).floor();
 
-    var house = (saturnSign - moonSign + 12) % 12;
-    if (house == 0) house = 12;
-
+    // Calculate house from Moon (1-12)
+    final house = ((saturnSign - moonSign) % 12 + 12) % 12 + 1;
     return house;
   }
 }

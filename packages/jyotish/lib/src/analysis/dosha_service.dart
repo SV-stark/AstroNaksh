@@ -197,9 +197,14 @@ class DoshaService {
           (ascendantSign == Rashi.cancer || ascendantSign == Rashi.leo);
 
       // 16. Mars conjoined with Jupiter or Moon (same sign/house)
+      final jupiter = chart.getPlanet(Planet.jupiter);
+      // Jupiter's sign is required for this rule; if it is absent the rule
+      // cannot be evaluated, so it is simply not counted rather than being
+      // faked from an Aries placeholder longitude.
       final jupSign =
-          Rashi.fromLongitude(chart.getPlanet(Planet.jupiter)?.longitude ?? 0);
-      exceptions[15] = (marsSign == jupSign || marsSign == moonSign);
+          jupiter != null ? Rashi.fromLongitude(jupiter.longitude) : null;
+      exceptions[15] = (jupSign != null && marsSign == jupSign) ||
+          marsSign == moonSign;
 
       // 17. Jupiter or Venus in Lagna
       final jupHouse = getHouseOfPlanet(chart, Planet.jupiter);
@@ -425,8 +430,7 @@ class DoshaService {
     }
 
     return KalathraDoshaResult(
-      hasDosha: hasDosha ||
-          ascMalefics.isNotEmpty, // Present if there are afflictions
+      hasDosha: hasDosha,
       causingMalefics: {...ascMalefics, ...moonMalefics}.toList(),
       description: description,
     );

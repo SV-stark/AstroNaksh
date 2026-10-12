@@ -4,8 +4,26 @@ import 'package:jyotish/src/nadi/nadi.dart';
 import 'package:jyotish/src/models/vedic_chart.dart';
 
 class NadiService {
+  const NadiService();
+
   static const int totalNadisPerSign = 150;
   static const int totalNadis = 1800;
+
+  /// Returns detailed Nadi information for an absolute Nadi number (1-1800).
+  NadiInfo getNadiInfo(int absoluteNadiNumber) => _getNadiInfo(absoluteNadiNumber);
+
+  /// Returns the Nadi tradition/school type for a Nadi number.
+  NadiType getNadiType(int nadiNumber) => _getNadiType(nadiNumber);
+
+  /// Returns the ruling planet for a Nadi number.
+  Planet getNadiRulingPlanet(int nadiNumber) => _getNadiRulingPlanet(nadiNumber);
+
+  /// Returns the elemental quality (Fire, Earth, Air, Water, Ether) for a Nadi number.
+  String getNadiElement(int nadiNumber) => _getNadiElement(nadiNumber);
+
+  /// Returns key characteristics for a Nadi number.
+  List<String> getNadiCharacteristics(int nadiNumber) =>
+      _getNadiCharacteristics(nadiNumber);
 
   static final Map<int, String> _nadiNames = {
     1: 'Agneya',
@@ -261,7 +279,7 @@ class NadiService {
     final sign = Rashi.values[signIndex];
 
     final sb = StringBuffer();
-    sb.writeln('Nadi $nadiNumber - ${sign.name}');
+    sb.writeln('Nadi $nadiNumber - ${sign.label}');
     sb.writeln(
       'Position in sign: ${(positionInSign / 150 * 100).toStringAsFixed(1)}%',
     );

@@ -165,10 +165,8 @@ class VarshapalService {
       flags: activeFlags,
     );
 
-    // 3. Get Jupiter's position to determine varsha number
-    final jupiterInfo = chart.getPlanet(Planet.jupiter);
-    final jupiterLongitude = jupiterInfo?.longitude ?? 0;
-    final varshaNumber = _calculateVarshaNumber(jupiterLongitude);
+    // 3. Determine Samvatsara year number (1-60) from canonical Prabhava epoch
+    final varshaNumber = getCurrentVarshaNumber(varshaDateTime);
     final samvatsaraName = samvatsaraNames[(varshaNumber - 1) % 60];
 
     // 4. Calculate Panchavargiya Bala
@@ -540,10 +538,10 @@ class VarshapalService {
         (Rashi.fromLongitude(natalChart.ascendant).number + age) % 12;
     final munthaLord = Rashi.values[munthaSignIndex].lord;
 
-    final sunHouse = annualChart.getPlanet(Planet.sun)?.house ?? 1;
-    final bool isDay = sunHouse >= 7 && sunHouse <= 12;
+    // Dina-Ratri Lord: Sun for day birth, Moon for night birth (evaluated from natal chart)
+    final natalSunHouse = natalChart.getPlanet(Planet.sun)?.house ?? 1;
+    final bool isDay = natalSunHouse >= 7 && natalSunHouse <= 12;
 
-    // Dina-Ratri Lord: Sun for day birth, Moon for night birth
     final dinaRatriLord = isDay ? Planet.sun : Planet.moon;
 
     // Trirashi Lord
@@ -779,10 +777,10 @@ class VarshapalService {
         if (degree < 27.0) return Planet.saturn;
         return Planet.mars;
       case Rashi.gemini:
-        if (degree < 6.0) return Planet.mercury;
-        if (degree < 12.0) return Planet.jupiter;
-        if (degree < 19.0) return Planet.venus;
-        if (degree < 25.0) return Planet.mars;
+        if (degree < 7.0) return Planet.mercury;
+        if (degree < 13.0) return Planet.jupiter;
+        if (degree < 20.0) return Planet.venus;
+        if (degree < 26.0) return Planet.mars;
         return Planet.saturn;
       case Rashi.cancer:
         if (degree < 7.0) return Planet.mars;
@@ -792,9 +790,9 @@ class VarshapalService {
         return Planet.saturn;
       case Rashi.leo:
         if (degree < 6.0) return Planet.jupiter;
-        if (degree < 13.0) return Planet.venus;
-        if (degree < 19.0) return Planet.saturn;
-        if (degree < 25.0) return Planet.mercury;
+        if (degree < 11.0) return Planet.venus;
+        if (degree < 18.0) return Planet.saturn;
+        if (degree < 24.0) return Planet.mercury;
         return Planet.mars;
       case Rashi.virgo:
         if (degree < 7.0) return Planet.mercury;
@@ -811,8 +809,8 @@ class VarshapalService {
       case Rashi.scorpio:
         if (degree < 7.0) return Planet.mars;
         if (degree < 11.0) return Planet.venus;
-        if (degree < 19.0) return Planet.jupiter;
-        if (degree < 24.0) return Planet.mercury;
+        if (degree < 19.0) return Planet.mercury;
+        if (degree < 24.0) return Planet.jupiter;
         return Planet.saturn;
       case Rashi.sagittarius:
         if (degree < 12.0) return Planet.jupiter;
@@ -879,19 +877,6 @@ class VarshapalService {
     } else {
       return RelationshipType.neutral;
     }
-  }
-
-  /// Calculates the varsha number (1-60) based on Jupiter's longitude.
-  int _calculateVarshaNumber(double jupiterLongitude) {
-    // Jupiter moves approximately 30 per year in the zodiac
-    // We use a simplified calculation based on Jupiter's position
-    final signNumber = (jupiterLongitude / 30).floor();
-    final degreeInSign = jupiterLongitude % 30;
-
-    // Calculate position within the 60-year cycle
-    // Each sign lasts approximately 12/60 = 0.2 years = ~2 months
-    final cyclePosition = (signNumber * 2 + (degreeInSign / 15).floor()) % 60;
-    return cyclePosition + 1;
   }
 
   /// Calculates all Varsha (year) periods.
@@ -1045,9 +1030,12 @@ class VarshapalService {
 
   /// Adds the appropriate duration for a Maas (month) based on the ruling planet.
   DateTime _addMaasaDuration(DateTime startDate, Planet lord) {
-    // Each Maas (month) is approximately 30 days in Vedic calendar
-    // But variations exist based on solar month vs lunar month
-    return startDate.add(const Duration(days: 30));
+    // A solar year is ~365.2422 days; each of the 12 Maasa periods is
+    // 1/12th of the solar year (~30.43685 days) so that the 12
+    // periods fully span the 365.24-day annual return year.
+    const microsecondsPerMonth =
+        (365.24219 * Duration.microsecondsPerDay / 12);
+    return startDate.add(Duration(microseconds: microsecondsPerMonth.round()));
   }
 
   /// Finds the current period from a list at a given date.
@@ -1074,12 +1062,11 @@ class VarshapalService {
     return samvatsaraNames[(yearNumber - 1) % 60];
   }
 
-  /// Gets the current Varsha number based on a date and reference year.
+  /// Gets the current Varsha number based on a date and reference year (1-60).
   static int getCurrentVarshaNumber(DateTime date, {int? referenceYear}) {
-    // This requires knowing a reference point (e.g., 2025 = year 7 in cycle)
-    // The cycle started in 1983 (Prabhava) - year 1
-    referenceYear ??= DateTime.now().year;
-    final yearsSince1983 = referenceYear - 1983;
-    return ((yearsSince1983 % 60) + 1);
+    // The cycle started in 1987 (Prabhava) - year 1
+    referenceYear ??= date.year;
+    final yearsSince1987 = referenceYear - 1987;
+    return (((yearsSince1987 % 60) + 60) % 60) + 1;
   }
 }

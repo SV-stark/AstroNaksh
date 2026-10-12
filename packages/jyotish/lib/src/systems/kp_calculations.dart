@@ -268,6 +268,7 @@ class KPDashaPeriods {
     Planet.venus: 20,
     Planet.saturn: 19,
     Planet.meanNode: 18, // Rahu
+    Planet.ketu: 7, // Ketu
   };
 
   /// Gets dasha period for a planet

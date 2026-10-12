@@ -3,6 +3,7 @@ import 'package:jyotish/src/models/rashi.dart';
 import 'package:jyotish/src/models/vedic_chart.dart';
 import 'package:jyotish/src/models/compatibility_report.dart';
 import 'package:jyotish/src/analysis/compatibility.dart';
+import 'package:jyotish/src/strength/relationship.dart';
 
 
 class CompatibilityService {
@@ -85,22 +86,40 @@ class CompatibilityService {
     );
   }
 
-  GunaScores calculateGunaMilan(VedicChart boyChart, VedicChart girlChart) {
-    final boyMoonInfo = boyChart.getPlanet(Planet.moon);
-    final girlMoonInfo = girlChart.getPlanet(Planet.moon);
+  /// Requires that [planet] is present in [chart].
+  ///
+  /// A chart that is missing a planet is malformed. Silently substituting a
+  /// placeholder longitude (or the Ashwini nakshatra) would fabricate a
+  /// compatibility result from invented data, so the failure is surfaced
+  /// instead.
+  static VedicPlanetInfo _requirePlanet(VedicChart chart, Planet planet) {
+    final info = chart.getPlanet(planet);
+    if (info == null) {
+      throw StateError(
+        'Chart for ${chart.location} at ${chart.dateTime.toIso8601String()} '
+        'has no position for ${planet.displayName}; cannot compute '
+        'compatibility.',
+      );
+    }
+    return info;
+  }
 
-    final boyNakshatra = boyMoonInfo?.nakshatra ?? 'Ashwini';
-    final girlNakshatra = girlMoonInfo?.nakshatra ?? 'Ashwini';
-    final boyPada = boyMoonInfo?.pada ?? 1;
-    final girlPada = girlMoonInfo?.pada ?? 1;
+  GunaScores calculateGunaMilan(VedicChart boyChart, VedicChart girlChart) {
+    final boyMoonInfo = _requirePlanet(boyChart, Planet.moon);
+    final girlMoonInfo = _requirePlanet(girlChart, Planet.moon);
 
     return GunaScores(
-      varna: calculateVarna(boyNakshatra, girlNakshatra),
+      varna: calculateVarna(boyMoonInfo.nakshatra, girlMoonInfo.nakshatra),
       vashya: calculateVashya(boyChart, girlChart),
-      tara: calculateTara(boyNakshatra, girlNakshatra, boyPada, girlPada),
-      yoni: calculateYoni(boyNakshatra, girlNakshatra),
+      tara: calculateTara(
+        boyMoonInfo.nakshatra,
+        girlMoonInfo.nakshatra,
+        boyMoonInfo.pada,
+        girlMoonInfo.pada,
+      ),
+      yoni: calculateYoni(boyMoonInfo.nakshatra, girlMoonInfo.nakshatra),
       grahaMaitri: calculateGrahaMaitri(boyChart, girlChart),
-      gana: calculateGana(boyNakshatra, girlNakshatra),
+      gana: calculateGana(boyMoonInfo.nakshatra, girlMoonInfo.nakshatra),
       bhakoot: calculateBhakoot(boyChart, girlChart),
       nadi: calculateNadi(boyChart, girlChart),
     );
@@ -121,50 +140,66 @@ class CompatibilityService {
     return 0;
   }
 
-  /// Returns the Varna for a given nakshatra per standard classification.
+  /// Returns the Varna for a given nakshatra per the Dakshin-Bharat
+  /// (nakshatra-based) classification.
   ///
-  /// Sources: Muhurta Chintamani, Brihat Parashara Hora Shastra
+  /// The 27 nakshatras are laid out in a boustrophedon (serpentine) cycle of the
+  /// four Varnas — Brahmin, Kshatriya, Vaishya, Shudra — running down from
+  /// Ashwini and back up again. This yields 7 Brahmin, 7 Kshatriya, 7 Vaishya
+  /// and 6 Shudra nakshatras.
+  ///
+  /// Sources: Kalidasa, *Poorvakalamrut* Ch. 3 (Vivaha-Melapaka Prakarana)
+  /// shloka 93; Madhaviya Grantha; B.V. Raman, *Muhurta*. All three agree on
+  /// every one of the 27 assignments, including Hasta and Uttara Phalguni as
+  /// Shudra, which the table below reproduces exactly.
+  ///
+  /// Every nakshatra is classified explicitly — an unrecognised name is a
+  /// programming error, not a silent default, so a schema change cannot quietly
+  /// mis-score Varna Koota.
   String _getNakshatraVarna(String nakshatra) {
-    // Brahmin: Krittika, Pushya, Ashlesha, Magha, U. Phalguni, Hasta,
-    //          Swati, Anuradha, Shravana, P. Ashadha, P. Bhadrapada, Revati
-    if ([
-      'Krittika',
-      'Pushya',
-      'Ashlesha',
-      'Magha',
-      'Uttara Phalguni',
-      'Hasta',
-      'Swati',
-      'Anuradha',
-      'Shravana',
-      'Purva Ashadha',
-      'Purva Bhadrapada',
-      'Revati',
-    ].contains(nakshatra)) {
-      return 'Brahmin';
+    const nakshatraVarna = {
+      // Brahmin (7)
+      'Ashwini': 'Brahmin',
+      'Pushya': 'Brahmin',
+      'Ashlesha': 'Brahmin',
+      'Vishakha': 'Brahmin',
+      'Anuradha': 'Brahmin',
+      'Shatabhisha': 'Brahmin',
+      'Purva Bhadrapada': 'Brahmin',
+      // Kshatriya (7)
+      'Bharani': 'Kshatriya',
+      'Punarvasu': 'Kshatriya',
+      'Magha': 'Kshatriya',
+      'Swati': 'Kshatriya',
+      'Jyeshtha': 'Kshatriya',
+      'Dhanishta': 'Kshatriya',
+      'Uttara Bhadrapada': 'Kshatriya',
+      // Vaishya (7)
+      'Krittika': 'Vaishya',
+      'Ardra': 'Vaishya',
+      'Purva Phalguni': 'Vaishya',
+      'Chitra': 'Vaishya',
+      'Mula': 'Vaishya',
+      'Shravana': 'Vaishya',
+      'Revati': 'Vaishya',
+      // Shudra (6)
+      'Rohini': 'Shudra',
+      'Mrigashira': 'Shudra',
+      'Uttara Phalguni': 'Shudra',
+      'Hasta': 'Shudra',
+      'Purva Ashadha': 'Shudra',
+      'Uttara Ashadha': 'Shudra',
+    };
+
+    final varna = nakshatraVarna[nakshatra];
+    if (varna == null) {
+      throw ArgumentError.value(
+        nakshatra,
+        'nakshatra',
+        'Not a recognised nakshatra name; cannot determine Varna.',
+      );
     }
-    // Kshatriya: Ashwini, Bharani, P. Phalguni, Chitra, Vishakha, Jyeshtha,
-    //            U. Ashadha, Dhanishta, Shatabhisha, U. Bhadrapada
-    if ([
-      'Ashwini',
-      'Bharani',
-      'Purva Phalguni',
-      'Chitra',
-      'Vishakha',
-      'Jyeshtha',
-      'Uttara Ashadha',
-      'Dhanishta',
-      'Shatabhisha',
-      'Uttara Bhadrapada',
-    ].contains(nakshatra)) {
-      return 'Kshatriya';
-    }
-    // Vaishya: Rohini, Mrigashira, Ardra, Punarvasu
-    if (['Rohini', 'Mrigashira', 'Ardra', 'Punarvasu'].contains(nakshatra)) {
-      return 'Vaishya';
-    }
-    // Shudra: Mula (remaining)
-    return 'Shudra';
+    return varna;
   }
 
   //  Vashya Koota (max 2 points)
@@ -173,8 +208,8 @@ class CompatibilityService {
   // Score 2 = same category, 1 = compatible, 0 = incompatible.
 
   int calculateVashya(VedicChart boyChart, VedicChart girlChart) {
-    final boyMoonLong = boyChart.getPlanet(Planet.moon)?.longitude ?? 0;
-    final girlMoonLong = girlChart.getPlanet(Planet.moon)?.longitude ?? 0;
+    final boyMoonLong = _requirePlanet(boyChart, Planet.moon).longitude;
+    final girlMoonLong = _requirePlanet(girlChart, Planet.moon).longitude;
     final boyMoonSign = Rashi.fromLongitude(boyMoonLong);
     final girlMoonSign = Rashi.fromLongitude(girlMoonLong);
 
@@ -237,28 +272,25 @@ class CompatibilityService {
 
     double score = 0;
 
-    // Boy to Girl
+    // Boy to Girl (count from Boy's nakshatra to Girl's nakshatra)
     final boyToGirlCount =
-        ((girlNakshatraNum - boyNakshatraNum) % 27 + 27) % 27;
-    final boyToGirlGroup = (boyToGirlCount ~/ 9) + 1;
-    if (_isTaraAuspicious(boyToGirlGroup)) {
+        ((girlNakshatraNum - boyNakshatraNum) % 27 + 27) % 27 + 1;
+    final boyTara = ((boyToGirlCount - 1) % 9) + 1;
+    // Auspicious taras: 1 (Janma), 2 (Sampat), 4 (Kshema), 6 (Sadhana), 8 (Mitra), 9 (Parama Mitra)
+    // Inauspicious taras: 3 (Vipat), 5 (Pratyari), 7 (Naidhana/Vadha)
+    if (boyTara != 3 && boyTara != 5 && boyTara != 7) {
       score += 1.5;
     }
 
-    // Girl to Boy
+    // Girl to Boy (count from Girl's nakshatra to Boy's nakshatra)
     final girlToBoyCount =
-        ((boyNakshatraNum - girlNakshatraNum) % 27 + 27) % 27;
-    final girlToBoyGroup = (girlToBoyCount ~/ 9) + 1;
-    if (_isTaraAuspicious(girlToBoyGroup)) {
+        ((boyNakshatraNum - girlNakshatraNum) % 27 + 27) % 27 + 1;
+    final girlTara = ((girlToBoyCount - 1) % 9) + 1;
+    if (girlTara != 3 && girlTara != 5 && girlTara != 7) {
       score += 1.5;
     }
 
     return score;
-  }
-
-  bool _isTaraAuspicious(int taraGroup) {
-    // Inauspicious: 3 (vipat), 5 (pratyak), 7 (vadha)
-    return taraGroup != 3 && taraGroup != 5 && taraGroup != 7;
   }
 
   int _getNakshatraNumber(String nakshatra) {
@@ -334,8 +366,6 @@ class CompatibilityService {
     final boyAnimal = yoniAnimals[boyNakshatra] ?? 'Unknown';
     final girlAnimal = yoniAnimals[girlNakshatra] ?? 'Unknown';
 
-    if (boyAnimal == 'Unknown' || girlAnimal == 'Unknown') return 1;
-
     const yoniNames = [
       'Horse',
       'Elephant',
@@ -353,41 +383,56 @@ class CompatibilityService {
       'Lion',
     ];
 
+    // Classical Yoni-Koota matrix (Muhurta Chintamani / Saravali).
+    //
+    // Scale: 4 = same Yoni, 3 = friendly, 2 = neutral, 1 = inimical,
+    // 0 = sworn enemy (predator/prey). The seven enemy pairs — Horse/Buffalo,
+    // Elephant/Lion, Goat/Monkey, Serpent/Mongoose, Dog/Deer, Cat/Rat and
+    // Cow/Tiger — are the only cells that score 0.
+    //
+    // Animal order must match `yoniNames` below:
+    // Horse, Elephant, Goat, Serpent, Dog, Cat, Rat, Cow, Buffalo, Tiger,
+    // Deer, Monkey, Mongoose, Lion.
     const yoniScoreMatrix = [
       // Horse (0)
-      [4, 3, 2, 3, 2, 2, 2, 2, 0, 2, 2, 3, 2, 2],
+      [4, 2, 2, 3, 2, 2, 2, 1, 0, 1, 3, 3, 2, 1],
       // Elephant (1)
-      [3, 4, 3, 3, 2, 2, 2, 2, 3, 2, 2, 3, 2, 0],
-      // Goat (2) [Sheep]
-      [2, 3, 4, 2, 2, 2, 2, 3, 3, 2, 2, 0, 3, 2],
-      // Serpent (3) [Snake]
-      [3, 3, 2, 4, 2, 3, 2, 2, 2, 2, 2, 2, 0, 2],
+      [2, 4, 3, 3, 2, 2, 2, 2, 3, 1, 2, 3, 2, 0],
+      // Goat (2)
+      [2, 3, 4, 2, 1, 2, 1, 3, 3, 1, 2, 0, 3, 1],
+      // Serpent (3)
+      [3, 3, 2, 4, 2, 1, 1, 1, 1, 2, 2, 2, 0, 2],
       // Dog (4)
-      [2, 2, 2, 2, 4, 3, 3, 2, 2, 2, 0, 2, 2, 2],
+      [2, 2, 1, 2, 4, 2, 1, 2, 2, 1, 0, 2, 1, 1],
       // Cat (5)
-      [2, 2, 2, 3, 3, 4, 0, 2, 2, 2, 3, 3, 2, 2],
+      [2, 2, 2, 1, 2, 4, 0, 2, 2, 1, 3, 3, 2, 1],
       // Rat (6)
-      [2, 2, 2, 2, 3, 0, 4, 2, 2, 2, 2, 2, 2, 2],
+      [2, 2, 1, 1, 1, 0, 4, 2, 2, 2, 2, 2, 1, 2],
       // Cow (7)
-      [2, 2, 3, 2, 2, 2, 2, 4, 3, 0, 2, 2, 2, 2],
+      [1, 2, 3, 1, 2, 2, 2, 4, 3, 0, 3, 2, 2, 1],
       // Buffalo (8)
-      [0, 3, 3, 2, 2, 2, 2, 3, 4, 2, 2, 2, 2, 2],
+      [0, 3, 3, 1, 2, 2, 2, 3, 4, 1, 2, 2, 2, 1],
       // Tiger (9)
-      [2, 2, 2, 2, 2, 2, 2, 0, 2, 4, 2, 2, 2, 3],
+      [1, 1, 1, 2, 1, 1, 2, 0, 1, 4, 1, 1, 2, 1],
       // Deer (10)
-      [2, 2, 2, 2, 0, 3, 2, 2, 2, 2, 4, 2, 2, 2],
+      [1, 2, 2, 2, 0, 3, 2, 3, 2, 1, 4, 2, 2, 1],
       // Monkey (11)
-      [3, 3, 0, 2, 2, 3, 2, 2, 2, 2, 2, 4, 3, 2],
+      [3, 3, 0, 2, 2, 3, 2, 2, 2, 1, 2, 4, 3, 2],
       // Mongoose (12)
-      [2, 2, 3, 0, 2, 2, 2, 2, 2, 2, 2, 3, 4, 2],
+      [2, 2, 3, 0, 1, 2, 1, 2, 2, 2, 2, 3, 4, 2],
       // Lion (13)
-      [2, 0, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 4],
+      [1, 0, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 2, 4],
     ];
 
     final boyIdx = yoniNames.indexOf(boyAnimal);
     final girlIdx = yoniNames.indexOf(girlAnimal);
 
-    if (boyIdx == -1 || girlIdx == -1) return 1; // Fallback
+    if (boyIdx == -1 || girlIdx == -1) {
+      throw ArgumentError(
+        'Yoni animal could not be resolved for one of the nakshatras '
+        '($boyNakshatra / $girlNakshatra).',
+      );
+    }
 
     return yoniScoreMatrix[boyIdx][girlIdx];
   }
@@ -398,10 +443,10 @@ class CompatibilityService {
 
   int calculateGrahaMaitri(VedicChart boyChart, VedicChart girlChart) {
     final boyMoonSign = Rashi.fromLongitude(
-      boyChart.getPlanet(Planet.moon)?.longitude ?? 0,
+      _requirePlanet(boyChart, Planet.moon).longitude,
     );
     final girlMoonSign = Rashi.fromLongitude(
-      girlChart.getPlanet(Planet.moon)?.longitude ?? 0,
+      _requirePlanet(girlChart, Planet.moon).longitude,
     );
 
     final boyLord = _getSignLord(boyMoonSign);
@@ -443,36 +488,26 @@ class CompatibilityService {
   /// 2 = friend, 1 = neutral, -1 = enemy
   /// Source: BPHS natural friendship table.
   int _planetFriendship(Planet p1, Planet p2) {
-    // Natural friends of each planet
-    const friends = {
-      Planet.sun: [Planet.moon, Planet.mars, Planet.jupiter],
-      Planet.moon: [Planet.sun, Planet.mercury],
-      Planet.mars: [Planet.sun, Planet.moon, Planet.jupiter],
-      Planet.mercury: [Planet.sun, Planet.venus],
-      Planet.jupiter: [Planet.sun, Planet.moon, Planet.mars],
-      Planet.venus: [Planet.mercury, Planet.saturn],
-      Planet.saturn: [Planet.mercury, Planet.venus],
-    };
-    // Natural enemies
-    const enemies = {
-      Planet.sun: [Planet.saturn, Planet.venus],
-      Planet.moon: [Planet.saturn, Planet.mars, Planet.venus, Planet.jupiter],
-      Planet.mars: [Planet.mercury],
-      Planet.mercury: [Planet.moon],
-      Planet.jupiter: [Planet.mercury, Planet.venus],
-      Planet.venus: [Planet.sun, Planet.moon],
-      Planet.saturn: [Planet.sun, Planet.moon, Planet.mars],
-    };
-
-    if (friends[p1]?.contains(p2) == true) return 2;
-    if (enemies[p1]?.contains(p2) == true) return -1;
+    if (p1 == p2) return 2;
+    final rel = RelationshipCalculator.naturalRelationships[p1]?[p2];
+    if (rel == RelationshipType.friend) return 2;
+    if (rel == RelationshipType.enemy) return -1;
     return 1; // neutral
   }
 
   //  Gana Koota (max 6 points)
-  // Per BPHS / standard Jyotish:
-  // Deva (divine), Manushya (human), Rakshasa (demon)
-  // Scoring: same Gana = 6, compatible pairs = 3, incompatible = 0.
+  //  Gana Koota (max 6 points)
+  // Per BPHS / Parashara: Deva (divine), Manushya (human), Rakshasa (demonic).
+  // The three ganas hold nine nakshatras each.
+  //
+  // Scoring is DIRECTIONAL (groom = boy). The asymmetry is deliberate: it weighs
+  // which side carries the more forceful temperament and in which direction that
+  // pressure flows within the household.
+  //   same gana                -> 6
+  //   Deva groom + Manushya bride -> 6
+  //   Manushya groom + Deva bride   -> 5
+  //   Rakshasa groom + Deva bride   -> 1
+  //   every other cross-gana pair   -> 0
 
   int calculateGana(String boyNakshatra, String girlNakshatra) {
     // Standard Gana classification per BPHS
@@ -516,21 +551,33 @@ class CompatibilityService {
     final girlGana = _getGanaType(girlNakshatra, ganaTypes);
 
     if (boyGana == girlGana) return 6;
-    // Deva+Manushya is compatible (3 pts), Manushya+Deva also 3 pts
-    if ((boyGana == 'Deva' && girlGana == 'Manushya') ||
-        (boyGana == 'Manushya' && girlGana == 'Deva')) {
-      return 3;
+    if (boyGana == 'Deva') {
+      // Deva groom + Manushya bride is a near-full match; Deva + Rakshasa is 0.
+      return girlGana == 'Manushya' ? 6 : 0;
     }
-    // All combinations with Rakshasa score 0
-    return 0;
+    if (boyGana == 'Manushya') {
+      // Manushya groom + Deva bride scores one point lower than the reverse.
+      if (girlGana == 'Deva') return 5;
+      // Manushya + Rakshasa is the tradition's severest clash.
+      return 0;
+    }
+    // Rakshasa groom: 1 against a Deva bride, 0 against Manushya.
+    return girlGana == 'Deva' ? 1 : 0;
   }
 
+  /// Returns the Gana for a nakshatra, or throws if the name is unrecognised.
+  ///
+  /// Falling back to a default would silently mis-score Gana Koota, so an
+  /// unknown name is surfaced as an error instead.
   String _getGanaType(String nakshatra, Map<String, List<String>> ganaTypes) {
-    return ganaTypes.entries
-            .where((e) => e.value.contains(nakshatra))
-            .firstOrNull
-            ?.key ??
-        'Manushya';
+    for (final entry in ganaTypes.entries) {
+      if (entry.value.contains(nakshatra)) return entry.key;
+    }
+    throw ArgumentError.value(
+      nakshatra,
+      'nakshatra',
+      'Not a recognised nakshatra name; cannot determine Gana.',
+    );
   }
 
   //  Bhakoot Koota (max 7 points)
@@ -540,10 +587,10 @@ class CompatibilityService {
 
   int calculateBhakoot(VedicChart boyChart, VedicChart girlChart) {
     final boyMoonSign = Rashi.fromLongitude(
-      boyChart.getPlanet(Planet.moon)?.longitude ?? 0,
+      _requirePlanet(boyChart, Planet.moon).longitude,
     );
     final girlMoonSign = Rashi.fromLongitude(
-      girlChart.getPlanet(Planet.moon)?.longitude ?? 0,
+      _requirePlanet(girlChart, Planet.moon).longitude,
     );
 
     if (_isBhakootDoshaCancelled(boyMoonSign, girlMoonSign)) {
@@ -703,10 +750,10 @@ class CompatibilityService {
       orElse: () => Rashi.aries,
     );
     final moonSign = Rashi.fromLongitude(
-      chart.getPlanet(Planet.moon)?.longitude ?? 0,
+      _requirePlanet(chart, Planet.moon).longitude,
     );
     final venusSign = Rashi.fromLongitude(
-      chart.getPlanet(Planet.venus)?.longitude ?? 0,
+      _requirePlanet(chart, Planet.venus).longitude,
     );
 
     final marsSign = Rashi.fromLongitude(mars.longitude);
@@ -821,15 +868,13 @@ class CompatibilityService {
   }
 
   NadiDoshaResult checkNadiDosha(VedicChart boyChart, VedicChart girlChart) {
-    final boyMoonInfo = boyChart.getPlanet(Planet.moon);
-    final girlMoonInfo = girlChart.getPlanet(Planet.moon);
+    final boyNakshatraIndex =
+        _requirePlanet(boyChart, Planet.moon).position.nakshatraIndex;
+    final girlNakshatraIndex =
+        _requirePlanet(girlChart, Planet.moon).position.nakshatraIndex;
 
-    final boyNadi = _getNadiFromNakshatraIndex(
-      boyMoonInfo?.position.nakshatraIndex ?? 0,
-    );
-    final girlNadi = _getNadiFromNakshatraIndex(
-      girlMoonInfo?.position.nakshatraIndex ?? 0,
-    );
+    final boyNadi = _getNadiFromNakshatraIndex(boyNakshatraIndex);
+    final girlNadi = _getNadiFromNakshatraIndex(girlNakshatraIndex);
 
     final hasDosha =
         boyNadi == girlNadi && !_isNadiDoshaCancelled(boyChart, girlChart);
@@ -846,10 +891,10 @@ class CompatibilityService {
     VedicChart girlChart,
   ) {
     final boyMoonSign = Rashi.fromLongitude(
-      boyChart.getPlanet(Planet.moon)?.longitude ?? 0,
+      _requirePlanet(boyChart, Planet.moon).longitude,
     );
     final girlMoonSign = Rashi.fromLongitude(
-      girlChart.getPlanet(Planet.moon)?.longitude ?? 0,
+      _requirePlanet(girlChart, Planet.moon).longitude,
     );
 
     final boySignNum = boyMoonSign.index + 1;
@@ -886,8 +931,8 @@ class CompatibilityService {
 
     return BhakootDoshaResult(
       hasDosha: hasDosha,
-      boyRashi: boyMoonSign.name,
-      girlRashi: girlMoonSign.name,
+      boyRashi: boyMoonSign.label,
+      girlRashi: girlMoonSign.label,
       description: description,
     );
   }

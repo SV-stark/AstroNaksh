@@ -182,11 +182,54 @@ class Jyotish {
   /// Access point for specialized systems like Argala, Arudha Pada, etc.
   JyotishSystems get systems => JyotishSystems(this);
 
-  /// Gets the underlying ephemeris service.
+  /// Direct service getters
   EphemerisService get ephemeris => _ephemerisService!;
-
-  /// Gets the eclipse prediction service.
   EclipseService get eclipse => _eclipseService!;
+  AspectService get aspect => _aspectService!;
+  CareerAnalysisService get careerAnalysis => _careerAnalysisService!;
+  CompatibilityService get compatibility => _compatibilityService!;
+  DivisionalChartService get divisionalChart => _divisionalChartService!;
+  DoshaService get dosha => _doshaService!;
+  EventTimingService get eventTiming => _eventTimingService!;
+  GrahaYuddhaService get grahaYuddha => _grahaYuddhaService!;
+  ProgenyService get progeny => _progenyService!;
+  SudarshanChakraService get sudarshanChakra => _sudarshanChakraService!;
+  VedicChartService get vedicChart => _vedicChartService!;
+  YogaService get yoga => _yogaService!;
+  SpecialLagnasService get specialLagnas => _specialLagnasService!;
+  UdayaLagnaService get udayaLagna => _udayaLagnaService!;
+  ChoghadiyaService get choghadiya => _choghadiyaService!;
+  GowriPanchangamService get gowriPanchangam => _gowriPanchangamService!;
+  HoraService get hora => _horaService!;
+  MuhurtaScoringService get muhurtaScoring => _muhurtaScoringService!;
+  MuhurtaService get muhurta => _muhurtaService!;
+  RitualService get ritual => _ritualService!;
+  NadiService get nadi => _nadiService!;
+  MasaService get masa => _masaService!;
+  PanchangaService get panchanga => _panchangaService!;
+  BhavaBalaService get bhavaBala => _bhavaBalaService!;
+  BhavaChalitService get bhavaChalit => _bhavaChalitService!;
+  GrahaAvasthaService get grahaAvastha => _grahaAvasthaService!;
+  HouseStrengthService get houseStrength => _houseStrengthService!;
+  PanchangStrengthService get panchangStrength => _panchangStrengthService!;
+  PlanetaryRelationshipService get planetaryRelationship =>
+      _planetaryRelationshipService!;
+  StrengthAnalysisService get strengthAnalysis => _strengthAnalysisService!;
+  StrengthReportService get strengthReport => _strengthReportService!;
+  ArgalaService get argala => _argalaService!;
+  ArudhaPadaService get arudhaPada => _arudhaPadaService!;
+  AshtakavargaService get ashtakavarga => _ashtakavargaService!;
+  DashaService get dasha => _dashaService!;
+  JaiminiService get jaimini => _jaiminiService!;
+  KPService get kp => _kpService!;
+  PrashnaService get prashna => _prashnaService!;
+  ShadbalaService get shadbala => _shadbalaService!;
+  TajakaService get tajaka => _tajakaService!;
+  VarshapalService get varshapal => _varshapalService!;
+  GocharaVedhaService get gocharaVedha => _gocharaVedhaService!;
+  SarvatobhadraService get sarvatobhadra => _sarvatobhadraService!;
+  SpecialTransitService get specialTransit => _specialTransitService!;
+  TransitService get transit => _transitService!;
 
   // ============================================================
   // ASTROLOGY TIME SERVICE — STATIC CONVENIENCE PROXIES
@@ -235,6 +278,13 @@ class Jyotish {
     _ephemerisService?.clearCache();
   }
 
+  /// Returns the Samvatsara year number (1-60, 1=Prabhava) for a given date.
+  ///
+  /// A convenience proxy for [VarshapalService.getCurrentVarshaNumber].
+  /// No initialization required — this is a static utility.
+  static int getCurrentVarshaNumber(DateTime date, {int? referenceYear}) =>
+      VarshapalService.getCurrentVarshaNumber(date, referenceYear: referenceYear);
+
   /// Initializes the Swiss Ephemeris library.
   ///
   /// [ephemerisPath] - Optional custom path to Swiss Ephemeris data files.
@@ -253,6 +303,7 @@ class Jyotish {
       _ephemerisService = EphemerisService();
       await _ephemerisService!.initialize(ephemerisPath: ephemerisPath);
       _vedicChartService = VedicChartService(_ephemerisService!);
+      _divisionalChartService = DivisionalChartService();
       _aspectService = AspectService();
       _transitService = TransitService(_ephemerisService!);
       _dashaService = DashaService();
@@ -270,13 +321,13 @@ class Jyotish {
       _arudhaPadaService = ArudhaPadaService();
       _argalaService = ArgalaService();
       _bhavaBalaService = BhavaBalaService(_shadbalaService!);
-      _jaiminiService = JaiminiService();
+      _jaiminiService = const JaiminiService();
       _prashnaService = PrashnaService(_ephemerisService!);
       _gocharaVedhaService = GocharaVedhaService();
       _strengthAnalysisService = StrengthAnalysisService();
       _varshapalService = VarshapalService(_ephemerisService!);
       _houseStrengthService = HouseStrengthService(_shadbalaService!);
-      _nadiService = NadiService();
+      _nadiService = const NadiService();
       _progenyService = ProgenyService();
       _compatibilityService = CompatibilityService();
       _bhavaChalitService = BhavaChalitService();
@@ -294,9 +345,8 @@ class Jyotish {
         ephemerisService: _ephemerisService!,
       );
       _careerAnalysisService = CareerAnalysisService();
-      _kpService = KPService(_ephemerisService!);
-      _sarvatobhadraService = SarvatobhadraService();
-      _tajakaService = TajakaService();
+      _sarvatobhadraService = const SarvatobhadraService();
+      _tajakaService = const TajakaService();
       _panchangStrengthService = PanchangStrengthService();
       _muhurtaScoringService =
           MuhurtaScoringService(_panchangaService!, _panchangStrengthService!);
@@ -542,10 +592,21 @@ class Jyotish {
   /// Calculates special time-proportionate and mathematical wealth and power lagnas
   /// (Hora Lagna, Ghati Lagna, and Sree Lagna).
   ///
+  /// [sunLongitudeAtSunrise] optionally pins the anchor exactly; when omitted it
+  /// is derived by rewinding the chart's Sun using its own `longitudeSpeed`.
+  ///
   /// Returns [SpecialLagnas] containing the calculated degrees.
-  SpecialLagnas calculateSpecialLagnas(VedicChart chart, DateTime sunrise) {
+  SpecialLagnas calculateSpecialLagnas(
+    VedicChart chart,
+    DateTime sunrise, {
+    double? sunLongitudeAtSunrise,
+  }) {
     _ensureInitialized();
-    return _specialLagnasService!.calculateSpecialLagnas(chart, sunrise);
+    return _specialLagnasService!.calculateSpecialLagnas(
+      chart,
+      sunrise,
+      sunLongitudeAtSunrise: sunLongitudeAtSunrise,
+    );
   }
 
   /// Generates a comprehensive Marriage Compatibility Report for two charts.
@@ -2222,9 +2283,9 @@ class Jyotish {
   /// );
   ///
   /// for (final mahadasha in charaDasha.allMahadashas) {
-  ///   print('${mahadasha.rashi?.name}: ${mahadasha.startDate} - ${mahadasha.endDate}');
+  ///   print('${mahadasha.rashi?.label}: ${mahadasha.startDate} - ${mahadasha.endDate}');
   ///   for (final antardasha in mahadasha.subPeriods) {
-  ///     print('  ${antardasha.rashi?.name}: ${antardasha.startDate} - ${antardasha.endDate}');
+  ///     print('  ${antardasha.rashi?.label}: ${antardasha.startDate} - ${antardasha.endDate}');
   ///   }
   /// }
   /// ```
@@ -3832,12 +3893,14 @@ class Jyotish {
     required DateTime date,
     required GeographicLocation location,
     required DateTime sunrise,
+    SiderealMode siderealMode = SiderealMode.lahiri,
   }) async {
     _ensureInitialized();
     return _udayaLagnaService!.calculateUdayaLagnas(
       date: date,
       location: location,
       sunrise: sunrise,
+      siderealMode: siderealMode,
     );
   }
 
@@ -3879,50 +3942,51 @@ class JyotishSystems {
   final Jyotish _jyotish;
   JyotishSystems(this._jyotish);
 
-  ArgalaService get argala => _jyotish._argalaService!;
-  ArudhaPadaService get arudhaPada => _jyotish._arudhaPadaService!;
-  AshtakavargaService get ashtakavarga => _jyotish._ashtakavargaService!;
-  DashaService get dasha => _jyotish._dashaService!;
-  JaiminiService get jaimini => _jyotish._jaiminiService!;
-  KPService get kp => _jyotish._kpService!;
-  PrashnaService get prashna => _jyotish._prashnaService!;
-  ShadbalaService get shadbala => _jyotish._shadbalaService!;
-  TajakaService get tajaka => _jyotish._tajakaService!;
-  VarshapalService get varshapal => _jyotish._varshapalService!;
-  MuhurtaScoringService get muhurtaScoring => _jyotish._muhurtaScoringService!;
-  DoshaService get dosha => _jyotish._doshaService!;
-  YogaService get yoga => _jyotish._yogaService!;
-  GrahaYuddhaService get grahaYuddha => _jyotish._grahaYuddhaService!;
-  GocharaVedhaService get gocharaVedha => _jyotish._gocharaVedhaService!;
-  SarvatobhadraService get sarvatobhadra => _jyotish._sarvatobhadraService!;
-  NadiService get nadi => _jyotish._nadiService!;
-  SpecialTransitService get specialTransit => _jyotish._specialTransitService!;
-  BhavaBalaService get bhavaBala => _jyotish._bhavaBalaService!;
-  BhavaChalitService get bhavaChalit => _jyotish._bhavaChalitService!;
-  HouseStrengthService get houseStrength => _jyotish._houseStrengthService!;
-  GrahaAvasthaService get grahaAvastha => _jyotish._grahaAvasthaService!;
-  StrengthReportService get strengthReport => _jyotish._strengthReportService!;
-  StrengthAnalysisService get strengthAnalysis => _jyotish._strengthAnalysisService!;
-  PlanetaryRelationshipService get planetaryRelationship => _jyotish._planetaryRelationshipService!;
-  PanchangStrengthService get panchangStrength => _jyotish._panchangStrengthService!;
-  CompatibilityService get compatibility => _jyotish._compatibilityService!;
-  CareerAnalysisService get careerAnalysis => _jyotish._careerAnalysisService!;
-  ProgenyService get progeny => _jyotish._progenyService!;
-  EventTimingService get eventTiming => _jyotish._eventTimingService!;
-  SudarshanChakraService get sudarshanChakra => _jyotish._sudarshanChakraService!;
-  HoraService get hora => _jyotish._horaService!;
-  ChoghadiyaService get choghadiya => _jyotish._choghadiyaService!;
-  GowriPanchangamService get gowriPanchangam => _jyotish._gowriPanchangamService!;
-  MasaService get masa => _jyotish._masaService!;
-  SpecialLagnasService get specialLagnas => _jyotish._specialLagnasService!;
-  UdayaLagnaService get udayaLagna => _jyotish._udayaLagnaService!;
-  RitualService get ritual => _jyotish._ritualService!;
-  PanchangaService get panchanga => _jyotish._panchangaService!;
-  VedicChartService get vedicChart => _jyotish._vedicChartService!;
-  DivisionalChartService get divisionalChart => _jyotish._divisionalChartService!;
-  AspectService get aspect => _jyotish._aspectService!;
-  TransitService get transit => _jyotish._transitService!;
-  MuhurtaService get muhurta => _jyotish._muhurtaService!;
-  EclipseService get eclipse => _jyotish._eclipseService!;
-  EphemerisService get ephemeris => _jyotish._ephemerisService!;
+  ArgalaService get argala => _jyotish.argala;
+  ArudhaPadaService get arudhaPada => _jyotish.arudhaPada;
+  AshtakavargaService get ashtakavarga => _jyotish.ashtakavarga;
+  DashaService get dasha => _jyotish.dasha;
+  JaiminiService get jaimini => _jyotish.jaimini;
+  KPService get kp => _jyotish.kp;
+  PrashnaService get prashna => _jyotish.prashna;
+  ShadbalaService get shadbala => _jyotish.shadbala;
+  TajakaService get tajaka => _jyotish.tajaka;
+  VarshapalService get varshapal => _jyotish.varshapal;
+  MuhurtaScoringService get muhurtaScoring => _jyotish.muhurtaScoring;
+  DoshaService get dosha => _jyotish.dosha;
+  YogaService get yoga => _jyotish.yoga;
+  GrahaYuddhaService get grahaYuddha => _jyotish.grahaYuddha;
+  GocharaVedhaService get gocharaVedha => _jyotish.gocharaVedha;
+  SarvatobhadraService get sarvatobhadra => _jyotish.sarvatobhadra;
+  NadiService get nadi => _jyotish.nadi;
+  SpecialTransitService get specialTransit => _jyotish.specialTransit;
+  BhavaBalaService get bhavaBala => _jyotish.bhavaBala;
+  BhavaChalitService get bhavaChalit => _jyotish.bhavaChalit;
+  HouseStrengthService get houseStrength => _jyotish.houseStrength;
+  GrahaAvasthaService get grahaAvastha => _jyotish.grahaAvastha;
+  StrengthReportService get strengthReport => _jyotish.strengthReport;
+  StrengthAnalysisService get strengthAnalysis => _jyotish.strengthAnalysis;
+  PlanetaryRelationshipService get planetaryRelationship =>
+      _jyotish.planetaryRelationship;
+  PanchangStrengthService get panchangStrength => _jyotish.panchangStrength;
+  CompatibilityService get compatibility => _jyotish.compatibility;
+  CareerAnalysisService get careerAnalysis => _jyotish.careerAnalysis;
+  ProgenyService get progeny => _jyotish.progeny;
+  EventTimingService get eventTiming => _jyotish.eventTiming;
+  SudarshanChakraService get sudarshanChakra => _jyotish.sudarshanChakra;
+  HoraService get hora => _jyotish.hora;
+  ChoghadiyaService get choghadiya => _jyotish.choghadiya;
+  GowriPanchangamService get gowriPanchangam => _jyotish.gowriPanchangam;
+  MasaService get masa => _jyotish.masa;
+  SpecialLagnasService get specialLagnas => _jyotish.specialLagnas;
+  UdayaLagnaService get udayaLagna => _jyotish.udayaLagna;
+  RitualService get ritual => _jyotish.ritual;
+  PanchangaService get panchanga => _jyotish.panchanga;
+  VedicChartService get vedicChart => _jyotish.vedicChart;
+  DivisionalChartService get divisionalChart => _jyotish.divisionalChart;
+  AspectService get aspect => _jyotish.aspect;
+  TransitService get transit => _jyotish.transit;
+  MuhurtaService get muhurta => _jyotish.muhurta;
+  EclipseService get eclipse => _jyotish.eclipse;
+  EphemerisService get ephemeris => _jyotish.ephemeris;
 }

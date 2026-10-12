@@ -142,20 +142,27 @@ class RelationshipCalculator {
     RelationshipType natural,
     RelationshipType temporary,
   ) {
-    if (natural == RelationshipType.friend) {
-      return temporary == RelationshipType.friend
-          ? RelationshipType.greatFriend
-          : RelationshipType.neutral;
-    } else if (natural == RelationshipType.enemy) {
-      return temporary == RelationshipType.friend
-          ? RelationshipType.neutral
-          : RelationshipType.greatEnemy;
-    } else {
-      // Neutral
-      return temporary == RelationshipType.friend
-          ? RelationshipType.friend
-          : RelationshipType.enemy;
+    int score(RelationshipType r) {
+      switch (r) {
+        case RelationshipType.greatFriend:
+          return 2;
+        case RelationshipType.friend:
+          return 1;
+        case RelationshipType.neutral:
+          return 0;
+        case RelationshipType.enemy:
+          return -1;
+        case RelationshipType.greatEnemy:
+          return -2;
+      }
     }
+
+    final total = score(natural) + score(temporary);
+    if (total >= 2) return RelationshipType.greatFriend;
+    if (total == 1) return RelationshipType.friend;
+    if (total == 0) return RelationshipType.neutral;
+    if (total == -1) return RelationshipType.enemy;
+    return RelationshipType.greatEnemy;
   }
 
   /// Calculates temporary relationship (Tatkalika Maitri) based on positions.

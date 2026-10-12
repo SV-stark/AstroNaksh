@@ -175,4 +175,56 @@ class VedicTime {
       totalGhatis: totalGhatis,
     );
   }
+
+  /// Calculates [VedicTime] directly from pre-computed [currentSunrise] and [nextSunrise] bounds.
+  ///
+  /// This provides an ultra-fast arithmetic computation without re-querying ephemeris
+  /// sunrise calculations on every clock tick.
+  static VedicTime fromSunrises({
+    required DateTime time,
+    required DateTime currentSunrise,
+    required DateTime nextSunrise,
+    String timezone = 'UTC',
+  }) {
+    final utcTime = time.toUtc();
+    final utcCurrent = currentSunrise.toUtc();
+    final utcNext = nextSunrise.toUtc();
+
+    final totalDuration = utcNext.difference(utcCurrent);
+    final elapsed = utcTime.difference(utcCurrent);
+
+    final elapsedMs = elapsed.inMilliseconds.toDouble();
+    final totalMs = totalDuration.inMilliseconds.toDouble();
+
+    if (totalMs <= 0) {
+      throw StateError(
+        'Sunrise interval calculation returned non-positive duration.',
+      );
+    }
+
+    final fraction = (elapsedMs / totalMs).clamp(0.0, 0.999999);
+    final totalGhatis = fraction * 60.0;
+    final ghati = totalGhatis.floor();
+
+    final remainingGhati = totalGhatis - ghati;
+    final totalVighatis = remainingGhati * 60.0;
+    final vighati = totalVighatis.floor();
+
+    final remainingVighati = totalVighatis - vighati;
+    final totalLiptas = remainingVighati * 60.0;
+    final lipta = totalLiptas.floor();
+
+    final totalPranas = remainingVighati * 6.0;
+    final prana = totalPranas.floor();
+
+    return VedicTime(
+      ghati: ghati.clamp(0, 59),
+      vighati: vighati.clamp(0, 59),
+      lipta: lipta.clamp(0, 59),
+      prana: prana.clamp(0, 5),
+      currentSunrise: AstrologyTimeService.utcToLocal(utcCurrent, timezone),
+      nextSunrise: AstrologyTimeService.utcToLocal(utcNext, timezone),
+      totalGhatis: totalGhatis,
+    );
+  }
 }

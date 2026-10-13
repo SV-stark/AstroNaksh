@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:jyotish/core.dart';
 import 'package:jyotish/muhurta.dart';
 import 'package:jyotish/panchanga.dart';
+import 'package:jyotish/strength.dart';
 
 import '../core/ephemeris_manager.dart';
 import '../core/utils/formatters.dart';
@@ -25,6 +26,12 @@ class PanchangResult {
     this.moonrise,
     this.moonset,
     this.rituals,
+    this.lunarMonth,
+    this.samvatsara,
+    this.ritu,
+    this.ayana,
+    this.chandrabalam,
+    this.tarabalam,
   });
   final String date;
   final String tithi;
@@ -42,6 +49,12 @@ class PanchangResult {
   final String? moonrise;
   final String? moonset;
   final RitualElements? rituals;
+  final String? lunarMonth;
+  final String? samvatsara;
+  final String? ritu;
+  final String? ayana;
+  final ChandrabalamInfo? chandrabalam;
+  final TarabalamInfo? tarabalam;
 }
 
 class PanchangInauspicious {
@@ -222,6 +235,71 @@ class PanchangService {
       rituals = _jyotish.calculateRitualElements(panchanga: panchanga);
     } catch (_) {}
 
+    // Calculate Masa (lunar month) using MasaService
+    String? masaName;
+    String? samvatsara;
+    String? rituName;
+    String? ayanaName;
+    try {
+      final masaService = MasaService(EphemerisManager.service);
+      final masaInfo = await masaService.calculateMasa(
+        dateTime: dateTime,
+        location: geoLoc,
+      );
+      masaName = '${masaInfo.month.name} (${masaInfo.type.name})';
+
+      samvatsara = await masaService.getSamvatsara(
+        dateTime: dateTime,
+        location: geoLoc,
+      );
+
+      final ritu = masaService.getRitu(masaInfo);
+      rituName = ritu.name;
+
+      final ayana = await masaService.getAyana(
+        dateTime: dateTime,
+        location: geoLoc,
+      );
+      ayanaName = ayana.name;
+    } catch (_) {
+      // Masa calculations are optional
+    }
+
+    // Calculate Chandrabalam using PanchangStrengthService
+    ChandrabalamInfo? chandrabalam;
+    try {
+      final chandrabalamService = PanchangStrengthService();
+      final nakshatraIdx = moon.position.nakshatraIndex;
+      final moonNakshatraInfo = NakshatraInfo(
+        number: nakshatraIdx + 1,
+        name: NakshatraInfo.nakshatraNames[nakshatraIdx],
+        rulingPlanet: NakshatraInfo.nakshatraLords[nakshatraIdx],
+        longitude: moon.position.longitude,
+        pada: moon.position.nakshatraPada,
+      );
+      chandrabalam = chandrabalamService.calculateChandrabalam(
+        currentMoonNakshatra: moonNakshatraInfo,
+      );
+    } catch (_) {}
+
+    // Calculate Tarabalam using PanchangStrengthService
+    TarabalamInfo? tarabalam;
+    try {
+      final tarabalamService = PanchangStrengthService();
+      final nakshatraIdx = moon.position.nakshatraIndex;
+      final moonNakshatraInfo = NakshatraInfo(
+        number: nakshatraIdx + 1,
+        name: NakshatraInfo.nakshatraNames[nakshatraIdx],
+        rulingPlanet: NakshatraInfo.nakshatraLords[nakshatraIdx],
+        longitude: moon.position.longitude,
+        pada: moon.position.nakshatraPada,
+      );
+      tarabalam = tarabalamService.calculateTarabalam(
+        birthNakshatraIndex: nakshatraIdx,
+        currentNakshatra: moonNakshatraInfo,
+      );
+    } catch (_) {}
+
     return PanchangResult(
       date: AppFormatters.formatDateTime(dateTime),
       tithi:
@@ -237,11 +315,25 @@ class PanchangService {
           'General good conduct recommended.',
       karana: panchanga.karana.name,
       vara: panchanga.vara.name,
-      sunrise: sr != null ? AppFormatters.formatTime(_toLocationTime(sr, location)) : '--:--',
-      sunset: ss != null ? AppFormatters.formatTime(_toLocationTime(ss, location)) : '--:--',
-      moonrise: mr != null ? AppFormatters.formatTime(_toLocationTime(mr, location)) : '--:--',
-      moonset: ms != null ? AppFormatters.formatTime(_toLocationTime(ms, location)) : '--:--',
+      sunrise: sr != null
+          ? AppFormatters.formatTime(_toLocationTime(sr, location))
+          : '--:--',
+      sunset: ss != null
+          ? AppFormatters.formatTime(_toLocationTime(ss, location))
+          : '--:--',
+      moonrise: mr != null
+          ? AppFormatters.formatTime(_toLocationTime(mr, location))
+          : '--:--',
+      moonset: ms != null
+          ? AppFormatters.formatTime(_toLocationTime(ms, location))
+          : '--:--',
       rituals: rituals,
+      lunarMonth: masaName,
+      samvatsara: samvatsara,
+      ritu: rituName,
+      ayana: ayanaName,
+      chandrabalam: chandrabalam,
+      tarabalam: tarabalam,
     );
   }
 
@@ -465,7 +557,9 @@ class PanchangService {
     return rawHoras.map((h) {
       return PanchangHora(
         planet: h.lord.displayName,
-        startTime: AppFormatters.formatTime(_toLocationTime(h.startTime, location)),
+        startTime: AppFormatters.formatTime(
+          _toLocationTime(h.startTime, location),
+        ),
         endTime: AppFormatters.formatTime(_toLocationTime(h.endTime, location)),
         isDay: h.isDaytime,
       );
@@ -509,7 +603,9 @@ class PanchangService {
       return PanchangChoghadiya(
         name: c.name,
         type: c.type.nature, // e.g. 'Auspicious' or 'Inauspicious'
-        startTime: AppFormatters.formatTime(_toLocationTime(c.startTime, location)),
+        startTime: AppFormatters.formatTime(
+          _toLocationTime(c.startTime, location),
+        ),
         endTime: AppFormatters.formatTime(_toLocationTime(c.endTime, location)),
         isDay: c.isDaytime,
       );

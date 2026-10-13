@@ -203,8 +203,8 @@ class DoshaService {
       // faked from an Aries placeholder longitude.
       final jupSign =
           jupiter != null ? Rashi.fromLongitude(jupiter.longitude) : null;
-      exceptions[15] = (jupSign != null && marsSign == jupSign) ||
-          marsSign == moonSign;
+      exceptions[15] =
+          (jupSign != null && marsSign == jupSign) || marsSign == moonSign;
 
       // 17. Jupiter or Venus in Lagna
       final jupHouse = getHouseOfPlanet(chart, Planet.jupiter);

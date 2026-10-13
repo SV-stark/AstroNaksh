@@ -201,11 +201,7 @@ class _VedicClockScreenState extends State<VedicClockScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1E1035),
-            Color(0xFF281446),
-            Color(0xFF120A24),
-          ],
+          colors: [Color(0xFF1E1035), Color(0xFF281446), Color(0xFF120A24)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -267,7 +263,10 @@ class _VedicClockScreenState extends State<VedicClockScreen> {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
+                      ),
                       decoration: BoxDecoration(
                         color: AppStyles.primaryColor.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(4),

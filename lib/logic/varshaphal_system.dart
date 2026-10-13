@@ -716,8 +716,12 @@ class VarshaphalSystem {
       Planet.saturn: [Planet.sun, Planet.moon, Planet.mars],
     };
 
-    if (naturalFriends[planet]?.contains(signLordPlanet) ?? false) return 'Friend Sign';
-    if (naturalEnemies[planet]?.contains(signLordPlanet) ?? false) return 'Enemy Sign';
+    if (naturalFriends[planet]?.contains(signLordPlanet) ?? false) {
+      return 'Friend Sign';
+    }
+    if (naturalEnemies[planet]?.contains(signLordPlanet) ?? false) {
+      return 'Enemy Sign';
+    }
     return 'Neutral';
   }
 

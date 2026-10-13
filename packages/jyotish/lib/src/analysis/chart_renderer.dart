@@ -688,4 +688,3 @@ class VedicChartView extends StatelessWidget {
     );
   }
 }
-

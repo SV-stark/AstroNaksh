@@ -66,7 +66,7 @@ class HouseSystem {
       longitude,
       'longitude',
       'No house interval contains this longitude. The house cusps are '
-      'malformed (unsorted or containing duplicates): $cusps',
+          'malformed (unsorted or containing duplicates): $cusps',
     );
   }
 
@@ -626,7 +626,8 @@ class VedicChart {
       planets[planet] = VedicPlanetInfo.fromJson(val as Map<String, dynamic>);
     });
 
-    final rahuInfo = VedicPlanetInfo.fromJson(json['rahu'] as Map<String, dynamic>);
+    final rahuInfo =
+        VedicPlanetInfo.fromJson(json['rahu'] as Map<String, dynamic>);
     final ketuInfo = KetuPosition(rahuPosition: rahuInfo.position);
     final calculationFlags = json['calculationFlags'] != null
         ? CalculationFlags.fromJson(
@@ -697,11 +698,11 @@ class VedicChart {
     final originalSignIndex = getPlanetSignIndex(planet);
     if (originalSignIndex == null) return false;
 
-    final d9Chart = (service ?? _defaultDivisionalService)
-        .calculateDivisionalChart(
-          this,
-          DivisionalChartType.d9,
-        );
+    final d9Chart =
+        (service ?? _defaultDivisionalService).calculateDivisionalChart(
+      this,
+      DivisionalChartType.d9,
+    );
     final d9SignIndex = d9Chart.getPlanetSignIndex(planet);
     return originalSignIndex == d9SignIndex;
   }

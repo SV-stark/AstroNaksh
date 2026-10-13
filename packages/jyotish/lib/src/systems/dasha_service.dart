@@ -342,8 +342,7 @@ class DashaService {
     for (var i = 0; i < 9; i++) {
       final lordIndex = (startingLordIndex + i) % 9;
       final planetInfo = _vimshottariPlanets[lordIndex];
-      final sookshmaFullDays =
-          fullPratyantharDays * (planetInfo.years / 120.0);
+      final sookshmaFullDays = fullPratyantharDays * (planetInfo.years / 120.0);
       final sookStart = accumulatedDays;
       final sookEnd = accumulatedDays + sookshmaFullDays;
       accumulatedDays = sookEnd;

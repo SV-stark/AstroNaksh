@@ -113,10 +113,7 @@ class _SarvatobhadraScreenState extends State<SarvatobhadraScreen> {
       children: [
         if (_isLoading)
           const Center(
-            child: Padding(
-              padding: EdgeInsets.all(40),
-              child: ProgressRing(),
-            ),
+            child: Padding(padding: EdgeInsets.all(40), child: ProgressRing()),
           )
         else if (_errorMessage != null)
           InfoBar(
@@ -211,7 +208,8 @@ class _SarvatobhadraScreenState extends State<SarvatobhadraScreen> {
           final planet = entry.key;
           final vedha = entry.value;
           final isObstructive =
-              vedha.severity.name == 'severe' || vedha.severity.name == 'moderate';
+              vedha.severity.name == 'severe' ||
+              vedha.severity.name == 'moderate';
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
@@ -224,8 +222,10 @@ class _SarvatobhadraScreenState extends State<SarvatobhadraScreen> {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: isObstructive
                           ? Colors.red.withAlpha(40)
@@ -247,7 +247,9 @@ class _SarvatobhadraScreenState extends State<SarvatobhadraScreen> {
                 children: [
                   Text('Transiting Nakshatra: ${vedha.transitNakshatra}'),
                   const SizedBox(height: 4),
-                  Text('Aspected Nakshatras: ${vedha.aspectedNakshatras.join(", ")}'),
+                  Text(
+                    'Aspected Nakshatras: ${vedha.aspectedNakshatras.join(", ")}',
+                  ),
                   const SizedBox(height: 4),
                   if (vedha.aspectsNatalMoon)
                     Text(

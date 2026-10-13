@@ -44,8 +44,7 @@ class MasaService {
     final amantaBoundary = type == MasaType.amanta
         ? monthStart
         : await _findMasaStart(dateTime, location, MasaType.amanta);
-    final sunAtAmantaBoundary =
-        await _ephemerisService.calculatePlanetPosition(
+    final sunAtAmantaBoundary = await _ephemerisService.calculatePlanetPosition(
       planet: Planet.sun,
       dateTime: amantaBoundary,
       location: location,

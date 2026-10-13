@@ -1033,8 +1033,7 @@ class VarshapalService {
     // A solar year is ~365.2422 days; each of the 12 Maasa periods is
     // 1/12th of the solar year (~30.43685 days) so that the 12
     // periods fully span the 365.24-day annual return year.
-    const microsecondsPerMonth =
-        (365.24219 * Duration.microsecondsPerDay / 12);
+    const microsecondsPerMonth = (365.24219 * Duration.microsecondsPerDay / 12);
     return startDate.add(Duration(microseconds: microsecondsPerMonth.round()));
   }
 

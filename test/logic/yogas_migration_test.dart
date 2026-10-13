@@ -20,9 +20,11 @@ void main() {
           .build();
 
       final result = YogaDoshaAnalyzer.analyze(chart);
-      final gajakesari = result.yogas.where((y) =>
-          y.name.toLowerCase().contains('gaja') ||
-          y.description.toLowerCase().contains('gaja'));
+      final gajakesari = result.yogas.where(
+        (y) =>
+            y.name.toLowerCase().contains('gaja') ||
+            y.description.toLowerCase().contains('gaja'),
+      );
       expect(gajakesari, isNotEmpty);
       expect(gajakesari.first.isActive, isTrue);
     });
@@ -34,10 +36,12 @@ void main() {
           .build();
 
       final result = YogaDoshaAnalyzer.analyze(chart);
-      final budhaditya = result.yogas.where((y) =>
-          y.name.toLowerCase().contains('nipuna') ||
-          y.name.toLowerCase().contains('budhaditya') ||
-          y.description.toLowerCase().contains('sun and mercury'));
+      final budhaditya = result.yogas.where(
+        (y) =>
+            y.name.toLowerCase().contains('nipuna') ||
+            y.name.toLowerCase().contains('budhaditya') ||
+            y.description.toLowerCase().contains('sun and mercury'),
+      );
       expect(budhaditya, isNotEmpty);
       expect(budhaditya.first.isActive, isTrue);
     });
@@ -49,7 +53,11 @@ void main() {
           .build();
 
       final result = YogaDoshaAnalyzer.analyze(chart);
-      final chandraMangala = result.yogas.where((y) => y.name.contains('Chandra Mangala') || y.name.contains('Chandra-Mangala'));
+      final chandraMangala = result.yogas.where(
+        (y) =>
+            y.name.contains('Chandra Mangala') ||
+            y.name.contains('Chandra-Mangala'),
+      );
       expect(chandraMangala, isNotEmpty);
       expect(chandraMangala.first.isActive, isTrue);
     });
@@ -80,7 +88,10 @@ void main() {
           .build();
 
       final result = YogaDoshaAnalyzer.analyze(chart);
-      final guruChandal = result.doshas.where((d) => d.name.contains('Guru Chandal') || d.name.contains('Guru-Chandal'));
+      final guruChandal = result.doshas.where(
+        (d) =>
+            d.name.contains('Guru Chandal') || d.name.contains('Guru-Chandal'),
+      );
       expect(guruChandal, isNotEmpty);
       expect(guruChandal.first.isActive, isTrue);
     });

@@ -45,9 +45,9 @@ class SpecialLagnasService {
     // [sunLongitudeAtSunrise] to skip the extrapolation entirely.
     final sunLong = (sunLongitudeAtSunrise ??
             (sunLongAtBirth -
-                (sunInfo?.position.longitudeSpeed ?? 0.9856) *
-                    (elapsedMs / (1000 * 60 * 60 * 24)) +
-                360.0) %
+                    (sunInfo?.position.longitudeSpeed ?? 0.9856) *
+                        (elapsedMs / (1000 * 60 * 60 * 24)) +
+                    360.0) %
                 360.0) %
         360.0;
 

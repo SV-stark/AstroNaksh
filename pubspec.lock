@@ -643,7 +643,7 @@ packages:
       path: "packages/jyotish"
       relative: true
     source: path
-    version: "2.19.0"
+    version: "2.20.7"
   lat_lng_to_timezone:
     dependency: "direct main"
     description:

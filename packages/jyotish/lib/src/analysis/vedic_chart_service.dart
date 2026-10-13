@@ -29,7 +29,8 @@ class VedicChartService {
     CalculationFlags? flags,
   }) async {
     try {
-      _log.fine('Calculating chart for $dateTime at (${location.latitude}, ${location.longitude})');
+      _log.fine(
+          'Calculating chart for $dateTime at (${location.latitude}, ${location.longitude})');
       // Use provided flags or default Lahiri ayanamsa (sidereal is now default)
       flags ??= CalculationFlags.traditionalist();
 

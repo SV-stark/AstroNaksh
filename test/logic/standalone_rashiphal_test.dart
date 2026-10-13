@@ -27,33 +27,43 @@ void main() {
       }
     });
 
-    test('generateDailyPredictionForSign calculates prediction for Aries', () async {
-      final service = RashiphalService();
-      const loc = Location(latitude: 28.6139, longitude: 77.2090);
-      final date = DateTime(2026, 8, 16);
+    test(
+      'generateDailyPredictionForSign calculates prediction for Aries',
+      () async {
+        final service = RashiphalService();
+        const loc = Location(latitude: 28.6139, longitude: 77.2090);
+        final date = DateTime(2026, 8, 16);
 
-      final prediction = await service.generateDailyPredictionForSign(0, loc, date);
+        final prediction = await service.generateDailyPredictionForSign(
+          0,
+          loc,
+          date,
+        );
 
-      expect(prediction.moonSign, isNotEmpty);
-      expect(prediction.nakshatra, isNotEmpty);
-      expect(prediction.tithi, isNotEmpty);
-      expect(prediction.overallPrediction, isNotEmpty);
-      expect(prediction.favorableScore, inInclusiveRange(0.35, 0.95));
-      expect(prediction.transitContext, isNotEmpty);
-      expect(prediction.auspiciousPeriods, isNotEmpty);
-    });
+        expect(prediction.moonSign, isNotEmpty);
+        expect(prediction.nakshatra, isNotEmpty);
+        expect(prediction.tithi, isNotEmpty);
+        expect(prediction.overallPrediction, isNotEmpty);
+        expect(prediction.favorableScore, inInclusiveRange(0.35, 0.95));
+        expect(prediction.transitContext, isNotEmpty);
+        expect(prediction.auspiciousPeriods, isNotEmpty);
+      },
+    );
 
-    test('getDashboardForSign generates today, tomorrow, and 7-day overview for Scorpio', () async {
-      final service = RashiphalService();
-      const loc = Location(latitude: 28.6139, longitude: 77.2090);
+    test(
+      'getDashboardForSign generates today, tomorrow, and 7-day overview for Scorpio',
+      () async {
+        final service = RashiphalService();
+        const loc = Location(latitude: 28.6139, longitude: 77.2090);
 
-      // Sign 7: Scorpio
-      final dashboard = await service.getDashboardForSign(7, location: loc);
+        // Sign 7: Scorpio
+        final dashboard = await service.getDashboardForSign(7, location: loc);
 
-      expect(dashboard.today, isNotNull);
-      expect(dashboard.tomorrow, isNotNull);
-      expect(dashboard.weeklyOverview.length, 7);
-      expect(dashboard.today.moonSign, isNotEmpty);
-    });
+        expect(dashboard.today, isNotNull);
+        expect(dashboard.tomorrow, isNotNull);
+        expect(dashboard.weeklyOverview.length, 7);
+        expect(dashboard.today.moonSign, isNotEmpty);
+      },
+    );
   });
 }

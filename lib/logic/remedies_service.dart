@@ -8,9 +8,13 @@ class RemediesService {
 
     final lagnaLord = AstrologyConstants.getSignLord(ascSignIndex).displayName;
     final fifthSignIndex = (ascSignIndex + 4) % 12;
-    final fifthLord = AstrologyConstants.getSignLord(fifthSignIndex).displayName;
+    final fifthLord = AstrologyConstants.getSignLord(
+      fifthSignIndex,
+    ).displayName;
     final ninthSignIndex = (ascSignIndex + 8) % 12;
-    final ninthLord = AstrologyConstants.getSignLord(ninthSignIndex).displayName;
+    final ninthLord = AstrologyConstants.getSignLord(
+      ninthSignIndex,
+    ).displayName;
 
     final gemstones = <GemstoneRecommendation>[];
 
@@ -21,7 +25,8 @@ class RemediesService {
         type: GemstoneType.life,
         ascSignIndex: ascSignIndex,
         chart: chart,
-        benefits: 'Enhances physical health, vitality, status, self-confidence, and general immunity.',
+        benefits:
+            'Enhances physical health, vitality, status, self-confidence, and general immunity.',
       ),
     );
 
@@ -33,7 +38,8 @@ class RemediesService {
           type: GemstoneType.benefic,
           ascSignIndex: ascSignIndex,
           chart: chart,
-          benefits: 'Boosts intelligence, focus, creative talents, financial luck, and progeny prospects.',
+          benefits:
+              'Boosts intelligence, focus, creative talents, financial luck, and progeny prospects.',
         ),
       );
     }
@@ -46,14 +52,25 @@ class RemediesService {
           type: GemstoneType.bhagya,
           ascSignIndex: ascSignIndex,
           chart: chart,
-          benefits: 'Attracts divine luck, higher education, spiritual growth, and career prosperity.',
+          benefits:
+              'Attracts divine luck, higher education, spiritual growth, and career prosperity.',
         ),
       );
     }
 
     // Planetary Remedies for all 9 planets
     final planetaryRemedies = <PlanetaryRemedy>[];
-    final planetsList = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+    final planetsList = [
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
+      'Rahu',
+      'Ketu',
+    ];
 
     for (final planet in planetsList) {
       final remedy = _buildPlanetaryRemedy(planet, chart, ascSignIndex);
@@ -93,9 +110,11 @@ class RemediesService {
     final safeToWear = !isDusthana && !isMalefic;
     var caution = '';
     if (isDusthana) {
-      caution = '$planet is placed in a Dusthana house (6, 8, or 12). Avoid wearing gemstones without consulting an expert; prefer Mantra chanting.';
+      caution =
+          '$planet is placed in a Dusthana house (6, 8, or 12). Avoid wearing gemstones without consulting an expert; prefer Mantra chanting.';
     } else if (isMalefic) {
-      caution = '$planet acts as a functional malefic for this Ascendant. Gemstone wearing is not advised.';
+      caution =
+          '$planet acts as a functional malefic for this Ascendant. Gemstone wearing is not advised.';
     }
 
     return GemstoneRecommendation(
@@ -184,15 +203,24 @@ class RemediesService {
 
   static String _getRudrakshaForPlanet(String planet) {
     final map = {
-      'Sun': '12-Mukhi (Surya Rudraksha) - Enhances leadership, health & authority',
-      'Moon': '2-Mukhi (Chandra Rudraksha) - Promotes emotional stability & peace',
-      'Mars': '3-Mukhi (Agni/Mangal Rudraksha) - Boosts courage, energy & blood vitality',
-      'Mercury': '4-Mukhi (Brahma/Budh Rudraksha) - Enhances intellect, speech & memory',
-      'Jupiter': '5-Mukhi (Guru/Shiva Rudraksha) - Universal bead for wisdom & health',
-      'Venus': '6-Mukhi (Kartikeya/Shukra Rudraksha) - Grants artistic skill, beauty & charm',
-      'Saturn': '7-Mukhi (Mahalakshmi/Shani Rudraksha) - Overcomes financial obstacles & delays',
-      'Rahu': '8-Mukhi (Ganesha/Rahu Rudraksha) - Removes sudden hurdles & confusion',
-      'Ketu': '9-Mukhi (Durga/Ketu Rudraksha) - Enhances intuition, protection & liberation',
+      'Sun':
+          '12-Mukhi (Surya Rudraksha) - Enhances leadership, health & authority',
+      'Moon':
+          '2-Mukhi (Chandra Rudraksha) - Promotes emotional stability & peace',
+      'Mars':
+          '3-Mukhi (Agni/Mangal Rudraksha) - Boosts courage, energy & blood vitality',
+      'Mercury':
+          '4-Mukhi (Brahma/Budh Rudraksha) - Enhances intellect, speech & memory',
+      'Jupiter':
+          '5-Mukhi (Guru/Shiva Rudraksha) - Universal bead for wisdom & health',
+      'Venus':
+          '6-Mukhi (Kartikeya/Shukra Rudraksha) - Grants artistic skill, beauty & charm',
+      'Saturn':
+          '7-Mukhi (Mahalakshmi/Shani Rudraksha) - Overcomes financial obstacles & delays',
+      'Rahu':
+          '8-Mukhi (Ganesha/Rahu Rudraksha) - Removes sudden hurdles & confusion',
+      'Ketu':
+          '9-Mukhi (Durga/Ketu Rudraksha) - Enhances intuition, protection & liberation',
     };
     return map[planet] ?? '5-Mukhi Rudraksha';
   }
@@ -338,7 +366,8 @@ class RemediesService {
       'count': 23000,
       'rudraksha': '7-Mukhi Rudraksha',
       'fasting': 'Saturday',
-      'charity': 'Black Sesame (Til), Mustard Oil, Black Urad, Iron, Black Blanket',
+      'charity':
+          'Black Sesame (Til), Mustard Oil, Black Urad, Iron, Black Blanket',
       'deity': 'Lord Shani / Lord Hanuman / Rudra',
       'direction': 'West',
       'color': 'Dark Blue / Black',
@@ -348,7 +377,8 @@ class RemediesService {
       'count': 18000,
       'rudraksha': '8-Mukhi Rudraksha',
       'fasting': 'Saturday',
-      'charity': 'Lead, Coconut, Mustard seeds, Blue clothes, Blankets for needy',
+      'charity':
+          'Lead, Coconut, Mustard seeds, Blue clothes, Blankets for needy',
       'deity': 'Goddess Durga / Lord Bhairava',
       'direction': 'South-West',
       'color': 'Smokey Grey / Electric Blue',

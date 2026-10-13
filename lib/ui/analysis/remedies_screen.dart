@@ -6,7 +6,6 @@ import '../../data/models.dart';
 import '../../logic/remedies_service.dart';
 
 class RemediesScreen extends StatefulWidget {
-
   const RemediesScreen({super.key, required this.chart});
   final VedicChart chart;
 
@@ -42,17 +41,17 @@ class _RemediesScreenState extends State<RemediesScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(icon: Icon(Icons.diamond_outlined), text: 'Gemstones & Rudraksha'),
+            Tab(
+              icon: Icon(Icons.diamond_outlined),
+              text: 'Gemstones & Rudraksha',
+            ),
             Tab(icon: Icon(Icons.auto_awesome), text: 'Mantras & Charity'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildGemstonesTab(theme),
-          _buildMantrasTab(theme),
-        ],
+        children: [_buildGemstonesTab(theme), _buildMantrasTab(theme)],
       ),
     );
   }
@@ -110,11 +109,7 @@ class _RemediesScreenState extends State<RemediesScreen>
                       color: Colors.amber.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.spa,
-                      color: Colors.amber,
-                      size: 32,
-                    ),
+                    child: const Icon(Icons.spa, color: Colors.amber, size: 32),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -151,9 +146,7 @@ class _RemediesScreenState extends State<RemediesScreen>
           ),
           const SizedBox(height: 12),
 
-          ..._profile.gemstones.map(
-            (gem) => _buildGemstoneCard(theme, gem),
-          ),
+          ..._profile.gemstones.map((gem) => _buildGemstoneCard(theme, gem)),
         ],
       ),
     );
@@ -188,9 +181,7 @@ class _RemediesScreenState extends State<RemediesScreen>
               children: [
                 Chip(
                   avatar: Icon(
-                    gem.isSafeToWear
-                        ? Icons.check_circle
-                        : Icons.warning_amber,
+                    gem.isSafeToWear ? Icons.check_circle : Icons.warning_amber,
                     color: gem.isSafeToWear ? Colors.green : Colors.orange,
                     size: 18,
                   ),
@@ -332,7 +323,9 @@ class _RemediesScreenState extends State<RemediesScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.tertiaryContainer.withValues(alpha: 0.3),
+                        color: theme.colorScheme.tertiaryContainer.withValues(
+                          alpha: 0.3,
+                        ),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(

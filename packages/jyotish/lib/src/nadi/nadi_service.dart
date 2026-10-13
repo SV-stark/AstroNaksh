@@ -10,13 +10,15 @@ class NadiService {
   static const int totalNadis = 1800;
 
   /// Returns detailed Nadi information for an absolute Nadi number (1-1800).
-  NadiInfo getNadiInfo(int absoluteNadiNumber) => _getNadiInfo(absoluteNadiNumber);
+  NadiInfo getNadiInfo(int absoluteNadiNumber) =>
+      _getNadiInfo(absoluteNadiNumber);
 
   /// Returns the Nadi tradition/school type for a Nadi number.
   NadiType getNadiType(int nadiNumber) => _getNadiType(nadiNumber);
 
   /// Returns the ruling planet for a Nadi number.
-  Planet getNadiRulingPlanet(int nadiNumber) => _getNadiRulingPlanet(nadiNumber);
+  Planet getNadiRulingPlanet(int nadiNumber) =>
+      _getNadiRulingPlanet(nadiNumber);
 
   /// Returns the elemental quality (Fire, Earth, Air, Water, Ether) for a Nadi number.
   String getNadiElement(int nadiNumber) => _getNadiElement(nadiNumber);

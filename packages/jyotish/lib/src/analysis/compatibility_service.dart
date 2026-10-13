@@ -5,7 +5,6 @@ import 'package:jyotish/src/models/compatibility_report.dart';
 import 'package:jyotish/src/analysis/compatibility.dart';
 import 'package:jyotish/src/strength/relationship.dart';
 
-
 class CompatibilityService {
   CompatibilityService();
 

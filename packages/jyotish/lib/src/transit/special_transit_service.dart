@@ -221,7 +221,8 @@ class SpecialTransitService {
     required Duration signExitAccuracy,
     required Duration signEntryAccuracy,
   }) async {
-    final location = const GeographicLocation(latitude: 0, longitude: 0, altitude: 0);
+    final location =
+        const GeographicLocation(latitude: 0, longitude: 0, altitude: 0);
     final flags = CalculationFlags.defaultFlags();
 
     // Calculate end date using ephemeris projection

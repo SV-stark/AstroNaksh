@@ -336,4 +336,129 @@ class MatchingService {
       description: desc,
     );
   }
+
+  /// Real Dasha Compatibility analysis beyond simple Sandhi checks.
+  ///
+  /// Compares the current Mahadasha and Antardasha lords of both partners,
+  /// evaluates natural friendship between them, and produces a score with
+  /// a readable analysis.
+  static Map<String, dynamic> getDashaCompatibilityAnalysis(
+    CompleteChartData groom,
+    CompleteChartData bride,
+  ) {
+    final now = DateTime.now();
+    final gDasha = groom.getCurrentDashas(now);
+    final bDasha = bride.getCurrentDashas(now);
+
+    if (gDasha.isEmpty || bDasha.isEmpty) {
+      return {
+        'available': false,
+        'score': 0,
+        'analysis': ['Could not calculate current Dasha for both partners.'],
+      };
+    }
+
+    final gMaha = gDasha['mahadasha'] as String;
+    final bMaha = bDasha['mahadasha'] as String;
+    final gAntar = gDasha['antardasha'] as String? ?? '';
+    final bAntar = bDasha['antardasha'] as String? ?? '';
+
+    final analysis = <String>[];
+    var score = 5; // neutral baseline
+
+    // Natural friendship relations between Vedic planets
+    const naturalFriends = <String, List<String>>{
+      'Sun': ['Moon', 'Mars', 'Jupiter'],
+      'Moon': ['Sun', 'Mercury'],
+      'Mars': ['Sun', 'Moon', 'Jupiter'],
+      'Mercury': ['Sun', 'Venus'],
+      'Jupiter': ['Sun', 'Moon', 'Mars'],
+      'Venus': ['Mercury', 'Saturn'],
+      'Saturn': ['Mercury', 'Venus'],
+      'Rahu': ['Venus', 'Saturn'],
+      'Ketu': ['Mars', 'Venus', 'Saturn'],
+    };
+
+    bool areFriends(String a, String b) =>
+        (naturalFriends[a]?.contains(b) ?? false) ||
+        (naturalFriends[b]?.contains(a) ?? false);
+
+    // 1. Mahadasha lord relationship
+    analysis.add(
+      'Groom is running **$gMaha Mahadasha**, Bride is running **$bMaha Mahadasha**.',
+    );
+
+    if (gMaha == bMaha) {
+      score += 1;
+      analysis.add(
+        'Both partners share the same Mahadasha lord ($gMaha), suggesting parallel life phases and mutual understanding of current challenges.',
+      );
+    } else if (areFriends(gMaha, bMaha)) {
+      score += 2;
+      analysis.add(
+        'The Mahadasha lords ($gMaha and $bMaha) are natural friends — this indicates harmonious, supportive timing for the relationship.',
+      );
+    } else {
+      score -= 1;
+      analysis.add(
+        'The Mahadasha lords ($gMaha and $bMaha) are not natural friends — individual priorities may diverge during this period, requiring conscious communication.',
+      );
+    }
+
+    // 2. Antardasha lord relationship
+    if (gAntar.isNotEmpty && bAntar.isNotEmpty) {
+      analysis.add(
+        'Current Antardashas: Groom **$gAntar**, Bride **$bAntar**.',
+      );
+      if (gAntar == bAntar) {
+        score += 1;
+        analysis.add(
+          'Matching Antardasha lords ($gAntar) suggest synchronised sub-periods useful for joint planning.',
+        );
+      } else if (areFriends(gAntar, bAntar)) {
+        score += 1;
+        analysis.add(
+          'Antardasha lords ($gAntar and $bAntar) are friendly — day-to-day interactions are likely supportive.',
+        );
+      } else {
+        analysis.add(
+          'Antardasha lords ($gAntar and $bAntar) are neutral/enemy — minor friction is possible; patience is advised.',
+        );
+      }
+    }
+
+    // 3. Sandhi (transition) warning
+    final gEnd = gDasha['mahaEnd'] as DateTime?;
+    final bEnd = bDasha['mahaEnd'] as DateTime?;
+    if (gEnd != null && bEnd != null) {
+      final gDays = gEnd.difference(now).inDays;
+      final bDays = bEnd.difference(now).inDays;
+      if (gDays < 180 && gDays > 0) {
+        analysis.add(
+          'Groom is within 6 months of a Mahadasha transition (${gEnd.day}/${gEnd.month}/${gEnd.year}) — expect a shift in priorities.',
+        );
+      }
+      if (bDays < 180 && bDays > 0) {
+        analysis.add(
+          'Bride is within 6 months of a Mahadasha transition (${bEnd.day}/${bEnd.month}/${bEnd.year}) — expect a shift in priorities.',
+        );
+      }
+      if ((gDays < 180 && gDays > 0) && (bDays < 180 && bDays > 0)) {
+        score -= 1;
+        analysis.add(
+          'Both partners are near Dasha transitions simultaneously — major joint decisions are best deferred until both settle.',
+        );
+      }
+    }
+
+    return {
+      'available': true,
+      'score': score.clamp(0, 10),
+      'groomMahadasha': gMaha,
+      'brideMahadasha': bMaha,
+      'groomAntardasha': gAntar,
+      'brideAntardasha': bAntar,
+      'analysis': analysis,
+    };
+  }
 }

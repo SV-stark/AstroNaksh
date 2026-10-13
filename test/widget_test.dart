@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   setUpAll(() async {
-
     // Mock SharedPreferences
     SharedPreferences.setMockInitialValues({'has_seen_tutorial': true});
 

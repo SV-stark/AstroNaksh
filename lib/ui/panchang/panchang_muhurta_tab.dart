@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jyotish/muhurta.dart';
+import 'package:jyotish/panchanga.dart';
 
 import '../../../logic/panchang_service.dart';
 import 'panchang_helpers.dart';
@@ -33,10 +33,11 @@ class PanchangMuhurtaTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auspicious = choghadiya
-        .where((c) => _shubhaChoghadiya.contains(c.name.trim()))
-        .toList()
-      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+    final auspicious =
+        choghadiya
+            .where((c) => _shubhaChoghadiya.contains(c.name.trim()))
+            .toList()
+          ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

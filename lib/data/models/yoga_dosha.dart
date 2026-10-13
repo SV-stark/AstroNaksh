@@ -73,15 +73,15 @@ class BhangaResult {
 
   @override
   int get hashCode => Object.hash(
-        name,
-        description,
-        status,
-        isActive,
-        strength,
-        manifestationPeriod,
-        peakDashaLord,
-        Object.hashAll(cancellationReasons),
-      );
+    name,
+    description,
+    status,
+    isActive,
+    strength,
+    manifestationPeriod,
+    peakDashaLord,
+    Object.hashAll(cancellationReasons),
+  );
 }
 
 class YogaDoshaAnalysisResult {

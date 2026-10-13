@@ -236,7 +236,8 @@ class DashaPeriod {
     final rashi = rashiStr != null
         ? Rashi.values.firstWhere(
             // Identifier first (stable wire format), then the legacy label.
-            (r) => r.name == rashiStr ||
+            (r) =>
+                r.name == rashiStr ||
                 r.label == rashiStr ||
                 r.sanskritName == rashiStr,
             orElse: () => Rashi.aries,

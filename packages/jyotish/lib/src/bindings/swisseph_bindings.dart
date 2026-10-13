@@ -251,7 +251,8 @@ class SwissEphBindings {
     // Try development/local relative paths using path package
     if (Platform.isMacOS) {
       final devPaths = [
-        p.join(Directory.current.path, 'native', 'swisseph', 'libswisseph.dylib'),
+        p.join(
+            Directory.current.path, 'native', 'swisseph', 'libswisseph.dylib'),
         p.join('/usr', 'local', 'lib', 'libswisseph.dylib'),
         'libswisseph.dylib',
       ];
@@ -341,7 +342,8 @@ class SwissEphBindings {
       }
 
       // If it falls back to Moshier (4) instead of Swiss (2), or has warnings
-      if (returnCode != flags && (returnCode & SwissEphConstants.moshier) != 0) {
+      if (returnCode != flags &&
+          (returnCode & SwissEphConstants.moshier) != 0) {
         final msg = errorBuffer.cast<Utf8>().toDartString();
         _log.warning(
           'SwissEph precision fallback to Moshier for Planet $planetId: '

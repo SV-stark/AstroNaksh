@@ -121,5 +121,6 @@ class RashiphalDashboard {
   }
 
   @override
-  int get hashCode => Object.hash(today, tomorrow, Object.hashAll(weeklyOverview));
+  int get hashCode =>
+      Object.hash(today, tomorrow, Object.hashAll(weeklyOverview));
 }

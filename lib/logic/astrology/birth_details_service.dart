@@ -234,7 +234,7 @@ class BirthDetailsService {
       final sunPos = await EphemerisManager.service.calculatePlanetPosition(
         planet: Planet.sun,
         dateTime: date,
-        location: GeographicLocation(latitude: 0.0, longitude: 0.0),
+        location: const GeographicLocation(latitude: 0.0, longitude: 0.0),
         flags: CalculationFlags.traditionalist(),
       );
 

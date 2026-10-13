@@ -37,7 +37,8 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
     timezone: 'Asia/Kolkata',
   );
 
-  int _selectedTab = 0; // 0: Today, 1: Tomorrow, 2: 7-Day Weekly, 3: Custom Date
+  int _selectedTab =
+      0; // 0: Today, 1: Tomorrow, 2: 7-Day Weekly, 3: Custom Date
   DateTime _customDate = DateTime.now();
 
   RashiphalDashboard? _dashboard;
@@ -60,7 +61,10 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
       final savedLat = prefs.getDouble(_prefKeyLat);
       final savedLng = prefs.getDouble(_prefKeyLng);
 
-      if (widget.initialSignIndex == null && savedSign != null && savedSign >= 0 && savedSign < 12) {
+      if (widget.initialSignIndex == null &&
+          savedSign != null &&
+          savedSign >= 0 &&
+          savedSign < 12) {
         _selectedSignIndex = savedSign;
         _isDefaultSign = true;
       } else if (savedSign != null && savedSign == _selectedSignIndex) {
@@ -153,14 +157,17 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                   children: [
                     TextBox(
                       controller: searchController,
-                      placeholder: 'Search city (e.g. Delhi, Mumbai, London)...',
+                      placeholder:
+                          'Search city (e.g. Delhi, Mumbai, London)...',
                       prefix: const Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(FluentIcons.search),
                       ),
                       onChanged: (query) async {
                         if (query.trim().length >= 2) {
-                          final results = await CityDatabase.searchCities(query.trim());
+                          final results = await CityDatabase.searchCities(
+                            query.trim(),
+                          );
                           setDialogState(() {
                             searchResults = results;
                           });
@@ -175,7 +182,9 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                                 searchController.text.isEmpty
                                     ? 'Type a city name to search'
                                     : 'No matching cities found',
-                                style: FluentTheme.of(context).typography.caption,
+                                style: FluentTheme.of(
+                                  context,
+                                ).typography.caption,
                               ),
                             )
                           : ListView.builder(
@@ -184,16 +193,28 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                                 final city = searchResults[index];
                                 return ListTile.selectable(
                                   title: Text(city.name),
-                                  subtitle: Text('${city.state}, ${city.country}'),
+                                  subtitle: Text(
+                                    '${city.state}, ${city.country}',
+                                  ),
                                   onPressed: () async {
                                     Navigator.pop(dialogContext);
                                     setState(() {
                                       _selectedCity = city;
                                     });
-                                    final prefs = await SharedPreferences.getInstance();
-                                    await prefs.setString(_prefKeyCityName, city.name);
-                                    await prefs.setDouble(_prefKeyLat, city.latitude);
-                                    await prefs.setDouble(_prefKeyLng, city.longitude);
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    await prefs.setString(
+                                      _prefKeyCityName,
+                                      city.name,
+                                    );
+                                    await prefs.setDouble(
+                                      _prefKeyLat,
+                                      city.latitude,
+                                    );
+                                    await prefs.setDouble(
+                                      _prefKeyLng,
+                                      city.longitude,
+                                    );
                                     await _fetchPredictions();
                                   },
                                 );
@@ -231,7 +252,11 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
             : null,
         title: Row(
           children: [
-            const Icon(FluentIcons.sunny, color: AppStyles.primaryColor, size: 24),
+            const Icon(
+              FluentIcons.sunny,
+              color: AppStyles.primaryColor,
+              size: 24,
+            ),
             const SizedBox(width: 10),
             Text(
               'Daily Rashifal',
@@ -240,9 +265,9 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
             const SizedBox(width: 8),
             Text(
               '(${rashi.sanskrit} - ${rashi.name})',
-              style: FluentTheme.of(context).typography.subtitle?.copyWith(
-                    color: AppStyles.primaryColor,
-                  ),
+              style: FluentTheme.of(
+                context,
+              ).typography.subtitle?.copyWith(color: AppStyles.primaryColor),
             ),
           ],
         ),
@@ -308,7 +333,9 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                     children: [
                       ProgressRing(),
                       SizedBox(height: 16),
-                      Text('Calculating planetary transits & daily influences...'),
+                      Text(
+                        'Calculating planetary transits & daily influences...',
+                      ),
                     ],
                   ),
                 ),
@@ -340,9 +367,7 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
               ),
             ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 32),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),
     );
@@ -408,13 +433,17 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                           color: isSelected
                               ? AppStyles.primaryColor.withValues(alpha: 0.18)
                               : (states.contains(WidgetState.hovered)
-                                  ? FluentTheme.of(context).cardColor.withValues(alpha: 0.8)
-                                  : FluentTheme.of(context).cardColor),
+                                    ? FluentTheme.of(
+                                        context,
+                                      ).cardColor.withValues(alpha: 0.8)
+                                    : FluentTheme.of(context).cardColor),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isSelected
                                 ? AppStyles.primaryColor
-                                : FluentTheme.of(context).resources.dividerStrokeColorDefault,
+                                : FluentTheme.of(
+                                    context,
+                                  ).resources.dividerStrokeColorDefault,
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -430,7 +459,9 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                                     fontSize: 18,
                                     color: isSelected
                                         ? AppStyles.primaryColor
-                                        : FluentTheme.of(context).typography.body?.color,
+                                        : FluentTheme.of(
+                                            context,
+                                          ).typography.body?.color,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -442,7 +473,9 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                                     fontWeight: FontWeight.bold,
                                     color: isSelected
                                         ? AppStyles.primaryColor
-                                        : FluentTheme.of(context).typography.body?.color,
+                                        : FluentTheme.of(
+                                            context,
+                                          ).typography.body?.color,
                                   ),
                                 ),
                               ],
@@ -450,8 +483,11 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                             const SizedBox(height: 2),
                             Text(
                               item.name,
-                              style: FluentTheme.of(context).typography.caption?.copyWith(
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              style: FluentTheme.of(context).typography.caption
+                                  ?.copyWith(
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                   ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -517,7 +553,10 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                 alignment: Alignment.center,
                 child: Text(
                   rashi.symbol,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -547,9 +586,21 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
             spacing: 12,
             runSpacing: 6,
             children: [
-              _buildRashiMetaBadge('Lucky Color', rashi.luckyColor, FluentIcons.color),
-              _buildRashiMetaBadge('Lucky Number', '${rashi.luckyNumber}', FluentIcons.number_field),
-              _buildRashiMetaBadge('Lucky Direction', rashi.luckyDirection, FluentIcons.compass_n_w),
+              _buildRashiMetaBadge(
+                'Lucky Color',
+                rashi.luckyColor,
+                FluentIcons.color,
+              ),
+              _buildRashiMetaBadge(
+                'Lucky Number',
+                '${rashi.luckyNumber}',
+                FluentIcons.number_field,
+              ),
+              _buildRashiMetaBadge(
+                'Lucky Direction',
+                rashi.luckyDirection,
+                FluentIcons.compass_n_w,
+              ),
             ],
           ),
         ],
@@ -606,8 +657,14 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
               items: const [
                 ComboBoxItem(value: 0, child: Text("Today's Guidance (आज)")),
                 ComboBoxItem(value: 1, child: Text("Tomorrow's Preview (कल)")),
-                ComboBoxItem(value: 2, child: Text('7-Day Forecast (साप्ताहिक)')),
-                ComboBoxItem(value: 3, child: Text('Custom Date (तिथि अनुसार)')),
+                ComboBoxItem(
+                  value: 2,
+                  child: Text('7-Day Forecast (साप्ताहिक)'),
+                ),
+                ComboBoxItem(
+                  value: 3,
+                  child: Text('Custom Date (तिथि अनुसार)'),
+                ),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -622,9 +679,17 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
               children: [
                 _buildTabButton(0, "Today's Guidance (आज)", FluentIcons.sunny),
                 const SizedBox(width: 8),
-                _buildTabButton(1, "Tomorrow's Preview (कल)", FluentIcons.calendar_reply),
+                _buildTabButton(
+                  1,
+                  "Tomorrow's Preview (कल)",
+                  FluentIcons.calendar_reply,
+                ),
                 const SizedBox(width: 8),
-                _buildTabButton(2, '7-Day Forecast (साप्ताहिक)', FluentIcons.calendar_week),
+                _buildTabButton(
+                  2,
+                  '7-Day Forecast (साप्ताहिक)',
+                  FluentIcons.calendar_week,
+                ),
                 const SizedBox(width: 8),
                 _buildTabButton(3, 'Custom Date', FluentIcons.date_time),
                 if (_selectedTab == 3) ...[
@@ -683,7 +748,9 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
                   label,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     color: isSelected ? AppStyles.primaryColor : null,
                   ),
                 ),
@@ -700,19 +767,20 @@ class _RashiphalScreenState extends State<RashiphalScreen> {
       case 0:
         return DailyPredictionCard(prediction: dashboard.today, isToday: true);
       case 1:
-        return DailyPredictionCard(prediction: dashboard.tomorrow, isToday: false);
+        return DailyPredictionCard(
+          prediction: dashboard.tomorrow,
+          isToday: false,
+        );
       case 2:
         return Column(
           children: dashboard.weeklyOverview.map((p) {
-            final isToday = p.date.day == DateTime.now().day &&
+            final isToday =
+                p.date.day == DateTime.now().day &&
                 p.date.month == DateTime.now().month &&
                 p.date.year == DateTime.now().year;
             return Padding(
               padding: const EdgeInsets.only(bottom: 12.0),
-              child: DailyPredictionCard(
-                prediction: p,
-                isToday: isToday,
-              ),
+              child: DailyPredictionCard(prediction: p, isToday: isToday),
             );
           }).toList(),
         );

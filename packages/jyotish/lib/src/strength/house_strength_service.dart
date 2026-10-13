@@ -54,12 +54,13 @@ class HouseStrengthService {
   Future<Map<int, EnhancedBhavaBalaResult>> calculateEnhancedBhavaBala(
     VedicChart chart,
   ) async {
-    if (_shadbalaService == null) {
+    final shadbalaService = _shadbalaService;
+    if (shadbalaService == null) {
       throw StateError(
         'ShadbalaService must be provided to calculate Bhava Bala',
       );
     }
-    final shadbala = await _shadbalaService.calculateShadbala(chart);
+    final shadbala = await shadbalaService.calculateShadbala(chart);
     final vimsopakaBala = calculateVimsopakaBala(chart);
     final results = <int, EnhancedBhavaBalaResult>{};
 

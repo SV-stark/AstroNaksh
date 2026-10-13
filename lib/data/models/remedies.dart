@@ -1,9 +1,6 @@
-
-
 enum GemstoneType { life, benefic, bhagya, dasha }
 
 class GemstoneRecommendation {
-
   const GemstoneRecommendation({
     required this.planet,
     required this.primaryGemstone,
@@ -31,7 +28,6 @@ class GemstoneRecommendation {
 }
 
 class PlanetaryRemedy {
-
   const PlanetaryRemedy({
     required this.planet,
     required this.afflictionReason,
@@ -57,7 +53,6 @@ class PlanetaryRemedy {
 }
 
 class CompleteRemediesProfile {
-
   const CompleteRemediesProfile({
     required this.gemstones,
     required this.planetaryRemedies,

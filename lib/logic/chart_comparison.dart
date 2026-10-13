@@ -318,8 +318,10 @@ class ChartComparison {
     }
 
     // 3. Navamsa Compatibility (15% max)
-    final navamsaContribution =
-        ((navamsa.score / 100.0) * 15.0).clamp(0.0, 15.0);
+    final navamsaContribution = ((navamsa.score / 100.0) * 15.0).clamp(
+      0.0,
+      15.0,
+    );
 
     // 4. House Overlays (10% max)
     var overlayPoints = 5.0;
@@ -332,7 +334,8 @@ class ChartComparison {
     }
     final overlayContribution = overlayPoints.clamp(0.0, 10.0);
 
-    final totalScore = kutaContribution +
+    final totalScore =
+        kutaContribution +
         aspectScore +
         navamsaContribution +
         overlayContribution;

@@ -50,7 +50,9 @@ class BackupService {
     try {
       final sanitizedPath = sourcePath.replaceAll("'", "''");
       await db.transaction(() async {
-        await db.customStatement("ATTACH DATABASE '$sanitizedPath' AS backup_db;");
+        await db.customStatement(
+          "ATTACH DATABASE '$sanitizedPath' AS backup_db;",
+        );
         try {
           await db.customStatement('DELETE FROM charts;');
           await db.customStatement(
@@ -110,10 +112,14 @@ class BackupService {
     }
     final uri = Uri.parse(trimmedUrl);
     if (!uri.hasScheme || (!uri.isScheme('http') && !uri.isScheme('https'))) {
-      throw Exception('Invalid URL scheme. Must start with http:// or https://');
+      throw Exception(
+        'Invalid URL scheme. Must start with http:// or https://',
+      );
     }
     if (uri.isScheme('http')) {
-      AppEnvironment.log('WARNING: Connecting to WebDAV over unencrypted HTTP.');
+      AppEnvironment.log(
+        'WARNING: Connecting to WebDAV over unencrypted HTTP.',
+      );
     }
 
     final basicAuth =
@@ -211,7 +217,10 @@ class BackupService {
     // Write to a temporary file and restore seamlessly
     final tempDir = Directory.systemTemp;
     final tempFile = File(
-      p.join(tempDir.path, 'astronaksh_restore_${DateTime.now().millisecondsSinceEpoch}.db'),
+      p.join(
+        tempDir.path,
+        'astronaksh_restore_${DateTime.now().millisecondsSinceEpoch}.db',
+      ),
     );
     try {
       await tempFile.writeAsBytes(response.bodyBytes);

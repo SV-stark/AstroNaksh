@@ -283,7 +283,8 @@ class Jyotish {
   /// A convenience proxy for [VarshapalService.getCurrentVarshaNumber].
   /// No initialization required — this is a static utility.
   static int getCurrentVarshaNumber(DateTime date, {int? referenceYear}) =>
-      VarshapalService.getCurrentVarshaNumber(date, referenceYear: referenceYear);
+      VarshapalService.getCurrentVarshaNumber(date,
+          referenceYear: referenceYear);
 
   /// Initializes the Swiss Ephemeris library.
   ///

@@ -7,15 +7,12 @@ import '../../data/models.dart';
 import '../../logic/kp_prashna_service.dart';
 
 class KPPrashnaAssistantScreen extends StatefulWidget {
-
-  const KPPrashnaAssistantScreen({
-    super.key,
-    required this.initialLocation,
-  });
+  const KPPrashnaAssistantScreen({super.key, required this.initialLocation});
   final GeographicLocation initialLocation;
 
   @override
-  State<KPPrashnaAssistantScreen> createState() => _KPPrashnaAssistantScreenState();
+  State<KPPrashnaAssistantScreen> createState() =>
+      _KPPrashnaAssistantScreenState();
 }
 
 class _KPPrashnaAssistantScreenState extends State<KPPrashnaAssistantScreen> {
@@ -159,7 +156,8 @@ class _KPPrashnaAssistantScreenState extends State<KPPrashnaAssistantScreen> {
                           label: const Text('Time Seed'),
                           onPressed: () {
                             final now = DateTime.now();
-                            final timeSeed = ((now.minute * 4 + now.second) % 249) + 1;
+                            final timeSeed =
+                                ((now.minute * 4 + now.second) % 249) + 1;
                             setState(() {
                               _seedNumber = timeSeed;
                             });
@@ -189,7 +187,9 @@ class _KPPrashnaAssistantScreenState extends State<KPPrashnaAssistantScreen> {
                       )
                     : const Icon(Icons.auto_awesome),
                 label: Text(
-                  _isAnalyzing ? 'Calculating KP Prashna...' : '🔮 Generate Prashna Judgment',
+                  _isAnalyzing
+                      ? 'Calculating KP Prashna...'
+                      : '🔮 Generate Prashna Judgment',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -257,20 +257,20 @@ class _KPPrashnaAssistantScreenState extends State<KPPrashnaAssistantScreen> {
   Widget _buildResultSection(ThemeData theme, KPPrashnaResult res) {
     final (verdictColor, verdictIcon, verdictTitle) = switch (res.verdict) {
       PrashnaVerdict.promised => (
-          Colors.green,
-          Icons.check_circle_rounded,
-          'EVENT PROMISED / FAVORABLE'
-        ),
+        Colors.green,
+        Icons.check_circle_rounded,
+        'EVENT PROMISED / FAVORABLE',
+      ),
       PrashnaVerdict.conditional => (
-          Colors.orange,
-          Icons.warning_amber_rounded,
-          'EVENT CONDITIONAL / DELAYED'
-        ),
+        Colors.orange,
+        Icons.warning_amber_rounded,
+        'EVENT CONDITIONAL / DELAYED',
+      ),
       PrashnaVerdict.denied => (
-          Colors.red,
-          Icons.cancel_rounded,
-          'EVENT UNFAVORABLE / DENIED'
-        ),
+        Colors.red,
+        Icons.cancel_rounded,
+        'EVENT UNFAVORABLE / DENIED',
+      ),
     };
 
     return Column(
@@ -340,20 +340,47 @@ class _KPPrashnaAssistantScreenState extends State<KPPrashnaAssistantScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Text('Primary Houses: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text(res.primaryHouses.join(', '), style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Primary Houses: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      res.primaryHouses.join(', '),
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 Row(
                   children: [
-                    const Text('Supporting Houses: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text(res.supportingHouses.join(', '), style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Supporting Houses: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      res.supportingHouses.join(', '),
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 Row(
                   children: [
-                    const Text('Negating Houses: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text(res.negatingHouses.join(', '), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Negating Houses: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      res.negatingHouses.join(', '),
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -390,10 +417,7 @@ class _KPPrashnaAssistantScreenState extends State<KPPrashnaAssistantScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  res.timingGuidance,
-                  style: theme.textTheme.bodyMedium,
-                ),
+                Text(res.timingGuidance, style: theme.textTheme.bodyMedium),
               ],
             ),
           ),
@@ -413,7 +437,9 @@ class _KPPrashnaAssistantScreenState extends State<KPPrashnaAssistantScreen> {
           (sig) => Card(
             margin: const EdgeInsets.only(bottom: 8),
             child: ListTile(
-              title: Text('House ${sig.houseNumber} Cusp Sub-Lord: ${sig.cuspSubLord}'),
+              title: Text(
+                'House ${sig.houseNumber} Cusp Sub-Lord: ${sig.cuspSubLord}',
+              ),
               subtitle: Text(
                 'Star Lord: ${sig.subLordStarLord}\n'
                 'Star Lord Signifies Houses: ${sig.starLordSignifiedHouses.join(", ")}',

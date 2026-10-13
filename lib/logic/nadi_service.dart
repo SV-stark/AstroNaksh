@@ -5,7 +5,7 @@ import 'package:jyotish/nadi.dart' show NadiChart, NadiInfo;
 import '../../data/models.dart';
 
 class NadiService {
-  final jn.NadiService _jyotishNadi = jn.NadiService();
+  final jn.NadiService _jyotishNadi = const jn.NadiService();
 
   /// Get comprehensive Nadi analysis for a chart (including 150 Nadi Amshas)
   NadiAnalysis analyzeNadi(CompleteChartData chartData) {
@@ -47,6 +47,45 @@ class NadiService {
   /// Get Nadi karmic interpretation for a specific Nadi number (1-1800)
   String getNadiInterpretation(int nadiNumber) {
     return _jyotishNadi.getNadiInterpretation(nadiNumber);
+  }
+
+  /// Identify the Nadi seed from Moon's nakshatra number and pada.
+  ///
+  /// Returns [NadiSeedResult] with seedNumber (1-150), nadiType, primaryNadi,
+  /// and relatedNadis (±2 nadi positions).
+  jn.NadiSeedResult identifyNadiSeed(int nakshatraNumber, int pada) {
+    return _jyotishNadi.identifyNadiSeed(nakshatraNumber, pada);
+  }
+
+  /// Get Nadi seed analysis for a chart based on Moon position.
+  ///
+  /// Extracts nakshatra number and pada from the Moon, then identifies the
+  /// Nadi seed with full details including related nadis.
+  Map<String, dynamic> getNadiSeedAnalysis(CompleteChartData chartData) {
+    final moon = chartData.baseChart.planets[Planet.moon];
+    if (moon == null) {
+      return {'available': false, 'error': 'Moon position not available'};
+    }
+
+    try {
+      final nakshatraNumber = moon.position.nakshatraIndex + 1;
+      final pada = moon.position.nakshatraPada;
+
+      final seed = _jyotishNadi.identifyNadiSeed(nakshatraNumber, pada);
+
+      return {
+        'available': true,
+        'seedNumber': seed.seedNumber,
+        'nadiType': seed.nadiType.name,
+        'nakshatraNumber': nakshatraNumber,
+        'nakshatraName': moon.position.nakshatra,
+        'pada': pada,
+        'primaryNadi': seed.primaryNadi,
+        'relatedNadis': seed.relatedNadis,
+      };
+    } catch (e) {
+      return {'available': false, 'error': e.toString()};
+    }
   }
 
   String _getNadiType(int nakshatraIndex) {

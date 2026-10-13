@@ -126,7 +126,8 @@ class BhavaChalit {
     }
 
     // Also check Ketu
-    final ketuRashiHouse = chart.houses.getHouseForLongitude(chart.ketu.longitude);
+    final ketuRashiHouse =
+        chart.houses.getHouseForLongitude(chart.ketu.longitude);
     final ketuBhava = getBhavaForLongitude(chart.ketu.longitude);
     if (ketuBhava != ketuRashiHouse) {
       shifted.add((

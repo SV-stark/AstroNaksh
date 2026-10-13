@@ -131,15 +131,18 @@ class LifePredictionService {
     // ── Gather all analytical inputs ──────────────────────────────────
 
     // 1. Calculate detailed Shadbala once upfront for all consumers
-    final detailedShadbala =
-        await ShadbalaCalculator.calculateDetailedShadbala(chartData.baseChart);
+    final detailedShadbala = await ShadbalaCalculator.calculateDetailedShadbala(
+      chartData.baseChart,
+    );
     final shadbala = detailedShadbala.map((k, v) => MapEntry(k, v.totalBala));
 
     // Fetch all independent asynchronous operations concurrently
     final results = await Future.wait([
       BhavaBala.calculateBhavaBala(chartData, cachedShadbala: detailedShadbala),
-      BhavaBala.calculateAllPlanetFruits(chartData,
-          cachedShadbala: detailedShadbala),
+      BhavaBala.calculateAllPlanetFruits(
+        chartData,
+        cachedShadbala: detailedShadbala,
+      ),
       DashaSystem.getCurrentDashaFromChart(chartData.baseChart, DateTime.now()),
       TransitAnalysis()
           .calculateTransitChart(chartData, DateTime.now())
@@ -233,8 +236,9 @@ class LifePredictionService {
           ),
           eventType: category,
         );
-        final windows =
-            await EphemerisManager.jyotish.findEventTimingWindows(req);
+        final windows = await EphemerisManager.jyotish.findEventTimingWindows(
+          req,
+        );
         eventTimingWindows[aspect] = windows;
       } catch (_) {
         eventTimingWindows[aspect] = const [];
@@ -1319,8 +1323,9 @@ class LifePredictionService {
         for (final w in topWindows) {
           final startStr = '${w.start.day}/${w.start.month}/${w.start.year}';
           final endStr = '${w.end.day}/${w.end.month}/${w.end.year}';
-          final reasons =
-              w.reasons.isNotEmpty ? ' (${w.reasons.join("; ")})' : '';
+          final reasons = w.reasons.isNotEmpty
+              ? ' (${w.reasons.join("; ")})'
+              : '';
           buffer.write(
             '- **$startStr to $endStr**: ${w.quality.name} — ${w.dashaContext}$reasons\n',
           );

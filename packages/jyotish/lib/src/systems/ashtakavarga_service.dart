@@ -178,8 +178,7 @@ class AshtakavargaService {
         // Get the sign where the contributing planet is placed
         final planetInfo = natalChart.planets[contributingPlanet];
         if (planetInfo == null) continue;
-        final planetSign =
-            (planetInfo.position.longitude / 30).floor() % 12;
+        final planetSign = (planetInfo.position.longitude / 30).floor() % 12;
 
         // Calculate relative sign: where the current signIndex is relative to where the contributing planet sits
         // If contributing planet is in sign X, we check the table to see which signs from X get bindus

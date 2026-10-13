@@ -77,4 +77,99 @@ class AshtakavargaSystem {
     }
     return result;
   }
+
+  /// Calculate Prastara Ashtakavarga (96-cell binary grid) for a specific planet.
+  ///
+  /// The Prastara grid shows which of the 8 contributors (Sun, Moon, Mars,
+  /// Mercury, Jupiter, Venus, Saturn, Lagna) give bindus to each of the 12 signs.
+  /// This is the classical Vedic method for understanding planetary contributions.
+  ///
+  /// Returns [PrastaraResult] with a flat 96-element Uint8List (8 rows × 12 columns).
+  static PrastaraResult calculatePrastara(VedicChart chart, Planet planet) {
+    _service ??= AshtakavargaService();
+    return _service!.calculatePrastaraAshtakavarga(chart, planet);
+  }
+
+  /// Calculate Prastara Ashtakavarga for all 7 grahas.
+  ///
+  /// Returns a map of each traditional planet to its [PrastaraResult].
+  static Map<Planet, PrastaraResult> calculateAllPrastara(VedicChart chart) {
+    _service ??= AshtakavargaService();
+    final result = <Planet, PrastaraResult>{};
+    for (final planet in Planet.traditionalPlanets) {
+      result[planet] = _service!.calculatePrastaraAshtakavarga(chart, planet);
+    }
+    return result;
+  }
+
+  /// Get human-readable contributor names for a specific sign in a Prastara grid.
+  ///
+  /// [prastara] — The PrastaraResult for a planet
+  /// [signIndex] — Sign index 0-11 (Aries to Pisces)
+  ///
+  /// Returns list of contributor names (e.g., ['Sun', 'Jupiter', 'Lagna'])
+  /// that contribute bindus to the given sign.
+  static List<String> getPrastaraContributors(
+    PrastaraResult prastara,
+    int signIndex,
+  ) {
+    const contributorNames = [
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
+      'Lagna',
+    ];
+    final contributors = <String>[];
+    for (var point = 0; point < 8; point++) {
+      if (prastara.getContribution(point, signIndex) == 1) {
+        contributors.add(contributorNames[point]);
+      }
+    }
+    return contributors;
+  }
+
+  /// Get total bindu count across all signs for a specific contributor point.
+  ///
+  /// [prastara] — The PrastaraResult for a planet
+  /// [pointIndex] — Contributor index 0-7 (Sun=0, Moon=1, ..., Lagna=7)
+  ///
+  /// Returns count of signs (0-12) where this contributor gives a bindu.
+  static int getContributorBinduCount(PrastaraResult prastara, int pointIndex) {
+    var count = 0;
+    for (var sign = 0; sign < 12; sign++) {
+      if (prastara.getContribution(pointIndex, sign) == 1) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /// Get the dominant contributor for a specific sign in a Prastara grid.
+  ///
+  /// Returns the name of the contributor with the most bindus in that sign,
+  /// or 'None' if no bindus are present.
+  static String getDominantContributor(PrastaraResult prastara, int signIndex) {
+    const contributorNames = [
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
+      'Lagna',
+    ];
+    final contributors = <String>[];
+    for (var point = 0; point < 8; point++) {
+      if (prastara.getContribution(point, signIndex) == 1) {
+        contributors.add(contributorNames[point]);
+      }
+    }
+    if (contributors.isEmpty) return 'None';
+    return contributors.join(', ');
+  }
 }

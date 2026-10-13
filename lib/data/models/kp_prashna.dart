@@ -9,14 +9,9 @@ enum PrashnaCategory {
   litigation,
 }
 
-enum PrashnaVerdict {
-  promised,
-  conditional,
-  denied,
-}
+enum PrashnaVerdict { promised, conditional, denied }
 
 class KPPrashnaHouseSignificator {
-
   const KPPrashnaHouseSignificator({
     required this.houseNumber,
     required this.houseName,
@@ -34,7 +29,6 @@ class KPPrashnaHouseSignificator {
 }
 
 class KPPrashnaResult {
-
   const KPPrashnaResult({
     required this.seedNumber,
     required this.category,

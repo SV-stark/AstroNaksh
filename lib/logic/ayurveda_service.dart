@@ -2,7 +2,6 @@ import 'package:jyotish/core.dart';
 import '../data/models/chart_data.dart';
 
 class DoshaScores {
-
   const DoshaScores({
     required this.vata,
     required this.pitta,
@@ -14,7 +13,6 @@ class DoshaScores {
 }
 
 class AyurvedicProfile {
-
   const AyurvedicProfile({
     required this.scores,
     required this.vataPercentage,

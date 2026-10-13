@@ -32,9 +32,8 @@ class TransitService {
     final transits = <Planet, TransitInfo>{};
 
     // Calculate transit positions for traditional planets + nodes
-    final rahuPlanet = flags.nodeType == NodeType.trueNode
-        ? Planet.trueNode
-        : Planet.meanNode;
+    final rahuPlanet =
+        flags.nodeType == NodeType.trueNode ? Planet.trueNode : Planet.meanNode;
     final planetsToCalculate = [
       ...Planet.traditionalPlanets,
       rahuPlanet,

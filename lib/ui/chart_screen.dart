@@ -203,11 +203,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
           'Reinstall the application or check that swisseph.dll is present.';
     }
 
-    const coordinateMarkers = [
-      'latitude',
-      'longitude',
-      'RangeError',
-    ];
+    const coordinateMarkers = ['latitude', 'longitude', 'RangeError'];
     if (coordinateMarkers.any(message.contains)) {
       return 'The birth details contain coordinates outside the supported '
           'range. Latitude must be -90..90 and longitude -180..180.';

@@ -772,10 +772,8 @@ class YogaService {
       final hasMaleficIn4 = malefics.any((p) => pMap[p] == 4);
       final hasMaleficIn10 = malefics.any((p) => pMap[p] == 10);
 
-      final isPresent = hasBeneficIn1 &&
-          hasBeneficIn7 &&
-          hasMaleficIn4 &&
-          hasMaleficIn10;
+      final isPresent =
+          hasBeneficIn1 && hasBeneficIn7 && hasMaleficIn4 && hasMaleficIn10;
       final explanation = isPresent
           ? 'Benefics occupy houses 1 and 7; Malefics occupy houses 4 and 10'
           : 'Vajra conditions not met';
@@ -801,10 +799,8 @@ class YogaService {
       final hasBeneficIn4 = benefics.any((p) => pMap[p] == 4);
       final hasBeneficIn10 = benefics.any((p) => pMap[p] == 10);
 
-      final isPresent = hasMaleficIn1 &&
-          hasMaleficIn7 &&
-          hasBeneficIn4 &&
-          hasBeneficIn10;
+      final isPresent =
+          hasMaleficIn1 && hasMaleficIn7 && hasBeneficIn4 && hasBeneficIn10;
       final explanation = isPresent
           ? 'Malefics occupy houses 1 and 7; Benefics occupy houses 4 and 10'
           : 'Yava conditions not met';
@@ -1281,7 +1277,9 @@ class YogaService {
         jupiterHouse,
       ).any((p) => p != Planet.jupiter && benefics.contains(p));
       final aspectingBenefic = benefics.any(
-        (p) => p != Planet.jupiter && _doesPlanetAspectHouse(chart, p, jupiterHouse),
+        (p) =>
+            p != Planet.jupiter &&
+            _doesPlanetAspectHouse(chart, p, jupiterHouse),
       );
       final hasBeneficSupport = conjunctBenefic || aspectingBenefic;
 
@@ -1289,8 +1287,7 @@ class YogaService {
       // house. An exalted Jupiter strengthens the yoga rather than spoiling it,
       // so exaltation is deliberately not a disqualifier.
       final dignity = jupiterInfo?.dignity;
-      final notAfflicted =
-          dignity != PlanetaryDignity.debilitated &&
+      final notAfflicted = dignity != PlanetaryDignity.debilitated &&
           !(jupiterInfo?.isCombust ?? false) &&
           dignity != PlanetaryDignity.enemySign &&
           dignity != PlanetaryDignity.greatEnemy;

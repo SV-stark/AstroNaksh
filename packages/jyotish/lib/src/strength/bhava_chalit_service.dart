@@ -44,17 +44,18 @@ class BhavaChalitService {
     // Add Ketu
     allPlanetLongitudes[Planet.ketu] = chart.ketu.longitude;
 
-    final isWholeSign =
-        chart.houses.system.startsWith('Whole Sign') ||
+    final isWholeSign = chart.houses.system.startsWith('Whole Sign') ||
         chart.houses.system == 'W';
 
     final bhavas = <BhavaInfo>[];
     for (var i = 0; i < 12; i++) {
       final houseNumber = i + 1;
-      final midStart =
-          isWholeSign ? cusps[i] : midCusps[(i + 11) % 12]; // entering this bhava
-      final midEnd =
-          isWholeSign ? cusps[(i + 1) % 12] : midCusps[i]; // exiting this bhava / entering next
+      final midStart = isWholeSign
+          ? cusps[i]
+          : midCusps[(i + 11) % 12]; // entering this bhava
+      final midEnd = isWholeSign
+          ? cusps[(i + 1) % 12]
+          : midCusps[i]; // exiting this bhava / entering next
 
       // Collect planets in this bhava
       final planetsInBhava = <Planet>[];

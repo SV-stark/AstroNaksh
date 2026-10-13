@@ -152,7 +152,10 @@ class CityDatabase {
             'WHERE state LIKE ? OR country LIKE ? '
             'LIMIT 20',
           );
-          selectResult = fallbackStmt.select(['$trimmedQuery%', '$trimmedQuery%']);
+          selectResult = fallbackStmt.select([
+            '$trimmedQuery%',
+            '$trimmedQuery%',
+          ]);
           fallbackStmt.close();
         }
         rows = selectResult;
@@ -319,5 +322,6 @@ class City {
           timezone == other.timezone;
 
   @override
-  int get hashCode => Object.hash(name, state, country, latitude, longitude, timezone);
+  int get hashCode =>
+      Object.hash(name, state, country, latitude, longitude, timezone);
 }

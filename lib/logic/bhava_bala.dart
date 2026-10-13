@@ -28,8 +28,10 @@ class BhavaBala {
     _strengthService ??= StrengthAnalysisService();
 
     // Get Shadbala results (reusing cached results if provided)
-    final shadbalaResults =
-        await _getOrCalculateShadbala(chart, cachedShadbala);
+    final shadbalaResults = await _getOrCalculateShadbala(
+      chart,
+      cachedShadbala,
+    );
 
     // Convert ShadbalaResult to double values for library API
     final shadbalaMap = <Planet, double>{};
@@ -68,8 +70,10 @@ class BhavaBala {
   }) async {
     _strengthService ??= StrengthAnalysisService();
 
-    final shadbalaResults =
-        await _getOrCalculateShadbala(chart, cachedShadbala);
+    final shadbalaResults = await _getOrCalculateShadbala(
+      chart,
+      cachedShadbala,
+    );
 
     final shadbalaStrength = shadbalaResults[planet]?.totalBala ?? 60.0;
 
@@ -89,8 +93,10 @@ class BhavaBala {
   }) async {
     _strengthService ??= StrengthAnalysisService();
 
-    final shadbalaResults =
-        await _getOrCalculateShadbala(chart, cachedShadbala);
+    final shadbalaResults = await _getOrCalculateShadbala(
+      chart,
+      cachedShadbala,
+    );
 
     final shadbalaStrength = shadbalaResults[planet]?.totalBala ?? 60.0;
 
@@ -131,8 +137,10 @@ class BhavaBala {
     Map<Planet, ShadbalaResult>? cachedShadbala,
   }) async {
     _strengthService ??= StrengthAnalysisService();
-    final shadbalaResults =
-        await _getOrCalculateShadbala(chart, cachedShadbala);
+    final shadbalaResults = await _getOrCalculateShadbala(
+      chart,
+      cachedShadbala,
+    );
 
     final results = <Planet, ({double ishtaphala, double kashtaphala})>{};
 

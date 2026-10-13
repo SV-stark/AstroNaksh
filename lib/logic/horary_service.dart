@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:jyotish/core.dart';
+import 'package:jyotish/systems.dart';
 
 import '../core/ephemeris_manager.dart';
 
@@ -183,5 +184,62 @@ class HoraryService {
 
   String _getNakshatraLord(int index) {
     return vimshottariLords[index % 9];
+  }
+
+  // Prashna (Horary) advanced calculations
+
+  /// Calculate Trisphuta and Chatursphuta for a Prashna chart
+  Future<PrashnaSphutas> calculateSphutas(VedicChart chart) async {
+    final prashnaService = PrashnaService(EphemerisManager.service);
+    return prashnaService.calculateSphutas(chart);
+  }
+
+  /// Calculate Gulika Sphuta position
+  Future<double> calculateGulika(VedicChart chart) async {
+    final prashnaService = PrashnaService(EphemerisManager.service);
+    return prashnaService.calculateGulikaSphuta(chart);
+  }
+
+  /// Calculate Prashna Arudha from a seed number
+  Rashi calculatePrashnaArudha(int seed) {
+    final prashnaService = PrashnaService(EphemerisManager.service);
+    return prashnaService.calculatePrashnaArudha(seed);
+  }
+
+  /// Combined Prashna analysis returning all horary calculations
+  Future<Map<String, dynamic>> getPrashnaAnalysis(
+    VedicChart chart, {
+    required int seed,
+  }) async {
+    final sphutas = await calculateSphutas(chart);
+    final gulika = await calculateGulika(chart);
+    final arudha = calculatePrashnaArudha(seed);
+
+    return {
+      'trisphuta': sphutas.trisphuta,
+      'chatursphuta': sphutas.chatursphuta,
+      'panchasphuta': sphutas.panchasphuta,
+      'gulika': gulika,
+      'arudhaRashi': arudha.index,
+      'arudhaLord': _getRashiLord(arudha),
+    };
+  }
+
+  String _getRashiLord(Rashi rashi) {
+    const lords = [
+      'Mars',
+      'Venus',
+      'Mercury',
+      'Moon',
+      'Sun',
+      'Mercury',
+      'Venus',
+      'Mars',
+      'Jupiter',
+      'Saturn',
+      'Saturn',
+      'Jupiter',
+    ];
+    return lords[rashi.index];
   }
 }

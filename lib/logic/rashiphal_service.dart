@@ -33,18 +33,138 @@ class RashiInfo {
   final String luckyDirection;
 
   static const List<RashiInfo> all = [
-    RashiInfo(index: 0,  name: 'Aries',       sanskrit: 'मेष',    symbol: '♈', lord: 'Mars',    element: 'Fire',  luckyColor: 'Red',       luckyNumber: 9,  luckyDirection: 'East'),
-    RashiInfo(index: 1,  name: 'Taurus',      sanskrit: 'वृषभ',   symbol: '♉', lord: 'Venus',   element: 'Earth', luckyColor: 'White',     luckyNumber: 6,  luckyDirection: 'South'),
-    RashiInfo(index: 2,  name: 'Gemini',      sanskrit: 'मिथुन',  symbol: '♊', lord: 'Mercury', element: 'Air',   luckyColor: 'Green',     luckyNumber: 5,  luckyDirection: 'West'),
-    RashiInfo(index: 3,  name: 'Cancer',      sanskrit: 'कर्क',   symbol: '♋', lord: 'Moon',    element: 'Water', luckyColor: 'Silver',    luckyNumber: 2,  luckyDirection: 'North'),
-    RashiInfo(index: 4,  name: 'Leo',         sanskrit: 'सिंह',   symbol: '♌', lord: 'Sun',     element: 'Fire',  luckyColor: 'Golden',    luckyNumber: 1,  luckyDirection: 'East'),
-    RashiInfo(index: 5,  name: 'Virgo',       sanskrit: 'कन्या',  symbol: '♍', lord: 'Mercury', element: 'Earth', luckyColor: 'Navy Blue', luckyNumber: 5,  luckyDirection: 'South'),
-    RashiInfo(index: 6,  name: 'Libra',       sanskrit: 'तुला',   symbol: '♎', lord: 'Venus',   element: 'Air',   luckyColor: 'White',     luckyNumber: 6,  luckyDirection: 'West'),
-    RashiInfo(index: 7,  name: 'Scorpio',     sanskrit: 'वृश्चिक', symbol: '♏', lord: 'Mars',   element: 'Water', luckyColor: 'Dark Red',  luckyNumber: 9,  luckyDirection: 'North'),
-    RashiInfo(index: 8,  name: 'Sagittarius', sanskrit: 'धनु',    symbol: '♐', lord: 'Jupiter', element: 'Fire',  luckyColor: 'Yellow',    luckyNumber: 3,  luckyDirection: 'East'),
-    RashiInfo(index: 9,  name: 'Capricorn',   sanskrit: 'मकर',    symbol: '♑', lord: 'Saturn',  element: 'Earth', luckyColor: 'Blue',      luckyNumber: 8,  luckyDirection: 'South'),
-    RashiInfo(index: 10, name: 'Aquarius',    sanskrit: 'कुम्भ',  symbol: '♒', lord: 'Saturn',  element: 'Air',   luckyColor: 'Violet',    luckyNumber: 8,  luckyDirection: 'West'),
-    RashiInfo(index: 11, name: 'Pisces',      sanskrit: 'मीन',    symbol: '♓', lord: 'Jupiter', element: 'Water', luckyColor: 'Sea Green', luckyNumber: 3,  luckyDirection: 'North'),
+    RashiInfo(
+      index: 0,
+      name: 'Aries',
+      sanskrit: 'मेष',
+      symbol: '♈',
+      lord: 'Mars',
+      element: 'Fire',
+      luckyColor: 'Red',
+      luckyNumber: 9,
+      luckyDirection: 'East',
+    ),
+    RashiInfo(
+      index: 1,
+      name: 'Taurus',
+      sanskrit: 'वृषभ',
+      symbol: '♉',
+      lord: 'Venus',
+      element: 'Earth',
+      luckyColor: 'White',
+      luckyNumber: 6,
+      luckyDirection: 'South',
+    ),
+    RashiInfo(
+      index: 2,
+      name: 'Gemini',
+      sanskrit: 'मिथुन',
+      symbol: '♊',
+      lord: 'Mercury',
+      element: 'Air',
+      luckyColor: 'Green',
+      luckyNumber: 5,
+      luckyDirection: 'West',
+    ),
+    RashiInfo(
+      index: 3,
+      name: 'Cancer',
+      sanskrit: 'कर्क',
+      symbol: '♋',
+      lord: 'Moon',
+      element: 'Water',
+      luckyColor: 'Silver',
+      luckyNumber: 2,
+      luckyDirection: 'North',
+    ),
+    RashiInfo(
+      index: 4,
+      name: 'Leo',
+      sanskrit: 'सिंह',
+      symbol: '♌',
+      lord: 'Sun',
+      element: 'Fire',
+      luckyColor: 'Golden',
+      luckyNumber: 1,
+      luckyDirection: 'East',
+    ),
+    RashiInfo(
+      index: 5,
+      name: 'Virgo',
+      sanskrit: 'कन्या',
+      symbol: '♍',
+      lord: 'Mercury',
+      element: 'Earth',
+      luckyColor: 'Navy Blue',
+      luckyNumber: 5,
+      luckyDirection: 'South',
+    ),
+    RashiInfo(
+      index: 6,
+      name: 'Libra',
+      sanskrit: 'तुला',
+      symbol: '♎',
+      lord: 'Venus',
+      element: 'Air',
+      luckyColor: 'White',
+      luckyNumber: 6,
+      luckyDirection: 'West',
+    ),
+    RashiInfo(
+      index: 7,
+      name: 'Scorpio',
+      sanskrit: 'वृश्चिक',
+      symbol: '♏',
+      lord: 'Mars',
+      element: 'Water',
+      luckyColor: 'Dark Red',
+      luckyNumber: 9,
+      luckyDirection: 'North',
+    ),
+    RashiInfo(
+      index: 8,
+      name: 'Sagittarius',
+      sanskrit: 'धनु',
+      symbol: '♐',
+      lord: 'Jupiter',
+      element: 'Fire',
+      luckyColor: 'Yellow',
+      luckyNumber: 3,
+      luckyDirection: 'East',
+    ),
+    RashiInfo(
+      index: 9,
+      name: 'Capricorn',
+      sanskrit: 'मकर',
+      symbol: '♑',
+      lord: 'Saturn',
+      element: 'Earth',
+      luckyColor: 'Blue',
+      luckyNumber: 8,
+      luckyDirection: 'South',
+    ),
+    RashiInfo(
+      index: 10,
+      name: 'Aquarius',
+      sanskrit: 'कुम्भ',
+      symbol: '♒',
+      lord: 'Saturn',
+      element: 'Air',
+      luckyColor: 'Violet',
+      luckyNumber: 8,
+      luckyDirection: 'West',
+    ),
+    RashiInfo(
+      index: 11,
+      name: 'Pisces',
+      sanskrit: 'मीन',
+      symbol: '♓',
+      lord: 'Jupiter',
+      element: 'Water',
+      luckyColor: 'Sea Green',
+      luckyNumber: 3,
+      luckyDirection: 'North',
+    ),
   ];
 }
 
@@ -56,7 +176,10 @@ class RashiphalService {
   // ── Standalone (sign-only) public API ────────────────────────────────────
 
   /// Default location (New Delhi) used when user hasn't set one
-  static const _defaultLocation = Location(latitude: 28.6139, longitude: 77.2090);
+  static const _defaultLocation = Location(
+    latitude: 28.6139,
+    longitude: 77.2090,
+  );
 
   /// Generate a Today / Tomorrow / 7-day dashboard for a selected Rashi (sign),
   /// without requiring any birth chart or CompleteChartData.
@@ -68,15 +191,25 @@ class RashiphalService {
     final now = DateTime.now();
     final today = await generateDailyPredictionForSign(signIndex, loc, now);
     final tomorrow = await generateDailyPredictionForSign(
-      signIndex, loc, now.add(const Duration(days: 1)),
+      signIndex,
+      loc,
+      now.add(const Duration(days: 1)),
     );
     final weekly = <DailyRashiphal>[];
     for (var i = 0; i < 7; i++) {
-      weekly.add(await generateDailyPredictionForSign(
-        signIndex, loc, now.add(Duration(days: i)),
-      ));
+      weekly.add(
+        await generateDailyPredictionForSign(
+          signIndex,
+          loc,
+          now.add(Duration(days: i)),
+        ),
+      );
     }
-    return RashiphalDashboard(today: today, tomorrow: tomorrow, weeklyOverview: weekly);
+    return RashiphalDashboard(
+      today: today,
+      tomorrow: tomorrow,
+      weeklyOverview: weekly,
+    );
   }
 
   /// Generate a single-day prediction from just a Moon-sign index (0-11)
@@ -119,10 +252,13 @@ class RashiphalService {
 
     // 4. Rules engine
     final signPrediction = RashiphalRules.getMoonSignPrediction(
-      moonSign, houseFromNatal, signName: moonSignName,
+      moonSign,
+      houseFromNatal,
+      signName: moonSignName,
     );
     final nakshatraPrediction = RashiphalRules.getNakshatraPrediction(
-      panchang.nakshatraNumber - 1, nakshatraName: nakshatraStr,
+      panchang.nakshatraNumber - 1,
+      nakshatraName: nakshatraStr,
     );
     final tithiRec = RashiphalRules.getTithiRecommendation(tithiNum);
     final muhurta = RashiphalRules.getMuhurtaTimings(date);
@@ -132,33 +268,34 @@ class RashiphalService {
 
     // A. Moon transit house — same house-quality table as full chart
     final favorableHouses = [3, 6, 7, 10, 11];
-    final mediumHouses   = [1, 2, 4, 5, 9];
+    final mediumHouses = [1, 2, 4, 5, 9];
     bool moonFavorable;
     List<String> moonRecs;
     if (favorableHouses.contains(houseFromNatal)) {
       moonFavorable = true;
-      moonRecs      = ['Good time for emotional stability and social activities.'];
-      score        += 35.0;
+      moonRecs = ['Good time for emotional stability and social activities.'];
+      score += 35.0;
     } else if (mediumHouses.contains(houseFromNatal)) {
       moonFavorable = true;
-      moonRecs      = ['Mixed influences. Proceed with balance and awareness.'];
-      score        += 20.0;
+      moonRecs = ['Mixed influences. Proceed with balance and awareness.'];
+      score += 20.0;
     } else {
       moonFavorable = false;
-      moonRecs      = ['Keep emotions in check and avoid impulsive decisions.'];
-      score        += 5.0;
+      moonRecs = ['Keep emotions in check and avoid impulsive decisions.'];
+      score += 5.0;
     }
 
     // B. Tarabala — approx birth nakshatra as midpoint of natal sign
     final approxBirthNakshatra = (signIndex * 27 ~/ 12) + 1; // 1-27
     final tarabalaCategory = RashiphalRules.getTarabalaCategory(
-      approxBirthNakshatra, panchang.nakshatraNumber,
+      approxBirthNakshatra,
+      panchang.nakshatraNumber,
     );
     final tarabalaPoints = RashiphalRules.getTarabalaScore(tarabalaCategory);
     score += (tarabalaPoints / 30.0) * 35.0;
 
     // C. Murti
-    final murti      = RashiphalRules.getMurti(signIndex, moonSign);
+    final murti = RashiphalRules.getMurti(signIndex, moonSign);
     final murtiPoints = RashiphalRules.getMurtiScore(murti);
     score += (murtiPoints / 20.0) * 30.0;
 
@@ -180,11 +317,11 @@ class RashiphalService {
 
     // 6. Highlights & cautions
     final keyHighlights = <String>[];
-    final cautions      = <String>[];
+    final cautions = <String>[];
 
     if (isChandrashtama) {
       cautions.add(
-        'Chandrashtama active: Moon transiting the 8th from your natal Rashi (${ RashiInfo.all[signIndex].name}). '
+        'Chandrashtama active: Moon transiting the 8th from your natal Rashi (${RashiInfo.all[signIndex].name}). '
         'Avoid major decisions, surgeries, or travel for 2–3 days.',
       );
     }
@@ -213,25 +350,33 @@ class RashiphalService {
     }
 
     if (isMoonObstructed) {
-      cautions.add('Moon transit through $moonSignName is Vedha-obstructed — energy partially blocked.');
+      cautions.add(
+        'Moon transit through $moonSignName is Vedha-obstructed — energy partially blocked.',
+      );
     }
 
     // 7. Transit context
     final transitContext = <String>[];
-    transitContext.add('Moon: $moonSignName (${_getOrdinal(houseFromNatal)} from ${RashiInfo.all[signIndex].name}) — $nakshatraStr');
+    transitContext.add(
+      'Moon: $moonSignName (${_getOrdinal(houseFromNatal)} from ${RashiInfo.all[signIndex].name}) — $nakshatraStr',
+    );
 
     final jupiterInfo = transitVedicChart.planets[Planet.jupiter];
     if (jupiterInfo != null) {
       final jSign = _getSignName(jupiterInfo.position.zodiacSignIndex);
-      final jHouse = ((jupiterInfo.position.zodiacSignIndex - signIndex + 12) % 12) + 1;
+      final jHouse =
+          ((jupiterInfo.position.zodiacSignIndex - signIndex + 12) % 12) + 1;
       final jBenefic = [2, 5, 7, 9, 11].contains(jHouse);
-      transitContext.add('Jupiter: $jSign (${_getOrdinal(jHouse)} house)${jBenefic ? " — Favorable" : ""}');
+      transitContext.add(
+        'Jupiter: $jSign (${_getOrdinal(jHouse)} house)${jBenefic ? " — Favorable" : ""}',
+      );
     }
 
     final saturnInfo = transitVedicChart.planets[Planet.saturn];
     if (saturnInfo != null) {
       final sSign = _getSignName(saturnInfo.position.zodiacSignIndex);
-      final sHouse = ((saturnInfo.position.zodiacSignIndex - signIndex + 12) % 12) + 1;
+      final sHouse =
+          ((saturnInfo.position.zodiacSignIndex - signIndex + 12) % 12) + 1;
       var saturnNote = 'Saturn: $sSign (${_getOrdinal(sHouse)} house)';
       if ([12, 1, 2].contains(sHouse)) saturnNote += ' — Sade Sati watch';
       if ([4, 8].contains(sHouse)) saturnNote += ' — Dhaiya watch';
@@ -261,7 +406,7 @@ class RashiphalService {
       recommendation: tithiRec,
       favorableScore: finalScore,
       transitContext: transitContext,
-      dashaContext: '',            // No natal chart → no Dasha context
+      dashaContext: '', // No natal chart → no Dasha context
       // Lucky elements embedded in transitContext for UI display
     );
   }

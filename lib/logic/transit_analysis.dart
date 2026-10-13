@@ -370,7 +370,11 @@ class TransitAnalysis {
 
     final sunInfo = transitChart.planets[j.Planet.sun];
     final calculatedTithi = sunInfo != null
-        ? (((moonInfo.position.longitude - sunInfo.position.longitude + 360) % 360) / 12.0).floor() + 1
+        ? (((moonInfo.position.longitude - sunInfo.position.longitude + 360) %
+                          360) /
+                      12.0)
+                  .floor() +
+              1
         : 1;
 
     return MoonTransitAnalysis(
@@ -457,8 +461,12 @@ class TransitAnalysis {
       final sign = info.position.zodiacSignIndex;
       if (sign == rahuSign || sign == ketuSign) {
         affected.add(p.displayName);
-        if (p == j.Planet.meanNode || p == j.Planet.trueNode) overNatalRahu = true;
-        if (p == j.Planet.ketu) overNatalKetu = true;
+        if (p == j.Planet.meanNode || p == j.Planet.trueNode) {
+          overNatalRahu = true;
+        }
+        if (p == j.Planet.ketu) {
+          overNatalKetu = true;
+        }
       }
     });
 
@@ -553,6 +561,129 @@ class TransitAnalysis {
     }
 
     return allRemedies.toSet().toList();
+  }
+
+  /// Predict Sade Sati periods (past and future)
+  /// Returns list of SadeSatiPeriod objects with start/end dates and phase
+  ///
+  /// The library returns `List<Map<String, dynamic>>` with keys:
+  /// - 'start' (DateTime), 'end' (DateTime), 'phase' (String), 'houseFromMoon' (int)
+  Future<List<SadeSatiPeriod>> predictSadeSatiPeriods(
+    CompleteChartData natalChart, {
+    int yearsBefore = 10,
+    int yearsAfter = 10,
+  }) async {
+    try {
+      final periods = _jyotish.predictSadeSatiPeriods(
+        natalChart.baseChart,
+        yearsBefore: yearsBefore,
+        yearsAfter: yearsAfter,
+      );
+      return periods
+          .map((p) {
+            final start = p['start'] as DateTime?;
+            final end = p['end'] as DateTime?;
+            final phase = p['phase'] as String? ?? 'unknown';
+
+            if (start == null || end == null) return null;
+
+            final now = DateTime.now();
+            final isActive = !now.isBefore(start) && !now.isAfter(end);
+
+            return SadeSatiPeriod(
+              startDate: start,
+              endDate: end,
+              phase: phase,
+              isActive: isActive,
+            );
+          })
+          .whereType<SadeSatiPeriod>()
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Generate a formatted Sade Sati timeline showing past and current/future periods
+  ///
+  /// Returns a human-readable string with each period on its own line,
+  /// sorted chronologically, with the active period highlighted.
+  Future<String> getSadeSatiTimeline(
+    CompleteChartData natalChart, {
+    int yearsBefore = 10,
+    int yearsAfter = 10,
+  }) async {
+    final periods = await predictSadeSatiPeriods(
+      natalChart,
+      yearsBefore: yearsBefore,
+      yearsAfter: yearsAfter,
+    );
+
+    if (periods.isEmpty) {
+      return 'No Sade Sati periods found for the specified range.';
+    }
+
+    final buffer = StringBuffer();
+    buffer.writeln('═' * 50);
+    buffer.writeln('           SADE SATI TIMELINE');
+    buffer.writeln('═' * 50);
+    buffer.writeln();
+
+    final now = DateTime.now();
+
+    for (final period in periods) {
+      final isPast = now.isAfter(period.endDate);
+      final isActive = period.isActive;
+
+      final marker = isActive
+          ? '● ACTIVE'
+          : isPast
+          ? '  past  '
+          : '  future';
+
+      final phaseLabel = period.phase.toUpperCase();
+      final startStr = AppFormatters.formatDate(period.startDate);
+      final endStr = AppFormatters.formatDate(period.endDate);
+
+      buffer.writeln('$marker  $phaseLabel phase');
+      buffer.writeln('         $startStr — $endStr');
+      buffer.writeln('         Duration: ${period.duration}');
+
+      if (isActive) {
+        buffer.writeln('         ★ Currently in effect');
+      }
+
+      buffer.writeln();
+    }
+
+    buffer.writeln('─' * 50);
+    buffer.writeln(
+      'Sade Sati lasts approximately 7.5 years as Saturn transits',
+    );
+    buffer.writeln('the 12th, 1st, and 2nd houses from the natal Moon.');
+    buffer.writeln('─' * 50);
+
+    return buffer.toString();
+  }
+}
+
+/// Sade Sati period model
+class SadeSatiPeriod {
+  SadeSatiPeriod({
+    required this.startDate,
+    required this.endDate,
+    required this.phase,
+    required this.isActive,
+  });
+  final DateTime startDate;
+  final DateTime endDate;
+  final String phase; // "rising", "peak", "setting"
+  final bool isActive;
+
+  String get duration {
+    final days = endDate.difference(startDate).inDays;
+    final years = (days / 365.25).toStringAsFixed(1);
+    return '$years years ($days days)';
   }
 }
 

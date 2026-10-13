@@ -1202,7 +1202,8 @@ class PanchangaService {
       }
     }
 
-    await _verifyElongationJunction(searchStart, targetElongation, location, flags);
+    await _verifyElongationJunction(
+        searchStart, targetElongation, location, flags);
     return searchStart;
   }
 

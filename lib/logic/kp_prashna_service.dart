@@ -49,8 +49,14 @@ class KPPrashnaService {
     );
 
     // Gather signified houses
-    final subLordSignified = _getSignifiedHousesForPlanetEnum(subLordPlanetEnum, nativeKPData);
-    final starLordSignified = _getSignifiedHousesForPlanetEnum(subLordStarLordEnum, nativeKPData);
+    final subLordSignified = _getSignifiedHousesForPlanetEnum(
+      subLordPlanetEnum,
+      nativeKPData,
+    );
+    final starLordSignified = _getSignifiedHousesForPlanetEnum(
+      subLordStarLordEnum,
+      nativeKPData,
+    );
 
     // Evaluate verdict
     var favorableCount = 0;
@@ -108,8 +114,14 @@ class KPPrashnaService {
           houseName: 'House $houseNum Cusp',
           cuspSubLord: sl,
           subLordStarLord: stL,
-          subLordSignifiedHouses: _getSignifiedHousesForPlanetEnum(slEnum, nativeKPData),
-          starLordSignifiedHouses: _getSignifiedHousesForPlanetEnum(stLEnum, nativeKPData),
+          subLordSignifiedHouses: _getSignifiedHousesForPlanetEnum(
+            slEnum,
+            nativeKPData,
+          ),
+          starLordSignifiedHouses: _getSignifiedHousesForPlanetEnum(
+            stLEnum,
+            nativeKPData,
+          ),
         ),
       );
     }
@@ -146,7 +158,10 @@ class KPPrashnaService {
     );
   }
 
-  List<int> _getSignifiedHousesForPlanetEnum(Planet planet, KPCalculations nativeKPData) {
+  List<int> _getSignifiedHousesForPlanetEnum(
+    Planet planet,
+    KPCalculations nativeKPData,
+  ) {
     final sigs = nativeKPData.planetSignificators[planet];
     if (sigs != null && sigs.allSignificators.isNotEmpty) {
       final houses = sigs.allSignificators.toList()..sort();

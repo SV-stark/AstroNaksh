@@ -41,16 +41,40 @@ void main() {
       expect(gunaScores.nadi, inInclusiveRange(0, 8));
       expect(gunaScores.total, inInclusiveRange(0.0, 36.0));
 
-      final analysis = ChartComparison.analyzeCompatibility(boyChart, girlChart);
+      final analysis = ChartComparison.analyzeCompatibility(
+        boyChart,
+        girlChart,
+      );
       expect(analysis.nakshatraAnalysis.totalScore, equals(gunaScores.total));
-      expect(analysis.nakshatraAnalysis.varna, equals(gunaScores.varna.toDouble()));
-      expect(analysis.nakshatraAnalysis.vashya, equals(gunaScores.vashya.toDouble()));
+      expect(
+        analysis.nakshatraAnalysis.varna,
+        equals(gunaScores.varna.toDouble()),
+      );
+      expect(
+        analysis.nakshatraAnalysis.vashya,
+        equals(gunaScores.vashya.toDouble()),
+      );
       expect(analysis.nakshatraAnalysis.tara, equals(gunaScores.tara));
-      expect(analysis.nakshatraAnalysis.yoni, equals(gunaScores.yoni.toDouble()));
-      expect(analysis.nakshatraAnalysis.maitri, equals(gunaScores.grahaMaitri.toDouble()));
-      expect(analysis.nakshatraAnalysis.gana, equals(gunaScores.gana.toDouble()));
-      expect(analysis.nakshatraAnalysis.bhakoot, equals(gunaScores.bhakoot.toDouble()));
-      expect(analysis.nakshatraAnalysis.nadi, equals(gunaScores.nadi.toDouble()));
+      expect(
+        analysis.nakshatraAnalysis.yoni,
+        equals(gunaScores.yoni.toDouble()),
+      );
+      expect(
+        analysis.nakshatraAnalysis.maitri,
+        equals(gunaScores.grahaMaitri.toDouble()),
+      );
+      expect(
+        analysis.nakshatraAnalysis.gana,
+        equals(gunaScores.gana.toDouble()),
+      );
+      expect(
+        analysis.nakshatraAnalysis.bhakoot,
+        equals(gunaScores.bhakoot.toDouble()),
+      );
+      expect(
+        analysis.nakshatraAnalysis.nadi,
+        equals(gunaScores.nadi.toDouble()),
+      );
     });
 
     test('Same Moon Sign and Nakshatra yields high compatibility', () {

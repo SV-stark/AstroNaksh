@@ -139,7 +139,8 @@ class VedicClockCard extends StatefulWidget {
 
 class _VedicClockCardState extends State<VedicClockCard>
     with SingleTickerProviderStateMixin {
-  int _selectedTab = 0; // 0: Live Chronometer, 1: Converter, 2: Vedic Units Guide
+  int _selectedTab =
+      0; // 0: Live Chronometer, 1: Converter, 2: Vedic Units Guide
   VedicTime? _currentVedicTime;
   DateTime _currentTime = DateTime.now();
   bool _isLoading = true;
@@ -152,17 +153,23 @@ class _VedicClockCardState extends State<VedicClockCard>
   DateTime? _convertedGregorian;
 
   // Gregorian to Vedic Converter State
-  DateTime _selectedGregTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 12, 0);
+  DateTime _selectedGregTime = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+    12,
+    0,
+  );
   VedicTime? _convertedVedic;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
   GeographicLocation get _location => GeographicLocation(
-        latitude: widget.latitude,
-        longitude: widget.longitude,
-        altitude: 0,
-      );
+    latitude: widget.latitude,
+    longitude: widget.longitude,
+    altitude: 0,
+  );
 
   @override
   void initState() {
@@ -230,9 +237,12 @@ class _VedicClockCardState extends State<VedicClockCard>
     final vt = _currentVedicTime;
     if (vt == null) return;
     final totalDuration = vt.nextSunrise.difference(vt.currentSunrise);
-    final totalGhatis = _convGhati + (_convVighati / 60.0) + (_convLipta / 3600.0);
+    final totalGhatis =
+        _convGhati + (_convVighati / 60.0) + (_convLipta / 3600.0);
     final elapsedMs = (totalGhatis / 60.0) * totalDuration.inMilliseconds;
-    final converted = vt.currentSunrise.add(Duration(milliseconds: elapsedMs.round()));
+    final converted = vt.currentSunrise.add(
+      Duration(milliseconds: elapsedMs.round()),
+    );
     setState(() => _convertedGregorian = converted);
   }
 
@@ -367,7 +377,9 @@ class _VedicClockCardState extends State<VedicClockCard>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppStyles.primaryColor.withValues(alpha: 0.45 * _pulseAnimation.value),
+                      AppStyles.primaryColor.withValues(
+                        alpha: 0.45 * _pulseAnimation.value,
+                      ),
                       const Color(0xFF7B2CBF).withValues(alpha: 0.4),
                     ],
                     begin: Alignment.topLeft,
@@ -380,7 +392,9 @@ class _VedicClockCardState extends State<VedicClockCard>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppStyles.primaryColor.withValues(alpha: 0.3 * _pulseAnimation.value),
+                      color: AppStyles.primaryColor.withValues(
+                        alpha: 0.3 * _pulseAnimation.value,
+                      ),
                       blurRadius: 16,
                       spreadRadius: 2,
                     ),
@@ -414,7 +428,10 @@ class _VedicClockCardState extends State<VedicClockCard>
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1.5,
+                      ),
                       decoration: BoxDecoration(
                         color: AppStyles.primaryColor.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(4),
@@ -479,7 +496,9 @@ class _VedicClockCardState extends State<VedicClockCard>
                         color: const Color(0xFF00F5D4),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF00F5D4).withValues(alpha: _pulseAnimation.value),
+                            color: const Color(
+                              0xFF00F5D4,
+                            ).withValues(alpha: _pulseAnimation.value),
                             blurRadius: 8,
                             spreadRadius: 2,
                           ),
@@ -658,11 +677,7 @@ class _VedicClockCardState extends State<VedicClockCard>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const RadialGradient(
-          colors: [
-            Color(0xFF1E1438),
-            Color(0xFF120B24),
-            Color(0xFF0A0614),
-          ],
+          colors: [Color(0xFF1E1438), Color(0xFF120B24), Color(0xFF0A0614)],
         ),
         border: Border.all(
           color: AppStyles.primaryColor.withValues(alpha: 0.6),
@@ -738,7 +753,11 @@ class _VedicClockCardState extends State<VedicClockCard>
             children: [
               Row(
                 children: [
-                  const Icon(FluentIcons.clock, size: 14, color: Colors.white70),
+                  const Icon(
+                    FluentIcons.clock,
+                    size: 14,
+                    color: Colors.white70,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Gregorian Clock: ${_fmtTime(_currentTime)}',
@@ -816,17 +835,12 @@ class _VedicClockCardState extends State<VedicClockCard>
               fontFamily: 'monospace',
               letterSpacing: 1.2,
               shadows: [
-                Shadow(
-                  color: color.withValues(alpha: 0.7),
-                  blurRadius: 10,
-                ),
+                Shadow(color: color.withValues(alpha: 0.7), blurRadius: 10),
               ],
             ),
           ),
           const SizedBox(height: 6),
-          ProgressBar(
-            value: (progress * 100).clamp(0.0, 100.0),
-          ),
+          ProgressBar(value: (progress * 100).clamp(0.0, 100.0)),
         ],
       ),
     );
@@ -854,7 +868,9 @@ class _VedicClockCardState extends State<VedicClockCard>
                   Icon(
                     isDaytime ? FluentIcons.sunny : FluentIcons.clear_night,
                     size: 14,
-                    color: isDaytime ? const Color(0xFFFFB703) : const Color(0xFF90E0EF),
+                    color: isDaytime
+                        ? const Color(0xFFFFB703)
+                        : const Color(0xFF90E0EF),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -939,10 +955,7 @@ class _VedicClockCardState extends State<VedicClockCard>
               Expanded(
                 child: Text(
                   'Energy: ${prahar.energy}',
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: Colors.white60, fontSize: 11),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -1076,17 +1089,27 @@ class _VedicClockCardState extends State<VedicClockCard>
                 // Steppers
                 Row(
                   children: [
-                    _modernNumberStepper('GHATI (0-59)', _convGhati, 0, 59, (v) {
+                    _modernNumberStepper('GHATI (0-59)', _convGhati, 0, 59, (
+                      v,
+                    ) {
                       setState(() => _convGhati = v);
                       _convertVedicToGregorian();
                     }),
                     const SizedBox(width: 8),
-                    _modernNumberStepper('VIGHATI (0-59)', _convVighati, 0, 59, (v) {
-                      setState(() => _convVighati = v);
-                      _convertVedicToGregorian();
-                    }),
+                    _modernNumberStepper(
+                      'VIGHATI (0-59)',
+                      _convVighati,
+                      0,
+                      59,
+                      (v) {
+                        setState(() => _convVighati = v);
+                        _convertVedicToGregorian();
+                      },
+                    ),
                     const SizedBox(width: 8),
-                    _modernNumberStepper('LIPTA (0-59)', _convLipta, 0, 59, (v) {
+                    _modernNumberStepper('LIPTA (0-59)', _convLipta, 0, 59, (
+                      v,
+                    ) {
                       setState(() => _convLipta = v);
                       _convertVedicToGregorian();
                     }),
@@ -1111,7 +1134,10 @@ class _VedicClockCardState extends State<VedicClockCard>
                 if (_convertedGregorian != null) ...[
                   const SizedBox(height: 14),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -1124,7 +1150,11 @@ class _VedicClockCardState extends State<VedicClockCard>
                     ),
                     child: Row(
                       children: [
-                        const Icon(FluentIcons.event, color: AppStyles.primaryColor, size: 16),
+                        const Icon(
+                          FluentIcons.event,
+                          color: AppStyles.primaryColor,
+                          size: 16,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
@@ -1217,7 +1247,10 @@ class _VedicClockCardState extends State<VedicClockCard>
                 if (_convertedVedic != null) ...[
                   const SizedBox(height: 14),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -1230,7 +1263,11 @@ class _VedicClockCardState extends State<VedicClockCard>
                     ),
                     child: Row(
                       children: [
-                        const Icon(FluentIcons.timer, color: Color(0xFF00F5D4), size: 16),
+                        const Icon(
+                          FluentIcons.timer,
+                          color: Color(0xFF00F5D4),
+                          size: 16,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
@@ -1333,7 +1370,9 @@ class _VedicClockCardState extends State<VedicClockCard>
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: value > min ? 0.12 : 0.03),
+                      color: Colors.white.withValues(
+                        alpha: value > min ? 0.12 : 0.03,
+                      ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
@@ -1361,7 +1400,9 @@ class _VedicClockCardState extends State<VedicClockCard>
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: value < max ? 0.12 : 0.03),
+                      color: Colors.white.withValues(
+                        alpha: value < max ? 0.12 : 0.03,
+                      ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
@@ -1394,7 +1435,11 @@ class _VedicClockCardState extends State<VedicClockCard>
           children: [
             const Row(
               children: [
-                Icon(FluentIcons.education, color: AppStyles.primaryColor, size: 16),
+                Icon(
+                  FluentIcons.education,
+                  color: AppStyles.primaryColor,
+                  size: 16,
+                ),
                 SizedBox(width: 8),
                 Text(
                   'Vedic Time Measurement Hierarchy (काल-मान)',
@@ -1407,15 +1452,51 @@ class _VedicClockCardState extends State<VedicClockCard>
               ],
             ),
             const SizedBox(height: 12),
-            _unitRow('1 Truti (त्रुटि)', '29.62 microseconds', 'Base atomic quantum of time'),
-            _unitRow('1 Tatpara (तत्पर)', '100 Trutis (~2.96 ms)', 'Solar ray vibration'),
-            _unitRow('1 Nimesha (निमेष)', '30 Tatparas (~0.213 s)', 'Blink of an eye'),
-            _unitRow('1 Kashta (काष्ठा)', '15 Nimeshas (~3.2 s)', 'Breath cadence'),
-            _unitRow('1 Kala (कला)', '30 Kashtas (~1.6 minutes)', 'Micro-cycle'),
-            _unitRow('1 Ghatika / Ghati (घटी)', '60 Vighatis = 24 minutes', '1/60th of a full solar day'),
-            _unitRow('1 Muhurta (मुहूर्त)', '2 Ghatis = 48 minutes', 'Core astrological window'),
-            _unitRow('1 Prahar / Yama (प्रहर)', '7.5 Ghatis = 3 hours', '1/8th quadrant of Ahoratra'),
-            _unitRow('1 Ahoratra (अहोरात्र)', '60 Ghatis = 24 hours', 'Full day (Sunrise to Sunrise)'),
+            _unitRow(
+              '1 Truti (त्रुटि)',
+              '29.62 microseconds',
+              'Base atomic quantum of time',
+            ),
+            _unitRow(
+              '1 Tatpara (तत्पर)',
+              '100 Trutis (~2.96 ms)',
+              'Solar ray vibration',
+            ),
+            _unitRow(
+              '1 Nimesha (निमेष)',
+              '30 Tatparas (~0.213 s)',
+              'Blink of an eye',
+            ),
+            _unitRow(
+              '1 Kashta (काष्ठा)',
+              '15 Nimeshas (~3.2 s)',
+              'Breath cadence',
+            ),
+            _unitRow(
+              '1 Kala (कला)',
+              '30 Kashtas (~1.6 minutes)',
+              'Micro-cycle',
+            ),
+            _unitRow(
+              '1 Ghatika / Ghati (घटी)',
+              '60 Vighatis = 24 minutes',
+              '1/60th of a full solar day',
+            ),
+            _unitRow(
+              '1 Muhurta (मुहूर्त)',
+              '2 Ghatis = 48 minutes',
+              'Core astrological window',
+            ),
+            _unitRow(
+              '1 Prahar / Yama (प्रहर)',
+              '7.5 Ghatis = 3 hours',
+              '1/8th quadrant of Ahoratra',
+            ),
+            _unitRow(
+              '1 Ahoratra (अहोरात्र)',
+              '60 Ghatis = 24 hours',
+              'Full day (Sunrise to Sunrise)',
+            ),
           ],
         ),
       ),
@@ -1453,10 +1534,7 @@ class _VedicClockCardState extends State<VedicClockCard>
           Expanded(
             child: Text(
               desc,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Colors.white60, fontSize: 11),
             ),
           ),
         ],
@@ -1474,8 +1552,18 @@ class _VedicClockCardState extends State<VedicClockCard>
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }
@@ -1542,7 +1630,9 @@ class _CyberVedicDialPainter extends CustomPainter {
       final tickLength = isQuadrant ? 10.0 : (isMajor ? 6.0 : 3.0);
       tickPaint.color = isQuadrant
           ? primaryColor
-          : (isMajor ? Colors.white.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.2));
+          : (isMajor
+                ? Colors.white.withValues(alpha: 0.6)
+                : Colors.white.withValues(alpha: 0.2));
       tickPaint.strokeWidth = isQuadrant ? 2.0 : (isMajor ? 1.5 : 0.8);
 
       final outer = Offset(
@@ -1583,7 +1673,10 @@ class _CyberVedicDialPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(
         canvas,
-        Offset(textOffset.dx - textPainter.width / 2, textOffset.dy - textPainter.height / 2),
+        Offset(
+          textOffset.dx - textPainter.width / 2,
+          textOffset.dy - textPainter.height / 2,
+        ),
       );
     });
 
@@ -1602,7 +1695,8 @@ class _CyberVedicDialPainter extends CustomPainter {
     canvas.drawLine(center, ghatiHandEnd, ghatiHandPaint);
 
     // 5. Draw Vighati Hand (Minute equivalent - 60 Vighatis per Ghati)
-    final vighatiAngle = -math.pi / 2 + ((time.vighati + time.lipta / 60.0) * 2 * math.pi / 60);
+    final vighatiAngle =
+        -math.pi / 2 + ((time.vighati + time.lipta / 60.0) * 2 * math.pi / 60);
     final vighatiHandLength = radius * 0.70;
     final vighatiHandPaint = Paint()
       ..color = accentColor

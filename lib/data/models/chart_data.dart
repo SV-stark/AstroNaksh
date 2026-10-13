@@ -1,4 +1,3 @@
-import 'package:jyotish/analysis.dart';
 import 'package:jyotish/core.dart';
 
 import 'dasha.dart';

@@ -34,9 +34,8 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/rashiphal',
-      builder: (context, state) => RashiphalScreen(
-        initialSignIndex: state.extra as int?,
-      ),
+      builder: (context, state) =>
+          RashiphalScreen(initialSignIndex: state.extra as int?),
     ),
     GoRoute(
       path: '/settings',
@@ -75,16 +74,15 @@ final router = GoRouter(
     GoRoute(
       path: '/kp-prashna',
       builder: (context, state) => KPPrashnaAssistantScreen(
-        initialLocation: (state.extra as GeographicLocation?) ??
-            GeographicLocation(latitude: 28.6139, longitude: 77.2090),
+        initialLocation:
+            (state.extra as GeographicLocation?) ??
+            const GeographicLocation(latitude: 28.6139, longitude: 77.2090),
       ),
     ),
     GoRoute(
       path: '/sarvatobhadra',
-      builder: (context, state) => SarvatobhadraScreen(
-        chartData: state.extra as CompleteChartData?,
-      ),
+      builder: (context, state) =>
+          SarvatobhadraScreen(chartData: state.extra as CompleteChartData?),
     ),
   ],
 );
-

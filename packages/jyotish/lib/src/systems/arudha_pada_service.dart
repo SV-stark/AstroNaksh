@@ -210,12 +210,10 @@ class ArudhaPadaService {
       chart.rahu.longitude,
       chart.ketu.longitude,
     ];
-    final planets1 = allLongitudes
-        .where((lng) => Rashi.fromLongitude(lng) == sign1)
-        .length;
-    final planets2 = allLongitudes
-        .where((lng) => Rashi.fromLongitude(lng) == sign2)
-        .length;
+    final planets1 =
+        allLongitudes.where((lng) => Rashi.fromLongitude(lng) == sign1).length;
+    final planets2 =
+        allLongitudes.where((lng) => Rashi.fromLongitude(lng) == sign2).length;
 
     // Rule 1: the lord that is ALONE is stronger.
     //

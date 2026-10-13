@@ -86,11 +86,12 @@ class ShadbalaService {
 
     // Calculate total Shadbala
     final totalBala = (sthanaBala +
-        digBala +
-        kalaBala +
-        chestaBala +
-        naisargikaBala +
-        drikBala).clamp(0.0, double.infinity);
+            digBala +
+            kalaBala +
+            chestaBala +
+            naisargikaBala +
+            drikBala)
+        .clamp(0.0, double.infinity);
 
     // Determine strength category
     final strengthCategory = _getStrengthCategory(totalBala, planet);
@@ -339,7 +340,9 @@ class ShadbalaService {
     final (signIndex, from, to) = range;
     final degreeInSign = ((longitude % 360.0) % 30.0);
     final currentSign = ((longitude % 360.0) / 30.0).floor() % 12;
-    return currentSign == signIndex && degreeInSign >= from && degreeInSign < to;
+    return currentSign == signIndex &&
+        degreeInSign >= from &&
+        degreeInSign < to;
   }
 
   /// Natural (Naisargika) friendship from [planet] towards [other].

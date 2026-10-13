@@ -201,7 +201,9 @@ class KPService {
       }
     }
 
-    return dashaPeriods[(startIndex + dashaPeriods.length - 1) % dashaPeriods.length].$1;
+    return dashaPeriods[
+            (startIndex + dashaPeriods.length - 1) % dashaPeriods.length]
+        .$1;
   }
 
   /// Calculates the Sub-Sub-Lord for a given longitude.

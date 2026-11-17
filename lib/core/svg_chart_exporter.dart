@@ -1,10 +1,52 @@
 import 'dart:io';
+import 'package:jyotish/analysis.dart' as j_analysis;
+import 'package:jyotish/core.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// SVG chart export service (E8).
-/// Generates scalable SVG representations of North Indian charts
-/// for high-quality print and web sharing.
+/// Generates scalable SVG representations of charts
+/// for high-quality print and web sharing using both custom layout
+/// and the native [VedicChartRenderer] engine.
 class SvgChartExporter {
+  /// Generates scalable vector SVG directly from a [VedicChart] using
+  /// the native [VedicChartRenderer] engine.
+  static String fromVedicChart(
+    VedicChart chart, {
+    j_analysis.ChartStyle style = j_analysis.ChartStyle.northIndian,
+    double width = 500,
+    double height = 500,
+    bool darkTheme = false,
+  }) {
+    return chart.toSVG(
+      style: style,
+      width: width,
+      height: height,
+      darkTheme: darkTheme,
+    );
+  }
+
+  /// Export a [VedicChart] SVG string to a file and return the saved File.
+  static Future<File> saveVedicChartSvg(
+    VedicChart chart, {
+    j_analysis.ChartStyle style = j_analysis.ChartStyle.northIndian,
+    double width = 500,
+    double height = 500,
+    bool darkTheme = false,
+    String fileName = 'chart.svg',
+  }) async {
+    final svg = fromVedicChart(
+      chart,
+      style: style,
+      width: width,
+      height: height,
+      darkTheme: darkTheme,
+    );
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsString(svg);
+    return file;
+  }
+
   static const _signNames = [
     'Ari',
     'Tau',

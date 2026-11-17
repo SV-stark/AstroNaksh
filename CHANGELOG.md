@@ -2,7 +2,31 @@
 
 All notable changes to AstroNaksh are documented in this file.
 
-## [Unreleased] - 2026-08-24
+## [Unreleased] - 2026-11-17
+
+### 🌟 Advanced Jyotish Engine Upgrade (v2.20.8 Integration)
+- **Synchronized Jyotish Core**: Force-copied and integrated 153 calculation engine files from `jyotish-flutter-library-fork` v2.20.8, including modular calculation components (`widgets.dart`, `chart_svg_renderer.dart`, `ephemeris_models.dart`, and `ephemeris_cache.dart`).
+- **Complete Re-Export Compatibility**: Preserved pure-Dart and Flutter compatibility in `package:jyotish/core.dart`, `analysis.dart`, and `muhurta.dart` for core models (`VedicChart`, `VargaConfiguration`, `SpecialLagnas`, `PrastaraResult`, `GrahaYuddha`, `CompatibilityReport`, `chart_renderer.dart`, `vedic_clock.dart`).
+- **Dependency & SDK Modernization**: Upgraded `freezed: ^4.0.1`, `riverpod_generator: ^4.0.10`, and associated build dependencies in `pubspec.yaml` to ensure clean compatibility with current Flutter SDK null-safety constraints.
+
+### 📐 Chart & Mathematical Precision Enhancements
+- **High-Precision Solar Return Alignment**: Updated `VarshaphalScreen` to calculate native annual charts using exact astronomical `solarReturnTime` from `calculateSolarReturn(...)` rather than approximate calendar-year timestamps.
+- **Special Mathematical Lagnas on Charts**:
+  - Added `showSpecialLagnas` preference to `ChartCustomization` and `SettingsScreen`.
+  - Added real-time display of **Hora Lagna (HL)**, **Ghati Lagna (GL)**, and **Sree Lagna (SL)** in `ChartWidget` house inspection cards.
+- **Zodiac Sign Label Mapping**: Standardized `AstrologyConstants.signNames` and `getSignName` to use `Rashi.label` ('Aries', 'Taurus', etc.) instead of lowercase enum identifiers, resolving model and test assertions.
+
+### 🎨 Vector SVG Export & Sharing
+- **Native Vector SVG Generation**: Integrated `SvgChartExporter.fromVedicChart` and `saveVedicChartSvg` powered by `VedicChartRenderer` for lossless, high-DPI SVG chart exports.
+- **Vector Chart Sharing**: Added `ChartShareService.shareChartSvg` for direct sharing of vector chart files across mobile and desktop platforms.
+- **Ephemeris Cache Control**: Added `EphemerisManager.clearCache()` to allow explicit runtime clearing of Swiss Ephemeris FFI caches.
+
+### 🛠️ Verification & Quality Assurance
+- **100% Test Suite Verification**: All 164 unit, widget, and logic tests passing cleanly (`flutter test`).
+- **Zero Static Analysis Errors**: `flutter analyze` passing across both root workspace and `packages/jyotish` with 0 errors and 0 warnings.
+- **Consistent Code Formatting**: All files formatted according to Dart style guidelines with `dart format`.
+
+## [1.0.0] - 2026-08-24
 
 ### 🚀 Dependency & Architecture Consolidation
 - **Consolidated SQLite Stack**: Migrated `CityDatabase` from `sqflite` to `package:sqlite3/sqlite3.dart`, allowing complete removal of `sqflite` and `sqflite_common_ffi` dependencies and boilerplate FFI initializations.

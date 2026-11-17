@@ -215,6 +215,40 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
           'retrograde': true,
         });
       }
+
+      final sl = widget.completeData?.specialLagnas;
+      if (sl != null) {
+        final hlSign = (sl.horaLagna / 30).floor() + 1;
+        if (hlSign == signNumber) {
+          list.add({
+            'name': 'HL (Hora Lagna)',
+            'degree': sl.horaLagna % 30,
+            'nakshatra': null,
+            'nakLord': null,
+            'retrograde': false,
+          });
+        }
+        final glSign = (sl.ghatiLagna / 30).floor() + 1;
+        if (glSign == signNumber) {
+          list.add({
+            'name': 'GL (Ghati Lagna)',
+            'degree': sl.ghatiLagna % 30,
+            'nakshatra': null,
+            'nakLord': null,
+            'retrograde': false,
+          });
+        }
+        final sreeSign = (sl.sreeLagna / 30).floor() + 1;
+        if (sreeSign == signNumber) {
+          list.add({
+            'name': 'SL (Sree Lagna)',
+            'degree': sl.sreeLagna % 30,
+            'nakshatra': null,
+            'nakLord': null,
+            'retrograde': false,
+          });
+        }
+      }
     } else if (widget.divisionalChart != null) {
       widget.divisionalChart!.positions.forEach((planetName, longitude) {
         final pSign = (longitude / 30).floor() + 1;

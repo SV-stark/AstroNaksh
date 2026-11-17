@@ -37,9 +37,35 @@ jobs:
       - name: Provision Ephemeris test fixtures
         run: |
           mkdir -p ephe
-          curl -s -L -o ephe/seas_18.se1 https://www.astro.com/ftp/swisseph/ephe/seas_18.se1 || true
-          curl -s -L -o ephe/semo_18.se1 https://www.astro.com/ftp/swisseph/ephe/semo_18.se1 || true
-          curl -s -L -o ephe/sepl_18.se1 https://www.astro.com/ftp/swisseph/ephe/sepl_18.se1 || true
+          curl -sfL -o ephe/seas_18.se1 https://www.astro.com/ftp/swisseph/ephe/seas_18.se1
+          curl -sfL -o ephe/semo_18.se1 https://www.astro.com/ftp/swisseph/ephe/semo_18.se1
+          curl -sfL -o ephe/sepl_18.se1 https://www.astro.com/ftp/swisseph/ephe/sepl_18.se1
+
+      - name: Run unit tests
+        run: flutter test --no-pub
+
+  windows-tests:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Provision Ephemeris test fixtures
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ephe | Out-Null
+          curl.exe -sfL -o ephe/seas_18.se1 https://www.astro.com/ftp/swisseph/ephe/seas_18.se1
+          curl.exe -sfL -o ephe/semo_18.se1 https://www.astro.com/ftp/swisseph/ephe/semo_18.se1
+          curl.exe -sfL -o ephe/sepl_18.se1 https://www.astro.com/ftp/swisseph/ephe/sepl_18.se1
 
       - name: Run unit tests
         run: flutter test --no-pub

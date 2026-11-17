@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:jyotish/src/models/calculation_flags.dart';
 import 'package:jyotish/src/models/geographic_location.dart';
 import 'package:jyotish/src/panchanga/nakshatra.dart';
@@ -80,11 +81,15 @@ class PanchangaService {
 
     final moonrise = moonriseUtc != null
         ? AstrologyTimeService.utcToLocal(
-            moonriseUtc, location.timezone ?? 'UTC')
+            moonriseUtc,
+            location.timezone ?? 'UTC',
+          )
         : null;
     final moonset = moonsetUtc != null
         ? AstrologyTimeService.utcToLocal(
-            moonsetUtc, location.timezone ?? 'UTC')
+            moonsetUtc,
+            location.timezone ?? 'UTC',
+          )
         : null;
 
     return Panchanga(
@@ -249,7 +254,10 @@ class PanchangaService {
   ///
   /// In Vedic astrology, the day begins at sunrise.
   VaraInfo _calculateVara(
-      DateTime dateTime, DateTime sunrise, String timezoneId) {
+    DateTime dateTime,
+    DateTime sunrise,
+    String timezoneId,
+  ) {
     // Convert both to UTC to ensure correct chronological comparison
     final utcDateTime = dateTime.isUtc
         ? dateTime
@@ -263,8 +271,10 @@ class PanchangaService {
     }
 
     // Convert checkDate back to local timezone to find local weekday
-    final localCheckDate =
-        AstrologyTimeService.utcToLocal(checkDate, timezoneId);
+    final localCheckDate = AstrologyTimeService.utcToLocal(
+      checkDate,
+      timezoneId,
+    );
     final weekday = localCheckDate.weekday % 7;
 
     return VaraInfo(
@@ -315,20 +325,21 @@ class PanchangaService {
       }
 
       // Convert UTC results to local timezone of the location
-      final localSunrise =
-          AstrologyTimeService.utcToLocal(sunrise, location.timezone ?? 'UTC');
-      final localSunset =
-          AstrologyTimeService.utcToLocal(sunset, location.timezone ?? 'UTC');
+      final localSunrise = AstrologyTimeService.utcToLocal(
+        sunrise,
+        location.timezone ?? 'UTC',
+      );
+      final localSunset = AstrologyTimeService.utcToLocal(
+        sunset,
+        location.timezone ?? 'UTC',
+      );
 
       return (localSunrise, localSunset);
     } catch (e) {
       // If high-precision calculation fails, fall back to polar fallback for polar regions,
       // or standard approximation
       if (isPolarRegion) {
-        return _calculatePolarFallback(
-          dateTime: dateTime,
-          location: location,
-        );
+        return _calculatePolarFallback(dateTime: dateTime, location: location);
       }
       return _calculateApproximateSunriseSunset(
         dateTime: dateTime,
@@ -357,7 +368,8 @@ class PanchangaService {
     final julianCentury = (jd - 2451545.0) / 36525.0;
 
     // Geometric Mean Longitude Sun (deg)
-    final geomMeanLongSun = (280.46646 +
+    final geomMeanLongSun =
+        (280.46646 +
             julianCentury * (36000.76983 + julianCentury * 0.0003032)) %
         360;
 
@@ -366,11 +378,13 @@ class PanchangaService {
         357.52911 + julianCentury * (35999.05029 - 0.0001537 * julianCentury);
 
     // Eccentricity of Earth's Orbit
-    final eccentEarthOrbit = 0.016708634 -
+    final eccentEarthOrbit =
+        0.016708634 -
         julianCentury * (0.000042037 + 0.0000001267 * julianCentury);
 
     // Sun Equation of Center
-    final sunEqOfCtr = math.sin(_degToRad(geomMeanAnomSun)) *
+    final sunEqOfCtr =
+        math.sin(_degToRad(geomMeanAnomSun)) *
             (1.914602 - julianCentury * (0.004817 + 0.000014 * julianCentury)) +
         math.sin(_degToRad(2 * geomMeanAnomSun)) *
             (0.019993 - 0.000101 * julianCentury) +
@@ -380,12 +394,14 @@ class PanchangaService {
     final sunTrueLong = geomMeanLongSun + sunEqOfCtr;
 
     // Sun Apparent Longitude (deg)
-    final sunAppLong = sunTrueLong -
+    final sunAppLong =
+        sunTrueLong -
         0.00569 -
         0.00478 * math.sin(_degToRad(125.04 - 1934.136 * julianCentury));
 
     // Mean Obliquity of Ecliptic (deg)
-    final meanObliqEcliptic = 23 +
+    final meanObliqEcliptic =
+        23 +
         (26 +
                 ((21.448 -
                         julianCentury *
@@ -396,7 +412,8 @@ class PanchangaService {
             60;
 
     // Obliquity Correction (deg)
-    final obliqCorr = meanObliqEcliptic +
+    final obliqCorr =
+        meanObliqEcliptic +
         0.00256 * math.cos(_degToRad(125.04 - 1934.136 * julianCentury));
 
     // Sun Declination (deg)
@@ -409,7 +426,8 @@ class PanchangaService {
     // Equation of Time (minutes)
     final varY =
         math.tan(_degToRad(obliqCorr / 2)) * math.tan(_degToRad(obliqCorr / 2));
-    final eqOfTime = 4 *
+    final eqOfTime =
+        4 *
         _radToDeg(
           varY * math.sin(2 * _degToRad(geomMeanLongSun)) -
               2 * eccentEarthOrbit * math.sin(_degToRad(geomMeanAnomSun)) +
@@ -428,7 +446,8 @@ class PanchangaService {
     // Hour Angle Calculation (deg)
     // Zenith for sunrise/sunset is 90.833 degrees (90 + 50' refraction/sun size)
     const zenith = 90.833;
-    final haArg = (math.cos(_degToRad(zenith)) /
+    final haArg =
+        (math.cos(_degToRad(zenith)) /
             (math.cos(_degToRad(latitude)) * math.cos(_degToRad(sunDeclin)))) -
         (math.tan(_degToRad(latitude)) * math.tan(_degToRad(sunDeclin)));
 
@@ -450,9 +469,15 @@ class PanchangaService {
     final sunsetTimeUTC = 720 - 4 * (longitude - ha) - eqOfTime;
 
     final sunrise = _minutesToDateTime(
-        baseDate, sunriseTimeUTC, location.timezone ?? 'UTC');
-    final sunset =
-        _minutesToDateTime(baseDate, sunsetTimeUTC, location.timezone ?? 'UTC');
+      baseDate,
+      sunriseTimeUTC,
+      location.timezone ?? 'UTC',
+    );
+    final sunset = _minutesToDateTime(
+      baseDate,
+      sunsetTimeUTC,
+      location.timezone ?? 'UTC',
+    );
 
     return (sunrise, sunset);
   }
@@ -480,11 +505,17 @@ class PanchangaService {
       final sunset = localNoon.add(const Duration(hours: 6));
       return (sunrise, sunset);
     } catch (_) {
-      final noon =
-          DateTime(dateTime.year, dateTime.month, dateTime.day, 12, 0, 0);
+      final noon = DateTime(
+        dateTime.year,
+        dateTime.month,
+        dateTime.day,
+        12,
+        0,
+        0,
+      );
       return (
         noon.subtract(const Duration(hours: 6)),
-        noon.add(const Duration(hours: 6))
+        noon.add(const Duration(hours: 6)),
       );
     }
   }
@@ -507,7 +538,10 @@ class PanchangaService {
   double _radToDeg(double rad) => rad * 180.0 / math.pi;
 
   DateTime _minutesToDateTime(
-      DateTime date, double minutesUtc, String timezoneId) {
+    DateTime date,
+    double minutesUtc,
+    String timezoneId,
+  ) {
     var mins = minutesUtc;
     // Handle day wrap around
     int dayOffset = 0;
@@ -558,6 +592,44 @@ class PanchangaService {
     );
 
     return _calculateTithi(sunPos, moonPos);
+  }
+
+  /// Determines whether the Tithi at [date]'s local sunrise is [TithiOccurrenceType.normal],
+  /// [TithiOccurrenceType.adhika] (spans two consecutive sunrises), or
+  /// [TithiOccurrenceType.kshaya] (skipped between today's and tomorrow's sunrise).
+  Future<TithiOccurrenceType> getTithiOccurrenceType({
+    required DateTime date,
+    required GeographicLocation location,
+  }) async {
+    final dayStart = DateTime(date.year, date.month, date.day);
+    final nextDayStart = dayStart.add(const Duration(days: 1));
+
+    final (srToday, _) = await _ephemerisService.getSunriseSunset(
+      date: dayStart,
+      location: location,
+    );
+    final (srTomorrow, _) = await _ephemerisService.getSunriseSunset(
+      date: nextDayStart,
+      location: location,
+    );
+
+    final todayAnchor = srToday ?? dayStart.add(const Duration(hours: 6));
+    final tomorrowAnchor =
+        srTomorrow ?? nextDayStart.add(const Duration(hours: 6));
+
+    final tithiToday = await getTithi(
+      dateTime: todayAnchor,
+      location: location,
+    );
+    final tithiTomorrow = await getTithi(
+      dateTime: tomorrowAnchor,
+      location: location,
+    );
+
+    final delta = (tithiTomorrow.number - tithiToday.number + 30) % 30;
+    if (delta == 0) return TithiOccurrenceType.adhika;
+    if (delta >= 2) return TithiOccurrenceType.kshaya;
+    return TithiOccurrenceType.normal;
   }
 
   /// Gets the Yoga for a specific date.
@@ -1203,7 +1275,11 @@ class PanchangaService {
     }
 
     await _verifyElongationJunction(
-        searchStart, targetElongation, location, flags);
+      searchStart,
+      targetElongation,
+      location,
+      flags,
+    );
     return searchStart;
   }
 

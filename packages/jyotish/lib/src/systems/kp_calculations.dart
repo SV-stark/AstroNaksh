@@ -220,11 +220,11 @@ class KPSignificators {
 
   /// Gets significators by category
   Map<String, List<int>> get significatorMap => {
-        'A': aSignificators,
-        'B': bSignificators,
-        'C': cSignificators,
-        'D': dSignificators,
-      };
+    'A': aSignificators,
+    'B': bSignificators,
+    'C': cSignificators,
+    'D': dSignificators,
+  };
 }
 
 /// KP House grouping significators.
@@ -461,7 +461,8 @@ class KPTransitComparison {
       (commonNatalSignificators.isNotEmpty ? 1 : 0);
 
   @override
-  String toString() => '$planet: subLord ${subLordMatches ? "" : ""} '
+  String toString() =>
+      '$planet: subLord ${subLordMatches ? "" : ""} '
       'starLord ${starLordMatches ? "" : ""} '
       'commonHouses=$commonNatalSignificators';
 }
@@ -550,6 +551,7 @@ class KPRulingPlanets {
   }
 
   @override
-  String toString() => 'KP Ruling Planets (${queryDateTime.toLocal()}): '
+  String toString() =>
+      'KP Ruling Planets (${queryDateTime.toLocal()}): '
       '${rulingPlanets.map((p) => p.name).join(', ')}';
 }

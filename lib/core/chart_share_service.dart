@@ -4,11 +4,13 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:jyotish/core.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../data/models.dart';
 import 'pdf_report_service.dart';
+import 'svg_chart_exporter.dart';
 
 class ChartShareService {
   /// Capture a widget as an image and share it
@@ -79,6 +81,35 @@ class ChartShareService {
       }
     } catch (e) {
       debugPrint('Error sharing PDF: $e');
+      rethrow;
+    }
+  }
+
+  /// Export and share scalable vector SVG representation of the chart
+  static Future<void> shareChartSvg(
+    VedicChart chart, {
+    String filename = 'astronaksh_chart.svg',
+    bool darkTheme = false,
+  }) async {
+    try {
+      final file = await SvgChartExporter.saveVedicChartSvg(
+        chart,
+        fileName: filename,
+        darkTheme: darkTheme,
+      );
+
+      if (await file.exists()) {
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path)],
+            text: 'Scalable Vedic Chart SVG from AstroNaksh',
+          ),
+        );
+      } else {
+        throw Exception('SVG generation failed: File not found');
+      }
+    } catch (e) {
+      debugPrint('Error sharing SVG: $e');
       rethrow;
     }
   }

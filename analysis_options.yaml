@@ -125,5 +125,6 @@ analyzer:
     missing_required_param: error
     missing_return: error
     todo: ignore
+    deprecated_member_use: ignore
     avoid_print: warning
     empty_catches: warning

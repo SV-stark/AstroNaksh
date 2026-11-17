@@ -283,8 +283,10 @@ class Jyotish {
   /// A convenience proxy for [VarshapalService.getCurrentVarshaNumber].
   /// No initialization required — this is a static utility.
   static int getCurrentVarshaNumber(DateTime date, {int? referenceYear}) =>
-      VarshapalService.getCurrentVarshaNumber(date,
-          referenceYear: referenceYear);
+      VarshapalService.getCurrentVarshaNumber(
+        date,
+        referenceYear: referenceYear,
+      );
 
   /// Initializes the Swiss Ephemeris library.
   ///
@@ -349,8 +351,10 @@ class Jyotish {
       _sarvatobhadraService = const SarvatobhadraService();
       _tajakaService = const TajakaService();
       _panchangStrengthService = PanchangStrengthService();
-      _muhurtaScoringService =
-          MuhurtaScoringService(_panchangaService!, _panchangStrengthService!);
+      _muhurtaScoringService = MuhurtaScoringService(
+        _panchangaService!,
+        _panchangStrengthService!,
+      );
       _udayaLagnaService = UdayaLagnaService(_ephemerisService!);
       _ritualService = RitualService();
       _grahaYuddhaService = const GrahaYuddhaService();
@@ -527,14 +531,13 @@ class Jyotish {
     String houseSystem = 'W',
     bool includeOuterPlanets = false,
     CalculationFlags? flags,
-  }) async =>
-      calculateVedicChart(
-        dateTime: dateTime,
-        location: location,
-        houseSystem: houseSystem,
-        includeOuterPlanets: includeOuterPlanets,
-        flags: flags,
-      );
+  }) async => calculateVedicChart(
+    dateTime: dateTime,
+    location: location,
+    houseSystem: houseSystem,
+    includeOuterPlanets: includeOuterPlanets,
+    flags: flags,
+  );
 
   // ============================================================
   // DIVISIONAL CHART CALCULATIONS
@@ -2631,8 +2634,8 @@ class Jyotish {
     final int nakNumber = moonNakshatra is int
         ? moonNakshatra
         : (moonNakshatra != null
-            ? _getNakshatraNumber(moonNakshatra.toString())
-            : 1);
+              ? _getNakshatraNumber(moonNakshatra.toString())
+              : 1);
 
     final Map<Planet, int> resolvedOtherTransits = {};
     otherTransits.forEach((key, value) {
@@ -2728,10 +2731,12 @@ class Jyotish {
     int house2,
   ) {
     _ensureInitialized();
-    final p1 =
-        planet1 is Planet ? planet1 : Planet.fromName(planet1.toString());
-    final p2 =
-        planet2 is Planet ? planet2 : Planet.fromName(planet2.toString());
+    final p1 = planet1 is Planet
+        ? planet1
+        : Planet.fromName(planet1.toString());
+    final p2 = planet2 is Planet
+        ? planet2
+        : Planet.fromName(planet2.toString());
 
     if (p1 == null || p2 == null) return false;
 
@@ -3375,10 +3380,7 @@ class Jyotish {
   }
 
   /// Checks for all doshas (Nadi, Bhakoot, Manglik) between two charts.
-  DoshaCheck checkDoshas(
-    VedicChart boyChart,
-    VedicChart girlChart,
-  ) {
+  DoshaCheck checkDoshas(VedicChart boyChart, VedicChart girlChart) {
     _ensureInitialized();
     return _compatibilityService!.checkDoshas(boyChart, girlChart);
   }
@@ -3529,7 +3531,7 @@ class Jyotish {
   /// print(sunSaturn.compound);  // great enemy / neutral
   /// ```
   Map<Planet, Map<Planet, PlanetaryRelationship>>
-      getPlanetaryRelationshipsMatrix(VedicChart chart) {
+  getPlanetaryRelationshipsMatrix(VedicChart chart) {
     _ensureInitialized();
     return _planetaryRelationshipService!.getAllRelationships(chart);
   }

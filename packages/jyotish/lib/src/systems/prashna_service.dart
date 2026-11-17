@@ -9,7 +9,7 @@ import 'package:jyotish/src/analysis/vedic_chart_service.dart';
 /// Service for Prashna (Horary) astrology calculations.
 class PrashnaService {
   PrashnaService(this._ephemerisService)
-      : _chartService = VedicChartService(_ephemerisService);
+    : _chartService = VedicChartService(_ephemerisService);
   final EphemerisService _ephemerisService;
   final VedicChartService _chartService;
 

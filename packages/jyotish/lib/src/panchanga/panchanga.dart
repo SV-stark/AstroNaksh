@@ -1,6 +1,24 @@
 import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/panchanga/nakshatra.dart';
 
+/// Occurrence classification of a Tithi across consecutive sunrises.
+enum TithiOccurrenceType {
+  /// Standard Tithi — advances by 1 between consecutive sunrises.
+  normal('Normal'),
+
+  /// Adhika Tithi — the same Tithi prevails at two consecutive sunrises.
+  adhika('Adhika (Repeated)'),
+
+  /// Kshaya Tithi — a Tithi begins after today's sunrise and ends before tomorrow's sunrise.
+  kshaya('Kshaya (Omitted)');
+
+  const TithiOccurrenceType(this.displayName);
+  final String displayName;
+
+  @override
+  String toString() => displayName;
+}
+
 /// Represents the five limbs (Panchanga) of a day in Vedic astrology.
 /// Panchanga consists of Tithi, Nakshatra, Yoga, Karana, and Vara (weekday).
 class Panchanga {

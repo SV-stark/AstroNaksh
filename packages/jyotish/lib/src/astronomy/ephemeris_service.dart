@@ -5,6 +5,7 @@ import 'package:ffi/ffi.dart';
 import '../bindings/swisseph_bindings.dart';
 import '../constants/planet_constants.dart';
 import '../exceptions/jyotish_exception.dart';
+
 import 'package:jyotish/src/models/calculation_flags.dart';
 import 'package:jyotish/src/models/geographic_location.dart';
 import 'package:jyotish/src/models/planet.dart';
@@ -13,7 +14,11 @@ import 'package:path/path.dart' as p;
 import 'package:synchronized/synchronized.dart';
 import 'package:jyotish/src/astronomy/planet_position.dart';
 import 'package:jyotish/src/astronomy/astrology_time_service.dart';
+import 'package:jyotish/src/astronomy/ephemeris_cache.dart';
+import 'package:jyotish/src/astronomy/ephemeris_models.dart';
 import 'package:jyotish/src/astronomy/jyotish_compute.dart';
+
+export 'package:jyotish/src/astronomy/ephemeris_models.dart';
 
 /// Service for calculating planetary positions using Swiss Ephemeris.
 ///
@@ -46,39 +51,13 @@ class EphemerisService {
   static final Logger _log = Logger('jyotish.EphemerisService');
 
   // Calculation Caches
-  final Map<String, PlanetPosition> _planetPositionCache = {};
-  final Map<String, (DateTime? sunrise, DateTime? sunset)> _sunriseSunsetCache =
-      {};
-  final Map<String, Map<String, List<double>>> _housesCache = {};
   static const int _maxCacheSize = 5000;
-
-  void _putInPlanetPositionCache(String key, PlanetPosition value) {
-    if (_planetPositionCache.containsKey(key)) {
-      _planetPositionCache.remove(key);
-    } else if (_planetPositionCache.length >= _maxCacheSize) {
-      _planetPositionCache.remove(_planetPositionCache.keys.first);
-    }
-    _planetPositionCache[key] = value;
-  }
-
-  void _putInSunriseSunsetCache(
-      String key, (DateTime? sunrise, DateTime? sunset) value) {
-    if (_sunriseSunsetCache.containsKey(key)) {
-      _sunriseSunsetCache.remove(key);
-    } else if (_sunriseSunsetCache.length >= _maxCacheSize) {
-      _sunriseSunsetCache.remove(_sunriseSunsetCache.keys.first);
-    }
-    _sunriseSunsetCache[key] = value;
-  }
-
-  void _putInHousesCache(String key, Map<String, List<double>> value) {
-    if (_housesCache.containsKey(key)) {
-      _housesCache.remove(key);
-    } else if (_housesCache.length >= _maxCacheSize) {
-      _housesCache.remove(_housesCache.keys.first);
-    }
-    _housesCache[key] = value;
-  }
+  final EphemerisCache<String, PlanetPosition> _planetPositionCache =
+      EphemerisCache(maxSize: _maxCacheSize);
+  final EphemerisCache<String, (DateTime? sunrise, DateTime? sunset)>
+  _sunriseSunsetCache = EphemerisCache(maxSize: _maxCacheSize);
+  final EphemerisCache<String, Map<String, List<double>>> _housesCache =
+      EphemerisCache(maxSize: _maxCacheSize);
 
   /// Clears all calculation caches.
   void clearCache() {
@@ -158,11 +137,8 @@ class EphemerisService {
 
     final cacheKey =
         '${planet.name}_${dateTime.millisecondsSinceEpoch}_${location.timezone}_${location.latitude.toStringAsFixed(6)}_${location.longitude.toStringAsFixed(6)}_${location.altitude.toStringAsFixed(2)}_${flags.hashCode}';
-    if (_planetPositionCache.containsKey(cacheKey)) {
-      final cached = _planetPositionCache.remove(cacheKey)!;
-      _planetPositionCache[cacheKey] = cached;
-      return cached;
-    }
+    final cached = _planetPositionCache.get(cacheKey);
+    if (cached != null) return cached;
 
     final result = await _calculationLock.synchronized(() async {
       try {
@@ -193,8 +169,8 @@ class EphemerisService {
           // We calculate Rahu (Node) and add 180 degrees to get Ketu.
           final targetPlanet = planet == Planet.ketu
               ? (flags.nodeType == NodeType.trueNode
-                  ? Planet.trueNode
-                  : Planet.meanNode)
+                    ? Planet.trueNode
+                    : Planet.meanNode)
               : planet;
 
           final results = _bindings!.calculateUT(
@@ -267,7 +243,7 @@ class EphemerisService {
       }
     });
 
-    _putInPlanetPositionCache(cacheKey, result);
+    _planetPositionCache.put(cacheKey, result);
     return result;
   }
 
@@ -279,7 +255,8 @@ class EphemerisService {
         : dateTime.toUtc();
 
     // Calculate hour as decimal
-    final hour = utc.hour +
+    final hour =
+        utc.hour +
         (utc.minute / 60.0) +
         (utc.second / 3600.0) +
         (utc.millisecond / 3600000.0);
@@ -398,11 +375,8 @@ class EphemerisService {
 
     final cacheKey =
         '${dateTime.millisecondsSinceEpoch}_${location.timezone}_${location.latitude.toStringAsFixed(6)}_${location.longitude.toStringAsFixed(6)}_${location.altitude.toStringAsFixed(2)}_$houseSystem';
-    if (_housesCache.containsKey(cacheKey)) {
-      final cached = _housesCache.remove(cacheKey)!;
-      _housesCache[cacheKey] = cached;
-      return cached;
-    }
+    final cached = _housesCache.get(cacheKey);
+    if (cached != null) return cached;
 
     final result = await _calculationLock.synchronized(() async {
       try {
@@ -434,7 +408,7 @@ class EphemerisService {
       }
     });
 
-    _putInHousesCache(cacheKey, result);
+    _housesCache.put(cacheKey, result);
     return result;
   }
 
@@ -516,7 +490,8 @@ class EphemerisService {
             // failure at high latitude (bad ephemeris data, parse error, empty
             // error buffer) as "circumpolar", converting real errors into a
             // bogus result via the caller's +/-6 h noon approximation.
-            final isCircumpolar = normalizedError.contains('circumpolar') ||
+            final isCircumpolar =
+                normalizedError.contains('circumpolar') ||
                 normalizedError.contains('always') ||
                 normalizedError.contains('no rise') ||
                 normalizedError.contains('no set') ||
@@ -564,16 +539,13 @@ class EphemerisService {
   }) async {
     // Key on the calendar day only: getRiseSet anchors its search at
     // midnight of `date`, so the result depends on Y/M/D plus the location
-    // and refraction inputs — never on the wall-clock time. Including
+    // and refraction inputs â€” never on the wall-clock time. Including
     // millisecondsSinceEpoch made every same-day call with a different time
     // a guaranteed cache miss.
     final cacheKey =
         '${date.year}-${date.month}-${date.day}_${location.timezone}_${location.latitude.toStringAsFixed(6)}_${location.longitude.toStringAsFixed(6)}_${location.altitude.toStringAsFixed(2)}_${atpress.toStringAsFixed(2)}_${attemp.toStringAsFixed(2)}';
-    if (_sunriseSunsetCache.containsKey(cacheKey)) {
-      final cached = _sunriseSunsetCache.remove(cacheKey)!;
-      _sunriseSunsetCache[cacheKey] = cached;
-      return cached;
-    }
+    final cached = _sunriseSunsetCache.get(cacheKey);
+    if (cached != null) return cached;
 
     final sunrise = await getRiseSet(
       planet: Planet.sun,
@@ -594,7 +566,7 @@ class EphemerisService {
     );
 
     final result = (sunrise, sunset);
-    _putInSunriseSunsetCache(cacheKey, result);
+    _sunriseSunsetCache.put(cacheKey, result);
     return result;
   }
 
@@ -847,7 +819,8 @@ class EphemerisService {
 
       // Filter by requested type if it's not EclipseType.any
       if (eclipseType != EclipseType.any) {
-        final isRequestedSolar = eclipseType == EclipseType.solar ||
+        final isRequestedSolar =
+            eclipseType == EclipseType.solar ||
             eclipseType == EclipseType.solarTotal ||
             eclipseType == EclipseType.solarPartial ||
             eclipseType == EclipseType.solarAnnular;
@@ -959,7 +932,7 @@ class EphemerisService {
     for (var i = 0; i < 10; i++) {
       // low/high are epoch-milliseconds (not Julian days). The window is one
       // day (86,400,000 ms), so 10 halvings leave ~84,000 ms (~1.4 min) of
-      // tolerance — not Julian-day precision.
+      // tolerance â€” not Julian-day precision.
       final mid = (low + high) ~/ 2;
       final time = DateTime.fromMillisecondsSinceEpoch(mid);
 
@@ -1238,248 +1211,4 @@ class EphemerisService {
       }
     });
   }
-}
-
-/// Represents planet visibility information.
-class PlanetVisibility {
-  const PlanetVisibility({
-    required this.planet,
-    required this.date,
-    required this.isVisible,
-    required this.visibilityType,
-    required this.elongation,
-    required this.magnitude,
-    required this.sunrise,
-    required this.sunset,
-    required this.description,
-  });
-
-  /// The planet
-  final Planet planet;
-
-  /// The date checked
-  final DateTime date;
-
-  /// Whether the planet is visible
-  final bool isVisible;
-
-  /// Type of visibility
-  final VisibilityType visibilityType;
-
-  /// Elongation from Sun (degrees)
-  final double elongation;
-
-  /// Apparent magnitude (lower is brighter)
-  final double magnitude;
-
-  /// Sunrise time
-  final DateTime? sunrise;
-
-  /// Sunset time
-  final DateTime? sunset;
-
-  /// Description of visibility
-  final String description;
-
-  /// Whether this is a heliacal event (rise or set)
-  bool get isHeliacal =>
-      visibilityType == VisibilityType.heliacalRise ||
-      visibilityType == VisibilityType.heliacalSet;
-}
-
-/// Types of planet visibility
-enum VisibilityType {
-  notVisible('Not Visible'),
-  heliacalRise('Heliacal Rise'),
-  heliacalSet('Heliacal Set'),
-  daytime('Daytime Visible'),
-  evening('Evening Star'),
-  morning('Morning Star');
-
-  const VisibilityType(this.name);
-  final String name;
-}
-
-/// Types of eclipses
-enum EclipseType {
-  any('Any'),
-  solar('Solar'),
-  lunar('Lunar'),
-  solarTotal('Solar Total'),
-  solarPartial('Solar Partial'),
-  solarAnnular('Solar Annular'),
-  lunarTotal('Lunar Total'),
-  lunarPartial('Lunar Partial'),
-  lunarPenumbral('Lunar Penumbral');
-
-  const EclipseType(this.name);
-  final String name;
-}
-
-/// Represents eclipse data
-class EclipseData {
-  const EclipseData({
-    required this.date,
-    required this.eclipseType,
-    required this.magnitude,
-    required this.isVisible,
-    required this.description,
-    this.duration,
-    this.startTime,
-    this.endTime,
-    this.maxEclipseTime,
-    this.penumbralMagnitude,
-    this.partialStartTime,
-    this.partialEndTime,
-    this.totalStartTime,
-    this.totalEndTime,
-    this.penumbralStartTime,
-    this.penumbralEndTime,
-    this.moonrise,
-    this.moonset,
-  });
-
-  /// Date (moment of maximum eclipse  UTC)
-  final DateTime date;
-
-  /// Type of eclipse
-  final EclipseType eclipseType;
-
-  /// Umbral magnitude (0 = penumbral only, 1.0 = total)
-  final double magnitude;
-
-  /// Penumbral magnitude (2.18 for this eclipse)
-  final double? penumbralMagnitude;
-
-  /// Whether globally visible (always true for lunar)
-  final bool isVisible;
-
-  /// Human-readable description
-  final String description;
-
-  // ------------------------------------------------------------------
-  // Global contact times (UTC, independent of observer location)
-  // ------------------------------------------------------------------
-
-  /// Duration of the umbral/partial phase (U1U4)
-  final Duration? duration;
-
-  /// Umbral start (U1), or penumbral start (P1) when umbra absent
-  final DateTime? startTime;
-
-  /// Umbral end (U4), or penumbral end (P4) when umbra absent
-  final DateTime? endTime;
-
-  /// Moment of maximum eclipse
-  final DateTime? maxEclipseTime;
-
-  /// First contact with umbra  Partial begins (U1)
-  final DateTime? partialStartTime;
-
-  /// Last contact with umbra  Partial ends (U4)
-  final DateTime? partialEndTime;
-
-  /// Total phase begins  Moon fully in umbra (U2)
-  final DateTime? totalStartTime;
-
-  /// Total phase ends (U3)
-  final DateTime? totalEndTime;
-
-  /// First contact with penumbra (P1)
-  final DateTime? penumbralStartTime;
-
-  /// Last contact with penumbra (P4)
-  final DateTime? penumbralEndTime;
-
-  // ------------------------------------------------------------------
-  // Location-specific fields (set when observer location is provided)
-  // ------------------------------------------------------------------
-
-  /// Moonrise at the observer's location (UTC). Null if Moon doesn't rise.
-  final DateTime? moonrise;
-
-  /// Moonset at the observer's location (UTC). Null if Moon doesn't set.
-  final DateTime? moonset;
-
-  // ------------------------------------------------------------------
-  // Derived convenience getters
-  // ------------------------------------------------------------------
-
-  /// Whether it's a total eclipse
-  bool get isTotal => magnitude >= 1.0;
-
-  /// Whether it's a partial eclipse
-  bool get isPartial => magnitude > 0.0 && magnitude < 1.0;
-
-  /// Whether it's penumbral-only
-  bool get isPenumbralOnly => magnitude <= 0.0 && (penumbralMagnitude ?? 0) > 0;
-
-  /// The eclipse start visible from the observer's location.
-  ///
-  /// For lunar eclipses: the later of [partialStartTime] and [moonrise].
-  /// This matches the "Lunar Eclipse Starts (With Moonrise)" field
-  /// shown on astrology sites.
-  DateTime? get localStartTime {
-    final globalStart = partialStartTime ?? penumbralStartTime ?? startTime;
-    if (globalStart == null) return null;
-    if (moonrise == null) return globalStart;
-    return moonrise!.isAfter(globalStart) ? moonrise : globalStart;
-  }
-
-  /// The eclipse end visible from the observer's location.
-  ///
-  /// The earlier of [partialEndTime] and [moonset] (or global end if Moon
-  /// stays above the horizon throughout).
-  DateTime? get localEndTime {
-    final globalEnd = partialEndTime ?? penumbralEndTime ?? endTime;
-    if (globalEnd == null) return null;
-    if (moonset == null) return globalEnd;
-    return moonset!.isBefore(globalEnd) ? moonset : globalEnd;
-  }
-
-  /// Duration of the eclipse as visible from the observer's location.
-  Duration? get localDuration {
-    final s = localStartTime;
-    final e = localEndTime;
-    if (s == null || e == null) return null;
-    final d = e.difference(s);
-    return d.isNegative ? Duration.zero : d;
-  }
-
-  // ------------------------------------------------------------------
-  // Sutak (religious fast / abstinence period)
-  // ------------------------------------------------------------------
-
-  bool get _isSolar =>
-      eclipseType == EclipseType.solar ||
-      eclipseType == EclipseType.solarTotal ||
-      eclipseType == EclipseType.solarPartial ||
-      eclipseType == EclipseType.solarAnnular;
-
-  /// Sutak for healthy adults.
-  ///
-  /// Computed as 9 hours (3 Prahars) before the eclipse becomes visible at
-  /// the observer's location:
-  ///  - Uses [localStartTime] (moonrise if after U1) as the anchor.
-  ///  - Falls back to the global umbral start (U1) when no moon-rise data.
-  /// For Solar Eclipse: 12 hours (4 Prahars) before U1.
-  DateTime? get sutakStartTime {
-    // Use local visibility start if available (accounts for moonrise after U1)
-    final anchor = localStartTime ?? partialStartTime ?? startTime;
-    if (anchor == null) return null;
-    return anchor.subtract(Duration(hours: _isSolar ? 12 : 9));
-  }
-
-  /// Sutak for children, elderly, and the sick.
-  ///
-  /// 3 hours (1 Prahar) before the eclipse becomes visible at the observer's
-  /// location ([localStartTime]), falling back to global U1.
-  DateTime? get sutakForSensitive {
-    final anchor = localStartTime ?? partialStartTime ?? startTime;
-    if (anchor == null) return null;
-    return anchor.subtract(const Duration(hours: 3));
-  }
-
-  /// Sutak ends when the umbral phase ends (U4)  same as [partialEndTime].
-  DateTime? get sutakEndTime => partialEndTime ?? endTime;
 }

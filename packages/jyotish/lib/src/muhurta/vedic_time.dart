@@ -76,7 +76,8 @@ class VedicTime {
     required Future<(DateTime? sunrise, DateTime? sunset)> Function({
       required DateTime date,
       required GeographicLocation location,
-    }) getSunriseSunset,
+    })
+    getSunriseSunset,
   }) async {
     final utcTime = time.toUtc();
 
@@ -169,9 +170,13 @@ class VedicTime {
       lipta: lipta.clamp(0, 59),
       prana: prana.clamp(0, 5),
       currentSunrise: AstrologyTimeService.utcToLocal(
-          currentSunrise, location.timezone ?? 'UTC'),
+        currentSunrise,
+        location.timezone ?? 'UTC',
+      ),
       nextSunrise: AstrologyTimeService.utcToLocal(
-          nextSunrise, location.timezone ?? 'UTC'),
+        nextSunrise,
+        location.timezone ?? 'UTC',
+      ),
       totalGhatis: totalGhatis,
     );
   }

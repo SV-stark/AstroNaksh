@@ -15,8 +15,7 @@ class TajakaService {
     VedicChart annualChart,
     Planet planet1,
     Planet planet2,
-  ) =>
-      _detectYogas(annualChart, planet1, planet2);
+  ) => _detectYogas(annualChart, planet1, planet2);
 
   TajakaEnhancement calculateTajakaEnhancements({
     required VedicChart natalChart,

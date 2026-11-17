@@ -7,6 +7,44 @@ import 'package:jyotish/src/analysis/divisional_chart_service.dart';
 import 'package:jyotish/src/strength/planetary_relationship_service.dart';
 import 'package:jyotish/src/strength/relationship.dart';
 
+/// Supported Swiss Ephemeris house system codes.
+enum HouseSystemType {
+  /// Whole Sign ('W') — standard for Parashari/Jaimini Vedic astrology.
+  wholeSign('W', 'Whole Sign'),
+
+  /// Placidus ('P') — mandatory for Krishnamurti Paddhati (KP).
+  placidus('P', 'Placidus'),
+
+  /// Equal ('E') — 30-degree houses from the Ascendant.
+  equal('E', 'Equal'),
+
+  /// Porphyrius / Sripathi ('O') — classical Sripathi Bhava divisions.
+  porphyrius('O', 'Porphyrius (Sripathi)'),
+
+  /// Koch ('K').
+  koch('K', 'Koch'),
+
+  /// Regiomontanus ('R').
+  regiomontanus('R', 'Regiomontanus'),
+
+  /// Campanus ('C').
+  campanus('C', 'Campanus'),
+
+  /// Vehlow Equal ('V').
+  vehlow('V', 'Vehlow Equal');
+
+  const HouseSystemType(this.code, this.displayName);
+
+  /// Single-character Swiss Ephemeris house system code.
+  final String code;
+
+  /// Human-readable house system name.
+  final String displayName;
+
+  @override
+  String toString() => displayName;
+}
+
 /// Represents Vedic astrology house system information.
 ///
 /// ## House System Precision Notes
@@ -90,11 +128,11 @@ class HouseSystem {
 
   /// Converts this HouseSystem to a JSON map.
   Map<String, dynamic> toJson() => {
-        'system': system,
-        'ascendant': ascendant,
-        'midheaven': midheaven,
-        'cusps': cusps,
-      };
+    'system': system,
+    'ascendant': ascendant,
+    'midheaven': midheaven,
+    'cusps': cusps,
+  };
 
   /// Creates a HouseSystem instance from a JSON map.
   factory HouseSystem.fromJson(Map<String, dynamic> json) {
@@ -187,16 +225,16 @@ class KetuPosition {
 
   /// PlanetPosition representation of Ketu
   PlanetPosition get position => PlanetPosition(
-        planet: Planet.ketu,
-        dateTime: rahuPosition.dateTime,
-        longitude: longitude,
-        latitude: latitude,
-        distance: distance,
-        longitudeSpeed: longitudeSpeed,
-        latitudeSpeed: -rahuPosition.latitudeSpeed,
-        distanceSpeed: rahuPosition.distanceSpeed,
-        isRetrograde: isRetrograde,
-      );
+    planet: Planet.ketu,
+    dateTime: rahuPosition.dateTime,
+    longitude: longitude,
+    latitude: latitude,
+    distance: distance,
+    longitudeSpeed: longitudeSpeed,
+    latitudeSpeed: -rahuPosition.latitudeSpeed,
+    distanceSpeed: rahuPosition.distanceSpeed,
+    isRetrograde: isRetrograde,
+  );
 
   /// Ketu always moves retrograde (like Rahu)
   bool get isRetrograde => true;
@@ -244,16 +282,16 @@ class KetuPosition {
 
   /// Converts this KetuPosition to a JSON map.
   Map<String, dynamic> toJson() => {
-        'longitude': longitude,
-        'latitude': latitude,
-        'distance': distance,
-        'longitudeSpeed': longitudeSpeed,
-        'isRetrograde': isRetrograde,
-        'zodiacSign': zodiacSign,
-        'positionInSign': positionInSign,
-        'nakshatra': nakshatra,
-        'nakshatraPada': nakshatraPada,
-      };
+    'longitude': longitude,
+    'latitude': latitude,
+    'distance': distance,
+    'longitudeSpeed': longitudeSpeed,
+    'isRetrograde': isRetrograde,
+    'zodiacSign': zodiacSign,
+    'positionInSign': positionInSign,
+    'nakshatra': nakshatra,
+    'nakshatraPada': nakshatraPada,
+  };
 
   static const List<String> _zodiacSigns = [
     'Aries',
@@ -414,17 +452,17 @@ class VedicPlanetInfo {
 
   /// Converts this VedicPlanetInfo to a JSON map.
   Map<String, dynamic> toJson() => {
-        'planet': position.planet.displayName,
-        'house': house,
-        'dignity': dignity.english,
-        'dignitySanskrit': dignity.sanskrit,
-        'isCombust': isCombust,
-        'exaltationDegree': exaltationDegree,
-        'debilitationDegree': debilitationDegree,
-        if (positionInSign != null) 'positionInSign': positionInSign,
-        if (subSpan != null) 'subSpan': subSpan,
-        'position': position.toJson(),
-      };
+    'planet': position.planet.displayName,
+    'house': house,
+    'dignity': dignity.english,
+    'dignitySanskrit': dignity.sanskrit,
+    'isCombust': isCombust,
+    'exaltationDegree': exaltationDegree,
+    'debilitationDegree': debilitationDegree,
+    if (positionInSign != null) 'positionInSign': positionInSign,
+    if (subSpan != null) 'subSpan': subSpan,
+    'position': position.toJson(),
+  };
 
   /// Creates a VedicPlanetInfo instance from a JSON map.
   factory VedicPlanetInfo.fromJson(Map<String, dynamic> json) {
@@ -590,22 +628,22 @@ class VedicChart {
 
   /// Converts this VedicChart to a JSON map.
   Map<String, dynamic> toJson() => {
-        'dateTime': dateTime.toIso8601String(),
-        'location': location,
-        'latitude': latitude,
-        'longitude': longitudeCoord,
-        'altitude': altitude,
-        'ascendant': ascendant,
-        'ascendantSign': ascendantSign,
-        'houses': houses.toJson(),
-        'planets': planets.map(
-          (planet, info) => MapEntry(planet.displayName, info.toJson()),
-        ),
-        'rahu': rahu.toJson(),
-        'ketu': ketu.toJson(),
-        if (calculationFlags != null)
-          'calculationFlags': calculationFlags!.toJson(),
-      };
+    'dateTime': dateTime.toIso8601String(),
+    'location': location,
+    'latitude': latitude,
+    'longitude': longitudeCoord,
+    'altitude': altitude,
+    'ascendant': ascendant,
+    'ascendantSign': ascendantSign,
+    'houses': houses.toJson(),
+    'planets': planets.map(
+      (planet, info) => MapEntry(planet.displayName, info.toJson()),
+    ),
+    'rahu': rahu.toJson(),
+    'ketu': ketu.toJson(),
+    if (calculationFlags != null)
+      'calculationFlags': calculationFlags!.toJson(),
+  };
 
   /// Creates a VedicChart instance from a JSON map.
   factory VedicChart.fromJson(Map<String, dynamic> json) {
@@ -626,12 +664,14 @@ class VedicChart {
       planets[planet] = VedicPlanetInfo.fromJson(val as Map<String, dynamic>);
     });
 
-    final rahuInfo =
-        VedicPlanetInfo.fromJson(json['rahu'] as Map<String, dynamic>);
+    final rahuInfo = VedicPlanetInfo.fromJson(
+      json['rahu'] as Map<String, dynamic>,
+    );
     final ketuInfo = KetuPosition(rahuPosition: rahuInfo.position);
     final calculationFlags = json['calculationFlags'] != null
         ? CalculationFlags.fromJson(
-            json['calculationFlags'] as Map<String, dynamic>)
+            json['calculationFlags'] as Map<String, dynamic>,
+          )
         : null;
 
     return VedicChart(
@@ -698,11 +738,8 @@ class VedicChart {
     final originalSignIndex = getPlanetSignIndex(planet);
     if (originalSignIndex == null) return false;
 
-    final d9Chart =
-        (service ?? _defaultDivisionalService).calculateDivisionalChart(
-      this,
-      DivisionalChartType.d9,
-    );
+    final d9Chart = (service ?? _defaultDivisionalService)
+        .calculateDivisionalChart(this, DivisionalChartType.d9);
     final d9SignIndex = d9Chart.getPlanetSignIndex(planet);
     return originalSignIndex == d9SignIndex;
   }

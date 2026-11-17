@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:math' as math;
+
 import 'package:jyotish/src/systems/ashtakavarga.dart';
 import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/models/vedic_chart.dart';
@@ -128,10 +129,7 @@ class AshtakavargaService {
       contributions[signIndex] = ascendantContributed ? _ascendantBit : 0;
     }
 
-    return Bhinnashtakavarga(
-      bindus: bindus,
-      contributions: contributions,
-    );
+    return Bhinnashtakavarga(bindus: bindus, contributions: contributions);
   }
 
   /// Counts the set bits of a contributions mask.
@@ -267,9 +265,7 @@ class AshtakavargaService {
   List<int> _calculateSamudayaAshtakavarga(
     Map<Planet, Bhinnashtakavarga> bhinnashtakavarga,
   ) {
-    return List<int>.from(
-      _calculateSarvashtakavarga(bhinnashtakavarga).bindus,
-    );
+    return List<int>.from(_calculateSarvashtakavarga(bhinnashtakavarga).bindus);
   }
 
   /// Analyzes transit favorability based on Ashtakavarga.
@@ -359,10 +355,7 @@ class AshtakavargaService {
       for (final planet in ashtakavarga.bhinnashtakavarga.keys)
         planet: () {
           final bav = ashtakavarga.bhinnashtakavarga[planet]!;
-          return _withRebuiltMask(
-            bav,
-            _reduceTrikona(bav.bindus),
-          );
+          return _withRebuiltMask(bav, _reduceTrikona(bav.bindus));
         }(),
     };
 
@@ -717,10 +710,12 @@ class AshtakavargaService {
       yogaPinda: yogaPinda,
       totalReducedPinda: totalReducedPinda,
       totalYogaPinda: totalYogaPinda,
-      reducedPindaPerPlanet:
-          reducedPinda.isEmpty ? 0.0 : totalReducedPinda / reducedPinda.length,
-      yogaPindaPerPlanet:
-          yogaPinda.isEmpty ? 0.0 : totalYogaPinda / yogaPinda.length,
+      reducedPindaPerPlanet: reducedPinda.isEmpty
+          ? 0.0
+          : totalReducedPinda / reducedPinda.length,
+      yogaPindaPerPlanet: yogaPinda.isEmpty
+          ? 0.0
+          : totalYogaPinda / yogaPinda.length,
     );
   }
 

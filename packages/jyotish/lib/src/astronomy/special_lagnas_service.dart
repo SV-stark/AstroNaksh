@@ -43,7 +43,8 @@ class SpecialLagnasService {
     // error from assuming a constant speed over a few hours is < 0.01 degrees.
     // Callers that already know the Sun's longitude at sunrise can pass it via
     // [sunLongitudeAtSunrise] to skip the extrapolation entirely.
-    final sunLong = (sunLongitudeAtSunrise ??
+    final sunLong =
+        (sunLongitudeAtSunrise ??
             (sunLongAtBirth -
                     (sunInfo?.position.longitudeSpeed ?? 0.9856) *
                         (elapsedMs / (1000 * 60 * 60 * 24)) +

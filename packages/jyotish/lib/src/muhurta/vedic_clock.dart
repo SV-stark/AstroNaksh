@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
+
+import 'package:flutter/widgets.dart';
 import 'package:jyotish/src/models/geographic_location.dart';
 import 'package:jyotish/src/muhurta/vedic_time.dart';
 
@@ -31,7 +32,8 @@ class VedicDigitalClock extends StatefulWidget {
   final Future<(DateTime? sunrise, DateTime? sunset)> Function({
     required DateTime date,
     required GeographicLocation location,
-  }) getSunriseSunset;
+  })
+  getSunriseSunset;
 
   /// Optional custom controller. If not provided, an internal one will be created.
   final VedicClockController? controller;
@@ -164,7 +166,12 @@ class _VedicDigitalClockState extends State<VedicDigitalClock> {
       animation: _clockController,
       builder: (context, _) {
         if (_clockController.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: Text(
+              'Loading...',
+              style: TextStyle(color: Color(0xFF9E9E9E)),
+            ),
+          );
         }
 
         if (_clockController.errorMessage != null) {
@@ -172,7 +179,7 @@ class _VedicDigitalClockState extends State<VedicDigitalClock> {
             child: Text(
               'Error calculating Vedic time:\n${_clockController.errorMessage}',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.redAccent),
+              style: const TextStyle(color: Color(0xFFFF5252)),
             ),
           );
         }
@@ -182,7 +189,8 @@ class _VedicDigitalClockState extends State<VedicDigitalClock> {
           return const Center(child: Text('No Vedic time data available'));
         }
 
-        final dStyle = widget.digitStyle ??
+        final dStyle =
+            widget.digitStyle ??
             const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -190,16 +198,20 @@ class _VedicDigitalClockState extends State<VedicDigitalClock> {
               letterSpacing: 2,
             );
 
-        final lStyle = widget.labelStyle ??
-            const TextStyle(fontSize: 14, color: Colors.grey);
+        final lStyle =
+            widget.labelStyle ??
+            const TextStyle(fontSize: 14, color: Color(0xFF9E9E9E));
 
         return Container(
           padding: widget.padding,
-          decoration: widget.decoration ??
+          decoration:
+              widget.decoration ??
               BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: const Color(0xFF000000).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: const Color(0xFF9E9E9E).withValues(alpha: 0.2),
+                ),
               ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -273,7 +285,8 @@ class VedicAnalogClock extends StatefulWidget {
   final Future<(DateTime? sunrise, DateTime? sunset)> Function({
     required DateTime date,
     required GeographicLocation location,
-  }) getSunriseSunset;
+  })
+  getSunriseSunset;
 
   /// Width and height of the clock widget.
   final double size;
@@ -397,7 +410,9 @@ class _VedicAnalogClockState extends State<VedicAnalogClock> {
       return SizedBox(
         width: widget.size,
         height: widget.size,
-        child: const Center(child: CircularProgressIndicator()),
+        child: const Center(
+          child: Text('Loading...', style: TextStyle(color: Color(0xFF9E9E9E))),
+        ),
       );
     }
 
@@ -409,7 +424,7 @@ class _VedicAnalogClockState extends State<VedicAnalogClock> {
           child: Text(
             'Clock Error:\n$_errorMessage',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.redAccent),
+            style: const TextStyle(color: Color(0xFFFF5252)),
           ),
         ),
       );
@@ -435,9 +450,10 @@ class _VedicAnalogClockState extends State<VedicAnalogClock> {
             dialColor: widget.dialColor,
             ghatiHandColor: widget.ghatiHandColor,
             vighatiHandColor: widget.vighatiHandColor,
-            numberStyle: widget.numberStyle ??
+            numberStyle:
+                widget.numberStyle ??
                 const TextStyle(
-                  color: Colors.white70,
+                  color: Color(0xB3FFFFFF),
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
@@ -580,7 +596,7 @@ class _VedicClockPainter extends CustomPainter {
 
     // 6. Draw center spindle pin
     final centerPinPaint = Paint()
-      ..color = Colors.white
+      ..color = const Color(0xFFFFFFFF)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, 6.0, centerPinPaint);
 

@@ -29,56 +29,13 @@ class GocharaVedhaService {
   /// Classical Gochara Vedha pairs (Phaladeepika Ch. 26).
   /// Maps each planet -> (Favorable House -> Obstructing Vedha House).
   static const Map<Planet, Map<int, int>> gocharaVedhaPairs = {
-    Planet.sun: {
-      3: 9,
-      6: 12,
-      10: 4,
-      11: 5,
-    },
-    Planet.moon: {
-      1: 5,
-      3: 9,
-      6: 12,
-      7: 2,
-      10: 4,
-      11: 8,
-    },
-    Planet.mars: {
-      3: 12,
-      6: 9,
-      11: 5,
-    },
-    Planet.mercury: {
-      2: 5,
-      4: 3,
-      6: 9,
-      8: 1,
-      10: 8,
-      11: 12,
-    },
-    Planet.jupiter: {
-      2: 12,
-      5: 4,
-      7: 3,
-      9: 10,
-      11: 8,
-    },
-    Planet.venus: {
-      1: 8,
-      2: 7,
-      3: 1,
-      4: 10,
-      5: 9,
-      8: 5,
-      9: 11,
-      11: 6,
-      12: 3,
-    },
-    Planet.saturn: {
-      3: 12,
-      6: 9,
-      11: 5,
-    },
+    Planet.sun: {3: 9, 6: 12, 10: 4, 11: 5},
+    Planet.moon: {1: 5, 3: 9, 6: 12, 7: 2, 10: 4, 11: 8},
+    Planet.mars: {3: 12, 6: 9, 11: 5},
+    Planet.mercury: {2: 5, 4: 3, 6: 9, 8: 1, 10: 8, 11: 12},
+    Planet.jupiter: {2: 12, 5: 4, 7: 3, 9: 10, 11: 8},
+    Planet.venus: {1: 8, 2: 7, 3: 1, 4: 10, 5: 9, 8: 5, 9: 11, 11: 6, 12: 3},
+    Planet.saturn: {3: 12, 6: 9, 11: 5},
   };
 
   /// Checks if two planets have a Vipareeta Vedha exception (Father-Son non-obstruction).
@@ -157,7 +114,8 @@ class GocharaVedhaService {
 
     // 4. Determine result effectiveness
     final resultEffectiveness = isObstructed
-        ? 1.0 - vedhaStrength // Reduced by Vedha
+        ? 1.0 -
+              vedhaStrength // Reduced by Vedha
         : (isFavorable ? 1.0 : 0.0);
 
     return VedhaResult(

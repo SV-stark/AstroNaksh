@@ -87,7 +87,7 @@ class MuhurtaService {
     required DateTime sunrise,
     required List<(int tithiNumber, DateTime start, DateTime end)> tithiPeriods,
     required List<(int nakshatraNumber, DateTime start, DateTime end)>
-        nakshatraPeriods,
+    nakshatraPeriods,
   }) {
     final yogas = <SpecialYoga>[];
     final weekday = _getVedicWeekday(date, sunrise);
@@ -156,7 +156,8 @@ class MuhurtaService {
       for (final tithi in tithiPeriods) {
         // Bhadra Tithis: 2, 7, 12 of either Paksha
         final tNum = tithi.$1;
-        final isBhadraTithi = (tNum == 2 ||
+        final isBhadraTithi =
+            (tNum == 2 ||
             tNum == 7 ||
             tNum == 12 ||
             tNum == 17 ||
@@ -205,7 +206,8 @@ class MuhurtaService {
 
   /// Helper to calculate the Vedic weekday (day begins at local sunrise).
   int _getVedicWeekday(DateTime date, DateTime sunrise) {
-    final isDateOnly = date.hour == 0 &&
+    final isDateOnly =
+        date.hour == 0 &&
         date.minute == 0 &&
         date.second == 0 &&
         date.millisecond == 0;
@@ -680,5 +682,109 @@ class MuhurtaService {
     final end = start.add(Duration(milliseconds: varjyamDurationMs.round()));
 
     return TimePeriod(start: start, end: end);
+  }
+
+  /// Calculates **Durmuhurtam** (inauspicious daytime Muhurta windows).
+  ///
+  /// Daytime (`sunrise` to `sunset`) is divided into 15 equal Muhurtas (~48 min
+  /// each). Classical *Muhurta Chintamani* weekday indices (1-based):
+  /// - Sunday: 14
+  /// - Monday: 9, 12
+  /// - Tuesday: 4
+  /// - Wednesday: 8
+  /// - Thursday: 6, 12
+  /// - Friday: 4, 9
+  /// - Saturday: 1, 2
+  List<TimePeriod> calculateDurmuhurtam({
+    required DateTime date,
+    required DateTime sunrise,
+    required DateTime sunset,
+  }) {
+    final dayDurationMs = sunset.difference(sunrise).inMilliseconds;
+    if (dayDurationMs <= 0) return const [];
+
+    final muhurtaMs = dayDurationMs / 15.0;
+    final indices = switch (date.weekday) {
+      DateTime.sunday => const [14],
+      DateTime.monday => const [9, 12],
+      DateTime.tuesday => const [4],
+      DateTime.wednesday => const [8],
+      DateTime.thursday => const [6, 12],
+      DateTime.friday => const [4, 9],
+      DateTime.saturday => const [1, 2],
+      _ => const <int>[],
+    };
+
+    return indices.map((idx) {
+      final start = sunrise.add(
+        Duration(milliseconds: ((idx - 1) * muhurtaMs).round()),
+      );
+      final end = sunrise.add(
+        Duration(milliseconds: (idx * muhurtaMs).round()),
+      );
+      return TimePeriod(start: start, end: end);
+    }).toList();
+  }
+
+  /// Calculates **Amrit Kalam** (auspicious 4-Ghati window within a Nakshatra).
+  ///
+  /// Each Nakshatra's Amrit Kalam starts at a classical Ghati offset (out of 60)
+  /// and lasts 4 Ghatis.
+  TimePeriod? calculateAmritKalam({
+    required NakshatraInfo nakshatra,
+    required DateTime nakshatraStart,
+    required DateTime nakshatraEnd,
+  }) {
+    // Classical Amrit Kalam start offsets in Ghatis (out of 60) per Nakshatra
+    const amritOffsetGhatis = [
+      42, 48, 54, 28, 38, 35, 54, 44, 56, // Ashwini..Ashlesha
+      54, 44, 42, 46, 44, 38, 38, 34, 38, // Magha..Jyeshtha
+      44, 48, 44, 34, 34, 42, 40, 48, 54, // Mula..Revati
+    ];
+
+    final index = nakshatra.number - 1;
+    if (index < 0 || index >= amritOffsetGhatis.length) return null;
+
+    final durationMs = nakshatraEnd.difference(nakshatraStart).inMilliseconds;
+    if (durationMs <= 0) return null;
+
+    final startMs = durationMs * (amritOffsetGhatis[index] / 60.0);
+    final amritDurationMs = durationMs * (4.0 / 60.0);
+
+    final start = nakshatraStart.add(Duration(milliseconds: startMs.round()));
+    final end = start.add(Duration(milliseconds: amritDurationMs.round()));
+    return TimePeriod(start: start, end: end);
+  }
+
+  /// Evaluates **Panchaka Rahita** suitability for a Muhurta.
+  ///
+  /// Uses the classical formula:
+  /// `(tithiNumber + weekday + nakshatraNumber + lagnaNumber) % 9`
+  /// where `weekday` is 1 (Sun)..7 (Sat) and `lagnaNumber` is `lagnaRashiIndex + 1`
+  /// (1 = Aries..12 = Pisces).
+  /// Remainders 1, 2, 4, 6, 8 yield Mrityu, Agni, Raja, Chora, Roga Panchaka
+  /// respectively; 0, 3, 5, 7 are Shubha (Panchaka-free).
+  PanchakaResult calculatePanchakaRahita({
+    required int tithiNumber,
+    required int weekday,
+    required int nakshatraNumber,
+    required int lagnaRashiIndex,
+  }) {
+    // Convert Dart DateTime.weekday (Mon=1..Sun=7) if needed? Keep explicit:
+    // Accept 1..7 (Sun=1..Sat=7) or normalize lagnaRashiIndex (0..11 -> 1..12).
+    final lagnaNumber = (lagnaRashiIndex % 12) + 1;
+    final sum = tithiNumber + weekday + nakshatraNumber + lagnaNumber;
+    final remainder = sum % 9;
+
+    final type = switch (remainder) {
+      1 => PanchakaType.mrityu,
+      2 => PanchakaType.agni,
+      4 => PanchakaType.raja,
+      6 => PanchakaType.chora,
+      8 => PanchakaType.roga,
+      _ => PanchakaType.shubha,
+    };
+
+    return PanchakaResult(type: type, remainder: remainder, sum: sum);
   }
 }

@@ -1,4 +1,5 @@
 import '../exceptions/jyotish_exception.dart';
+
 import 'package:jyotish/src/models/divisional_chart_type.dart';
 import 'package:jyotish/src/models/planet.dart';
 import 'package:jyotish/src/astronomy/planet_position.dart';
@@ -39,7 +40,8 @@ class DivisionalChartService {
     final configKey = config != null
         ? '_${config.horaMethod.name}_${config.drekkanaMethod.name}_${config.navamshaMethod.name}_${config.dashamshaMethod.name}'
         : '';
-    final key = '${rashiChart.dateTime.millisecondsSinceEpoch}'
+    final key =
+        '${rashiChart.dateTime.millisecondsSinceEpoch}'
         '_${rashiChart.latitude}_${rashiChart.longitudeCoord}'
         '_${rashiChart.calculationFlags?.siderealMode.name ?? 'default'}' // enum identifier: stable cache key
         '_${rashiChart.ascendant.hashCode}'
@@ -343,8 +345,8 @@ class DivisionalChartService {
     Map<Planet, int> planetHouseMap,
     int planetHouse,
   ) {
-    final natural = RelationshipCalculator.naturalRelationships[planet]
-            ?[signLord] ??
+    final natural =
+        RelationshipCalculator.naturalRelationships[planet]?[signLord] ??
         RelationshipType.neutral;
 
     final signLordHouse = planetHouseMap[signLord];
@@ -463,8 +465,7 @@ class DivisionalChartService {
     double longitude,
     DivisionalChartType type, {
     VargaConfiguration? config,
-  }) =>
-      _calculateVargaLongitude(longitude, type, config: config);
+  }) => _calculateVargaLongitude(longitude, type, config: config);
 
   /// Internal: Calculates the absolute longitude (0-360) of a point in a divisional chart.
   double _calculateVargaLongitude(
@@ -687,8 +688,8 @@ class DivisionalChartService {
             final startSign = isMoveable
                 ? signIndex
                 : isFixed
-                    ? (signIndex + 8) % 12
-                    : (signIndex + 4) % 12;
+                ? (signIndex + 8) % 12
+                : (signIndex + 4) % 12;
             return (startSign + part) % 12;
         }
 

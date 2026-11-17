@@ -377,6 +377,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   setState(() => _settings.showExaltedDebilitated = v);
                 },
               ),
+              _buildListTileToggle(
+                'Show Special Lagnas (HL, GL, SL)',
+                _settings.showSpecialLagnas,
+                (v) {
+                  setState(() => _settings.showSpecialLagnas = v);
+                },
+              ),
             ],
           ),
         ),

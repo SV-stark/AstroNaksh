@@ -101,14 +101,13 @@ class SpecialTransitService {
     required DateTime checkDate,
     Duration signExitAccuracy = const Duration(minutes: 1),
     Duration signEntryAccuracy = const Duration(minutes: 10),
-  }) =>
-      _calculateSadeSati(
-        natalMoonLongitude: natalMoonLongitude,
-        transitSaturnLongitude: transitSaturnLongitude,
-        checkDate: checkDate,
-        signExitAccuracy: signExitAccuracy,
-        signEntryAccuracy: signEntryAccuracy,
-      );
+  }) => _calculateSadeSati(
+    natalMoonLongitude: natalMoonLongitude,
+    transitSaturnLongitude: transitSaturnLongitude,
+    checkDate: checkDate,
+    signExitAccuracy: signExitAccuracy,
+    signEntryAccuracy: signEntryAccuracy,
+  );
 
   /// Calculates Dhaiya (small panoti) status for given natal Moon and transit Saturn longitudes.
   Future<DhaiyaStatus> calculateDhaiya({
@@ -117,24 +116,22 @@ class SpecialTransitService {
     required DateTime checkDate,
     Duration signExitAccuracy = const Duration(minutes: 1),
     Duration signEntryAccuracy = const Duration(minutes: 10),
-  }) =>
-      _calculateDhaiya(
-        natalMoonLongitude: natalMoonLongitude,
-        transitSaturnLongitude: transitSaturnLongitude,
-        checkDate: checkDate,
-        signExitAccuracy: signExitAccuracy,
-        signEntryAccuracy: signEntryAccuracy,
-      );
+  }) => _calculateDhaiya(
+    natalMoonLongitude: natalMoonLongitude,
+    transitSaturnLongitude: transitSaturnLongitude,
+    checkDate: checkDate,
+    signExitAccuracy: signExitAccuracy,
+    signEntryAccuracy: signEntryAccuracy,
+  );
 
   /// Calculates Panchak status for a transit Moon longitude.
   PanchakStatus calculatePanchak({
     required double transitMoonLongitude,
     required DateTime checkDate,
-  }) =>
-      _calculatePanchak(
-        transitMoonLongitude: transitMoonLongitude,
-        checkDate: checkDate,
-      );
+  }) => _calculatePanchak(
+    transitMoonLongitude: transitMoonLongitude,
+    checkDate: checkDate,
+  );
 
   /// Calculates Sade Sati status.
   Future<SadeSatiStatus> _calculateSadeSati({
@@ -221,8 +218,11 @@ class SpecialTransitService {
     required Duration signExitAccuracy,
     required Duration signEntryAccuracy,
   }) async {
-    final location =
-        const GeographicLocation(latitude: 0, longitude: 0, altitude: 0);
+    final location = const GeographicLocation(
+      latitude: 0,
+      longitude: 0,
+      altitude: 0,
+    );
     final flags = CalculationFlags.defaultFlags();
 
     // Calculate end date using ephemeris projection
@@ -634,8 +634,8 @@ class SpecialTransitService {
         final phaseName = phase == 0
             ? 'Rising'
             : phase == 1
-                ? 'Peak'
-                : 'Setting';
+            ? 'Peak'
+            : 'Setting';
 
         periods.add({
           'phase': phaseName,
@@ -644,8 +644,8 @@ class SpecialTransitService {
           'houseFromMoon': phase == 0
               ? 12
               : phase == 1
-                  ? 1
-                  : 2,
+              ? 1
+              : 2,
         });
       }
     }

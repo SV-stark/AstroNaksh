@@ -106,13 +106,7 @@ class _VarshaphalScreenState extends ConsumerState<VarshaphalScreen> {
 
     final nativeChart = await EphemerisManager.jyotish.getVarshapal(
       birthDateTime: widget.birthData.dateTime,
-      varshaDateTime: DateTime(
-        _selectedYear,
-        widget.birthData.dateTime.month,
-        widget.birthData.dateTime.day,
-        widget.birthData.dateTime.hour,
-        widget.birthData.dateTime.minute,
-      ),
+      varshaDateTime: customChart.solarReturnTime,
       location: GeographicLocation(
         latitude: widget.birthData.location.latitude,
         longitude: widget.birthData.location.longitude,

@@ -22,7 +22,13 @@ enum DashaType {
   kalachakra('Kalachakra', 100),
 
   /// Tribhagi Dasha - Fractional Vimshottari (40 year cycle)
-  tribhagi('Tribhagi', 40);
+  tribhagi('Tribhagi', 40),
+
+  /// Shoola Dasha - Jaimini longevity sign dasha (108 year cycle)
+  shoola('Shoola', 108),
+
+  /// Drig Dasha - Jaimini Rashi-aspect based spiritual/longevity dasha (144 year max)
+  drig('Drig', 144);
 
   const DashaType(this.displayName, this.totalYears);
 
@@ -31,6 +37,35 @@ enum DashaType {
 
   /// Total cycle length in years
   final int totalYears;
+
+  @override
+  String toString() => displayName;
+}
+
+/// Standard year-length definitions for Dasha period calculations.
+enum DashaYearType {
+  /// Julian year (365.25 days) — default in the library.
+  julian('Julian (365.25d)', 365.25),
+
+  /// Gregorian solar year (365.2425 days).
+  gregorian('Gregorian (365.2425d)', 365.2425),
+
+  /// Sidereal solar year (365.256363 days).
+  sidereal('Sidereal (365.256363d)', 365.256363),
+
+  /// Savana year (360.0 days — 12 months of 30 days).
+  savana('Savana (360d)', 360.0),
+
+  /// Lunar synodic year (354.36707 days — 12 synodic months).
+  lunar('Lunar (354.36707d)', 354.36707);
+
+  const DashaYearType(this.displayName, this.days);
+
+  /// Display name of the year convention.
+  final String displayName;
+
+  /// Number of days per year.
+  final double days;
 
   @override
   String toString() => displayName;
@@ -211,16 +246,16 @@ class DashaPeriod {
 
   /// Converts to JSON map (without circular references)
   Map<String, dynamic> toJson() => {
-        'lord': lord?.displayName,
-        'rashi': rashi?.label,
-        'lordDisplayName': lordDisplayName,
-        'startDate': startDate.toIso8601String(),
-        'endDate': endDate.toIso8601String(),
-        'durationDays': durationDays,
-        'level': level,
-        'levelName': levelName,
-        'subPeriods': subPeriods.map((p) => p.toJson()).toList(),
-      };
+    'lord': lord?.displayName,
+    'rashi': rashi?.label,
+    'lordDisplayName': lordDisplayName,
+    'startDate': startDate.toIso8601String(),
+    'endDate': endDate.toIso8601String(),
+    'durationDays': durationDays,
+    'level': level,
+    'levelName': levelName,
+    'subPeriods': subPeriods.map((p) => p.toJson()).toList(),
+  };
 
   /// Creates a DashaPeriod instance from a JSON map.
   factory DashaPeriod.fromJson(Map<String, dynamic> json) {
@@ -246,14 +281,15 @@ class DashaPeriod {
 
     final startDate = DateTime.parse(json['startDate'] as String);
     final endDate = DateTime.parse(json['endDate'] as String);
-    final durationDays = (json['durationDays'] as num?)?.toDouble() ??
+    final durationDays =
+        (json['durationDays'] as num?)?.toDouble() ??
         endDate.difference(startDate).inDays.toDouble();
 
     final subList = json['subPeriods'] as List?;
     final subPeriods = subList != null
         ? subList
-            .map((e) => DashaPeriod.fromJson(e as Map<String, dynamic>))
-            .toList()
+              .map((e) => DashaPeriod.fromJson(e as Map<String, dynamic>))
+              .toList()
         : <DashaPeriod>[];
 
     return DashaPeriod(
@@ -337,15 +373,15 @@ class DashaResult {
 
   /// Converts to JSON map
   Map<String, dynamic> toJson() => {
-        'type': type.displayName,
-        'birthDateTime': birthDateTime.toIso8601String(),
-        'moonLongitude': moonLongitude,
-        'birthNakshatra': birthNakshatra,
-        'birthPada': birthPada,
-        'balanceOfFirstDasha': balanceOfFirstDasha,
-        'allMahadashas': allMahadashas.map((d) => d.toJson()).toList(),
-        'precisionWarning': precisionWarning,
-      };
+    'type': type.displayName,
+    'birthDateTime': birthDateTime.toIso8601String(),
+    'moonLongitude': moonLongitude,
+    'birthNakshatra': birthNakshatra,
+    'birthPada': birthPada,
+    'balanceOfFirstDasha': balanceOfFirstDasha,
+    'allMahadashas': allMahadashas.map((d) => d.toJson()).toList(),
+    'precisionWarning': precisionWarning,
+  };
 
   /// Creates a DashaResult instance from a JSON map.
   factory DashaResult.fromJson(Map<String, dynamic> json) {

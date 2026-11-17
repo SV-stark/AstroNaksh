@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+## [2.20.8] - 2026-11-15
+
+### Added
+- **Tradition presets & House System enum**:
+  - `CalculationFlags.jhora()` (True Pushya ayanamsa + True Node) and `CalculationFlags.bvRaman()` (Raman ayanamsa + Mean Node).
+  - `HouseSystemType` enum mapping Swiss Ephemeris codes (`wholeSign`, `placidus`, `equal`, `porphyrius`, `koch`, `regiomontanus`, `campanus`, `vehlow`).
+- **Dasha year-length conventions & Jaimini Dashas**:
+  - `DashaYearType` enum (`julian`, `gregorian`, `sidereal`, `savana`, `lunar`) and `DashaService` constants (`gregorianYearLength`, `siderealYearLength`, `lunarYearLength`), supported across Vimshottari, Yogini, Chara, Narayana, Ashtottari, Kalachakra, and `streamVimshottariDasha`.
+  - `DashaService.getShoolaDasha` (`DashaType.shoola`) and `DashaService.getDrigDasha` (`DashaType.drig`).
+- **Muhurta & Regional Panchanga depth**:
+  - `MuhurtaService.calculateDurmuhurtam`, `MuhurtaService.calculateAmritKalam`, and `MuhurtaService.calculatePanchakaRahita` (`PanchakaType`, `PanchakaResult`).
+  - `PanchangaService.getTithiOccurrenceType` (`TithiOccurrenceType`: `normal`, `adhika`, `kshaya`).
+  - `RegionalSolarCalendar` (`sanskrit`, `tamil`, `bengali`, `malayalam`) and `MasaInfo.getSolarMonthName`.
+  - `test/professional_features_test.dart` covering all new presets, Dasha year types, Shoola/Drig Dashas, Muhurta windows, and regional Panchanga features.
+  - **Golden Reference Regression Suite (`test/golden_reference_test.dart`, `test/fixtures/golden_charts.json`, `tool/generate_golden_fixtures.dart`)**: 10 diverse reference charts (Indian natal, J2000 JHora preset, Arctic high-latitude, Southern Hemisphere, 1947 historical timezone, KP Placidus, B.V. Raman, 2026 eclipse, 2026 Akshaya Tritiya, and year-boundary) pinning planetary longitudes (`±0.0001°`), D1/D9 signs, Nakshatra/Pada, Vimshottari balance, Ashtakavarga 337 invariant, Chara Karakas, and Shadbala virupas.
+- **Dedicated Flutter UI barrel (`lib/widgets.dart`)**: Exported `VedicChartView`, `SouthIndianChartPainter`, `NorthIndianChartPainter`, `VedicDigitalClock`, `VedicAnalogClock`, and `VedicClockController` in their own entry point so core calculation barrels (`analysis.dart`, `muhurta.dart`, etc.) remain pure Dart with zero Flutter widget dependencies.
+- **Pure-Dart SVG renderer (`lib/src/analysis/chart_svg_renderer.dart`)**: Extracted `ChartStyle` and `VedicChartRenderer.toSVG` from `chart_renderer.dart` without `dart:ui` or Flutter imports.
+- **`EphemerisCache<K, V>` (`lib/src/astronomy/ephemeris_cache.dart`)**: Extracted a shared bounded LRU cache helper from `EphemerisService`.
+- **`JyotishCompute` worker isolate tests (`test/jyotish_compute_test.dart`)**: Added unit tests verifying persistent worker isolate reuse and error propagation.
+
+### Changed
+- **Persistent worker isolate (`lib/src/astronomy/jyotish_compute.dart`)**: Replaced per-call `Isolate.run` with a lazy-initialized, serialized persistent worker isolate and added `JyotishCompute.dispose()`, exported from `lib/astronomy.dart`.
+- **`EphemerisService` model extraction (`lib/src/astronomy/ephemeris_models.dart`)**: Moved `PlanetVisibility`, `VisibilityType`, `EclipseType`, and `EclipseData` out of `ephemeris_service.dart` (re-exported for backwards compatibility).
+- **Flutter `widgets.dart` migration**: Replaced deprecated `package:flutter/material.dart` imports in `chart_renderer.dart`, `vedic_clock.dart`, and `test/widget_rendering_test.dart` with `package:flutter/widgets.dart`.
+- **CI workflow hardening (`.github/workflows/ci.yml`)**: Made Swiss Ephemeris `.se1` fixture downloads fail fast (`curl -sfL`) and added a `windows-tests` job on `windows-latest`.
+- **Documentation (`API_REFERENCE.md`)**: Removed duplicate service/enum sections, corrected `jyotish.panchangaService` to `jyotish.panchanga`, updated barrel isolation docs for `widgets.dart` and `astronomy.dart`, and updated `JyotishCompute` documentation.
+
+### Fixed
+- **Timezone test expectation (`test/improvements_test.dart`)**: Updated `Dynamic Timezone Updates` test to expect `throwsFormatException` (matching `timezone ^0.11.0` on malformed tzdb bytes).
+- **Code formatting**: Formatted all Dart files across `lib/` and `test/` to pass `dart format --output=none --set-exit-if-changed .`.
+
+---
+
 ## [2.20.7] - 2026-10-09
 
 ### Fixed

@@ -8,7 +8,9 @@ import 'package:jyotish/src/panchanga/panchanga.dart';
 /// Service for scanning and scoring time suitability (Muhurta) based on Panchanga and native factors.
 class MuhurtaScoringService {
   const MuhurtaScoringService(
-      this._panchangaService, this._panchangStrengthService);
+    this._panchangaService,
+    this._panchangStrengthService,
+  );
 
   final PanchangaService _panchangaService;
   final PanchangStrengthService _panchangStrengthService;
@@ -182,7 +184,7 @@ class MuhurtaScoringService {
       'Kaulava',
       'Taitila',
       'Garaja',
-      'Vanija'
+      'Vanija',
     };
     if (auspicious.contains(karanaName)) {
       return 10.0;

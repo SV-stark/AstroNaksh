@@ -21,6 +21,11 @@ class EphemerisManager {
   static EphemerisService get service => _service ??= EphemerisService();
   static bool get isInitialized => _initialized;
 
+  /// Clears in-memory ephemeris calculation cache to free resources or refresh calculations.
+  static void clearCache() {
+    _jyotish.clearCache();
+  }
+
   // Swiss Ephemeris file URLs (fallback download from GitHub)
   static const String _baseUrl =
       'https://raw.githubusercontent.com/aloistr/swisseph/master/ephe';

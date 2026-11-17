@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:jyotish/src/models/calculation_flags.dart';
 import 'package:jyotish/src/models/divisional_chart_type.dart';
 import 'package:jyotish/src/models/geographic_location.dart';
@@ -85,13 +86,14 @@ class ShadbalaService {
     final drikBala = _calculateDrikBala(planet, planetInfo, chart);
 
     // Calculate total Shadbala
-    final totalBala = (sthanaBala +
-            digBala +
-            kalaBala +
-            chestaBala +
-            naisargikaBala +
-            drikBala)
-        .clamp(0.0, double.infinity);
+    final totalBala =
+        (sthanaBala +
+                digBala +
+                kalaBala +
+                chestaBala +
+                naisargikaBala +
+                drikBala)
+            .clamp(0.0, double.infinity);
 
     // Determine strength category
     final strengthCategory = _getStrengthCategory(totalBala, planet);
@@ -632,8 +634,9 @@ class ShadbalaService {
     // Sun in 10th house = Noon (0 distance from noon).
     // Sun in 4th house = Midnight (6 houses away from noon).
     final sunDistFrom10th = (sunHouse - 10).abs();
-    final circularDist =
-        sunDistFrom10th > 6 ? 12 - sunDistFrom10th : sunDistFrom10th; // 0 to 6
+    final circularDist = sunDistFrom10th > 6
+        ? 12 - sunDistFrom10th
+        : sunDistFrom10th; // 0 to 6
     if (isDayPowerful) {
       return 60.0 * (1.0 - (circularDist / 6.0));
     } else if (isNightPowerful) {
@@ -656,8 +659,9 @@ class ShadbalaService {
 
     // Moon's Paksha Bala: peaks at Full Moon regardless of benefic/malefic status
     if (planet == Planet.moon) {
-      final shuklaStrength =
-          elongation <= 180 ? elongation : (360 - elongation);
+      final shuklaStrength = elongation <= 180
+          ? elongation
+          : (360 - elongation);
       return (shuklaStrength / 180.0) * 60.0;
     }
 
@@ -670,13 +674,15 @@ class ShadbalaService {
 
     if (isBenefic) {
       // Peaks at elongation 180 (Full Moon)
-      final shuklaStrength =
-          elongation <= 180 ? elongation : (360 - elongation);
+      final shuklaStrength = elongation <= 180
+          ? elongation
+          : (360 - elongation);
       return (shuklaStrength / 180.0) * 60.0;
     } else if (isMalefic) {
       // Peaks at elongation 0/360 (New Moon)
-      final krishnaStrength =
-          elongation <= 180 ? (180 - elongation) : (elongation - 180);
+      final krishnaStrength = elongation <= 180
+          ? (180 - elongation)
+          : (elongation - 180);
       return (krishnaStrength / 180.0) * 60.0;
     }
 
@@ -716,9 +722,9 @@ class ShadbalaService {
       final partDuration = dayDuration / 3;
       final secondsSinceSunrise = birthTime.difference(sunrise).inSeconds;
       final partIndex = (secondsSinceSunrise / partDuration).floor().clamp(
-            0,
-            2,
-          );
+        0,
+        2,
+      );
 
       final lords = [Planet.mercury, Planet.sun, Planet.saturn];
       return planet == lords[partIndex] ? 60.0 : 0.0;
@@ -754,9 +760,9 @@ class ShadbalaService {
       final partDuration = nightDuration / 3;
       final secondsSinceNightStart = birthTime.difference(nightStart).inSeconds;
       final partIndex = (secondsSinceNightStart / partDuration).floor().clamp(
-            0,
-            2,
-          );
+        0,
+        2,
+      );
 
       final lords = [Planet.moon, Planet.venus, Planet.mars];
       return planet == lords[partIndex] ? 60.0 : 0.0;
@@ -1016,7 +1022,8 @@ class ShadbalaService {
     }
 
     // Calculate Julian Date (Proleptic Gregorian)
-    final jd = dt.day +
+    final jd =
+        dt.day +
         ((153 * m - 457) / 5).floor() +
         365 * y +
         (y / 4).floor() -
@@ -1466,17 +1473,18 @@ class ShadbalaService {
     final netVirupas = Planet.traditionalPlanets
         .where((otherPlanet) => otherPlanet != planet)
         .map((otherPlanet) {
-      final otherInfo = chart.getPlanet(otherPlanet);
-      if (otherInfo == null) return 0.0;
+          final otherInfo = chart.getPlanet(otherPlanet);
+          if (otherInfo == null) return 0.0;
 
-      final aspectStrength = _calculateProfessionalAspectStrength(
-        aspecting: otherPlanet,
-        aspectingLong: otherInfo.longitude,
-        aspectedLong: planetInfo.longitude,
-      );
+          final aspectStrength = _calculateProfessionalAspectStrength(
+            aspecting: otherPlanet,
+            aspectingLong: otherInfo.longitude,
+            aspectedLong: planetInfo.longitude,
+          );
 
-      return _applyAspectNature(otherPlanet, aspectStrength, chart: chart);
-    }).fold<double>(0.0, (sum, v) => sum + v);
+          return _applyAspectNature(otherPlanet, aspectStrength, chart: chart);
+        })
+        .fold<double>(0.0, (sum, v) => sum + v);
 
     return netVirupas.clamp(-60.0, 60.0);
   }
@@ -1527,17 +1535,14 @@ class ShadbalaService {
         final mercInfo = chart.getPlanet(Planet.mercury);
         if (mercInfo != null) {
           // Check if Mercury is conjunct a natural malefic (within 10 degrees)
-          final hasMaleficConjunct = [
-            Planet.sun,
-            Planet.mars,
-            Planet.saturn,
-          ].any((m) {
-            final mInfo = chart.getPlanet(m);
-            if (mInfo == null) return false;
-            var dist = (mInfo.longitude - mercInfo.longitude).abs() % 360.0;
-            if (dist > 180.0) dist = 360.0 - dist;
-            return dist <= 10.0;
-          });
+          final hasMaleficConjunct = [Planet.sun, Planet.mars, Planet.saturn]
+              .any((m) {
+                final mInfo = chart.getPlanet(m);
+                if (mInfo == null) return false;
+                var dist = (mInfo.longitude - mercInfo.longitude).abs() % 360.0;
+                if (dist > 180.0) dist = 360.0 - dist;
+                return dist <= 10.0;
+              });
           isBenefic = !hasMaleficConjunct;
           isMalefic = hasMaleficConjunct;
         } else {

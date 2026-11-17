@@ -28,6 +28,24 @@ enum LunarMonth {
   final String transliteration;
 }
 
+/// Regional solar calendar naming traditions (12 Rashi-based solar months).
+enum RegionalSolarCalendar {
+  /// Classical Sanskrit Rashi-based solar months (Mesha..Meena).
+  sanskrit('Sanskrit'),
+
+  /// Tamil solar months (Chithirai..Panguni).
+  tamil('Tamil'),
+
+  /// Bengali solar months (Boishakh..Choitro).
+  bengali('Bengali'),
+
+  /// Malayalam solar months (Medam..Meenam).
+  malayalam('Malayalam');
+
+  const RegionalSolarCalendar(this.displayName);
+  final String displayName;
+}
+
 enum AdhikaMasaType {
   none('No Adhika Masa'),
   adhika('Adhika (Extra) Masa'),
@@ -98,6 +116,73 @@ class MasaInfo {
     return amantaMonthOrder[monthIndex];
   }
 
+  /// Returns the solar month name for a zodiac sign index (`0` = Aries .. `11` = Pisces)
+  /// in the specified [RegionalSolarCalendar].
+  static String getSolarMonthName(
+    int rashiIndex, {
+    RegionalSolarCalendar calendar = RegionalSolarCalendar.sanskrit,
+  }) {
+    final idx = ((rashiIndex % 12) + 12) % 12;
+    return switch (calendar) {
+      RegionalSolarCalendar.sanskrit => const [
+        'Mesha',
+        'Vrishabha',
+        'Mithuna',
+        'Karka',
+        'Simha',
+        'Kanya',
+        'Tula',
+        'Vrishchika',
+        'Dhanu',
+        'Makara',
+        'Kumbha',
+        'Meena',
+      ][idx],
+      RegionalSolarCalendar.tamil => const [
+        'Chithirai',
+        'Vaikasi',
+        'Aani',
+        'Aadi',
+        'Avani',
+        'Purattasi',
+        'Aippasi',
+        'Karthigai',
+        'Margazhi',
+        'Thai',
+        'Maasi',
+        'Panguni',
+      ][idx],
+      RegionalSolarCalendar.bengali => const [
+        'Boishakh',
+        'Joishtho',
+        'Asharh',
+        'Srabon',
+        'Bhadro',
+        'Ashwin',
+        'Kartik',
+        'Ogrohayon',
+        'Poush',
+        'Magh',
+        'Falgun',
+        'Choitro',
+      ][idx],
+      RegionalSolarCalendar.malayalam => const [
+        'Medam',
+        'Edavam',
+        'Mithunam',
+        'Karkidakam',
+        'Chingam',
+        'Kanni',
+        'Thulam',
+        'Vrishchikam',
+        'Dhanu',
+        'Makaram',
+        'Kumbham',
+        'Meenam',
+      ][idx],
+    };
+  }
+
   String get displayName {
     final prefix = adhikaType == AdhikaMasaType.adhika ? 'Adhika ' : '';
     final suffix = adhikaType == AdhikaMasaType.nija ? ' (Nija)' : '';
@@ -113,76 +198,46 @@ class MasaInfo {
 /// Hindu seasons (Ritu) - Six-fold division of the year.
 enum Ritu {
   /// Vasanta (Spring) - Chaitra, Vaishakha
-  vasanta(
-      'Vasanta',
-      'Spring',
-      'Flowering season, new beginnings',
-      [
-        'Growth',
-        'Renewal',
-        'Beauty',
-      ],
-      'Earth'),
+  vasanta('Vasanta', 'Spring', 'Flowering season, new beginnings', [
+    'Growth',
+    'Renewal',
+    'Beauty',
+  ], 'Earth'),
 
   /// Grishma (Summer) - Jyeshtha, Ashadha
-  grishma(
-      'Grishma',
-      'Summer',
-      'Hot season, peak energy',
-      [
-        'Heat',
-        'Intensity',
-        'Power',
-      ],
-      'Fire'),
+  grishma('Grishma', 'Summer', 'Hot season, peak energy', [
+    'Heat',
+    'Intensity',
+    'Power',
+  ], 'Fire'),
 
   /// Varsha (Monsoon) - Shravana, Bhadrapada
-  varsha(
-      'Varsha',
-      'Monsoon',
-      'Rainy season, nourishment',
-      [
-        'Nourishment',
-        'Cooling',
-        'Flow',
-      ],
-      'Water'),
+  varsha('Varsha', 'Monsoon', 'Rainy season, nourishment', [
+    'Nourishment',
+    'Cooling',
+    'Flow',
+  ], 'Water'),
 
   /// Sharad (Autumn) - Ashwin, Kartika
-  sharad(
-      'Sharad',
-      'Autumn',
-      'Harvest season, maturity',
-      [
-        'Harvest',
-        'Gratitude',
-        'Balance',
-      ],
-      'Air'),
+  sharad('Sharad', 'Autumn', 'Harvest season, maturity', [
+    'Harvest',
+    'Gratitude',
+    'Balance',
+  ], 'Air'),
 
   /// Hemanta (Pre-winter) - Margashirsha, Pausha
-  hemanta(
-      'Hemanta',
-      'Pre-winter',
-      'Cooling down, preparation',
-      [
-        'Preparation',
-        'Conservation',
-        'Rest',
-      ],
-      'Space'),
+  hemanta('Hemanta', 'Pre-winter', 'Cooling down, preparation', [
+    'Preparation',
+    'Conservation',
+    'Rest',
+  ], 'Space'),
 
   /// Shishira (Winter) - Magha, Phalguna
-  shishira(
-      'Shishira',
-      'Winter',
-      'Cold season, introspection',
-      [
-        'Introspection',
-        'Wisdom',
-        'Endings',
-      ],
-      'Earth');
+  shishira('Shishira', 'Winter', 'Cold season, introspection', [
+    'Introspection',
+    'Wisdom',
+    'Endings',
+  ], 'Earth');
 
   const Ritu(
     this.sanskrit,

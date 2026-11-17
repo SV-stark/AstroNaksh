@@ -17,6 +17,7 @@ void main() {
           .withAscendantSign(1)
           .withPlanetInSign(Planet.moon, 1)
           .withPlanetInSign(Planet.jupiter, 4)
+          .withPlanetInSign(Planet.venus, 4)
           .build();
 
       final result = YogaDoshaAnalyzer.analyze(chart);

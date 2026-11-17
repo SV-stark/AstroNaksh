@@ -704,3 +704,60 @@ enum SpecialYogaType {
   final String displayName;
   final bool isAuspicious;
 }
+
+/// Classical 5-fold Panchaka Rahita classification for a Muhurta.
+enum PanchakaType {
+  /// Shubha (Panchaka-free, auspicious) — remainders 0, 3, 5, 7.
+  shubha('Shubha (Panchaka-Free)', true),
+
+  /// Mrityu Panchaka (danger / mortality) — remainder 1.
+  mrityu('Mrityu Panchaka', false),
+
+  /// Agni Panchaka (fire / conflict hazard) — remainder 2.
+  agni('Agni Panchaka', false),
+
+  /// Raja Panchaka (state / authority obstacle) — remainder 4.
+  raja('Raja Panchaka', false),
+
+  /// Chora Panchaka (theft / loss hazard) — remainder 6.
+  chora('Chora Panchaka', false),
+
+  /// Roga Panchaka (illness / health obstacle) — remainder 8.
+  roga('Roga Panchaka', false);
+
+  const PanchakaType(this.displayName, this.isAuspicious);
+
+  /// Display name of the Panchaka category.
+  final String displayName;
+
+  /// Whether this Panchaka state is auspicious (free of Panchaka dosha).
+  final bool isAuspicious;
+
+  @override
+  String toString() => displayName;
+}
+
+/// Result of a Panchaka Rahita Muhurta evaluation.
+class PanchakaResult {
+  /// Creates a [PanchakaResult].
+  const PanchakaResult({
+    required this.type,
+    required this.remainder,
+    required this.sum,
+  });
+
+  /// Panchaka classification.
+  final PanchakaType type;
+
+  /// Remainder of `sum % 9`.
+  final int remainder;
+
+  /// Raw sum `(tithi + weekday + nakshatra + lagna)` before modulo 9.
+  final int sum;
+
+  /// Whether the evaluated moment is free of Panchaka dosha.
+  bool get isAuspicious => type.isAuspicious;
+
+  @override
+  String toString() => 'PanchakaResult(${type.displayName}, rem=$remainder)';
+}

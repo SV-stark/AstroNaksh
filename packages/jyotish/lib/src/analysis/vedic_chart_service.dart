@@ -1,5 +1,7 @@
 import 'package:logging/logging.dart';
+
 import '../exceptions/jyotish_exception.dart';
+
 import 'package:jyotish/src/models/calculation_flags.dart';
 import 'package:jyotish/src/models/geographic_location.dart';
 import 'package:jyotish/src/models/planet.dart';
@@ -30,7 +32,8 @@ class VedicChartService {
   }) async {
     try {
       _log.fine(
-          'Calculating chart for $dateTime at (${location.latitude}, ${location.longitude})');
+        'Calculating chart for $dateTime at (${location.latitude}, ${location.longitude})',
+      );
       // Use provided flags or default Lahiri ayanamsa (sidereal is now default)
       flags ??= CalculationFlags.traditionalist();
 
@@ -49,8 +52,9 @@ class VedicChartService {
       );
 
       // Get list of planets to calculate
-      final planetsToCalculate =
-          includeOuterPlanets ? Planet.majorPlanets : Planet.traditionalPlanets;
+      final planetsToCalculate = includeOuterPlanets
+          ? Planet.majorPlanets
+          : Planet.traditionalPlanets;
 
       // Calculate all planetary positions
       final planetPositions = <Planet, PlanetPosition>{};
@@ -198,8 +202,9 @@ class VedicChartService {
     } else {
       // For other systems (Placidus, Equal, etc.), subtracting ayanamsa from
       // the tropical cusps correctly yields the exact sidereal cusps.
-      cusps =
-          tropicalCusps.map((cusp) => (cusp - ayanamsa + 360) % 360).toList();
+      cusps = tropicalCusps
+          .map((cusp) => (cusp - ayanamsa + 360) % 360)
+          .toList();
     }
 
     return HouseSystem(
@@ -296,8 +301,8 @@ class VedicChartService {
     int planetHouse,
   ) {
     // 1. Naisargika (natural / permanent) friendship
-    final natural = RelationshipCalculator.naturalRelationships[planet]
-            ?[signLord] ??
+    final natural =
+        RelationshipCalculator.naturalRelationships[planet]?[signLord] ??
         RelationshipType.neutral;
 
     // 2. Tatkalika (temporal / chart-based) friendship

@@ -18,8 +18,8 @@ class JaiminiService {
     final rahuPlanet = chart.getPlanet(Planet.meanNode) != null
         ? Planet.meanNode
         : (chart.getPlanet(Planet.trueNode) != null
-            ? Planet.trueNode
-            : Planet.meanNode);
+              ? Planet.trueNode
+              : Planet.meanNode);
 
     final candidates = useEightKarakaScheme
         ? [

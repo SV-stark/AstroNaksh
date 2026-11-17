@@ -1,6 +1,7 @@
 import 'package:jyotish/src/systems/kp_service.dart' show KPService;
 
 import '../constants/planet_constants.dart';
+
 import 'package:jyotish/src/models/planet.dart';
 
 /// The high-level astrological paradigm (system) being used.
@@ -90,28 +91,48 @@ class CalculationFlags {
   /// System : **[AstrologicalSystem.traditional]**.
   /// Uses Lahiri ayanamsa and True Node (preferred by contemporary researchers).
   factory CalculationFlags.modernPrecision() => const CalculationFlags(
-        system: AstrologicalSystem.traditional,
-        nodeType: NodeType.trueNode,
-      );
+    system: AstrologicalSystem.traditional,
+    nodeType: NodeType.trueNode,
+  );
+
+  /// Jagannatha Hora (JHora / P.V.R. Narasimha Rao) V4.7+ default preset.
+  ///
+  /// System : **[AstrologicalSystem.traditional]**.
+  /// Uses True Pushya ayanamsa (`SE_SIDM_TRUE_PUSHYA`) and True Node.
+  factory CalculationFlags.jhora() => const CalculationFlags(
+    system: AstrologicalSystem.traditional,
+    siderealMode: SiderealMode.truePushya,
+    nodeType: NodeType.trueNode,
+  );
+
+  /// B.V. Raman classical preset.
+  ///
+  /// System : **[AstrologicalSystem.traditional]**.
+  /// Uses Raman ayanamsa (`SE_SIDM_RAMAN`) and Mean Node.
+  factory CalculationFlags.bvRaman() => const CalculationFlags(
+    system: AstrologicalSystem.traditional,
+    siderealMode: SiderealMode.raman,
+    nodeType: NodeType.meanNode,
+  );
 
   /// Creates flags for sidereal calculations with a custom ayanamsa.
   /// Defaults to the [AstrologicalSystem.traditional] paradigm.
   factory CalculationFlags.sidereal(SiderealMode mode) => CalculationFlags(
-        system: AstrologicalSystem.traditional,
-        siderealMode: mode,
-      );
+    system: AstrologicalSystem.traditional,
+    siderealMode: mode,
+  );
 
   /// Creates flags for sidereal calculations with Lahiri ayanamsa.
   factory CalculationFlags.siderealLahiri() => const CalculationFlags(
-        system: AstrologicalSystem.traditional,
-        siderealMode: SiderealMode.lahiri,
-      );
+    system: AstrologicalSystem.traditional,
+    siderealMode: SiderealMode.lahiri,
+  );
 
   /// Creates flags for topocentric calculations (traditional system).
   factory CalculationFlags.topocentric() => const CalculationFlags(
-        system: AstrologicalSystem.traditional,
-        useTopocentric: true,
-      );
+    system: AstrologicalSystem.traditional,
+    useTopocentric: true,
+  );
 
   /// Creates flags for the **KP (Krishnamurti Paddhati)** system.
   ///
@@ -136,17 +157,17 @@ class CalculationFlags {
   /// final kpData = await jyotish.calculateKPData(chart);
   /// ```
   factory CalculationFlags.kp() => const CalculationFlags(
-        system: AstrologicalSystem.kp,
-        siderealMode: SiderealMode.krishnamurtiVP291,
-      );
+    system: AstrologicalSystem.kp,
+    siderealMode: SiderealMode.krishnamurtiVP291,
+  );
 
   /// Creates flags with specified node type (traditional system).
   ///
   /// [nodeType] - Type of lunar node (meanNode or trueNode).
   factory CalculationFlags.withNodeType(NodeType nodeType) => CalculationFlags(
-        system: AstrologicalSystem.traditional,
-        nodeType: nodeType,
-      );
+    system: AstrologicalSystem.traditional,
+    nodeType: nodeType,
+  );
 
   /// The high-level astrological system/paradigm.
   ///
@@ -253,14 +274,14 @@ class CalculationFlags {
   /// [SiderealMode.label].  Labels are cosmetic and may be reworded at any
   /// time; identifiers are the stable wire format.
   Map<String, dynamic> toJson() => {
-        'system': system.name,
-        'useSwissEphemeris': useSwissEphemeris,
-        'calculateSpeed': calculateSpeed,
-        'siderealMode': siderealMode.name,
-        'useTopocentric': useTopocentric,
-        'useEquatorial': useEquatorial,
-        'nodeType': nodeType.name,
-      };
+    'system': system.name,
+    'useSwissEphemeris': useSwissEphemeris,
+    'calculateSpeed': calculateSpeed,
+    'siderealMode': siderealMode.name,
+    'useTopocentric': useTopocentric,
+    'useEquatorial': useEquatorial,
+    'nodeType': nodeType.name,
+  };
 
   /// Creates a CalculationFlags instance from a JSON map.
   ///
@@ -308,9 +329,11 @@ class CalculationFlags {
     if (raw == null) return NodeType.meanNode;
     final value = raw.toString();
     final match = NodeType.values
-        .where((n) =>
-            n.name.toLowerCase() == value.toLowerCase() ||
-            n.description.toLowerCase() == value.toLowerCase())
+        .where(
+          (n) =>
+              n.name.toLowerCase() == value.toLowerCase() ||
+              n.description.toLowerCase() == value.toLowerCase(),
+        )
         .firstOrNull;
     if (match == null) {
       throw ArgumentError(
@@ -359,8 +382,15 @@ class CalculationFlags {
           nodeType == other.nodeType;
 
   @override
-  int get hashCode => Object.hash(system, useSwissEphemeris, calculateSpeed,
-      siderealMode, useTopocentric, useEquatorial, nodeType);
+  int get hashCode => Object.hash(
+    system,
+    useSwissEphemeris,
+    calculateSpeed,
+    siderealMode,
+    useTopocentric,
+    useEquatorial,
+    nodeType,
+  );
 }
 
 /// Lunar node type for Rahu/Ketu calculations.

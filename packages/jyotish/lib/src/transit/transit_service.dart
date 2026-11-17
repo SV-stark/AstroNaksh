@@ -32,8 +32,9 @@ class TransitService {
     final transits = <Planet, TransitInfo>{};
 
     // Calculate transit positions for traditional planets + nodes
-    final rahuPlanet =
-        flags.nodeType == NodeType.trueNode ? Planet.trueNode : Planet.meanNode;
+    final rahuPlanet = flags.nodeType == NodeType.trueNode
+        ? Planet.trueNode
+        : Planet.meanNode;
     final planetsToCalculate = [
       ...Planet.traditionalPlanets,
       rahuPlanet,
@@ -94,8 +95,7 @@ class TransitService {
   List<AspectInfo> calculateTransitAspects(
     PlanetPosition transitPos,
     VedicChart natalChart,
-  ) =>
-      _calculateTransitAspects(transitPos, natalChart);
+  ) => _calculateTransitAspects(transitPos, natalChart);
 
   /// Calculates aspects from a single transit planet to all natal positions.
   List<AspectInfo> _calculateTransitAspects(
@@ -298,9 +298,10 @@ class TransitService {
     final events = <TransitEvent>[];
     final rahuPlanet =
         (natalChart.calculationFlags?.nodeType == NodeType.trueNode)
-            ? Planet.trueNode
-            : Planet.meanNode;
-    final planets = config.planets ??
+        ? Planet.trueNode
+        : Planet.meanNode;
+    final planets =
+        config.planets ??
         [...Planet.traditionalPlanets, rahuPlanet, Planet.ketu];
 
     var currentDate = config.startDate;
@@ -330,19 +331,20 @@ class TransitService {
             // tight orb between two slow planets yields a window of months,
             // while a wide orb between fast planets yields hours — and the
             // fabricated window was identical for both.
-            final relativeSpeed = (transit.transitPosition.longitudeSpeed -
-                    (natalChart
-                            .getPlanet(aspect.aspectedPlanet)
-                            ?.position
-                            .longitudeSpeed ??
-                        0.0))
-                .abs();
+            final relativeSpeed =
+                (transit.transitPosition.longitudeSpeed -
+                        (natalChart
+                                .getPlanet(aspect.aspectedPlanet)
+                                ?.position
+                                .longitudeSpeed ??
+                            0.0))
+                    .abs();
             final halfSpanDays = relativeSpeed > 1e-9
                 ? aspect.exactOrb.abs() / relativeSpeed
                 : config.intervalDays.toDouble();
             final halfSpan = Duration(
-              microseconds:
-                  (halfSpanDays * Duration.microsecondsPerDay).round(),
+              microseconds: (halfSpanDays * Duration.microsecondsPerDay)
+                  .round(),
             );
 
             final event = TransitEvent(
@@ -383,7 +385,8 @@ class TransitService {
     // the same for any instant inside the week.
     final seen = <String>{};
     return events.where((e) {
-      final key = '${e.transitPlanet}-'
+      final key =
+          '${e.transitPlanet}-'
           '${e.natalPlanet?.name ?? e.natalPointName}-'
           '${e.aspectType.name}-'
           '${e.exactDate.millisecondsSinceEpoch}';

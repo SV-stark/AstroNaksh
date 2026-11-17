@@ -158,14 +158,9 @@ class ArudhaPadaService {
       final rahuPlanet = chart.getPlanet(Planet.meanNode) != null
           ? Planet.meanNode
           : (chart.getPlanet(Planet.trueNode) != null
-              ? Planet.trueNode
-              : Planet.meanNode);
-      return _getStrongerLord(
-        chart,
-        Planet.saturn,
-        rahuPlanet,
-        rashi,
-      ); // Rahu
+                ? Planet.trueNode
+                : Planet.meanNode);
+      return _getStrongerLord(chart, Planet.saturn, rahuPlanet, rashi); // Rahu
     } else {
       final lord = _getSignLord(rashi);
       final lordInfo = chart.getPlanet(lord);
@@ -210,10 +205,12 @@ class ArudhaPadaService {
       chart.rahu.longitude,
       chart.ketu.longitude,
     ];
-    final planets1 =
-        allLongitudes.where((lng) => Rashi.fromLongitude(lng) == sign1).length;
-    final planets2 =
-        allLongitudes.where((lng) => Rashi.fromLongitude(lng) == sign2).length;
+    final planets1 = allLongitudes
+        .where((lng) => Rashi.fromLongitude(lng) == sign1)
+        .length;
+    final planets2 = allLongitudes
+        .where((lng) => Rashi.fromLongitude(lng) == sign2)
+        .length;
 
     // Rule 1: the lord that is ALONE is stronger.
     //

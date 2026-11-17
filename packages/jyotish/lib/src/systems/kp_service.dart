@@ -180,8 +180,9 @@ class KPService {
     const totalPeriods = 120;
 
     final starLord = KPPlanetOwnership.getStarLord(star);
-    final searchStarLord =
-        (starLord == Planet.trueNode) ? Planet.meanNode : starLord;
+    final searchStarLord = (starLord == Planet.trueNode)
+        ? Planet.meanNode
+        : starLord;
     final starLordIndex = dashaPeriods.indexWhere(
       (p) =>
           (p.$1 == Planet.meanNode && searchStarLord == Planet.meanNode) ||
@@ -201,8 +202,8 @@ class KPService {
       }
     }
 
-    return dashaPeriods[
-            (startIndex + dashaPeriods.length - 1) % dashaPeriods.length]
+    return dashaPeriods[(startIndex + dashaPeriods.length - 1) %
+            dashaPeriods.length]
         .$1;
   }
 
@@ -287,8 +288,9 @@ class KPService {
     const totalPeriods = 120; // Standard Vimshottari total
 
     final starLord = KPPlanetOwnership.getStarLord(star);
-    final searchStarLord =
-        (starLord == Planet.trueNode) ? Planet.meanNode : starLord;
+    final searchStarLord = (starLord == Planet.trueNode)
+        ? Planet.meanNode
+        : starLord;
     final starLordIndex = dashaPeriods.indexWhere(
       (p) =>
           (p.$1 == Planet.meanNode && searchStarLord == Planet.meanNode) ||
@@ -646,8 +648,9 @@ class KPService {
         Planet.mercury,
       ];
       // Note: in _calculateSubLord we had meanNode. Make sure starLord logic uses meanNode for Rahu.
-      final searchStarLord =
-          (starLord == Planet.trueNode) ? Planet.meanNode : starLord;
+      final searchStarLord = (starLord == Planet.trueNode)
+          ? Planet.meanNode
+          : starLord;
       final startPlanetIndex = planets.indexOf(searchStarLord);
 
       for (var i = 0; i < 9; i++) {

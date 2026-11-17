@@ -44,13 +44,13 @@ class WarDetails {
   Planet get loser => winnerId == planet1 ? planet2 : planet1;
 
   Map<String, dynamic> toJson() => {
-        'planet1': planet1.displayName,
-        'planet2': planet2.displayName,
-        'planet1Magnitude': planet1Magnitude,
-        'planet2Magnitude': planet2Magnitude,
-        'planet1Declination': planet1Declination,
-        'planet2Declination': planet2Declination,
-        'longitudeDifference': longitudeDifference,
-        'winnerId': winnerId.displayName,
-      };
+    'planet1': planet1.displayName,
+    'planet2': planet2.displayName,
+    'planet1Magnitude': planet1Magnitude,
+    'planet2Magnitude': planet2Magnitude,
+    'planet1Declination': planet1Declination,
+    'planet2Declination': planet2Declination,
+    'longitudeDifference': longitudeDifference,
+    'winnerId': winnerId.displayName,
+  };
 }

@@ -39,6 +39,10 @@ class ChartCustomization {
       json['showExaltedDebilitated'],
       fallback: true,
     );
+    settings.showSpecialLagnas = _readBool(
+      json['showSpecialLagnas'],
+      fallback: false,
+    );
 
     settings.planetSize = PlanetSize.values.firstWhere(
       (e) => e.toString() == json['planetSize'],
@@ -256,6 +260,7 @@ class ChartCustomization {
   bool showRetrograde = true;
   bool showCombust = true;
   bool showExaltedDebilitated = true;
+  bool showSpecialLagnas = false;
   PlanetSize planetSize = PlanetSize.medium;
 
   // House System Settings
@@ -338,6 +343,7 @@ class ChartCustomization {
       'showRetrograde': showRetrograde,
       'showCombust': showCombust,
       'showExaltedDebilitated': showExaltedDebilitated,
+      'showSpecialLagnas': showSpecialLagnas,
       'planetSize': planetSize.toString(),
       'houseSystem': houseSystem.toString(),
       'showHouseCusps': showHouseCusps,
@@ -444,6 +450,7 @@ class ChartCustomization {
     bool? showRetrograde,
     bool? showCombust,
     bool? showExaltedDebilitated,
+    bool? showSpecialLagnas,
     PlanetSize? planetSize,
     HouseSystem? houseSystem,
     bool? showHouseCusps,
@@ -496,6 +503,7 @@ class ChartCustomization {
     result.showCombust = showCombust ?? this.showCombust;
     result.showExaltedDebilitated =
         showExaltedDebilitated ?? this.showExaltedDebilitated;
+    result.showSpecialLagnas = showSpecialLagnas ?? this.showSpecialLagnas;
     result.planetSize = planetSize ?? this.planetSize;
     result.houseSystem = houseSystem ?? this.houseSystem;
     result.showHouseCusps = showHouseCusps ?? this.showHouseCusps;

@@ -13,11 +13,12 @@ void main() {
   setUpAll(() async {
     try {
       final exeDir = p.dirname(Platform.resolvedExecutable);
-      final projectDll = File('swisseph.dll');
-      if (projectDll.existsSync()) {
-        final targetDll = File(p.join(exeDir, 'swisseph.dll'));
-        if (!targetDll.existsSync()) {
-          projectDll.copySync(targetDll.path);
+      final libName = Platform.isWindows ? 'swisseph.dll' : 'libswisseph.so';
+      final projectLib = File(libName);
+      if (projectLib.existsSync()) {
+        final targetLib = File(p.join(exeDir, libName));
+        if (!targetLib.existsSync()) {
+          projectLib.copySync(targetLib.path);
         }
       }
     } catch (e) {

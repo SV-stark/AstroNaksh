@@ -22,6 +22,11 @@ All notable changes to AstroNaksh are documented in this file.
 - **Ephemeris Cache Control**: Added `EphemerisManager.clearCache()` to allow explicit runtime clearing of Swiss Ephemeris FFI caches.
 
 ### 🛠️ Verification & Quality Assurance
+- **GitHub Actions Linux CI Test Suite Fix**:
+  - Enhanced `.github/workflows/nightly.yml` to install `libswe-dev` and `build-essential` on `ubuntu-latest`.
+  - Added Linux C compilation of `libswisseph.so` directly from official Swiss Ephemeris sources in `scripts/setup_swisseph.ps1`.
+  - Expanded `SwissEphBindings._loadLibrary` to automatically probe local project paths (`.`, `packages/jyotish`, `assets/ephe`, executable dir) and system library locations (`/usr/local/lib`, `/usr/lib/x86_64-linux-gnu`) before dynamic name fallback.
+  - Hardened `AppEnvironment` and `EphemerisManager` against headless test runner missing plugin exceptions by adding Linux XDG/Home directory fallbacks and local disk ephemeris discovery.
 - **100% Test Suite Verification**: All 164 unit, widget, and logic tests passing cleanly (`flutter test`).
 - **Zero Static Analysis Errors**: `flutter analyze` passing across both root workspace and `packages/jyotish` with 0 errors and 0 warnings.
 - **Consistent Code Formatting**: All files formatted according to Dart style guidelines with `dart format`.

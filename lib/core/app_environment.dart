@@ -69,7 +69,31 @@ class AppEnvironment {
         return dir;
       }
     }
-    return getApplicationSupportDirectory();
+    if (Platform.isLinux && !_isPortable) {
+      final xdgData =
+          Platform.environment['XDG_DATA_HOME'] ??
+          (Platform.environment['HOME'] != null
+              ? p.join(Platform.environment['HOME']!, '.local', 'share')
+              : null);
+      if (xdgData != null) {
+        final dir = Directory(p.join(xdgData, 'AstroNaksh'));
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
+        return dir;
+      }
+    }
+    try {
+      return await getApplicationSupportDirectory();
+    } catch (_) {
+      final dir = Directory(
+        p.join(Directory.current.path, '.test_app_support'),
+      );
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
+      }
+      return dir;
+    }
   }
 
   static Future<void> _setupLogging() async {
@@ -107,13 +131,58 @@ class AppEnvironment {
         await dir.create(recursive: true);
       }
       return dir;
-    } else {
-      return getApplicationDocumentsDirectory();
+    }
+    if (Platform.isWindows) {
+      final roaming = Platform.environment['APPDATA'];
+      if (roaming != null) {
+        final dir = Directory(p.join(roaming, 'AstroNaksh', 'user_data'));
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
+        return dir;
+      }
+    }
+    if (Platform.isLinux) {
+      final xdgData =
+          Platform.environment['XDG_DATA_HOME'] ??
+          (Platform.environment['HOME'] != null
+              ? p.join(Platform.environment['HOME']!, '.local', 'share')
+              : null);
+      if (xdgData != null) {
+        final dir = Directory(p.join(xdgData, 'AstroNaksh', 'user_data'));
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
+        return dir;
+      }
+    }
+    try {
+      return await getApplicationDocumentsDirectory();
+    } catch (_) {
+      final dir = Directory(p.join(Directory.current.path, '.test_user_data'));
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
+      }
+      return dir;
     }
   }
 
   /// Get the directory for storing ephemeris files
   static Future<Directory> getEphemerisDirectory() async {
+    final localEphe = Directory(
+      p.join(Directory.current.path, 'assets', 'ephe'),
+    );
+    if (localEphe.existsSync() &&
+        File(p.join(localEphe.path, 'seas_18.se1')).existsSync()) {
+      return localEphe;
+    }
+
+    final cwdEphe = Directory(p.join(Directory.current.path, 'ephe'));
+    if (cwdEphe.existsSync() &&
+        File(p.join(cwdEphe.path, 'seas_18.se1')).existsSync()) {
+      return cwdEphe;
+    }
+
     if (_isPortable && _executableDir != null) {
       final dir = Directory(p.join(_executableDir!, 'user_data', 'ephe'));
       if (!await dir.exists()) {

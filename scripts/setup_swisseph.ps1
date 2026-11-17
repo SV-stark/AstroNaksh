@@ -9,9 +9,17 @@ $TEMP_DIR = "swisseph_temp"
 $ANDROID_CPP_DIR = "android/app/src/main/cpp/swisseph"
 $ASSETS_EPHE_DIR = "assets/ephe"
 $DLL_NAME = "swisseph.dll"
+$SO_NAME = "libswisseph.so"
+$isUnix = $IsLinux -or [System.Environment]::OSVersion.Platform -eq "Unix"
 
 # 2. Check if we need to do anything
-if (-not $Force -and (Test-Path $DLL_NAME) -and (Test-Path $ANDROID_CPP_DIR) -and (Test-Path $ASSETS_EPHE_DIR)) {
+$hasNativeLib = if ($isUnix) {
+    (Test-Path $SO_NAME) -or (Test-Path "/usr/lib/x86_64-linux-gnu/libswe.so") -or (Test-Path "/usr/local/lib/$SO_NAME")
+} else {
+    Test-Path $DLL_NAME
+}
+
+if (-not $Force -and $hasNativeLib -and (Test-Path $ANDROID_CPP_DIR) -and (Test-Path $ASSETS_EPHE_DIR) -and (Test-Path "$ASSETS_EPHE_DIR/seas_18.se1")) {
     Write-Host "[OK] Swiss Ephemeris assets already present. Use -Force to re-setup." -ForegroundColor Green
     exit 0
 }
@@ -19,6 +27,8 @@ if (-not $Force -and (Test-Path $DLL_NAME) -and (Test-Path $ANDROID_CPP_DIR) -an
 # 3. Create target directories
 if (-not (Test-Path $ANDROID_CPP_DIR)) { New-Item -ItemType Directory -Path $ANDROID_CPP_DIR -Force | Out-Null }
 if (-not (Test-Path $ASSETS_EPHE_DIR)) { New-Item -ItemType Directory -Path $ASSETS_EPHE_DIR -Force | Out-Null }
+if (-not (Test-Path "ephe")) { New-Item -ItemType Directory -Path "ephe" -Force | Out-Null }
+if (-not (Test-Path "packages/jyotish")) { New-Item -ItemType Directory -Path "packages/jyotish" -Force | Out-Null }
 
 # 4. Clone official repo (pinned to stable tag v2.10.03)
 if (Test-Path $TEMP_DIR) { Remove-Item $TEMP_DIR -Recurse -Force }
@@ -30,35 +40,56 @@ if ($LASTEXITCODE -ne 0) {
     git clone --depth 1 https://github.com/aloistr/swisseph.git $TEMP_DIR
 }
 
-# 5. Get swisseph.dll from the official Windows zip package
-Write-Host "Downloading official Windows DLL package..." -ForegroundColor Cyan
-$zipUrl = "https://raw.githubusercontent.com/aloistr/swisseph/v2.10.03/windows/sweph.zip"
-$zipPath = "$TEMP_DIR/sweph.zip"
-$zipExtract = "$TEMP_DIR/sweph_win"
-try {
-    Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
-} catch {
-    $zipUrl = "https://raw.githubusercontent.com/aloistr/swisseph/master/windows/sweph.zip"
-    Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
-}
-Expand-Archive -LiteralPath $zipPath -DestinationPath $zipExtract -Force
-
-# The zip contains swedll64.dll (64-bit) and swedll32.dll (32-bit)
-# We need the 64-bit version renamed to swisseph.dll
-$dll64 = Get-ChildItem -Path $zipExtract -Recurse -Filter "swedll64.dll" | Select-Object -First 1
-if ($dll64) {
-    Copy-Item $dll64.FullName -Destination "swisseph.dll" -Force
-    Write-Host "[DLL] Extracted 64-bit swisseph.dll from sweph.zip" -ForegroundColor Green
-}
-if (-not (Test-Path "swisseph.dll")) {
-    $anyDll = Get-ChildItem -Path $zipExtract -Recurse -Filter "*.dll" | Select-Object -First 1
-    if ($anyDll) {
-        Copy-Item $anyDll.FullName -Destination "swisseph.dll" -Force
-        Write-Host "[DLL] Extracted $($anyDll.Name) -> swisseph.dll" -ForegroundColor Yellow
+# 5. Linux shared library compilation or Windows DLL extraction
+if ($isUnix) {
+    Write-Host "Building libswisseph.so for Linux..." -ForegroundColor Cyan
+    if (Get-Command gcc -ErrorAction SilentlyContinue) {
+        $cFiles = Get-ChildItem -Path $TEMP_DIR -Filter "swe*.c" | Select-Object -ExpandProperty FullName
+        if ($cFiles) {
+            gcc -shared -fPIC -O3 $cFiles -o $SO_NAME -lm
+            if (Test-Path $SO_NAME) {
+                Write-Host "[SO] Successfully built $SO_NAME" -ForegroundColor Green
+                Copy-Item $SO_NAME -Destination "packages/jyotish/$SO_NAME" -Force -ErrorAction SilentlyContinue
+                Copy-Item $SO_NAME -Destination "$ASSETS_EPHE_DIR/$SO_NAME" -Force -ErrorAction SilentlyContinue
+            }
+        }
+    } else {
+        Write-Warning "gcc not found on Linux host. Please ensure build-essential is installed."
     }
-}
-if (-not (Test-Path "swisseph.dll")) {
-    Write-Warning "No DLL found in sweph.zip. swisseph.dll will not be available."
+} else {
+    # Windows: Get swisseph.dll from the official Windows zip package
+    Write-Host "Downloading official Windows DLL package..." -ForegroundColor Cyan
+    $zipUrl = "https://raw.githubusercontent.com/aloistr/swisseph/v2.10.03/windows/sweph.zip"
+    $zipPath = "$TEMP_DIR/sweph.zip"
+    $zipExtract = "$TEMP_DIR/sweph_win"
+    try {
+        Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
+    } catch {
+        $zipUrl = "https://raw.githubusercontent.com/aloistr/swisseph/master/windows/sweph.zip"
+        Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
+    }
+    Expand-Archive -LiteralPath $zipPath -DestinationPath $zipExtract -Force
+
+    # The zip contains swedll64.dll (64-bit) and swedll32.dll (32-bit)
+    # We need the 64-bit version renamed to swisseph.dll
+    $dll64 = Get-ChildItem -Path $zipExtract -Recurse -Filter "swedll64.dll" | Select-Object -First 1
+    if ($dll64) {
+        Copy-Item $dll64.FullName -Destination $DLL_NAME -Force
+        Write-Host "[DLL] Extracted 64-bit swisseph.dll from sweph.zip" -ForegroundColor Green
+    }
+    if (-not (Test-Path $DLL_NAME)) {
+        $anyDll = Get-ChildItem -Path $zipExtract -Recurse -Filter "*.dll" | Select-Object -First 1
+        if ($anyDll) {
+            Copy-Item $anyDll.FullName -Destination $DLL_NAME -Force
+            Write-Host "[DLL] Extracted $($anyDll.Name) -> swisseph.dll" -ForegroundColor Yellow
+        }
+    }
+    if (Test-Path $DLL_NAME) {
+        Copy-Item $DLL_NAME -Destination "packages/jyotish/$DLL_NAME" -Force -ErrorAction SilentlyContinue
+        Copy-Item $DLL_NAME -Destination "$ASSETS_EPHE_DIR/$DLL_NAME" -Force -ErrorAction SilentlyContinue
+    } else {
+        Write-Warning "No DLL found in sweph.zip. swisseph.dll will not be available."
+    }
 }
 
 # 6. Copy C sources to Android
@@ -70,8 +101,23 @@ Copy-Item "$TEMP_DIR/swe*.h" -Destination $ANDROID_CPP_DIR -Force
 Write-Host "Copying ephemeris data..." -ForegroundColor Cyan
 $required_ephe = @("seas_18.se1", "semo_18.se1", "sepl_18.se1")
 foreach ($file in $required_ephe) {
+    $dest = "$ASSETS_EPHE_DIR/$file"
     if (Test-Path "$TEMP_DIR/ephe/$file") {
-        Copy-Item "$TEMP_DIR/ephe/$file" -Destination $ASSETS_EPHE_DIR -Force
+        Copy-Item "$TEMP_DIR/ephe/$file" -Destination $dest -Force
+    } elseif (-not (Test-Path $dest)) {
+        Write-Host "Downloading $file from GitHub/Astro.com..." -ForegroundColor Yellow
+        try {
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aloistr/swisseph/master/ephe/$file" -OutFile $dest -TimeoutSec 30
+        } catch {
+            try {
+                Invoke-WebRequest -Uri "https://www.astro.com/ftp/swisseph/ephe/$file" -OutFile $dest -TimeoutSec 30
+            } catch {
+                Write-Warning "Could not download $file: $_"
+            }
+        }
+    }
+    if (Test-Path $dest) {
+        Copy-Item $dest -Destination "ephe/$file" -Force -ErrorAction SilentlyContinue
     }
 }
 

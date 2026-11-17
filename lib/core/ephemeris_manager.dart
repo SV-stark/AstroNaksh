@@ -76,10 +76,16 @@ class EphemerisManager {
     // First try to copy from bundled assets to the target path
     await _copyBundledAssets(targetPath);
 
-    // On Windows, the DLL MUST be in the executable directory for DynamicLibrary.open to find it
+    // On Windows or Linux, copy native library to executable directory if accessible
     if (Platform.isWindows || Platform.isLinux) {
-      final exeDir = p.dirname(Platform.resolvedExecutable);
-      await _copyNativeLibrary(exeDir);
+      try {
+        final exeDir = p.dirname(Platform.resolvedExecutable);
+        await _copyNativeLibrary(exeDir);
+      } catch (e) {
+        AppEnvironment.log(
+          'EphemerisManager: Could not copy native library to exeDir: $e',
+        );
+      }
     }
 
     // Verify swisseph.dll existence and validity (Windows only)
@@ -175,7 +181,34 @@ class EphemerisManager {
         }
       }
 
-      // Try to copy from bundled assets
+      // Check local files on disk first (e.g. in test or desktop dev environments)
+      final localCandidates = [
+        p.join(Directory.current.path, 'assets', 'ephe', file),
+        p.join(Directory.current.path, 'ephe', file),
+        p.join('assets', 'ephe', file),
+        p.join('ephe', file),
+      ];
+
+      var copied = false;
+      for (final candidate in localCandidates) {
+        final sourceFile = File(candidate);
+        if (await sourceFile.exists()) {
+          try {
+            if (p.canonicalize(sourceFile.path) !=
+                p.canonicalize(targetFile.path)) {
+              await sourceFile.copy(targetFile.path);
+              AppEnvironment.log(
+                'EphemerisManager: Copied from disk: $candidate',
+              );
+            }
+            copied = true;
+            break;
+          } catch (_) {}
+        }
+      }
+      if (copied) continue;
+
+      // Try to copy from bundled assets via rootBundle
       try {
         final assetPath = 'assets/ephe/$file';
         final data = await rootBundle.load(assetPath);
@@ -191,7 +224,7 @@ class EphemerisManager {
     }
   }
 
-  /// Copy native library (swisseph.dll / libswisseph.so) from assets to target directory
+  /// Copy native library (swisseph.dll / libswisseph.so) from assets or disk to target directory
   static Future<void> _copyNativeLibrary(String targetDir) async {
     final libName = Platform.isWindows ? 'swisseph.dll' : 'libswisseph.so';
     final assetPath = 'assets/ephe/$libName';
@@ -200,6 +233,31 @@ class EphemerisManager {
 
     if (await targetFile.exists()) {
       return;
+    }
+
+    // Check disk paths first
+    final localCandidates = [
+      p.join(Directory.current.path, libName),
+      p.join(Directory.current.path, 'assets', 'ephe', libName),
+      p.join(Directory.current.path, 'packages', 'jyotish', libName),
+      p.join(libName),
+      p.join('assets', 'ephe', libName),
+    ];
+
+    for (final candidate in localCandidates) {
+      final sourceFile = File(candidate);
+      if (await sourceFile.exists()) {
+        try {
+          if (p.canonicalize(sourceFile.path) !=
+              p.canonicalize(targetFile.path)) {
+            await sourceFile.copy(targetFile.path);
+            AppEnvironment.log(
+              'EphemerisManager: Copied native library from disk: $candidate',
+            );
+          }
+          return;
+        } catch (_) {}
+      }
     }
 
     try {

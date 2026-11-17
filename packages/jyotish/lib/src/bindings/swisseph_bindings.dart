@@ -284,6 +284,13 @@ class SwissEphBindings {
           'swisseph',
           'libswisseph.dylib',
         ),
+        p.join(Directory.current.path, 'libswisseph.dylib'),
+        p.join(
+          Directory.current.path,
+          'packages',
+          'jyotish',
+          'libswisseph.dylib',
+        ),
         p.join('/usr', 'local', 'lib', 'libswisseph.dylib'),
         'libswisseph.dylib',
       ];
@@ -292,8 +299,50 @@ class SwissEphBindings {
         try {
           return ffi.DynamicLibrary.open(path);
         } catch (e) {
-          // Try next path
-          _log.fine('Local library path $path failed to load: $e');
+          _log.fine('macOS library path $path failed to load: $e');
+          continue;
+        }
+      }
+    } else if (Platform.isLinux) {
+      final devPaths = [
+        p.join(Directory.current.path, 'libswisseph.so'),
+        p.join(Directory.current.path, 'packages', 'jyotish', 'libswisseph.so'),
+        p.join(Directory.current.path, 'assets', 'ephe', 'libswisseph.so'),
+        p.join(p.dirname(Platform.resolvedExecutable), 'libswisseph.so'),
+        '/usr/local/lib/libswisseph.so',
+        '/usr/lib/x86_64-linux-gnu/libswisseph.so',
+        '/usr/lib/x86_64-linux-gnu/libswe.so',
+        '/usr/lib/x86_64-linux-gnu/libswe.so.0',
+        '/usr/lib/libswisseph.so',
+        '/usr/lib/libswe.so',
+        '/usr/lib/libswe.so.0',
+        'libswisseph.so',
+        'libswe.so',
+        'libswe.so.0',
+      ];
+
+      for (final path in devPaths) {
+        try {
+          return ffi.DynamicLibrary.open(path);
+        } catch (e) {
+          _log.fine('Linux library path $path failed to load: $e');
+          continue;
+        }
+      }
+    } else if (Platform.isWindows) {
+      final devPaths = [
+        p.join(Directory.current.path, 'swisseph.dll'),
+        p.join(Directory.current.path, 'packages', 'jyotish', 'swisseph.dll'),
+        p.join(Directory.current.path, 'assets', 'ephe', 'swisseph.dll'),
+        p.join(p.dirname(Platform.resolvedExecutable), 'swisseph.dll'),
+        'swisseph.dll',
+      ];
+
+      for (final path in devPaths) {
+        try {
+          return ffi.DynamicLibrary.open(path);
+        } catch (e) {
+          _log.fine('Windows library path $path failed to load: $e');
           continue;
         }
       }

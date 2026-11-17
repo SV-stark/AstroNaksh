@@ -18,6 +18,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - name: Install system dependencies (Swiss Ephemeris on Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libswe-dev build-essential || true
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -25,7 +29,13 @@ jobs:
       - run: flutter pub get
       - name: Setup Swiss Ephemeris
         shell: pwsh
-        run: pwsh scripts/setup_swisseph.ps1
+        run: |
+          pwsh scripts/setup_swisseph.ps1
+          if (Test-Path "libswisseph.so") {
+            sudo cp libswisseph.so /usr/local/lib/libswisseph.so 2>$null || true
+            sudo cp libswisseph.so /usr/lib/libswisseph.so 2>$null || true
+            sudo ldconfig 2>$null || true
+          }
       - name: Run Static Analysis
         run: flutter analyze --no-fatal-infos
       - name: Run Test Suite
